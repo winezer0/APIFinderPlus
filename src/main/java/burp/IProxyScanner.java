@@ -129,7 +129,7 @@ public class IProxyScanner implements IProxyListener {
 
             //判断URL是否已经扫描过
             if (urlRecord.get(msgInfo.getMsgHash()) > 0) {
-                stdout.println(String.format("[-] 已识别过URL: %s -> Unique Code: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout.println(String.format("[-] 已识别过URL: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
 
