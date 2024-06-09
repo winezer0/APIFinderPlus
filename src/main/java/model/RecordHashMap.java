@@ -3,11 +3,11 @@ package model;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UrlRecord {
+public class RecordHashMap {
 
     private final ConcurrentHashMap<String, Integer> countMap;
 
-    public UrlRecord() {
+    public RecordHashMap() {
         this.countMap = new ConcurrentHashMap<>();
     }
 

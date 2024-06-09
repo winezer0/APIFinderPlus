@@ -4,7 +4,7 @@ import dataModel.RecordUrlsTable;
 import dataModel.MsgDataTable;
 import dataModel.ReqDataTable;
 import model.HttpMsgInfo;
-import model.UrlRecord;
+import model.RecordHashMap;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -21,8 +21,8 @@ public class IProxyScanner implements IProxyListener {
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
 
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
-    private static UrlRecord urlScannedRecord = new UrlRecord(); //记录已加入扫描列表的URL Hash
-    private static UrlRecord urlPathDirRecord = new UrlRecord(); //记录已加入待分析记录的URL Path Dir
+    private static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
+    private static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
 
     final ThreadPoolExecutor executorService;
     static ScheduledExecutorService monitorExecutor;
@@ -82,8 +82,8 @@ public class IProxyScanner implements IProxyListener {
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathDirRecord.get(msgInfo.getReqBasePath()) <= 0 && isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
-                urlPathDirRecord.add(msgInfo.getReqBasePath());
+            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
+                urlPathRecordMap.add(msgInfo.getReqBasePath());
                 stdout.println(String.format("[+] Record Url: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
                 executorService.submit(new Runnable() {
                     @Override
@@ -119,13 +119,13 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //判断URL是否已经扫描过
-            if (urlScannedRecord.get(msgInfo.getMsgHash()) > 0) {
+            if (urlScanRecordMap.get(msgInfo.getMsgHash()) > 0) {
                 //stdout.println(String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
 
             //记录准备加入的请求
-            urlScannedRecord.add(msgInfo.getMsgHash());
+            urlScanRecordMap.add(msgInfo.getMsgHash());
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
