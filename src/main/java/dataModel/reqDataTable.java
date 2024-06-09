@@ -21,15 +21,15 @@ public class reqDataTable {
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n".replace("tableName", tableName)
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + "msg_id TEXT, \n"
+            + "msg_id TEXT,\n"
             + "msg_hash TEXT,\n"
             + "req_url TEXT NOT NULL,\n"
-            + "req_proto TEXT \n"
+            + "req_proto TEXT,\n"
             + "req_host TEXT, \n"
-            + "req_port INTEGER, \n"
-            + "req_method TEXT, \n"
-            + "resp_status TEXT, \n"
-            + "msg_data_index INTEGER, \n"
+            + "req_port INTEGER,\n"
+            + "req_method TEXT,\n"
+            + "resp_status TEXT,\n"
+            + "msg_data_index INTEGER,\n"
             + "run_status TEXT\n"
             + ");";
 
