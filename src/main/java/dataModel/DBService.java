@@ -67,9 +67,7 @@ public class DBService {
         // reqDataTable 存储需要敏感信息提取的url
         execCreatTableSql(ReqDataTable.creatTableSQL, ReqDataTable.tableName);
 
-
         // 用来创建数据库 analyse_path 存储分析后的数据
-
         execCreatTableSql(AnalyseDataTable.creatTableSQL, AnalyseDataTable.tableName);
     }
 
