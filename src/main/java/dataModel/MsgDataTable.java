@@ -7,42 +7,33 @@ import utils.HttpMsgInfo;
 import java.io.PrintWriter;
 import java.sql.*;
 
-public class ListenUrlsTable {
+public class MsgDataTable {
     private static PrintWriter stdout = BurpExtender.getStdout();
     private static PrintWriter stderr = BurpExtender.getStderr();
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
 
     //数据表名称
-    static String tableName = "listen_urls";
+    static String tableName = "msg_data";
 
-    //创建用于存储所有 访问成功的 URL的数据库 listen_urls
+    //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
-            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
-            + " req_proto TEXT NOT NULL,\n"
-            + " req_host TEXT NOT NULL,\n"
-            + " req_port TEXT NOT NULL,\n"
-            + " req_path_dir TEXT NOT NULL,\n"
-            + " resp_status TEXT\n"
+            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+            + " msg_hash TEXT,\n"
+            + " req_url TEXT NOT NULL,\n"
+            + " req_bytes BLOB,\n"
+            + " resp_bytes BLOB\n"
             + ");";
 
     //插入数据库
-    public static synchronized int insertOrUpdateListenUrl(HttpMsgInfo msgInfo) {
+    public static synchronized int insertOrUpdateMsgData(HttpMsgInfo msgInfo) {
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName "
-                .replace("tableName", tableName)
-                + "WHERE req_proto = ? "
-                + "AND req_host = ? "
-                + "AND req_port = ? "
-                + "AND req_path_dir = ? "
-                + "AND resp_status = ?";
-
+        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ".replace("tableName", tableName);
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
-            setStmt(checkStmt, msgInfo);
-
+            checkStmt.setString(1, msgInfo.getMsgHash());
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
@@ -50,9 +41,12 @@ public class ListenUrlsTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(req_proto, req_host, req_port, req_path_dir,resp_status) VALUES (?, ?, ?, ?, ?)";
+                        "(msg_hash, req_url, req_bytes, resp_bytes) VALUES (?, ?, ?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    setStmt(insertStmt, msgInfo);
+                    insertStmt.setString(1, msgInfo.getMsgHash());
+                    insertStmt.setString(2, msgInfo.getReqUrl());
+                    insertStmt.setBytes(3, msgInfo.getReqBytes());
+                    insertStmt.setBytes(4, msgInfo.getRespBytes());
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -70,14 +64,4 @@ public class ListenUrlsTable {
 
         return generatedId; // 返回ID值，无论是更新还是插入
     }
-
-    private static void setStmt(PreparedStatement stmt, HttpMsgInfo msgInfo) throws SQLException {
-        stmt.setString(1, msgInfo.getReqProto());
-        stmt.setString(2, msgInfo.getReqHost());
-        stmt.setInt(3, msgInfo.getReqPort());
-        stmt.setString(4, msgInfo.getReqPathDir());
-        stmt.setString(5, msgInfo.getRespStatus());
-    }
-
-
 }

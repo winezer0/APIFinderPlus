@@ -1,6 +1,7 @@
 package burp;
 
 import dataModel.ListenUrlsTable;
+import dataModel.MsgDataTable;
 import utils.HttpMsgInfo;
 import utils.UrlRecord;
 
@@ -115,7 +116,6 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-
             // 看status是否为30开头
             if (msgInfo.getRespStatus().startsWith("3")){
                 stdout.println("[-] URL的响应包状态码3XX 跳过url识别：" + msgInfo.getReqUrl());
@@ -129,9 +129,13 @@ public class IProxyScanner implements IProxyListener {
 
             //判断URL是否已经扫描过
             if (urlRecord.get(msgInfo.getMsgHash()) > 0) {
-                stdout.println(String.format("[-] 已识别过URL: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout.println(String.format("[-] 已识别过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
+
+            // 存储请求体|响应体数据
+            int msgIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
+            // 存储到URL表
 
             //记录已成功加入的请求
             urlRecord.add(msgInfo.getMsgHash());

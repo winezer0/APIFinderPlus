@@ -25,6 +25,8 @@ public class HttpMsgInfo {
     private String reqPathDir = null;
     private String reqBaseUrl = "-";
 
+    private byte[] reqBytes = null;
+
     private byte[] respBytes = null;
     private String respStatus = null;
     private int respBodyLen = -1;
@@ -43,11 +45,12 @@ public class HttpMsgInfo {
         IHttpRequestResponse msgInfo = iInterceptedProxyMessage.getMessageInfo();
         //请求信息
         IRequestInfo requestInfo = helpers.analyzeRequest(msgInfo);
+        //请求内容
+        reqBytes = msgInfo.getRequest();
         //完整请求url
         reqUrl = requestInfo.getUrl().toString();
         //基于请求计算一个唯一码
         reqMethod = requestInfo.getMethod();  //记录请求方法
-
         //基于URL获取其他请求信息
         try {
             URL urlObj = new URL(reqUrl);
@@ -69,6 +72,7 @@ public class HttpMsgInfo {
             stderr.println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
         }
+
 
         //响应内容
         respBytes = msgInfo.getResponse();
@@ -190,6 +194,10 @@ public class HttpMsgInfo {
         return respBytes;
     }
 
+    public byte[] getReqBytes() {
+        return reqBytes;
+    }
+    
     public String getRespStatus() {
         return respStatus;
     }

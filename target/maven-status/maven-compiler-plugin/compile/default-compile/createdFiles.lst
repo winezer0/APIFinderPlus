@@ -8,4 +8,5 @@ burp\IProxyScanner.class
 model\FingerPrintRule.class
 model\FingerPrintRulesWrapper.class
 utils\HttpMsgInfo.class
+dataModel\MsgDataTable.class
 dataModel\DBService.class

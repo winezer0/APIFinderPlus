@@ -59,18 +59,10 @@ public class DBService {
     //创建数据表结构
     private synchronized void initCreateTables() {
         //创建URL PATH记录表 用于后续路径猜测记录
-        execCreatTableSql(ListenUrlsTable.listenUrlsSQL, ListenUrlsTable.tableName);
+        execCreatTableSql(ListenUrlsTable.creatTableSQL, ListenUrlsTable.tableName);
 
-        // 用来创建数据库 raw_data 用于存储 实际的请求体和响应体
-        String rawDataSQL = "CREATE TABLE IF NOT EXISTS raw_data (\n"
-                + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-                + " msg_hash TEXT,\n"
-                + " req_url TEXT NOT NULL,\n"
-                + " request BLOB,\n"
-                + " response BLOB\n"
-                + ");";
-
-        execCreatTableSql(rawDataSQL, "raw_data");
+        // 用来创建数据库 msg_data 用于存储 实际的请求体和响应体
+        execCreatTableSql(MsgDataTable.creatTableSQL, MsgDataTable.tableName);
 
 
         // 用来需要敏感信息提取的url
