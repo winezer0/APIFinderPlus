@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>BurpAPIFinder-Refactor</artifactId>
+    <artifactId>APIFinder</artifactId>
     <version>0.1</version>
 
     <properties>
@@ -20,6 +20,20 @@
             <artifactId>burp-extender-api</artifactId>
             <version>1.7.22</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>2.0.40</version>
+        </dependency>
+
+        <!-- SQLite JDBC 驱动 -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.3.0</version>
+        </dependency>
+        
     </dependencies>
 
     <build>
