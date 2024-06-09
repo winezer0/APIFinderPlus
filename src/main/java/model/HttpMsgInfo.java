@@ -42,20 +42,20 @@ public class HttpMsgInfo {
     }
 
     // 构造函数
-    public HttpMsgInfo(byte[] requestBytes, byte[] responsebytes) {
-        parseHttpMsg(requestBytes, responsebytes);
+    public HttpMsgInfo(byte[] requestBytes, byte[] responseBytes) {
+        parseHttpMsg(requestBytes, responseBytes);
     }
 
     /**
      * 解析请求响应数据
      * @param requestBytes
-     * @param responsebytes
+     * @param responseBytes
      */
-    private void parseHttpMsg(byte[] requestBytes, byte[] responsebytes) {
+    private void parseHttpMsg(byte[] requestBytes, byte[] responseBytes) {
         //请求内容
         reqBytes = requestBytes;
         //响应内容
-        respBytes = responsebytes;
+        respBytes = responseBytes;
         //请求信息
         IRequestInfo requestInfo = helpers.analyzeRequest(reqBytes);
         //响应信息
@@ -96,7 +96,6 @@ public class HttpMsgInfo {
         //请求响应信息的简单hash值
         msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
     }
-
 
     /**
      * 从URL解析请求后缀
