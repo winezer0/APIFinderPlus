@@ -2,13 +2,8 @@ package dataModel;
 
 import burp.BurpExtender;
 import burp.IExtensionHelpers;
-import utils.HttpMsgInfo;
 
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 public class AnalyseDataTable {
     private static PrintWriter stdout = BurpExtender.getStdout();

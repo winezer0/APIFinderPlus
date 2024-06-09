@@ -2,7 +2,7 @@ package dataModel;
 
 import burp.BurpExtender;
 import burp.IExtensionHelpers;
-import utils.HttpMsgInfo;
+import model.HttpMsgInfo;
 
 import java.io.PrintWriter;
 import java.sql.Connection;

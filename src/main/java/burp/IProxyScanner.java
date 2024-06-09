@@ -3,8 +3,8 @@ package burp;
 import dataModel.RecordUrlsTable;
 import dataModel.MsgDataTable;
 import dataModel.ReqDataTable;
-import utils.HttpMsgInfo;
-import utils.UrlRecord;
+import model.HttpMsgInfo;
+import model.UrlRecord;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
