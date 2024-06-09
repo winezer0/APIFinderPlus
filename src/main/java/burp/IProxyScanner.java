@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static utils.HttpUtils.isContainElements;
-import static utils.HttpUtils.isContainInElements;
+import static utils.Utils.isContainElements;
+import static utils.Utils.isContainInElements;
 
 
 public class IProxyScanner implements IProxyListener {

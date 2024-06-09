@@ -33,7 +33,6 @@ public class BurpFileUtils {
         return path.toString();
     }
 
-
     /**
      * 读取文本文件内容并返回一个字符串
      * @param filePath 文本文件的路径
@@ -53,7 +52,6 @@ public class BurpFileUtils {
         }
         return content.toString();
     }
-
 
     /**
      * 从jar包中读取资源文件内容到字符串

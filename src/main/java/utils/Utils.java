@@ -5,7 +5,7 @@ import burp.*;
 import java.io.PrintWriter;
 import java.util.List;
 
-public class HttpUtils {
+public class Utils {
     private static PrintWriter stdout = BurpExtender.getStdout();
     private static PrintWriter stderr = BurpExtender.getStderr();
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();;
@@ -35,7 +35,6 @@ public class HttpUtils {
         return false;
     }
 
-
     /**
      * 判断字符串是否包含任意一个列表元素
      *
@@ -59,7 +58,6 @@ public class HttpUtils {
         }
         return false;
     }
-
 
     /**
      * 判断字符串是否在元素列表中
