@@ -130,8 +130,8 @@ public class IProxyScanner implements IProxyListener {
                 @Override
                 public void run() {
                     //防止响应体过大
-                    byte[] responseBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
-                    msgInfo.setRespBytes(responseBytes);
+                    byte[] respBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
+                    msgInfo.setRespBytes(respBytes);
                     //加入请求列表
                     int msgId = iInterceptedProxyMessage.getMessageReference();
                     storeReqData(msgInfo, msgId);
