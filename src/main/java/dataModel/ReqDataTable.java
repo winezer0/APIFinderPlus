@@ -90,7 +90,7 @@ public class ReqDataTable {
 
 
     //获取一条需要处理的数据
-    public static Map<String, Object> fetchAndMarkReqDataToAnalysis() {
+    public static synchronized Map<String, Object> fetchAndMarkReqDataToAnalysis() {
         DBService dbService = DBService.getInstance();
         // 事务开启
         Map<String, Object> msgDataMap = new HashMap<>();
