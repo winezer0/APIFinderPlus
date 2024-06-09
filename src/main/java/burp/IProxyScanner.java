@@ -58,6 +58,9 @@ public class IProxyScanner implements IProxyListener {
 
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
+//            totalScanCount += 1;
+//            ConfigPanel.lbRequestCount.setText(Integer.toString(totalScanCount));
+
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
             //判断是否是正常的响应 //返回结果为空则退出
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
@@ -79,12 +82,15 @@ public class IProxyScanner implements IProxyListener {
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            //String allowStatus = "200|403|405";
-            if(urlPathDirRecord.get(msgInfo.getReqBasePath()) <= 0 &&
-                    isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
-                //stdout.println("[*] URL响应正常, 加入 URL PATH存储表");
-                RecordUrlsTable.insertOrUpdateSuccessUrl(msgInfo);
+            if(urlPathDirRecord.get(msgInfo.getReqBasePath()) <= 0 && isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
                 urlPathDirRecord.add(msgInfo.getReqBasePath());
+                stdout.println(String.format("[*] URL响应正常 已进行记录: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        RecordUrlsTable.insertOrUpdateSuccessUrl(msgInfo);
+                    }
+                });
             }
 
             // 排除黑名单后缀
@@ -114,63 +120,39 @@ public class IProxyScanner implements IProxyListener {
 
             //判断URL是否已经扫描过
             if (urlScannedRecord.get(msgInfo.getMsgHash()) > 0) {
-                stdout.println(String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                //stdout.println(String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
-
-            //防止响应体过大
-            byte[] responseBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
-            msgInfo.setRespBytes(responseBytes);
 
             //记录准备加入的请求
             urlScannedRecord.add(msgInfo.getMsgHash());
-
-            //存储请求体|响应体数据
-            int msgDataIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
-            if (msgDataIndex <= 0){
-                stderr.println("[!] error in insertOrUpdateMsgData: " + msgInfo.getReqUrl());
-                return;
-            } else {
-                // 存储到URL表
-                int msgId = iInterceptedProxyMessage.getMessageReference();
-                int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
-                if (insertOrUpdateOriginalDataIndex <= 0){
-                    stderr.println("[!] error in insertOrUpdateReqData: " + msgInfo.getReqUrl());
-                    return;
-                }else {
-                    stdout.println(String.format("[+] Add To db: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //防止响应体过大
+                    byte[] responseBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
+                    msgInfo.setRespBytes(responseBytes);
+                    //加入请求列表
+                    int msgId = iInterceptedProxyMessage.getMessageReference();
+                    storeReqData(msgInfo, msgId);
                 }
-            }
+            });
         }
-//            totalScanCount += 1;
-//            ConfigPanel.lbRequestCount.setText(Integer.toString(totalScanCount));
-//
-
-//
-//            // 网页提取URL并进行指纹识别
-//            executorService.submit(new Runnable() {
-//                @Override
-//                public void run() {
-//                    DatabaseService dbs = BurpExtender.getDataBaseService();
-//                    // 存储请求体|响应体数据
-//                    int msgIndex =  dbs.insertOrUpdateReqResData(uniqueCode, url, msgInfo.getRequest(), msgInfo.getResponse());
-//                    if (msgIndex == -1){
-//                        stderr.println("[!] error in insertOrUpdateReqResData: " + url);
-//                        return;
-//                    }
-//                    // 存储到URL表
-//                    int msgId = iInterceptedProxyMessage.getMessageReference();
-//                    int insertOrUpdateOriginalDataIndex = dbs.insertOrUpdateOriginData(uniqueCode, url, msgId, statusCode, reqMethod, msgIndex, msgInfo.getHttpService());
-//                    if (insertOrUpdateOriginalDataIndex == -1){
-//                        stderr.println("[!] error in insertOrUpdateOriginData: " + url);
-//                        return;
-//                    }
-//                }
-//            });
-//
-
-//        }
-
     }
 
+    /**
+     * 合并添加请求数据和请求信息为一个函数
+     * @param msgInfo
+     * @param msgId
+     */
+    private void storeReqData(HttpMsgInfo msgInfo, int msgId) {
+        //存储请求体|响应体数据
+        int msgDataIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
+        if (msgDataIndex > 0){
+            // 存储到URL表
+            int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
+            if (insertOrUpdateOriginalDataIndex > 0)
+                stdout.println(String.format("[+] Success Add Task: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+        }
+    }
 }
