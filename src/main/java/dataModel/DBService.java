@@ -58,18 +58,8 @@ public class DBService {
 
     //创建数据表结构
     private synchronized void initCreateTables() {
-        //创建用于存储所有 访问成功的 URL的数据库 listen_urls
-        String listenUrlsSQL = "CREATE TABLE IF NOT EXISTS listen_urls (\n"
-                + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
-                + " msg_hash TEXT NOT NULL,\n"    // 请求响应 hash
-                + " req_url TEXT NOT NULL,\n"   // 请求 url
-                + " req_host TEXT NOT NULL,\n"  // 请求 host
-                + " req_path TEXT NOT NULL,\n"  // 请求 path
-                + " resp_status TEXT,\n"        // 响应 状态码
-                + " resp_length TEXT\n"        // 响应 长度
-                + ");";
-
-       execCreatDBSql(listenUrlsSQL, "listen_urls");
+        //创建URL PATH记录表 用于后续路径猜测记录
+        execCreatTableSql(ListenUrlsTable.listenUrlsSQL, ListenUrlsTable.tableName);
 
         // 用来创建数据库 raw_data 用于存储 实际的请求体和响应体
         String rawDataSQL = "CREATE TABLE IF NOT EXISTS raw_data (\n"
@@ -80,7 +70,7 @@ public class DBService {
                 + " response BLOB\n"
                 + ");";
 
-        execCreatDBSql(rawDataSQL, "raw_data");
+        execCreatTableSql(rawDataSQL, "raw_data");
 
 
         // 用来需要敏感信息提取的url
@@ -98,7 +88,7 @@ public class DBService {
                 + " run_status TEXT\n"
                 + ");";
 
-        execCreatDBSql(reqDataSQL, "req_data");
+        execCreatTableSql(reqDataSQL, "req_data");
 
 
         // 用来创建数据库 analyse_path 存储分析后的数据
@@ -122,16 +112,16 @@ public class DBService {
                 + " isTryNewParentPath INTEGER DEFAULT 0"
                 + ");";
 
-        execCreatDBSql(analysePathSQL, "analyse_path");
+        execCreatTableSql(analysePathSQL, "analyse_path");
     }
 
     //创建数据表的语句
-    private void execCreatDBSql(String sql, String dbname) {
+    private void execCreatTableSql(String creatTableSql, String tableName) {
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
-            stdout.println(String.format("[+] create db %s success ...", dbname));
+            stmt.execute(creatTableSql);
+            stdout.println(String.format("[+] create db %s success ...", tableName));
         } catch (Exception e) {
-            stderr.println(String.format("[!] create db %s failed -> %s", dbname, e.getMessage()));
+            stderr.println(String.format("[!] create db %s failed -> %s", tableName, e.getMessage()));
             e.printStackTrace(BurpExtender.getStderr());
         }
     }

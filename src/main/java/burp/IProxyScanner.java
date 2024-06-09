@@ -1,5 +1,6 @@
 package burp;
 
+import dataModel.ListenUrlsTable;
 import utils.HttpMsgInfo;
 import utils.UrlRecord;
 
@@ -59,82 +60,83 @@ public class IProxyScanner implements IProxyListener {
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            String reqUrl = msgInfo.getReqUrl();
-            String reqMethod = msgInfo.getReqMethod();
-            String reqProto = msgInfo.getReqProto();
-            String reqHost = msgInfo.getReqHost();
-            int reqPort = msgInfo.getReqPort();
-            String reqPath = msgInfo.getReqPath();
-            String reqPathExt = msgInfo.getReqPathExt();
-            String reqBaseUrl = msgInfo.getReqBaseUrl();
-
-            byte[] respBytes  = msgInfo.getRespBytes();
-            String respStatus = msgInfo.getRespStatus();
-            int respBodyLen = msgInfo.getRespBodyLen();
-            int respBodyLenVague = msgInfo.getRespBodyLenVague();
-            String msgHash = msgInfo.getMsgHash();
+//            String reqUrl = msgInfo.getReqUrl();
+//            String reqMethod = msgInfo.getReqMethod();
+//            String reqProto = msgInfo.getReqProto();
+//            String reqHost = msgInfo.getReqHost();
+//            int reqPort = msgInfo.getReqPort();
+//            String reqPath = msgInfo.getReqPath();
+//            String reqPathExt = msgInfo.getReqPathExt();
+//            String reqBaseUrl = msgInfo.getReqBaseUrl();
+//
+//            byte[] respBytes  = msgInfo.getRespBytes();
+//            String respStatus = msgInfo.getRespStatus();
+//            int respBodyLen = msgInfo.getRespBodyLen();
+//            int respBodyLenVague = msgInfo.getRespBodyLenVague();
+//            String msgHash = msgInfo.getMsgHash();
 
             //判断是否是正常的响应 //返回结果为空则退出
-            if (respBytes == null || respBytes.length == 0) {
-                stdout.println("[-] 没有响应内容 跳过插件处理：" + reqUrl);
+            if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
+                stdout.println("[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
                 return;
             }
 
             // 看URL识别是否报错
-            if (reqBaseUrl == null ||reqBaseUrl.equals("-")){
-                stdout.println("[-] URL转化失败 跳过url识别：" + reqUrl);
+            if (msgInfo.getReqBaseUrl() == null ||msgInfo.getReqBaseUrl().equals("-")){
+                stdout.println("[-] URL转化失败 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             // 匹配黑名单域名
-            if(isContainElements(reqHost, UN_CHECKED_URL_DOMAIN, false)){
-                stdout.println("[-] 匹配黑名单域名 跳过url识别：" + reqUrl);
+            if(isContainElements(msgInfo.getReqHost(), UN_CHECKED_URL_DOMAIN, false)){
+                stdout.println("[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
             //String allowStatus = "200|403|405";
-            if(isContainInElements(respStatus, ALLOWED_STATUS_CODE, true)){
+            if(isContainInElements(msgInfo.getRespStatus(), ALLOWED_STATUS_CODE, true)){
                 stdout.println("URL响应合理, 应当加入历史URL存储库");
                 //Todo: 新建表存储所有URL,用于保存网站相关的所有 PATH, 便于后续path反查的使用
-
+                ListenUrlsTable.insertOrUpdateListenUrl(msgInfo);
 
             }
 
             // 排除黑名单后缀
-            if(isContainInElements(reqPathExt, UN_CHECKED_URL_EXT, false) || reqUrl.contains("favicon.")){
-                stdout.println("[-] 匹配黑名单后缀 跳过url识别：" + reqUrl);
+            if(isContainInElements(msgInfo.getReqPathExt(), UN_CHECKED_URL_EXT, false)
+                    || msgInfo.getReqUrl().contains("favicon.")){
+                stdout.println("[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //排除黑名单路径 这些JS文件是通用的、无价值的、
             //String blackPaths = "jquery.js|xxx.js";
-            if(isContainElements(reqPath, UN_CHECKED_URL_PATH, false)){
-                stdout.println("[-] 匹配黑名单路径 跳过url识别：" + reqUrl);
+            if(isContainElements(msgInfo.getReqPath(), UN_CHECKED_URL_PATH, false)){
+                stdout.println("[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
 
             // 看status是否为30开头
-            if (respStatus.startsWith("3")){
-                stdout.println("[-] URL的响应包状态码3XX 跳过url识别：" + reqUrl);
+            if (msgInfo.getRespStatus().startsWith("3")){
+                stdout.println("[-] URL的响应包状态码3XX 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
-            if (respStatus.equals("404")){
-                stdout.println("[-] URL的响应包状态码404 跳过url识别：" + reqUrl);
+            if (msgInfo.getRespStatus().equals("404")){
+                stdout.println("[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //判断URL是否已经扫描过
-            if (urlRecord.get(msgHash) > 0) {
-                stdout.println(String.format("[-] 已识别过URL: %s -> Unique Code: %s", reqUrl, msgHash));
+            if (urlRecord.get(msgInfo.getMsgHash()) > 0) {
+                stdout.println(String.format("[-] 已识别过URL: %s -> Unique Code: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
 
             //记录已成功加入的请求
-            urlRecord.add(msgHash);
-            stdout.println(String.format("[+] Add To db: %s -> msgHash: %s", reqUrl, msgHash));
+            urlRecord.add(msgInfo.getMsgHash());
+            stdout.println(String.format("[+] Add To db: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
 
         }
 //            totalScanCount += 1;

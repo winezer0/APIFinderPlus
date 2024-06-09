@@ -22,6 +22,7 @@ public class HttpMsgInfo {
     private int reqPort = -1;
     private String reqPath = null;
     private String reqPathExt = null;
+    private String reqPathDir = null;
     private String reqBaseUrl = "-";
 
     private byte[] respBytes = null;
@@ -36,7 +37,6 @@ public class HttpMsgInfo {
     public HttpMsgInfo(IInterceptedProxyMessage iInterceptedProxyMessage) {
         parseInterceptedProxyMessage(iInterceptedProxyMessage);
     }
-
 
     private void parseInterceptedProxyMessage(IInterceptedProxyMessage iInterceptedProxyMessage) {
         //解析请求响应信息
@@ -63,6 +63,8 @@ public class HttpMsgInfo {
             reqBaseUrl = new URL(reqProto, reqHost, reqPort, reqPath).toString();
             //解析请求文件的后缀
             reqPathExt = parseUrlExt(reqUrl);
+            //获取请求路径的目录部分
+            reqPathDir = parseReqPathDir(reqPath);
         } catch (MalformedURLException e) {
             stderr.println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
@@ -136,6 +138,21 @@ public class HttpMsgInfo {
         return Long.toHexString(crc32.getValue()).toLowerCase();
     }
 
+    /**
+     * 从给定的URL字符串中提取请求的目录部分。
+     * @param reqPath 完整的URL字符串。
+     * @return 请求的目录路径，不包含最后一个路径分隔符。
+     */
+    private String parseReqPathDir(String reqPath) {
+        // 去除最后一个路径分隔符后面的文件名部分，如果有的话
+        int lastPathSepIndex = reqPath.lastIndexOf('/');
+        // 如果找到了路径分隔符（lastPathSepIndex 不等于 -1）
+        if (lastPathSepIndex != -1) {
+            // 从原始路径中截取出从开头到最后一个路径分隔符（包括该分隔符）的部分  +1是为了保留最后一个路径分隔符
+            return reqPath.substring(0, lastPathSepIndex + 1);
+        }
+        return "/";
+    }
 
     public String getReqUrl() {
         return reqUrl;
@@ -187,5 +204,9 @@ public class HttpMsgInfo {
 
     public String getMsgHash() {
         return msgHash;
+    }
+
+    public String getReqPathDir() {
+        return reqPathDir;
     }
 }
