@@ -1303,7 +1303,7 @@
         "200",
         "403"
       ],
-      "type": "ALLOWED_STATUS_CODE",
+      "type": "RECORD_STATUS_CODE",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"

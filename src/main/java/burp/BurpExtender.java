@@ -46,7 +46,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     public static List<FingerPrintRule> fingerprintRules;
 
     //一些需要被排除|允许的情况
-    public static List<String> ALLOWED_STATUS_CODE = new ArrayList<>(); //作为正常访问结果的状态码, 为空时应该跳过判断
+    public static List<String> RECORD_STATUS_CODE = new ArrayList<>(); //作为正常访问结果的状态码, 为空时应该跳过判断
     public static List<String> UN_CHECKED_URL_EXT = new ArrayList<>(); //不检查的URL后缀
     public static List<String> UN_CHECKED_URL_PATH = new ArrayList<>(); //不检查的URL路径
     public static List<String> UN_CHECKED_URL_DOMAIN = new ArrayList<>(); //不检查的URL域名
@@ -77,8 +77,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                         FingerPrintRule rule = fingerprintRules.get(i);
                         String type = rule.getType();
                         switch (type) {
-                            case "ALLOWED_STATUS_CODE":
-                                ALLOWED_STATUS_CODE.addAll(rule.getKeyword());
+                            case "RECORD_STATUS_CODE":
+                                RECORD_STATUS_CODE.addAll(rule.getKeyword());
                                 break;
                             case "UN_CHECKED_URL_EXT":
                                 UN_CHECKED_URL_EXT.addAll(rule.getKeyword());
