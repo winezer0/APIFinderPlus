@@ -58,38 +58,19 @@ public class DBService {
 
     //创建数据表结构
     private synchronized void initCreateTables() {
-        // ListenUrlsTable URL PATH记录表 用于后续路径猜测记录
-        execCreatTableSql(ListenUrlsTable.creatTableSQL, ListenUrlsTable.tableName);
+        // RecordUrlsTable URL PATH记录表 用于后续路径猜测记录
+        execCreatTableSql(RecordUrlsTable.creatTableSQL, RecordUrlsTable.tableName);
 
         // MsgDataTable 用于存储 实际的请求体和响应体
         execCreatTableSql(MsgDataTable.creatTableSQL, MsgDataTable.tableName);
 
         // reqDataTable 存储需要敏感信息提取的url
-        execCreatTableSql(reqDataTable.creatTableSQL, reqDataTable.tableName);
+        execCreatTableSql(ReqDataTable.creatTableSQL, ReqDataTable.tableName);
 
 
         // 用来创建数据库 analyse_path 存储分析后的数据
-        String analysePathSQL = "CREATE TABLE IF NOT EXISTS analyse_path (\n"
-                + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-                + " msg_hash TEXT,\n"
 
-                + " req_url TEXT NOT NULL,\n"
-                + " req_path TEXT NOT NULL,\n"
-                + " req_method TEXT,\n"
-
-                + " path_data TEXT,\n"
-                + " resp_status TEXT,\n"
-
-                + " result TEXT,\n"
-                + " describe TEXT,\n"
-                + " having_important INTEGER,\n"
-                + " isJsFindUrl TEXT,\n"
-                + " jsFindUrl TEXT, \n"
-                + " mayNewParentPath TEXT DEFAULT '', \n"
-                + " isTryNewParentPath INTEGER DEFAULT 0"
-                + ");";
-
-        execCreatTableSql(analysePathSQL, "analyse_path");
+        execCreatTableSql(AnalyseDataTable.creatTableSQL, AnalyseDataTable.tableName);
     }
 
     //创建数据表的语句

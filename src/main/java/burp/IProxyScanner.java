@@ -1,8 +1,8 @@
 package burp;
 
-import dataModel.ListenUrlsTable;
+import dataModel.RecordUrlsTable;
 import dataModel.MsgDataTable;
-import dataModel.reqDataTable;
+import dataModel.ReqDataTable;
 import utils.HttpMsgInfo;
 import utils.UrlRecord;
 
@@ -83,7 +83,7 @@ public class IProxyScanner implements IProxyListener {
             if(urlPathDirRecord.get(msgInfo.getReqBasePath()) <= 0 &&
                     isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
                 //stdout.println("[*] URL响应正常, 加入 URL PATH存储表");
-                ListenUrlsTable.insertOrUpdateListenUrl(msgInfo);
+                RecordUrlsTable.insertOrUpdateSuccessUrl(msgInfo);
                 urlPathDirRecord.add(msgInfo.getReqBasePath());
             }
 
@@ -133,7 +133,7 @@ public class IProxyScanner implements IProxyListener {
             } else {
                 // 存储到URL表
                 int msgId = iInterceptedProxyMessage.getMessageReference();
-                int insertOrUpdateOriginalDataIndex = reqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
+                int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
                 if (insertOrUpdateOriginalDataIndex <= 0){
                     stderr.println("[!] error in insertOrUpdateReqData: " + msgInfo.getReqUrl());
                     return;

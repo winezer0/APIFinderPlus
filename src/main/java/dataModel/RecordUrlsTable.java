@@ -7,15 +7,15 @@ import utils.HttpMsgInfo;
 import java.io.PrintWriter;
 import java.sql.*;
 
-public class ListenUrlsTable {
+public class RecordUrlsTable {
     private static PrintWriter stdout = BurpExtender.getStdout();
     private static PrintWriter stderr = BurpExtender.getStderr();
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
 
     //数据表名称
-    static String tableName = "listen_urls";
+    static String tableName = "record_urls";
 
-    //创建用于存储所有 访问成功的 URL的数据库 listen_urls
+    //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
@@ -27,7 +27,7 @@ public class ListenUrlsTable {
             + ");";
 
     //插入数据库
-    public static synchronized int insertOrUpdateListenUrl(HttpMsgInfo msgInfo) {
+    public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName "

@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-public class reqDataTable {
+public class ReqDataTable {
     private static PrintWriter stdout = BurpExtender.getStdout();
     private static PrintWriter stderr = BurpExtender.getStderr();
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
