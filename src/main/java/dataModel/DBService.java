@@ -58,29 +58,14 @@ public class DBService {
 
     //创建数据表结构
     private synchronized void initCreateTables() {
-        //创建URL PATH记录表 用于后续路径猜测记录
+        // ListenUrlsTable URL PATH记录表 用于后续路径猜测记录
         execCreatTableSql(ListenUrlsTable.creatTableSQL, ListenUrlsTable.tableName);
 
-        // 用来创建数据库 msg_data 用于存储 实际的请求体和响应体
+        // MsgDataTable 用于存储 实际的请求体和响应体
         execCreatTableSql(MsgDataTable.creatTableSQL, MsgDataTable.tableName);
 
-
-        // 用来需要敏感信息提取的url
-        String reqDataSQL = "CREATE TABLE IF NOT EXISTS req_data (\n"
-                + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-                + " pid TEXT, \n"
-                + " msg_hash TEXT,\n"
-                + " req_url TEXT NOT NULL,\n"
-                + " req_protocol TEXT \n"
-                + " req_host TEXT, \n"
-                + " req_port INTEGER, \n"
-                + " req_method TEXT, \n"
-                + " resp_status TEXT, \n"
-                + " msf_info_index INTEGER, \n"
-                + " run_status TEXT\n"
-                + ");";
-
-        execCreatTableSql(reqDataSQL, "req_data");
+        // reqDataTable 存储需要敏感信息提取的url
+        execCreatTableSql(reqDataTable.creatTableSQL, reqDataTable.tableName);
 
 
         // 用来创建数据库 analyse_path 存储分析后的数据

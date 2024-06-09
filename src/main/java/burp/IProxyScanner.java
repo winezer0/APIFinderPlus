@@ -2,6 +2,7 @@ package burp;
 
 import dataModel.ListenUrlsTable;
 import dataModel.MsgDataTable;
+import dataModel.reqDataTable;
 import utils.HttpMsgInfo;
 import utils.UrlRecord;
 
@@ -134,8 +135,18 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 存储请求体|响应体数据
-            int msgIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
+            int msgDataIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
+            if (msgDataIndex == -1){
+                stderr.println("[!] error in insertOrUpdateReqResData: " + msgInfo.getReqUrl());
+                return;
+            }
             // 存储到URL表
+            int msgId = iInterceptedProxyMessage.getMessageReference();
+            int insertOrUpdateOriginalDataIndex = reqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
+            if (insertOrUpdateOriginalDataIndex == -1){
+                stderr.println("[!] error in insertOrUpdateOriginData: " + msgInfo.getReqUrl());
+                return;
+            }
 
             //记录已成功加入的请求
             urlRecord.add(msgInfo.getMsgHash());
