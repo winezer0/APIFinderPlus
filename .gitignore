@@ -23,5 +23,5 @@
 hs_err_pid*
 replay_pid*
 .idea/
-/target
-target/.db
+target/
+*.db
