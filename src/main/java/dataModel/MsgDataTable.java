@@ -37,7 +37,7 @@ public class MsgDataTable {
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout.println(String.format("Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout.println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录

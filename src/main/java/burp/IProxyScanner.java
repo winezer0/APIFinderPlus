@@ -84,7 +84,7 @@ public class IProxyScanner implements IProxyListener {
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
             if(urlPathDirRecord.get(msgInfo.getReqBasePath()) <= 0 && isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
                 urlPathDirRecord.add(msgInfo.getReqBasePath());
-                stdout.println(String.format("[*] URL响应正常 已进行记录: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
+                stdout.println(String.format("[+] Record Url: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
