@@ -96,10 +96,9 @@ public class IProxyScanner implements IProxyListener {
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
             //String allowStatus = "200|403|405";
             if(isContainInElements(msgInfo.getRespStatus(), ALLOWED_STATUS_CODE, true)){
-                stdout.println("URL响应合理, 应当加入历史URL存储库");
-                //Todo: 新建表存储所有URL,用于保存网站相关的所有 PATH, 便于后续path反查的使用
+                stdout.println("URL响应正常, 加入历史URL存储库");
+                // 保存网站相关的所有 PATH, 便于后续path反查的使用
                 ListenUrlsTable.insertOrUpdateListenUrl(msgInfo);
-
             }
 
             // 排除黑名单后缀

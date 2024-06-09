@@ -5,7 +5,6 @@ import burp.IExtensionHelpers;
 import utils.HttpMsgInfo;
 
 import java.io.PrintWriter;
-import java.security.PublicKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,54 +19,50 @@ public class ListenUrlsTable {
     static String tableName = "listen_urls";
 
     //创建用于存储所有 访问成功的 URL的数据库 listen_urls
-    static String listenUrlsSQL = "CREATE TABLE IF NOT EXISTS listen_urls (\n"
+    static String listenUrlsSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
+            .replace("tableName", tableName)
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
             + " req_host TEXT NOT NULL,\n"      // 请求 host
             + " req_path_dir TEXT NOT NULL,\n"  // 请求 path
-            + " resp_status TEXT,\n"            // 响应 状态码
-            + " resp_length TEXT\n"             // 响应 长度
+            + " resp_status TEXT\n"            // 响应 状态码
             + ");";
 
     //插入数据库
     public static synchronized int insertOrUpdateListenUrl(HttpMsgInfo msgInfo) {
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM listen_urls WHERE req_host = ? AND req_path_dir = ?";
+        String checkSql = "SELECT id FROM tableName WHERE req_host = ? AND req_path_dir = ? AND resp_status = ?"
+                .replace("tableName", tableName);
 
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
-            checkStmt.setString(1, msgInfo.getMsgHash());
+            checkStmt.setString(1, msgInfo.getReqHost());
+            checkStmt.setString(2, msgInfo.getReqPathDir());
+            checkStmt.setString(3, msgInfo.getRespStatus());
+
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，更新记录
                 generatedId = rs.getInt("id");
-                String updateSql = "UPDATE listen_urls SET " +
-                        "msg_hash = ?, " +
-                        "req_url = ?, " +
-                        "req_host = ?, " +
-                        "req_path = ?, " +
-                        "resp_status = ?, " +
-                        "resp_length = ?, " +
-                        "WHERE id = ?";
+                String updateSql = "UPDATE tableName SET req_host = ?, req_path_dir = ?, resp_status = ? WHERE id = ?"
+                        .replace("tableName", tableName);
+
                 try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-                    updateStmt.setString(1, msgInfo.getMsgHash());
-                    updateStmt.setString(2, msgInfo.getReqUrl());
-                    updateStmt.setString(3, msgInfo.getReqHost());
-                    updateStmt.setString(4, msgInfo.getReqPath());
-                    updateStmt.setString(5, msgInfo.getRespStatus());
-                    updateStmt.setInt(6, msgInfo.getRespBodyLen());
-                    updateStmt.setInt(7, generatedId);
+                    updateStmt.setString(1, msgInfo.getReqHost());
+                    updateStmt.setString(2, msgInfo.getReqPathDir());
+                    updateStmt.setString(3, msgInfo.getRespStatus());
+                    updateStmt.setInt(4, generatedId);
                     updateStmt.executeUpdate();
                 }
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO requests_response(url, request, response, uniqueCode) VALUES(?, ?, ?, ?)";
+                String insertSql = "INSERT INTO tableName (req_host, req_path_dir, resp_status) VALUES (?, ?, ?)"
+                        .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, reqUrl);
-                    insertStmt.setBytes(2, request);
-                    insertStmt.setBytes(3, response);
-                    insertStmt.setString(4, msgHash);
+                    insertStmt.setString(1, msgInfo.getReqHost());
+                    insertStmt.setString(2, msgInfo.getReqPathDir());
+                    insertStmt.setString(3, msgInfo.getRespStatus());
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -79,7 +74,7 @@ public class ListenUrlsTable {
                 }
             }
         } catch (Exception e) {
-            stderr.println("[-] Error inserting or updating requests_response table: " + reqUrl);
+            stderr.println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
             e.printStackTrace(stderr);
         }
 
