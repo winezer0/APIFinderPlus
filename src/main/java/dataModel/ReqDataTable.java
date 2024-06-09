@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReqDataTable {
     private static PrintWriter stdout = BurpExtender.getStdout();
@@ -33,6 +35,10 @@ public class ReqDataTable {
             + "run_status TEXT\n"
             + ");";
 
+
+    public static final String ANALYSE_WAIT = "等待解析";
+    public static final String ANALYSE_ING = "解析中";
+    public static final String ANALYSE_END = "解析完成";
 
     //插入数据库
     public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex) {
@@ -63,7 +69,7 @@ public class ReqDataTable {
                     insertStmt.setString(7, msgInfo.getReqMethod());
                     insertStmt.setString(8, msgInfo.getRespStatus());
                     insertStmt.setInt(9, msgDataIndex);
-                    insertStmt.setString(10, "等待解析");
+                    insertStmt.setString(10, ANALYSE_WAIT);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -80,5 +86,53 @@ public class ReqDataTable {
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
+
+    //获取一条需要处理的数据
+    public static Map<String, Object> fetchAndMarkReqDataToAnalysis() {
+        DBService dbService = DBService.getInstance();
+        // 事务开启
+        Map<String, Object> msgDataMap = new HashMap<>();
+
+        // 首先选取一条记录的ID
+        String selectSQL = "SELECT * FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
+                .replace("ANALYSE_WAIT", ANALYSE_WAIT)
+                .replace("tableName", tableName);
+
+        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id = ?;"
+                .replace("ANALYSE_ING", ANALYSE_ING)
+                .replace("tableName", tableName);
+
+        try (Connection conn = dbService.getNewConnection();
+             PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
+            ResultSet rs = selectStatement.executeQuery();
+            if (rs.next()) {
+                int selectedId = rs.getInt("id");
+
+                try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+                    updateStatement.setInt(1, selectedId);
+                    int affectedRows = updateStatement.executeUpdate();
+                    if (affectedRows > 0) {
+                        msgDataMap.put("id", rs.getString("id")); // 假设 "id" 是数据库列名
+                        msgDataMap.put("msg_id", rs.getString("msg_id"));
+                        msgDataMap.put("msg_hash", rs.getString("msg_hash"));
+                        msgDataMap.put("req_url", rs.getString("req_url"));
+                        msgDataMap.put("req_proto", rs.getString("req_proto"));
+                        msgDataMap.put("req_host", rs.getString("req_host"));
+                        msgDataMap.put("req_port", rs.getString("req_port"));
+                        msgDataMap.put("req_method", rs.getString("req_method"));
+                        msgDataMap.put("resp_status", rs.getString("resp_status"));
+                        msgDataMap.put("msg_data_index", rs.getString("msg_data_index"));
+                        msgDataMap.put("run_status", rs.getString("run_status"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            stderr.println("[-] Error fetchAndMarkOriginalDataAsCrawling: ");
+            e.printStackTrace(BurpExtender.getStderr());
+        }
+
+        return msgDataMap;
     }
 }

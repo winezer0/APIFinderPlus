@@ -6,6 +6,8 @@ import utils.BurpFileUtils;
 
 import java.io.PrintWriter;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DBService {
     private static PrintWriter stdout = BurpExtender.getStdout();
@@ -98,5 +100,4 @@ public class DBService {
             e.printStackTrace(BurpExtender.getStderr());
         }
     }
-
 }

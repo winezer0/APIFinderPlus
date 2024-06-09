@@ -37,16 +37,29 @@ public class HttpMsgInfo {
 
     // 构造函数
     public HttpMsgInfo(IInterceptedProxyMessage iInterceptedProxyMessage) {
-        parseInterceptedProxyMessage(iInterceptedProxyMessage);
+        IHttpRequestResponse msgInfo = iInterceptedProxyMessage.getMessageInfo();
+        parseHttpMsg(msgInfo.getRequest(), msgInfo.getResponse());
     }
 
-    private void parseInterceptedProxyMessage(IInterceptedProxyMessage iInterceptedProxyMessage) {
-        //解析请求响应信息
-        IHttpRequestResponse msgInfo = iInterceptedProxyMessage.getMessageInfo();
-        //请求信息
-        IRequestInfo requestInfo = helpers.analyzeRequest(msgInfo);
+    // 构造函数
+    public HttpMsgInfo(byte[] requestBytes, byte[] responsebytes) {
+        parseHttpMsg(requestBytes, responsebytes);
+    }
+
+    /**
+     * 解析请求响应数据
+     * @param requestBytes
+     * @param responsebytes
+     */
+    private void parseHttpMsg(byte[] requestBytes, byte[] responsebytes) {
         //请求内容
-        reqBytes = msgInfo.getRequest();
+        reqBytes = requestBytes;
+        //响应内容
+        respBytes = responsebytes;
+        //请求信息
+        IRequestInfo requestInfo = helpers.analyzeRequest(reqBytes);
+        //响应信息
+        IResponseInfo responseInfo = helpers.analyzeResponse(respBytes);
         //完整请求url
         reqUrl = requestInfo.getUrl().toString();
         //基于请求计算一个唯一码
@@ -74,12 +87,6 @@ public class HttpMsgInfo {
             stderr.println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
         }
-
-
-        //响应内容
-        respBytes = msgInfo.getResponse();
-        //响应信息
-        IResponseInfo responseInfo = helpers.analyzeResponse(respBytes);
         //响应长度
         respBodyLen = respBytes.length;
         //响应状态码

@@ -1,5 +1,6 @@
 package burp;
 
+import dataModel.DBService;
 import dataModel.RecordUrlsTable;
 import dataModel.MsgDataTable;
 import dataModel.ReqDataTable;
@@ -7,7 +8,7 @@ import model.HttpMsgInfo;
 import model.RecordHashMap;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
@@ -27,7 +28,6 @@ public class IProxyScanner implements IProxyListener {
     final ThreadPoolExecutor executorService;
     static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
-
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -54,8 +54,11 @@ public class IProxyScanner implements IProxyListener {
         stdout.println("[+] run executorService maxPoolSize: " + coreCount + " ~ " + maxPoolSize + ", monitorExecutorServiceNumberOfIntervals: " + monitorExecutorServiceNumberOfIntervals);
 
         monitorExecutor = Executors.newSingleThreadScheduledExecutor();
+
+        startDatabaseMonitor();
     }
 
+    @Override
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
 //            totalScanCount += 1;
@@ -153,6 +156,56 @@ public class IProxyScanner implements IProxyListener {
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
             if (insertOrUpdateOriginalDataIndex > 0)
                 stdout.println(String.format("[+] Success Add Task: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+        }
+    }
+
+    /**
+     * 启动动态监听的数据处理
+     */
+    private void startDatabaseMonitor() {
+        monitorExecutor.scheduleAtFixedRate(() -> {
+            executorService.submit(() -> {
+                try {
+                    stdout.println("[*] 调用任务监听器...");
+                    //当添加进程还比较多的时候,暂时不进行响应数据处理
+                    if (executorService.getActiveCount() >= 6){
+                        return;
+                    }
+                    // 步骤一：判断是否有URL数据需要解析
+                    Map<String, Object> reqInfoMap = ReqDataTable.fetchAndMarkReqDataToAnalysis();
+                    if (!reqInfoMap.isEmpty()){
+                        stdout.println("[+] 开始解析: " + reqInfoMap.get("req_url"));
+                        //runAPIFinder(reqInfoMap);
+                    }
+
+                } catch (Exception e) {
+                    stderr.println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
+                    e.printStackTrace(stderr);
+                }
+            });
+        }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
+    }
+
+
+    /**
+     * 监听线程关闭函数
+     */
+    public static void shutdownMonitorExecutor() {
+        // 关闭监控线程池
+        if (monitorExecutor != null && !monitorExecutor.isShutdown()) {
+            monitorExecutor.shutdown();
+            try {
+                // 等待线程池终止，设置一个合理的超时时间
+                if (!monitorExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    // 如果线程池没有在规定时间内终止，则强制关闭
+                    monitorExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                // 如果等待期线程被中断，恢复中断状态
+                Thread.currentThread().interrupt();
+                // 强制关闭
+                monitorExecutor.shutdownNow();
+            }
         }
     }
 }

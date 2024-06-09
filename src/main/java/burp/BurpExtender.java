@@ -124,11 +124,28 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     @Override
     public void extensionUnloaded() {
+        // 扩展卸载时，立刻关闭线程池
+        stdout.println("[+] Plugin will unloaded, cleaning resources...");
+
+        // 立刻关闭线程池
+        if (iProxyScanner.executorService != null) {
+            // 尝试立即关闭所有正在执行的任务
+            List<Runnable> notExecutedTasks = iProxyScanner.executorService.shutdownNow();
+            stdout.println("[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
+        }
+
+        //Todo: 停止面板更新器, 待实现数据查询面板
+        //MailPanel.timer.stop();
+
         // 关闭数据库连接
         if (dbService != null) {
             dbService.closeConnection();
-            BurpExtender.getStdout().println("[+] 断开数据连接成功.");
+            stdout.println("[+] 断开数据连接成功.");
         }
+
+        // 关闭计划任务
+        IProxyScanner.shutdownMonitorExecutor();
+        stdout.println("[+] 定时爬去任务断开成功.");
 
         stdout.println(String.format("[-] %s Unloaded ...", this.extensionName));
     }
