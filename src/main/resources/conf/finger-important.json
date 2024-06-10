@@ -1339,6 +1339,23 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
+        "png",
+        "jpg",
+        "jpeg",
+        "ico",
+        "css",
+        "woff",
+        "woff2"
+      ],
+      "type": "UN_CHECKED_URL_EXT",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
         "zh-CN",
         "image/",
         "images/",
