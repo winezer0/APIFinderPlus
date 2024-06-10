@@ -20,15 +20,12 @@ public class ElementUtils {
      * @return 如果 string 在 elementsString 范围内则返回 true，否则返回false。
      */
     public static boolean isContainInElements(String string, String elementsString, boolean bool) {
-        string = string.toLowerCase().trim();
-        elementsString = elementsString.toLowerCase().trim();
-
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() || elementsString == null || elementsString.trim().isEmpty()) return bool;
 
         String[] elements = elementsString.split("\\|");
         for (String element : elements) {
-            if (string.equals(element.trim())) {
+            if (format(string).equals(format(element))) {
                 return true;
             }
         }
@@ -44,15 +41,12 @@ public class ElementUtils {
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
     public static boolean isContainElements(String string, String elementsString, boolean bool) {
-        string = string.toLowerCase().trim();
-        elementsString = elementsString.toLowerCase().trim();
-
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() || elementsString == null || elementsString.trim().isEmpty()) return bool;
 
         String[] elements = elementsString.split("\\|");
         for (String element : elements) {
-            if (string.contains(element.trim())){
+            if (format(string).contains(format(element))){
                 return true;
             }
         }
@@ -68,13 +62,11 @@ public class ElementUtils {
      * @return 如果 string 在 elements 范围内则返回 true，否则返回false。
      */
     public static boolean isContainInElements(String string, List<String> elements, boolean bool) {
-        string = string.toLowerCase().trim();
-
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
 
         for (String element : elements) {
-            if (string.equals(element.toLowerCase().trim())) {
+            if (format(string).equals(format(element))) {
                 return true;
             }
         }
@@ -90,16 +82,23 @@ public class ElementUtils {
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
     public static boolean isContainElements(String string, List<String> elements, boolean bool) {
-        string = string.toLowerCase().trim();
-
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
 
         for (String element : elements) {
-            if (string.contains(element.toLowerCase().trim())){
+            if (format(string).contains(format(element))){
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * 小写和去两端字符
+     * @param string
+     * @return
+     */
+    private static String format(String string){
+        return string.toLowerCase().trim();
     }
 }

@@ -36,6 +36,7 @@ public class HttpMsgInfo {
 
     private String inferredMimeType = null;
     private String statedMimeType = null;
+    private int respBodyOffset = 0;
 
     // 构造函数
     public HttpMsgInfo(IInterceptedProxyMessage iInterceptedProxyMessage) {
@@ -81,7 +82,6 @@ public class HttpMsgInfo {
             msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
     }
 
-
     /**
      * 从请求URL解析部分信息
      * @param requestUrl
@@ -126,8 +126,10 @@ public class HttpMsgInfo {
         IResponseInfo responseInfo = helpers.analyzeResponse(responseBytes);
         //响应状态码
         respStatus = String.valueOf(responseInfo.getStatusCode());
+        //respBodyLenVague
+        respBodyOffset = responseInfo.getBodyOffset();
         //大致的响应长度
-        respBodyLenVague = calcBodyLenVague(responseBytes, responseInfo.getBodyOffset());
+        respBodyLenVague = calcBodyLenVague(responseBytes, respBodyOffset);
         //获取响应类型
         inferredMimeType = responseInfo.getInferredMimeType();
         statedMimeType = responseInfo.getStatedMimeType();
@@ -149,7 +151,7 @@ public class HttpMsgInfo {
      * @param bodyOffset
      * @return
      */
-    private byte[] getBodyBytes(byte[] respBytes, int bodyOffset) {
+    public static byte[] getBodyBytes(byte[] respBytes, int bodyOffset) {
         // 确保 bodyOffset 不会导致数组越界
         int bodyLength = Math.max(0, respBytes.length - bodyOffset);
 
@@ -164,7 +166,7 @@ public class HttpMsgInfo {
      * @param bodyOffset
      * @return
      */
-    private int calcBodyLenVague(byte[] responseBytes, int bodyOffset) {
+    public static int calcBodyLenVague(byte[] responseBytes, int bodyOffset) {
         int respBodyLength = getBodyBytes(responseBytes, bodyOffset).length;
         respBodyLength = respBodyLength/200;
         return respBodyLength;
@@ -175,7 +177,7 @@ public class HttpMsgInfo {
      * @param string 要计算CRC32的字符串
      * @return 字符串的CRC32校验和的十六进制表示
      */
-    private String calcCRC32(String string) {
+    public static String calcCRC32(String string) {
         // 使用 UTF-8 编码将字符串转换为字节数组
         byte[] inputBytes = string.getBytes(StandardCharsets.UTF_8);
         // 初始化CRC32对象
@@ -191,7 +193,7 @@ public class HttpMsgInfo {
      * @param reqPath 完整的URL字符串。
      * @return 请求的目录路径，不包含最后一个路径分隔符。
      */
-    private String parseReqPathDir(String reqPath) {
+    public static String parseReqPathDir(String reqPath) {
         // 去除最后一个路径分隔符后面的文件名部分，如果有的话
         int lastPathSepIndex = reqPath.lastIndexOf('/');
         // 如果找到了路径分隔符（lastPathSepIndex 不等于 -1）
@@ -274,6 +276,10 @@ public class HttpMsgInfo {
         return statedMimeType;
     }
 
+    public int getRespBodyOffset() {
+        return respBodyOffset;
+    }
+
     public void setRespBytes(byte[] respBytes) {
         this.respBytes = respBytes;
     }
@@ -285,4 +291,5 @@ public class HttpMsgInfo {
     public void setReqUrl(String reqUrl) {
         this.reqUrl = reqUrl;
     }
+
 }

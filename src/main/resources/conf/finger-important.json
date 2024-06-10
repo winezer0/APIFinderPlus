@@ -1317,7 +1317,10 @@
         ".bing.com",
         ".yahoo.com",
         ".aliyun.com",
-        ".alibaba.com"
+        ".alibaba.com",
+        ".w3.org",
+        ".github.com",
+        ".githubusercontent.com"
       ],
       "type": "UN_CHECKED_URL_DOMAIN",
       "isImportant": false,
@@ -1389,6 +1392,23 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
+        "js",
+        "html",
+        "cvs",
+        "php",
+        "jsp",
+        "asp",
+        "aspx"
+      ],
+      "type": "NEED_EXTRACT_SUFFIX",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
         "zh-CN",
         "image/",
         "images/",
@@ -1420,7 +1440,7 @@
         "+",
         "|"
       ],
-      "type": "UN_CHECKED_RESP_PATH",
+      "type": "USELESS_PATH_KEYS",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1429,15 +1449,10 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
-        "js",
-        "html",
-        "cvs",
-        "php",
-        "jsp",
-        "asp",
-        "aspx"
+        "/",
+        "/?"
       ],
-      "type": "NEED_EXTRACT_API_EXT",
+      "type": "USELESS_PATH_EQUAL",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
