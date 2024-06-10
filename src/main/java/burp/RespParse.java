@@ -81,7 +81,7 @@ public class RespParse {
 
 
         //todo: 必须：实现响应敏感信息提取
-        findInfoByGlobalConfig(respBody);
+        findInfoByGlobalConfig(msgInfo);
 
         //TODO: 必须：输出已提取的果信息
         //Todo: 必须：对PATH进行计算,计算出真实的URL路径
@@ -95,30 +95,41 @@ public class RespParse {
 
     }
 
-    private static void findInfoByGlobalConfig(String respText) {
-        int respLength = respText.length();
+    /**
+     * 根据规则提取敏感信息
+     * @param msgInfo
+     */
+    private static void findInfoByGlobalConfig(HttpMsgInfo msgInfo) {
         Set<String> findInfos = new LinkedHashSet<>();
 
-        // 处理每个 CHUNK_SIZE 大小的片段
-        for (int start = 0; start < respLength; start += CHUNK_SIZE) {
-            int end = Math.min(start + CHUNK_SIZE, respLength);
-            String respTextChunk = respText.substring(start, end);
+        String respText;
+        String reqUrlPath;
 
-            //遍历规则进行提取
-            for (FingerPrintRule rule : BurpExtender.fingerprintRules){
-                // 过滤掉配置选项
-                if (rule.getType().contains("CONF_")) {
-                    continue;
-                }
-                //忽略关闭的选项
-                if (!rule.getIsOpen()){
-                    continue;
-                }
-                //TODO: 开始提取操作
+        //遍历规则进行提取
+        for (FingerPrintRule rule : BurpExtender.fingerprintRules){
+            // 过滤掉配置选项
+            if (rule.getType().contains("CONF_")) {
+                continue;
             }
-        }
+            //忽略关闭的选项
+            if (!rule.getIsOpen()){
+                continue;
+            }
+            
+            //TODO: 开始提取操作
+            String locationContent = "";
+            if ("body".equalsIgnoreCase(rule.getLocation())) {
+                locationContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+            } else if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
+                locationContent = msgInfo.getReqPath();
+            } else {
+                stderr.println("[!] 未知指纹位置：" + rule.getLocation());
+                continue;
+            }
 
+        }
     }
+
 
 
     /**
