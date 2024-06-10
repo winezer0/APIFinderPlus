@@ -80,35 +80,36 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                 if (fingerprintRules != null && !fingerprintRules.isEmpty()){
                     for (int i = 0 ; i < fingerprintRules.size(); i ++){
                         FingerPrintRule rule = fingerprintRules.get(i);
-                        String type = rule.getType();
-                        switch (type) {
-                            case "CONF_NEED_RECORD_STATUS":
-                                CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
-                                break;
 
-                            case "CONF_BLACK_URL_DOMAIN":
-                                CONF_BLACK_URL_DOMAIN.addAll(rule.getKeyword());
-                                break;
-                            case "CONF_BLACK_URL_PATH":
-                                CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
-                                break;
-                            case "CONF_BLACK_URL_EXT":
-                                CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
-                                break;
+                        if (rule.getIsOpen())
+                            switch (rule.getType()) {
+                                case "CONF_NEED_RECORD_STATUS":
+                                    CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
+                                    break;
 
-                            case "CONF_EXTRACT_SUFFIX":
-                                CONF_EXTRACT_SUFFIX.addAll(rule.getKeyword());
-                                break;
+                                case "CONF_BLACK_URL_DOMAIN":
+                                    CONF_BLACK_URL_DOMAIN.addAll(rule.getKeyword());
+                                    break;
+                                case "CONF_BLACK_URL_PATH":
+                                    CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
+                                    break;
+                                case "CONF_BLACK_URL_EXT":
+                                    CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
+                                    break;
 
-                            case "CONF_BLACK_PATH_KEYS":
-                                CONF_BLACK_PATH_KEYS.addAll(rule.getKeyword());
-                                break;
-                            case "CONF_BLACK_PATH_EQUALS":
-                                CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
-                                break;
-                            default:
-                                break;
-                        }
+                                case "CONF_EXTRACT_SUFFIX":
+                                    CONF_EXTRACT_SUFFIX.addAll(rule.getKeyword());
+                                    break;
+
+                                case "CONF_BLACK_PATH_KEYS":
+                                    CONF_BLACK_PATH_KEYS.addAll(rule.getKeyword());
+                                    break;
+                                case "CONF_BLACK_PATH_EQUALS":
+                                    CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
+                                    break;
+                                default:
+                                    break;
+                            }
                     }
 
                     stdout.println(String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
