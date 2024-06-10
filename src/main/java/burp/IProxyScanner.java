@@ -171,12 +171,18 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6){
                         return;
                     }
-                    // 步骤一：判断是否有URL数据需要解析
-                    Map<String, Object> reqInfoMap = ReqDataTable.fetchAndMarkReqDataToAnalysis();
-                    if (!reqInfoMap.isEmpty()){
-                        stdout.println("[+] 开始解析: " + reqInfoMap.get("req_url"));
-                        //runAPIFinder(reqInfoMap);
+
+                    //解析响应体数据
+                    //1、判断是否有URL数据需要解析
+                    Integer msgDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis();
+                    //2、获取解析的Url数据
+                    if (msgDataIndex > 0){
+                        //获取 msgDataIndex 对应的数据
+                        stdout.println("[+] 开始获取响应数据: " + msgDataIndex);
+
+                        //analysisReqData(msgDataIndex);
                     }
+
 
                 } catch (Exception e) {
                     stderr.println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
@@ -185,7 +191,6 @@ public class IProxyScanner implements IProxyListener {
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
     }
-
 
     /**
      * 监听线程关闭函数

@@ -9,8 +9,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ReqDataTable {
     private static PrintWriter stdout = BurpExtender.getStdout();
@@ -90,10 +88,11 @@ public class ReqDataTable {
 
 
     //获取一条需要处理的数据
-    public static synchronized Map<String, Object> fetchAndMarkReqDataToAnalysis() {
-        DBService dbService = DBService.getInstance();
-        // 事务开启
-        Map<String, Object> msgDataMap = new HashMap<>();
+    public static synchronized int fetchAndMarkReqDataToAnalysis() {
+        // 考虑开启事务
+
+        //Map<String, Object> msgDataMap = new HashMap<>();
+        int msgDataIndex = -1;
 
         // 首先选取一条记录的ID
         String selectSQL = "SELECT * FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
@@ -104,6 +103,7 @@ public class ReqDataTable {
                 .replace("ANALYSE_ING", ANALYSE_ING)
                 .replace("tableName", tableName);
 
+        DBService dbService = DBService.getInstance();
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
             ResultSet rs = selectStatement.executeQuery();
@@ -114,25 +114,26 @@ public class ReqDataTable {
                     updateStatement.setInt(1, selectedId);
                     int affectedRows = updateStatement.executeUpdate();
                     if (affectedRows > 0) {
-                        msgDataMap.put("id", rs.getString("id")); // 假设 "id" 是数据库列名
-                        msgDataMap.put("msg_id", rs.getString("msg_id"));
-                        msgDataMap.put("msg_hash", rs.getString("msg_hash"));
-                        msgDataMap.put("req_url", rs.getString("req_url"));
-                        msgDataMap.put("req_proto", rs.getString("req_proto"));
-                        msgDataMap.put("req_host", rs.getString("req_host"));
-                        msgDataMap.put("req_port", rs.getString("req_port"));
-                        msgDataMap.put("req_method", rs.getString("req_method"));
-                        msgDataMap.put("resp_status", rs.getString("resp_status"));
-                        msgDataMap.put("msg_data_index", rs.getString("msg_data_index"));
-                        msgDataMap.put("run_status", rs.getString("run_status"));
+                        //msgDataMap.put("id", rs.getString("id")); // 假设 "id" 是数据库列名
+                        //msgDataMap.put("msg_id", rs.getString("msg_id"));
+                        //msgDataMap.put("msg_hash", rs.getString("msg_hash"));
+                        //msgDataMap.put("req_url", rs.getString("req_url"));
+                        //msgDataMap.put("req_proto", rs.getString("req_proto"));
+                        //msgDataMap.put("req_host", rs.getString("req_host"));
+                        //msgDataMap.put("req_port", rs.getString("req_port"));
+                        //msgDataMap.put("req_method", rs.getString("req_method"));
+                        //msgDataMap.put("resp_status", rs.getString("resp_status"));
+                        //msgDataMap.put("msg_data_index", rs.getString("msg_data_index"));
+                        //msgDataMap.put("run_status", rs.getString("run_status"));
+                        msgDataIndex = rs.getInt("msg_data_index");
                     }
                 }
             }
         } catch (Exception e) {
-            stderr.println("[-] Error fetchAndMarkOriginalDataAsCrawling: ");
+            stderr.println(String.format("[-] Error fetch And Mark Req Data To Analysis: %s", e.getMessage()));
             e.printStackTrace(BurpExtender.getStderr());
         }
 
-        return msgDataMap;
+        return msgDataIndex;
     }
 }
