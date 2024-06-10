@@ -1303,7 +1303,7 @@
         "200",
         "403"
       ],
-      "type": "NEED_RECORD_STATUS_CODE",
+      "type": "CONF_NEED_RECORD_STATUS",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1322,7 +1322,7 @@
         ".github.com",
         ".githubusercontent.com"
       ],
-      "type": "UN_CHECKED_URL_DOMAIN",
+      "type": "CONF_BLACK_URL_DOMAIN",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1333,7 +1333,7 @@
       "keyword": [
         "jquery.js"
       ],
-      "type": "UN_CHECKED_URL_PATH",
+      "type": "CONF_BLACK_URL_PATH",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1383,7 +1383,7 @@
         "eot",
         "swf"
       ],
-      "type": "UN_CHECKED_URL_EXT",
+      "type": "CONF_BLACK_URL_EXT",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1400,7 +1400,7 @@
         "asp",
         "aspx"
       ],
-      "type": "NEED_EXTRACT_SUFFIX",
+      "type": "CONF_EXTRACT_SUFFIX",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1440,7 +1440,7 @@
         "+",
         "|"
       ],
-      "type": "USELESS_PATH_KEYS",
+      "type": "CONF_BLACK_PATH_KEYS",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1452,7 +1452,7 @@
         "/",
         "/?"
       ],
-      "type": "USELESS_PATH_EQUAL",
+      "type": "CONF_BLACK_PATH_EQUALS",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"

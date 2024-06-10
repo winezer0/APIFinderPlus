@@ -46,16 +46,16 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     public static List<FingerPrintRule> fingerprintRules;
 
     //一些需要被排除|允许的情况
-    public static List<String> NEED_RECORD_STATUS_CODE = new ArrayList<>(); //作为正常访问结果的状态码
+    public static List<String> CONF_NEED_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
 
-    public static List<String> UN_CHECKED_URL_EXT = new ArrayList<>(); //不检查的URL后缀
-    public static List<String> UN_CHECKED_URL_PATH = new ArrayList<>(); //不检查的URL路径
-    public static List<String> UN_CHECKED_URL_DOMAIN = new ArrayList<>(); //不检查的URL域名
+    public static List<String> CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
+    public static List<String> CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
+    public static List<String> CONF_BLACK_URL_DOMAIN = new ArrayList<>(); //不检查的URL域名
 
-    public static List<String> USELESS_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
-    public static List<String> USELESS_PATH_EQUAL = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
+    public static List<String> CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
+    public static List<String> CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
 
-    public static List<String> NEED_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
+    public static List<String> CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
 
     private static DBService dbService;
 
@@ -82,29 +82,29 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                         FingerPrintRule rule = fingerprintRules.get(i);
                         String type = rule.getType();
                         switch (type) {
-                            case "NEED_RECORD_STATUS_CODE":
-                                NEED_RECORD_STATUS_CODE.addAll(rule.getKeyword());
+                            case "CONF_NEED_RECORD_STATUS":
+                                CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
                                 break;
 
-                            case "UN_CHECKED_URL_DOMAIN":
-                                UN_CHECKED_URL_DOMAIN.addAll(rule.getKeyword());
+                            case "CONF_BLACK_URL_DOMAIN":
+                                CONF_BLACK_URL_DOMAIN.addAll(rule.getKeyword());
                                 break;
-                            case "UN_CHECKED_URL_PATH":
-                                UN_CHECKED_URL_PATH.addAll(rule.getKeyword());
+                            case "CONF_BLACK_URL_PATH":
+                                CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
                                 break;
-                            case "UN_CHECKED_URL_EXT":
-                                UN_CHECKED_URL_EXT.addAll(rule.getKeyword());
-                                break;
-
-                            case "NEED_EXTRACT_SUFFIX":
-                                NEED_EXTRACT_SUFFIX.addAll(rule.getKeyword());
+                            case "CONF_BLACK_URL_EXT":
+                                CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
                                 break;
 
-                            case "USELESS_PATH_KEYS":
-                                USELESS_PATH_KEYS.addAll(rule.getKeyword());
+                            case "CONF_EXTRACT_SUFFIX":
+                                CONF_EXTRACT_SUFFIX.addAll(rule.getKeyword());
                                 break;
-                            case "USELESS_PATH_EQUAL":
-                                USELESS_PATH_EQUAL.addAll(rule.getKeyword());
+
+                            case "CONF_BLACK_PATH_KEYS":
+                                CONF_BLACK_PATH_KEYS.addAll(rule.getKeyword());
+                                break;
+                            case "CONF_BLACK_PATH_EQUALS":
+                                CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
                                 break;
                             default:
                                 break;

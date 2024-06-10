@@ -1,11 +1,13 @@
 package burp;
 
+import model.FingerPrintRule;
 import model.HttpMsgInfo;
 
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,13 +31,18 @@ public class RespParse {
     public static final String URL_KEY = "url";
     public static final String PATH_KEY = "path";
 
+    private static final int MAX_SIZE = 50000; // 设置最大字节大小为40000
+    private static final int RESULT_SIZE = 10000;
+
     public static void analysisReqData(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
         Set<String> urlSet = new HashSet<>();
         Set<String> pathSet = new HashSet<>();
 
         //转换响应体,后续可能需要解决编码问题
-        String respBody = new String(HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()));
+        String respBody = new String(
+                HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),
+                StandardCharsets.UTF_8);
 
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
@@ -43,7 +50,7 @@ public class RespParse {
         urlSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
-        if (isEqualsKeys(msgInfo.getReqPathExt(), NEED_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
+        if (isEqualsKeys(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
             stdout.println(String.format("[+] 初步提取的URI数量: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             urlSet.addAll(extractUriFromJs);
@@ -73,18 +80,44 @@ public class RespParse {
                 stdout.println(String.format("[*] INFO PATH: %s", s));
 
 
-        //todo: 实现响应敏感信息提取
+        //todo: 必须：实现响应敏感信息提取
+        findInfoByGlobalConfig(respBody);
 
-        //
-        //TODO: 输出已提取的果信息
+        //TODO: 必须：输出已提取的果信息
+        //Todo: 必须：对PATH进行计算,计算出真实的URL路径
 
-        //Todo: 对PATH进行计算,计算出真实的URL路径
+        //TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
+        //TODO: 扩展：实现UI显示
 
-        //TODO: 排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
-        //TODO: 初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
+        //TODO: 扩展：增加通过响应关键字排除 404或者错误页面的功能
+        //TODO: 扩展：排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
+        //TODO: 扩展：初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
 
-        //TODO: 递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
-        //TODO: 实现UI显示
+    }
+
+    private static void findInfoByGlobalConfig(String respText) {
+        int respLength = respText.length();
+        Set<String> findInfos = new LinkedHashSet<>();
+
+        // 处理每个 CHUNK_SIZE 大小的片段
+        for (int start = 0; start < respLength; start += CHUNK_SIZE) {
+            int end = Math.min(start + CHUNK_SIZE, respLength);
+            String respTextChunk = respText.substring(start, end);
+
+            //遍历规则进行提取
+            for (FingerPrintRule rule : BurpExtender.fingerprintRules){
+                // 过滤掉配置选项
+                if (rule.getType().contains("CONF_")) {
+                    continue;
+                }
+                //忽略关闭的选项
+                if (!rule.getIsOpen()){
+                    continue;
+                }
+                //TODO: 开始提取操作
+            }
+        }
+
     }
 
 
@@ -271,7 +304,7 @@ public class RespParse {
     private static Set<String> filterUselessPathsByEqual(Set<String> matchPathSet) {
         Set<String> newPathSet = new HashSet<>();
         for (String path : matchPathSet){
-            if(!isEqualsKeys(path, USELESS_PATH_EQUAL, false)){
+            if(!isEqualsKeys(path, CONF_BLACK_PATH_EQUALS, false)){
                 newPathSet.add(path);
             }
         }
@@ -286,7 +319,7 @@ public class RespParse {
     private static Set<String> filterUselessPathsByKey(Set<String> matchPathSet) {
         Set<String> newPathSet = new HashSet<>();
         for (String path : matchPathSet){
-            if(!isContainKeys(path, USELESS_PATH_KEYS, false)){
+            if(!isContainKeys(path, CONF_BLACK_PATH_KEYS, false)){
                 newPathSet.add(path);
             }
         }
@@ -306,17 +339,17 @@ public class RespParse {
             try {
                 URL url = new URL(matchUrl);
                 //匹配黑名单域名 //排除被禁止的域名URL, baidu.com等常被应用的域名, 这些js是一般是没用的, 为空时不操作
-                if(isContainKeys(url.getHost(), UN_CHECKED_URL_DOMAIN, false)){
+                if(isContainKeys(url.getHost(), CONF_BLACK_URL_DOMAIN, false)){
                     continue;
                 }
 
                 // 排除黑名单后缀 jpg、mp3等等
-                if(isEqualsKeys(HttpMsgInfo.parseUrlExt(matchUrl), UN_CHECKED_URL_EXT, false)){
+                if(isEqualsKeys(HttpMsgInfo.parseUrlExt(matchUrl), CONF_BLACK_URL_EXT, false)){
                     continue;
                 }
 
                 //排除黑名单路径 这些JS文件是通用的、无价值的、
-                if(isContainKeys(url.getPath(), UN_CHECKED_URL_PATH, false)){
+                if(isContainKeys(url.getPath(), CONF_BLACK_URL_PATH, false)){
                     continue;
                 }
 
