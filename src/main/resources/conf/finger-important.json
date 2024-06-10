@@ -1303,7 +1303,7 @@
         "200",
         "403"
       ],
-      "type": "RECORD_STATUS_CODE",
+      "type": "NEED_RECORD_STATUS_CODE",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
@@ -1421,6 +1421,23 @@
         "|"
       ],
       "type": "UN_CHECKED_RESP_PATH",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "js",
+        "html",
+        "cvs",
+        "php",
+        "jsp",
+        "asp",
+        "aspx"
+      ],
+      "type": "NEED_EXTRACT_API_EXT",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"

@@ -12,6 +12,10 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static burp.BurpExtender.NEED_EXTRACT_API_EXT;
+import static burp.BurpExtender.UN_CHECKED_URL_EXT;
+import static utils.ElementUtils.isContainInElements;
+
 public class RespParseUtils {
     private static PrintWriter stdout = BurpExtender.getStdout();
     private static PrintWriter stderr = BurpExtender.getStderr();
@@ -27,8 +31,8 @@ public class RespParseUtils {
     public static void analysisReqData(HttpMsgInfo msgInfo) {
         Set<String> urlSet = new HashSet<>();
 
-        // 针对html页面提取
-        List<String> extractUrlsFromHtml = extractUrlsFromHtml(msgInfo.getReqUrl(), new String(msgInfo.getRespBytes()));
+        // 针对html页面提取 直接的URL 已完成
+        List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), new String(msgInfo.getRespBytes()));
         urlSet.addAll(extractUrlsFromHtml);
 
         stdout.println(String.format("[+] Html Extract Url Counts: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
@@ -36,34 +40,36 @@ public class RespParseUtils {
             for (String extractUrl : extractUrlsFromHtml)
                 stdout.println(String.format("[*] Html Extract Url: %s", extractUrl));
 
-        
-//        // 针对JS页面提取
-//        if (mime.equalsIgnoreCase("script") || mime.equalsIgnoreCase("html") || url.contains(".htm") || Utils.isNeedCheckExt(url)) {
-//            List<String> getUrlsFromJS = findUrlFromJs(url, port, host, protocol, respText);
-//            urlSet.addAll(getUrlsFromJS);
-//
-//            stdout.println(String.format("Js Extract Counts: %s From Url %s", getUrlsFromJS.size(), url));
-//            if (getUrlsFromJS.size()>0) for (String s : getUrlsFromJS) stdout.println(String.format("[*] JS Extract Url: %s", s));
-//        }
 
+        // 针对JS页面提取
+        String mimeType = msgInfo.getInferredMimeType();
+        if (isContainInElements(msgInfo.getReqPathExt(), NEED_EXTRACT_API_EXT, true)
+                || mimeType.contains("script")
+        ) {
+            List<String> getUrlsFromJS = extractUriFromJs(url, port, host, protocol, respText);
+            urlSet.addAll(getUrlsFromJS);
+
+            stdout.println(String.format("Js Extract Counts: %s From Url %s", getUrlsFromJS.size(), url));
+            if (getUrlsFromJS.size()>0) for (String s : getUrlsFromJS) stdout.println(String.format("[*] JS Extract Url: %s", s));
+        }
     }
 
-    public static List<String> extractUrlsFromHtml(String uri, String htmlText) {
+    public static List<String> extractDirectUrls(String reqUrl, String respBodyText) {
         // 使用正则表达式提取文本内容中的 URL
         List<String> urlList = new ArrayList<>();
 
         //直接跳过没有http关键字的场景
-        if (!htmlText.contains("http")){
+        if (!respBodyText.contains("http")){
             return urlList;
         }
 
         // html文件内容长度
-        int htmlLength = htmlText.length();
+        int htmlLength = respBodyText.length();
 
         // 处理每个 CHUNK_SIZE 大小的片段
         for (int start = 0; start < htmlLength; start += CHUNK_SIZE) {
             int end = Math.min(start + CHUNK_SIZE, htmlLength);
-            String htmlChunk = htmlText.substring(start, end);
+            String htmlChunk = respBodyText.substring(start, end);
 
             htmlChunk = htmlChunk.replace("\\/","/");
             Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
@@ -72,14 +78,14 @@ public class RespParseUtils {
                 stdout.println(String.format("[*] 初步提取信息:%s", url));
                 if (!url.contains("http") && url.startsWith("/")) {
                     try {
-                        URI baseUri = new URI(uri);
+                        URI baseUri = new URI(reqUrl);
                         url = baseUri.resolve(url).toString();
                     } catch (URISyntaxException e) {
                         continue;
                     }
                 }
                 try {
-                    String subdomain = (new URL(uri)).getHost();
+                    String subdomain = (new URL(reqUrl)).getHost();
                     String domain = (new URL(url)).getHost();
                     if (!subdomain.equalsIgnoreCase(domain)) {
                         continue;
@@ -98,47 +104,52 @@ public class RespParseUtils {
         return urlList;
     }
 
-//    public static List<String> findUrlFromJs(String url, int port, String host, String protocol, String jsText){
-//        // 方式一：原有的正则提取js中的url的逻辑
-//        int jsLength = jsText.length(); // JavaScript 文件内容长度
-//        Set<String> findUris = new LinkedHashSet<>();
-//
-//        // 处理每个 CHUNK_SIZE 大小的片段
-//        for (int start = 0; start < jsLength; start += CHUNK_SIZE) {
-//            int end = Math.min(start + CHUNK_SIZE, jsLength);
-//            String jsChunk = jsText.substring(start, end);
-//            Matcher m = FIND_PAHT_FROM_JS_PATTERN.matcher(jsChunk);
-//            int matcher_start = 0;
-//            while (m.find(matcher_start)){
-//                String matchGroup = m.group(1);
-//                if (matchGroup != null){
-//                    if (!isStaticPathByPath(matchGroup)){
-//                        findUris.add(matchGroup.replaceAll("\"","").replaceAll("'","").replaceAll("\n","").replaceAll("\t","").trim());
-//                    }
-//                }
-//                matcher_start = m.end();
-//            }
-//            // 方式二：
-//            Matcher matcher_result = FIND_PATH_FROM_JS_PATTERN2.matcher(jsChunk);
-//            while (matcher_result.find()){
-//                // 检查第一个捕获组
-//                String group1 = matcher_result.group(1);
-//                if (group1 != null) {
-//                    if (!isStaticPathByPath(group1)){
-//                        findUris.add(group1.trim());
-//                    }
-//                }
-//                // 检查第二个捕获组
-//                String group2 = matcher_result.group(2);
-//                if (group2 != null) {
-//                    if (!isStaticPathByPath(group2)){
-//                        findUris.add(group2.trim());
-//                    }
-//                }
-//            }
-//        }
-//
-//
+    public static String formatExtractUri(String url){
+        return  url.replaceAll("\"", "").replaceAll("'", "")
+                .replaceAll("\n", "").replaceAll("\t", "").trim();
+    }
+
+    public static Set<String> extractUriFromJs(String url, int port, String host, String protocol, String jsText){
+        // 方式一：原有的正则提取js中的url的逻辑
+        int jsLength = jsText.length(); // JavaScript 文件内容长度
+        Set<String> findUris = new LinkedHashSet<>();
+
+        // 处理每个 CHUNK_SIZE 大小的片段
+        for (int start = 0; start < jsLength; start += CHUNK_SIZE) {
+            int end = Math.min(start + CHUNK_SIZE, jsLength);
+            String jsChunk = jsText.substring(start, end);
+            Matcher m = FIND_PAHT_FROM_JS_PATTERN.matcher(jsChunk);
+            int matcher_start = 0;
+            while (m.find(matcher_start)){
+                String matchGroup = m.group(1);
+                if (matchGroup != null){
+                    findUris.add(formatExtractUri(matchGroup));
+                }
+                matcher_start = m.end();
+            }
+
+            // 方式二：
+            Matcher matcher_result = FIND_PATH_FROM_JS_PATTERN2.matcher(jsChunk);
+            while (matcher_result.find()){
+                // 检查第一个捕获组
+                String group1 = matcher_result.group(1);
+                if (group1 != null) {
+                    if (!isStaticPathByPath(group1)){
+                        findUris.add(group1.trim());
+                    }
+                }
+                // 检查第二个捕获组
+                String group2 = matcher_result.group(2);
+                if (group2 != null) {
+                    if (!isStaticPathByPath(group2)){
+                        findUris.add(group2.trim());
+                    }
+                }
+            }
+        }
+
+        return findUris;
+
 //        //常规补全提取到API
 //        List<String> findUrls = new ArrayList<>();
 //        for(String tempUrl:findUris){
@@ -162,6 +173,6 @@ public class RespParseUtils {
 //
 //        }
 //        return  result;
-//    }
+    }
 
 }

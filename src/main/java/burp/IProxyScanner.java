@@ -85,7 +85,7 @@ public class IProxyScanner implements IProxyListener {
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && isContainInElements(msgInfo.getRespStatus(), RECORD_STATUS_CODE, true)){
+            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && isContainInElements(msgInfo.getRespStatus(), NEED_RECORD_STATUS_CODE, true)){
                 urlPathRecordMap.add(msgInfo.getReqBasePath());
                 stdout.println(String.format("[+] Record Url: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
                 executorService.submit(new Runnable() {
@@ -97,8 +97,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 排除黑名单后缀
-            if(isContainInElements(msgInfo.getReqPathExt(), UN_CHECKED_URL_EXT, false)
-                    || msgInfo.getReqUrl().contains("favicon.")){
+            if(isContainInElements(msgInfo.getReqPathExt(), UN_CHECKED_URL_EXT, false)){
                 stdout.println("[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
