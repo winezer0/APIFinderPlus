@@ -82,14 +82,16 @@ public class RespParse {
 
 
         //todo: 实现响应敏感信息提取
+
+        //TODO: 输出已提取的结果信息
+
         //Todo: 对PATH进行计算,计算出真实的URL路径
 
         //TODO: 排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
         //TODO: 初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
 
-        //TODO: 输出已提取的结果信息
         //TODO: 递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
-        //TOdo: 实现URL功能
+        //TODO: 实现UI显示
     }
 
 
