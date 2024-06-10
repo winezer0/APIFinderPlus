@@ -72,9 +72,11 @@ public class RespParse {
             for (String s : pathSet)
                 stdout.println(String.format("[*] INFO PATH: %s", s));
 
+
         //todo: 实现响应敏感信息提取
 
-        //TODO: 输出已提取的结果信息
+        //
+        //TODO: 输出已提取的果信息
 
         //Todo: 对PATH进行计算,计算出真实的URL路径
 
