@@ -12,14 +12,14 @@ public class ElementUtils {
 
 
     /**
-     * 判断字符串是否在元素列表中
+     * 判断字符串 是否 等于 元素列表中的任意元素 忽略大小写
      *
      * @param string 单个字符串。
      * @param elementsString 允许的字符串，用'|'分隔。
      * @param bool 当 elementsString 为空时应该返回的响应码
      * @return 如果 string 在 elementsString 范围内则返回 true，否则返回false。
      */
-    public static boolean isContainInElements(String string, String elementsString, boolean bool) {
+    public static boolean isEqualsKeys(String string, String elementsString, boolean bool) {
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() || elementsString == null || elementsString.trim().isEmpty()) return bool;
 
@@ -33,14 +33,14 @@ public class ElementUtils {
     }
 
     /**
-     * 判断字符串是否包含任意一个列表元素
+     * 判断字符串 是否 包含 列表中的任意元素
      *
      * @param string 单个字符串。
      * @param elementsString 允许的字符串，用'|'分隔。
      * @param bool 当 elementsString 为空时应该返回的响应码
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
-    public static boolean isContainElements(String string, String elementsString, boolean bool) {
+    public static boolean isContainKeys(String string, String elementsString, boolean bool) {
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() || elementsString == null || elementsString.trim().isEmpty()) return bool;
 
@@ -54,14 +54,14 @@ public class ElementUtils {
     }
 
     /**
-     * 判断字符串是否在元素列表中
+     * 判断字符串 是否 等于 元素列表中的任意元素 忽略大小写
      *
      * @param string 单个字符串。
      * @param elements 允许的字符串列表
      * @param bool 当 elements 为空时应该返回的响应码
      * @return 如果 string 在 elements 范围内则返回 true，否则返回false。
      */
-    public static boolean isContainInElements(String string, List<String> elements, boolean bool) {
+    public static boolean isEqualsKeys(String string, List<String> elements, boolean bool) {
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
 
@@ -74,14 +74,14 @@ public class ElementUtils {
     }
 
     /**
-     * 判断字符串是否包含任意一个列表元素
+     * 判断字符串 是否 包含 列表中的任意元素
      *
      * @param string 单个字符串。
      * @param elements 允许的字符串，用'|'分隔。
      * @param bool 当 elementsString 为空时应该返回的响应码
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
-    public static boolean isContainElements(String string, List<String> elements, boolean bool) {
+    public static boolean isContainKeys(String string, List<String> elements, boolean bool) {
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
 

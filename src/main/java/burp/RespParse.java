@@ -1,7 +1,5 @@
 package burp;
 
-import burp.BurpExtender;
-import burp.IExtensionHelpers;
 import model.HttpMsgInfo;
 
 import java.io.PrintWriter;
@@ -13,8 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static burp.BurpExtender.*;
-import static utils.ElementUtils.isContainElements;
-import static utils.ElementUtils.isContainInElements;
+import static utils.ElementUtils.isContainKeys;
+import static utils.ElementUtils.isEqualsKeys;
 
 public class RespParse {
     private static PrintWriter stdout = BurpExtender.getStdout();
@@ -30,7 +28,7 @@ public class RespParse {
 
     public static final String URL_KEY = "url";
     public static final String PATH_KEY = "path";
-    
+
     public static void analysisReqData(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
         Set<String> urlSet = new HashSet<>();
@@ -45,8 +43,7 @@ public class RespParse {
         urlSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
-        if (isContainInElements(msgInfo.getReqPathExt(), NEED_EXTRACT_SUFFIX, true)
-                || msgInfo.getInferredMimeType().contains("script")) {
+        if (isEqualsKeys(msgInfo.getReqPathExt(), NEED_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
             stdout.println(String.format("[+] 初步提取的URI数量: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             urlSet.addAll(extractUriFromJs);
@@ -57,15 +54,19 @@ public class RespParse {
         urlSet = setMap.get(URL_KEY);
         pathSet = setMap.get(PATH_KEY);
 
-        if (urlSet.size() > 0)
-            for (String s : urlSet)
-                stdout.println(String.format("[*] 优化提取的URL: %s", s));
-        if (pathSet.size() > 0)
-            for (String s : pathSet)
-                stdout.println(String.format("[*] 优化提取的URL: %s", s));
+//        if (urlSet.size() > 0)
+//            for (String s : urlSet)
+//                stdout.println(String.format("[*] 优化提取的URL: %s", s));
+//        if (pathSet.size() > 0)
+//            for (String s : pathSet)
+//                stdout.println(String.format("[*] 优化提取的URL: %s", s));
 
         //过滤请求URL
-        urlSet = filterUrlByHost(msgInfo.getReqUrl(),  urlSet);
+        //根据用户配置文件信息过滤其他无用的URL
+        urlSet = filterUrlByGlobalConfig(urlSet);
+        //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
+        urlSet = filterUrlByHost(msgInfo.getReqHost(),  urlSet);
+
         stdout.println(String.format("[*] 最终保留的URL数量: %s", urlSet.size()));
         if (urlSet.size() > 0)
             for (String s : urlSet)
@@ -79,15 +80,18 @@ public class RespParse {
             for (String s : pathSet)
                 stdout.println(String.format("[*] 最终提取的URL: %s", s));
 
-        //Todo: 对PATH进行计算,计算出真实的URL路径
-        //TODO: 过滤无用的URL
-        //TODO: 排除已经提取过的URL
+
         //todo: 实现响应敏感信息提取
-        //TODO: 初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要)
+        //Todo: 对PATH进行计算,计算出真实的URL路径
+
+        //TODO: 排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
+        //TODO: 初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
+
         //TODO: 输出已提取的结果信息
         //TODO: 递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
         //TOdo: 实现URL功能
     }
+
 
     /**
      * 从html内容中提取url信息
@@ -182,11 +186,11 @@ public class RespParse {
 
     /**
      * 对提取的URL进行简单的格式处理
-     * @param url
+     * @param extractUri
      * @return
      */
-    public static String formatExtractUri(String url){
-        return  url
+    public static String formatExtractUri(String extractUri){
+        return  extractUri
                 .replaceAll("\"", "")
                 .replaceAll("'", "")
                 .replaceAll("\n", "")
@@ -216,19 +220,18 @@ public class RespParse {
     }
 
     /**
-     * 过滤提取出的URL列表 仅保留当前域名的
-     * @param reqUrl
+     * 过滤提取出的URL列表 仅保留指定域名的
+     * @param rawDomain
      * @param matchUrlSet
      * @return
      */
-    public static Set<String> filterUrlByHost(String reqUrl,  Set<String> matchUrlSet){
-        if (matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
+    public static Set<String> filterUrlByHost(String rawDomain,  Set<String> matchUrlSet){
+        if (rawDomain == null || rawDomain == "" || matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
 
         Set<String> newUrlSet = new HashSet<>();
         for (String matchUrl : matchUrlSet){
             //对比提取出来的URL和请求URL的域名部分是否相同，不相同的一般不是
             try {
-                String rawDomain = (new URL(reqUrl)).getHost();
                 String newDomain = (new URL(matchUrl)).getHost();
                 if (!rawDomain.equalsIgnoreCase(newDomain)) {
                     continue;
@@ -267,13 +270,13 @@ public class RespParse {
 
     /**
      * 过滤无用的提取路径 通过判断和指定的路径相等
-     * @param pathSet
+     * @param matchPathSet
      * @return
      */
-    private static Set<String> filterUselessPathsByEqual(Set<String> pathSet) {
+    private static Set<String> filterUselessPathsByEqual(Set<String> matchPathSet) {
         Set<String> newPathSet = new HashSet<>();
-        for (String path : pathSet){
-            if(!isContainInElements(path, USELESS_PATH_EQUAL, false)){
+        for (String path : matchPathSet){
+            if(!isEqualsKeys(path, USELESS_PATH_EQUAL, false)){
                 newPathSet.add(path);
             }
         }
@@ -282,18 +285,55 @@ public class RespParse {
 
     /**
      * 过滤无用的提取路径 通过判断是否包含无用关键字
-     * @param pathSet
+     * @param matchPathSet
      * @return
      */
-    private static Set<String> filterUselessPathsByKey(Set<String> pathSet) {
+    private static Set<String> filterUselessPathsByKey(Set<String> matchPathSet) {
         Set<String> newPathSet = new HashSet<>();
-        for (String path : pathSet){
-            if(!isContainElements(path, USELESS_PATH_KEYS, false)){
+        for (String path : matchPathSet){
+            if(!isContainKeys(path, USELESS_PATH_KEYS, false)){
                 newPathSet.add(path);
             }
         }
         return newPathSet;
     }
 
+    /**
+     * 基于配置信息过滤提取的请求URL
+     * @param matchUrlSet
+     * @return
+     */
+    private static Set<String> filterUrlByGlobalConfig(Set<String> matchUrlSet) {
+        if (matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
 
+        Set<String> newUrlSet = new HashSet<>();
+        for (String matchUrl : matchUrlSet){
+            try {
+                URL url = new URL(matchUrl);
+                //匹配黑名单域名 //排除被禁止的域名URL, baidu.com等常被应用的域名, 这些js是一般是没用的, 为空时不操作
+                if(isContainKeys(url.getHost(), UN_CHECKED_URL_DOMAIN, false)){
+                    continue;
+                }
+
+                // 排除黑名单后缀 jpg、mp3等等
+                if(isEqualsKeys(HttpMsgInfo.parseUrlExt(matchUrl), UN_CHECKED_URL_EXT, false)){
+                    continue;
+                }
+
+                //排除黑名单路径 这些JS文件是通用的、无价值的、
+                if(isContainKeys(url.getPath(), UN_CHECKED_URL_PATH, false)){
+                    continue;
+                }
+
+                newUrlSet.add(matchUrl);
+            } catch (Exception e) {
+                stderr.println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
+                continue;
+            }
+
+
+            newUrlSet.add(matchUrl);
+        }
+        return newUrlSet;
+    }
 }

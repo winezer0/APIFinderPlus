@@ -86,14 +86,14 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                                 NEED_RECORD_STATUS_CODE.addAll(rule.getKeyword());
                                 break;
 
-                            case "UN_CHECKED_URL_EXT":
-                                UN_CHECKED_URL_EXT.addAll(rule.getKeyword());
+                            case "UN_CHECKED_URL_DOMAIN":
+                                UN_CHECKED_URL_DOMAIN.addAll(rule.getKeyword());
                                 break;
                             case "UN_CHECKED_URL_PATH":
                                 UN_CHECKED_URL_PATH.addAll(rule.getKeyword());
                                 break;
-                            case "UN_CHECKED_URL_DOMAIN":
-                                UN_CHECKED_URL_DOMAIN.addAll(rule.getKeyword());
+                            case "UN_CHECKED_URL_EXT":
+                                UN_CHECKED_URL_EXT.addAll(rule.getKeyword());
                                 break;
 
                             case "NEED_EXTRACT_SUFFIX":
