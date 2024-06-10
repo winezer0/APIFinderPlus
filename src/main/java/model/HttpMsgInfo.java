@@ -34,6 +34,8 @@ public class HttpMsgInfo {
 
     private String msgHash = null;
 
+    private String inferredMimeType = null;
+    private String statedMimeType = null;
 
     // 构造函数
     public HttpMsgInfo(IInterceptedProxyMessage iInterceptedProxyMessage) {
@@ -95,6 +97,9 @@ public class HttpMsgInfo {
         respBodyLenVague = calcBodyLenVague(respBytes, responseInfo.getBodyOffset());
         //请求响应信息的简单hash值
         msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
+        //获取响应类型
+        inferredMimeType = responseInfo.getInferredMimeType();
+        statedMimeType = responseInfo.getStatedMimeType();
     }
 
     /**
@@ -230,7 +235,23 @@ public class HttpMsgInfo {
         return reqPathDir;
     }
 
+    public String getInferredMimeType() {
+        return inferredMimeType;
+    }
+
+    public String getStatedMimeType() {
+        return statedMimeType;
+    }
+
     public void setRespBytes(byte[] respBytes) {
         this.respBytes = respBytes;
+    }
+
+    public void setMsgHash(String msgHash) {
+        this.msgHash = msgHash;
+    }
+
+    public void setReqUrl(String reqUrl) {
+        this.reqUrl = reqUrl;
     }
 }
