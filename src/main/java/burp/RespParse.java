@@ -115,8 +115,8 @@ public class RespParse {
             if (!rule.getIsOpen()){
                 continue;
             }
-            
-            //TODO: 开始提取操作
+
+            //TODO: 定位查找范围
             String locationContent = "";
             if ("body".equalsIgnoreCase(rule.getLocation())) {
                 locationContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
@@ -126,7 +126,7 @@ public class RespParse {
                 stderr.println("[!] 未知指纹位置：" + rule.getLocation());
                 continue;
             }
-
+            //TODO: 开始提取操作
         }
     }
 
