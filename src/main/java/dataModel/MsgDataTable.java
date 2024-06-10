@@ -62,7 +62,7 @@ public class MsgDataTable {
             }
         } catch (Exception e) {
             stderr.println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
-            e.printStackTrace(stderr);
+            e.printStackTrace();
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
@@ -89,7 +89,7 @@ public class MsgDataTable {
             }
         } catch (Exception e) {
             BurpExtender.getStderr().println(String.format("[-] Error Select Msg Data By Id: %s", msgDataIndex));
-            e.printStackTrace(BurpExtender.getStderr());
+            e.printStackTrace();
         }
         return msgData;
     }

@@ -45,16 +45,17 @@ public class DBService {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA foreign_keys = ON");
             } catch (SQLException e) {
+                stderr.println(String.format("[!] set foreign_keys error. -> %s", e.getMessage()));
                 e.printStackTrace();
             }
 
             stdout.println("[+] SQLite database connection initialized successfully. ");
         } catch (ClassNotFoundException e) {
             stderr.println(String.format("[!] JDBC driver not found. -> %s", e.getMessage()));
-            e.printStackTrace(BurpExtender.getStderr());
+            e.printStackTrace();
         } catch (SQLException e) {
             stderr.println(String.format("[!] Failed to connect db. -> %s", e.getMessage()));
-            e.printStackTrace(BurpExtender.getStderr());
+            e.printStackTrace();
         }
     }
 
@@ -80,7 +81,7 @@ public class DBService {
             stdout.println(String.format("[+] create db %s success ...", tableName));
         } catch (Exception e) {
             stderr.println(String.format("[!] create db %s failed -> %s", tableName, e.getMessage()));
-            e.printStackTrace(BurpExtender.getStderr());
+            e.printStackTrace();
         }
     }
 
@@ -97,7 +98,7 @@ public class DBService {
             }
         } catch (SQLException e) {
             stderr.println(String.format("关闭数据库连接时发生错误: %s", e.getMessage()));
-            e.printStackTrace(BurpExtender.getStderr());
+            e.printStackTrace();
         }
     }
 }

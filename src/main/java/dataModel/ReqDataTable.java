@@ -80,7 +80,7 @@ public class ReqDataTable {
             }
         } catch (Exception e) {
             stderr.println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
-            e.printStackTrace(stderr);
+            e.printStackTrace();
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
@@ -118,7 +118,7 @@ public class ReqDataTable {
             }
         } catch (Exception e) {
             stderr.println(String.format("[-] Error fetch And Mark Req Data To Analysis: %s", e.getMessage()));
-            e.printStackTrace(BurpExtender.getStderr());
+            e.printStackTrace();
         }
 
         return msgDataIndex;

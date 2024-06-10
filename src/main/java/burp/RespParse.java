@@ -54,32 +54,23 @@ public class RespParse {
         urlSet = setMap.get(URL_KEY);
         pathSet = setMap.get(PATH_KEY);
 
-//        if (urlSet.size() > 0)
-//            for (String s : urlSet)
-//                stdout.println(String.format("[*] 优化提取的URL: %s", s));
-//        if (pathSet.size() > 0)
-//            for (String s : pathSet)
-//                stdout.println(String.format("[*] 优化提取的URL: %s", s));
-
-        //过滤请求URL
+        //过滤无用的请求URL
         //根据用户配置文件信息过滤其他无用的URL
         urlSet = filterUrlByGlobalConfig(urlSet);
         //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
         urlSet = filterUrlByHost(msgInfo.getReqHost(),  urlSet);
-
-        stdout.println(String.format("[*] 最终保留的URL数量: %s", urlSet.size()));
         if (urlSet.size() > 0)
+            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlSet.size()));
             for (String s : urlSet)
-                stdout.println(String.format("[*] 最终提取的URL: %s", s));
+                stdout.println(String.format("[*] INFO URL: %s", s));
 
         //过滤无用的PATH内容
         pathSet = filterUselessPathsByKey(pathSet);
         pathSet = filterUselessPathsByEqual(pathSet);
-        stdout.println(String.format("[*] 最终保留的PATH数量: %s", pathSet.size()));
         if (pathSet.size() > 0)
+            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), pathSet.size()));
             for (String s : pathSet)
-                stdout.println(String.format("[*] 最终提取的URL: %s", s));
-
+                stdout.println(String.format("[*] INFO PATH: %s", s));
 
         //todo: 实现响应敏感信息提取
 

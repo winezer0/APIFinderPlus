@@ -195,7 +195,7 @@ public class IProxyScanner implements IProxyListener {
 
                 } catch (Exception e) {
                     stderr.println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
-                    e.printStackTrace(stderr);
+                    e.printStackTrace();
                 }
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
