@@ -25,17 +25,18 @@ public class RespParseUtils {
     private static final Pattern FIND_PATH_FROM_JS_PATTERN2 = Pattern.compile("\"(/[^\"\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*)\"|'(/[^'\\\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*?)'");
 
     public static void analysisReqData(HttpMsgInfo msgInfo) {
-        List<String> urlSet = null;
+        Set<String> urlSet = new HashSet<>();
 
         // 针对html页面提取
-        List<String> getUrlsFromHtml = extractUrlsFromHtml(msgInfo.getReqUrl(), new String(msgInfo.getRespBytes()));
-        urlSet.addAll(getUrlsFromHtml);
+        List<String> extractUrlsFromHtml = extractUrlsFromHtml(msgInfo.getReqUrl(), new String(msgInfo.getRespBytes()));
+        urlSet.addAll(extractUrlsFromHtml);
 
-        stdout.println(String.format("Html Extract Counts: %s -> %s", msgInfo.getReqUrl(), getUrlsFromHtml.size()));
-        if (getUrlsFromHtml.size()>0)
-            for (String s : getUrlsFromHtml)
-                stdout.println(String.format("Html Extract Url: %s", s));
+        stdout.println(String.format("[+] Html Extract Url Counts: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
+        if (extractUrlsFromHtml.size()>0)
+            for (String extractUrl : extractUrlsFromHtml)
+                stdout.println(String.format("[*] Html Extract Url: %s", extractUrl));
 
+        
 //        // 针对JS页面提取
 //        if (mime.equalsIgnoreCase("script") || mime.equalsIgnoreCase("html") || url.contains(".htm") || Utils.isNeedCheckExt(url)) {
 //            List<String> getUrlsFromJS = findUrlFromJs(url, port, host, protocol, respText);
@@ -49,11 +50,15 @@ public class RespParseUtils {
 
     public static List<String> extractUrlsFromHtml(String uri, String htmlText) {
         // 使用正则表达式提取文本内容中的 URL
-        List<String> urlList = new ArrayList<String>();
+        List<String> urlList = new ArrayList<>();
+
+        //直接跳过没有http关键字的场景
         if (!htmlText.contains("http")){
             return urlList;
         }
-        int htmlLength = htmlText.length(); // html文件内容长度
+
+        // html文件内容长度
+        int htmlLength = htmlText.length();
 
         // 处理每个 CHUNK_SIZE 大小的片段
         for (int start = 0; start < htmlLength; start += CHUNK_SIZE) {
@@ -64,6 +69,7 @@ public class RespParseUtils {
             Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
             while (matcher.find()) {
                 String url = matcher.group();
+                stdout.println(String.format("[*] 初步提取信息:%s", url));
                 if (!url.contains("http") && url.startsWith("/")) {
                     try {
                         URI baseUri = new URI(uri);
@@ -81,6 +87,8 @@ public class RespParseUtils {
                 } catch (Exception e) {
                     continue;
                 }
+
+                urlList.add(url);
 //                //忽略静态文件后缀 OK
 //                if (!isStaticFile(url) && !isStaticPathByPath(getPathFromUrl(url)) && !isWhiteDomain(url)) {
 //                    urlList.add(url);

@@ -166,7 +166,6 @@ public class IProxyScanner implements IProxyListener {
         monitorExecutor.scheduleAtFixedRate(() -> {
             executorService.submit(() -> {
                 try {
-                    stdout.println("[*] 调用任务监听器...");
                     //当添加进程还比较多的时候,暂时不进行响应数据处理
                     if (executorService.getActiveCount() >= 6){
                         return;
@@ -178,21 +177,16 @@ public class IProxyScanner implements IProxyListener {
                     //2、获取解析的Url数据
                     if (oneMsgDataIndex > 0){
                         //获取 msgDataIndex 对应的数据
-                        stdout.println("[+] 开始获取响应数据: " + oneMsgDataIndex);
                         Map<String, Object> oneMsgData = MsgDataTable.selectMsgDataById(oneMsgDataIndex);
                         if (oneMsgData !=null && !oneMsgData.isEmpty()){
                             String msgHash = (String) oneMsgData.get("msg_hash");
                             String reqUrl = (String) oneMsgData.get("req_url");
                             byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
                             byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
-                            //将请求响应数据整理出新的数据
-                            HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqBytes, respBytes);
-                            oneMsgInfo.setMsgHash(msgHash);
+                            stdout.println(String.format("[+] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
 
-                            //应该不会遇到的判断
-                            if (!reqUrl.equalsIgnoreCase(oneMsgInfo.getReqUrl())){
-                                stderr.println(String.format("[!] 记录的URL数据和解析结果对应错误 %s != %s", reqUrl, oneMsgInfo.getReqUrl()));
-                            }
+                            //将请求响应数据整理出新的数据
+                            HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
 
                             //分析请求数据
                             RespParseUtils.analysisReqData(oneMsgInfo);

@@ -82,7 +82,7 @@ public class MsgDataTable {
                 if (rs.next()) {
                     msgData = new HashMap<>();
                     msgData.put("msg_hash", rs.getString("msg_hash"));
-                    msgData.put("req_url", rs.getBytes("req_url"));
+                    msgData.put("req_url", rs.getString("req_url"));
                     msgData.put("req_bytes", rs.getBytes("req_bytes"));
                     msgData.put("resp_bytes", rs.getBytes("resp_bytes"));
                 }

@@ -39,46 +39,68 @@ public class HttpMsgInfo {
 
     // 构造函数
     public HttpMsgInfo(IInterceptedProxyMessage iInterceptedProxyMessage) {
-        IHttpRequestResponse msgInfo = iInterceptedProxyMessage.getMessageInfo();
-        parseHttpMsg(msgInfo.getRequest(), msgInfo.getResponse());
+        IHttpRequestResponse messageInfo = iInterceptedProxyMessage.getMessageInfo();
+        //直接从请求体是没有办法获取到请求URL信息的, URL此时只能从外部传入
+        reqBytes = messageInfo.getRequest();
+
+        //请求信息 // 从 msgInfo 分析,不需要进行
+        IRequestInfo requestInfo = helpers.analyzeRequest(messageInfo);
+        //请求方法
+        reqMethod = requestInfo.getMethod();
+
+        //从请求URL解析部分信息
+        parseReqUrlInfo(requestInfo.getUrl().toString());
+
+        //从响应结果解析部分信息
+        parseRespBytes(messageInfo.getResponse());
+
+        //请求响应信息的简单hash值
+        msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
     }
 
     // 构造函数
-    public HttpMsgInfo(byte[] requestBytes, byte[] responseBytes) {
-        parseHttpMsg(requestBytes, responseBytes);
+    public HttpMsgInfo(String requestUrl, byte[] requestBytes, byte[] responseBytes, String msgInfoHash) {
+        //直接从请求体是没有办法获取到请求URL信息的, URL此时只能从外部传入
+        //请求信息
+        reqBytes = requestBytes;
+
+        //请求方法
+        IRequestInfo requestInfo = helpers.analyzeRequest(requestBytes);
+        reqMethod = requestInfo.getMethod();
+
+        //从请求URL解析部分信息
+        parseReqUrlInfo(requestUrl);
+
+        //从响应结果解析部分信息
+        parseRespBytes(responseBytes);
+
+        //请求响应信息的简单hash值
+        msgHash = msgInfoHash;
+        //计算新的msgHash
+        if (msgHash == null || "".equals(msgHash))
+            msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
     }
 
+
     /**
-     * 解析请求响应数据
-     * @param requestBytes
-     * @param responseBytes
+     * 从请求URL解析部分信息
+     * @param requestUrl
      */
-    private void parseHttpMsg(byte[] requestBytes, byte[] responseBytes) {
-        //请求内容
-        reqBytes = requestBytes;
-        //响应内容
-        respBytes = responseBytes;
-        //请求信息
-        IRequestInfo requestInfo = helpers.analyzeRequest(reqBytes);
-        //响应信息
-        IResponseInfo responseInfo = helpers.analyzeResponse(respBytes);
-        //完整请求url
-        reqUrl = requestInfo.getUrl().toString();
-        //基于请求计算一个唯一码
-        reqMethod = requestInfo.getMethod();  //记录请求方法
+    private void parseReqUrlInfo(String requestUrl) {
         //基于URL获取其他请求信息
         try {
-            URL urlObj = new URL(reqUrl);
+            reqUrl = requestUrl;
+            URL urlObj = new URL(requestUrl);
             //获取请求协议
             reqProto = urlObj.getProtocol();
             //从URL中获取请求host
             reqHost = urlObj.getHost();
             //从URL中获取请求Port
             reqPort = urlObj.getPort();
+            //解析请求文件的后缀
+            reqPathExt = parseUrlExt(requestUrl);
             //获取请求路径
             reqPath = urlObj.getPath();
-            //解析请求文件的后缀
-            reqPathExt = parseUrlExt(reqUrl);
             //获取请求路径的目录部分
             reqPathDir = parseReqPathDir(reqPath);
             // 构造基本URL，不包含查询参数
@@ -86,17 +108,26 @@ public class HttpMsgInfo {
             //构造基本URL, 不包含请求文件
             reqBasePath = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
         } catch (MalformedURLException e) {
-            stderr.println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
+            stderr.println(String.format("Invalid URL: %s -> Error: %s", requestUrl, e.getMessage()));
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 从响应体解析部分响应数据
+     * @param responseBytes
+     */
+    private void parseRespBytes(byte[] responseBytes) {
+        //响应内容
+        respBytes = responseBytes;
         //响应长度
-        respBodyLen = respBytes.length;
+        respBodyLen = responseBytes.length;
+        //响应信息
+        IResponseInfo responseInfo = helpers.analyzeResponse(responseBytes);
         //响应状态码
         respStatus = String.valueOf(responseInfo.getStatusCode());
         //大致的响应长度
-        respBodyLenVague = calcBodyLenVague(respBytes, responseInfo.getBodyOffset());
-        //请求响应信息的简单hash值
-        msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
+        respBodyLenVague = calcBodyLenVague(responseBytes, responseInfo.getBodyOffset());
         //获取响应类型
         inferredMimeType = responseInfo.getInferredMimeType();
         statedMimeType = responseInfo.getStatedMimeType();
