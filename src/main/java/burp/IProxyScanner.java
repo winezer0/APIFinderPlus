@@ -1,19 +1,19 @@
 package burp;
 
-import dataModel.DBService;
 import dataModel.RecordUrlsTable;
 import dataModel.MsgDataTable;
 import dataModel.ReqDataTable;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
+import utils.RespParseUtils;
 
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static utils.Utils.isContainElements;
-import static utils.Utils.isContainInElements;
+import static utils.ElementUtils.isContainElements;
+import static utils.ElementUtils.isContainInElements;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -174,13 +174,29 @@ public class IProxyScanner implements IProxyListener {
 
                     //解析响应体数据
                     //1、判断是否有URL数据需要解析
-                    Integer msgDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis();
+                    Integer oneMsgDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis();
                     //2、获取解析的Url数据
-                    if (msgDataIndex > 0){
+                    if (oneMsgDataIndex > 0){
                         //获取 msgDataIndex 对应的数据
-                        stdout.println("[+] 开始获取响应数据: " + msgDataIndex);
+                        stdout.println("[+] 开始获取响应数据: " + oneMsgDataIndex);
+                        Map<String, Object> oneMsgData = MsgDataTable.selectMsgDataById(oneMsgDataIndex);
+                        if (oneMsgData !=null && !oneMsgData.isEmpty()){
+                            String msgHash = (String) oneMsgData.get("msg_hash");
+                            String reqUrl = (String) oneMsgData.get("req_url");
+                            byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
+                            byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
+                            //将请求响应数据整理出新的数据
+                            HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqBytes, respBytes);
+                            oneMsgInfo.setMsgHash(msgHash);
 
-                        //analysisReqData(msgDataIndex);
+                            //应该不会遇到的判断
+                            if (!reqUrl.equalsIgnoreCase(oneMsgInfo.getReqUrl())){
+                                stderr.println(String.format("[!] 记录的URL数据和解析结果对应错误 %s != %s", reqUrl, oneMsgInfo.getReqUrl()));
+                            }
+
+                            //分析请求数据
+                            RespParseUtils.analysisReqData(oneMsgInfo);
+                        }
                     }
 
 
@@ -191,6 +207,7 @@ public class IProxyScanner implements IProxyListener {
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
     }
+
 
     /**
      * 监听线程关闭函数

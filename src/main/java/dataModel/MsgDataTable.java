@@ -6,6 +6,8 @@ import model.HttpMsgInfo;
 
 import java.io.PrintWriter;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MsgDataTable {
     private static PrintWriter stdout = BurpExtender.getStdout();
@@ -27,10 +29,10 @@ public class MsgDataTable {
 
     //插入数据库
     public static synchronized int insertOrUpdateMsgData(HttpMsgInfo msgInfo) {
-        DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ".replace("tableName", tableName);
-        try (Connection conn = dbService.getNewConnection();
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
             checkStmt.setString(1, msgInfo.getMsgHash());
@@ -64,5 +66,31 @@ public class MsgDataTable {
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
+
+    public static synchronized Map<String, Object> selectMsgDataById(Integer msgDataIndex){
+        Map<String, Object> msgData = null;
+
+        String selectMsgDataByIdSql = "SELECT * FROM tableName WHERE id = ?"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectMsgDataByIdSql)) {
+            stmt.setInt(1, msgDataIndex);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    msgData = new HashMap<>();
+                    msgData.put("msg_hash", rs.getString("msg_hash"));
+                    msgData.put("req_url", rs.getBytes("req_url"));
+                    msgData.put("req_bytes", rs.getBytes("req_bytes"));
+                    msgData.put("resp_bytes", rs.getBytes("resp_bytes"));
+                }
+            }
+        } catch (Exception e) {
+            BurpExtender.getStderr().println(String.format("[-] Error Select Msg Data By Id: %s", msgDataIndex));
+            e.printStackTrace(BurpExtender.getStderr());
+        }
+        return msgData;
     }
 }

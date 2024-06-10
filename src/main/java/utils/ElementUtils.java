@@ -5,7 +5,7 @@ import burp.*;
 import java.io.PrintWriter;
 import java.util.List;
 
-public class Utils {
+public class ElementUtils {
     private static PrintWriter stdout = BurpExtender.getStdout();
     private static PrintWriter stderr = BurpExtender.getStderr();
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();;

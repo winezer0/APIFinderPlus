@@ -90,16 +90,14 @@ public class ReqDataTable {
     //获取一条需要处理的数据
     public static synchronized int fetchAndMarkReqDataToAnalysis() {
         // 考虑开启事务
-
-        //Map<String, Object> msgDataMap = new HashMap<>();
         int msgDataIndex = -1;
 
-        // 首先选取一条记录的ID
-        String selectSQL = "SELECT * FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
+        // 首先选取一条记录的 msg_data_index
+        String selectSQL = "SELECT msg_data_index FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
                 .replace("ANALYSE_WAIT", ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
-        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id = ?;"
+        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE msg_data_index = ?;"
                 .replace("ANALYSE_ING", ANALYSE_ING)
                 .replace("tableName", tableName);
 
@@ -108,23 +106,12 @@ public class ReqDataTable {
              PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
             ResultSet rs = selectStatement.executeQuery();
             if (rs.next()) {
-                int selectedId = rs.getInt("id");
+                int selectedMsgDataIndex = rs.getInt("msg_data_index");
 
                 try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-                    updateStatement.setInt(1, selectedId);
+                    updateStatement.setInt(1, selectedMsgDataIndex);
                     int affectedRows = updateStatement.executeUpdate();
                     if (affectedRows > 0) {
-                        //msgDataMap.put("id", rs.getString("id")); // 假设 "id" 是数据库列名
-                        //msgDataMap.put("msg_id", rs.getString("msg_id"));
-                        //msgDataMap.put("msg_hash", rs.getString("msg_hash"));
-                        //msgDataMap.put("req_url", rs.getString("req_url"));
-                        //msgDataMap.put("req_proto", rs.getString("req_proto"));
-                        //msgDataMap.put("req_host", rs.getString("req_host"));
-                        //msgDataMap.put("req_port", rs.getString("req_port"));
-                        //msgDataMap.put("req_method", rs.getString("req_method"));
-                        //msgDataMap.put("resp_status", rs.getString("resp_status"));
-                        //msgDataMap.put("msg_data_index", rs.getString("msg_data_index"));
-                        //msgDataMap.put("run_status", rs.getString("run_status"));
                         msgDataIndex = rs.getInt("msg_data_index");
                     }
                 }
