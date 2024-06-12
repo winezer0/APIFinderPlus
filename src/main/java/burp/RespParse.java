@@ -39,8 +39,7 @@ public class RespParse {
 
     public static void analysisReqData(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
-        Set<String> urlSet = new HashSet<>();
-        Set<String> pathSet = new HashSet<>();
+        Set<String> uriSet = new HashSet<>();
 
         //转换响应体,后续可能需要解决编码问题
         String respBody = new String(
@@ -50,19 +49,20 @@ public class RespParse {
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
         stdout.println(String.format("[*] 初步提取的URL数量: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
-        urlSet.addAll(extractUrlsFromHtml);
+        uriSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
-        if (ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
+        if (ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
+                || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
             stdout.println(String.format("[*] 初步提取的URI数量: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
-            urlSet.addAll(extractUriFromJs);
+            uriSet.addAll(extractUriFromJs);
         }
 
         //拆分提取的URL和PATH为两个set 用于进一步处理操作
-        Map<String, Set> setMap = SplitExtractUrlOrPath(urlSet);
-        urlSet = setMap.get(URL_KEY);
-        pathSet = setMap.get(PATH_KEY);
+        Map<String, Set> setMap = SplitExtractUrlOrPath(uriSet);
+        Set<String> urlSet = setMap.get(URL_KEY);
+        Set<String> pathSet = setMap.get(PATH_KEY);
 
         //过滤无用的请求URL
         //根据用户配置文件信息过滤其他无用的URL
@@ -83,7 +83,7 @@ public class RespParse {
                 stdout.println(String.format("[*] INFO PATH: %s", s));
 
 
-        //todo: 必须：实现响应敏感信息提取
+        // 实现响应敏感信息提取
         JSONArray findInfoArray = findInfoByConfig(msgInfo);
         stdout.println(String.format("[+] 提取敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
@@ -191,7 +191,6 @@ public class RespParse {
         findInfo.put("value", group);
         return findInfo;
     }
-
 
     /**
      * 从html内容中提取url信息
