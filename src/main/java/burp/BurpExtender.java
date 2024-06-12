@@ -13,7 +13,8 @@ import java.util.List;
 
 import static utils.BurpFileUtils.ReadPluginConfFile;
 
-//TODO: 必须：输出已提取的信息
+//TODO: 必须：存储已提取的信息
+//TODO: 将固定的字段名提取为变量
 //Todo: 必须：对PATH进行计算,计算出真实的URL路径
 
 //TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
