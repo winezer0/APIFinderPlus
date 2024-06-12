@@ -38,7 +38,10 @@ public class RespParse {
     private static final int RESULT_SIZE = 1024;
 
     public static void analysisReqData(HttpMsgInfo msgInfo) {
-        Map<String, List> setMap = findUriInfo(msgInfo);
+        //提取URL和PATH信息
+        Set<String> uriSet = findUriInfo(msgInfo);
+        //拆分提取的URL和PATH为两个set 用于进一步处理操作
+        Map<String, List> setMap = SplitExtractUrlOrPath(uriSet);
         List<String> urlList = setMap.get(URL_KEY);
         List<String> pathList = setMap.get(PATH_KEY);
 
@@ -74,7 +77,12 @@ public class RespParse {
 
     }
 
-    private static Map<String, List> findUriInfo(HttpMsgInfo msgInfo) {
+    /**
+     * 提取响应体中的URL和PATH
+     * @param msgInfo
+     * @return
+     */
+    private static Set<String> findUriInfo(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
         Set<String> uriSet = new HashSet<>();
 
@@ -96,9 +104,7 @@ public class RespParse {
             uriSet.addAll(extractUriFromJs);
         }
 
-        //拆分提取的URL和PATH为两个set 用于进一步处理操作
-        Map<String, List> setMap = SplitExtractUrlOrPath(uriSet);
-        return setMap;
+        return uriSet;
     }
 
     /**
