@@ -7,6 +7,7 @@ import model.HttpMsgInfo;
 import model.RecordHashMap;
 import model.RespInfo;
 import utils.ElementUtils;
+import utils.InfoAnalysis;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -189,7 +190,7 @@ public class IProxyScanner implements IProxyListener {
                             HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
 
                             //分析请求数据
-                            RespInfo analysisResult = MsgDataAnalysis.analysisMsgInfo(oneMsgInfo);
+                            RespInfo analysisResult = InfoAnalysis.analysisMsgInfo(oneMsgInfo);
                             //TODO 将分析结果写入数据库
                         }
                     }

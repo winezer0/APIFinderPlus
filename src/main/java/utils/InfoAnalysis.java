@@ -1,4 +1,4 @@
-package burp;
+package utils;
 
 import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
@@ -6,7 +6,6 @@ import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.RespInfo;
-import utils.ElementUtils;
 
 import java.io.PrintWriter;
 import java.net.URI;
@@ -21,7 +20,7 @@ import java.util.regex.PatternSyntaxException;
 import static burp.BurpExtender.*;
 
 
-public class MsgDataAnalysis {
+public class InfoAnalysis {
     private static final PrintWriter stdout = BurpExtender.getStdout();
     private static final PrintWriter stderr = BurpExtender.getStderr();
 
@@ -142,7 +141,7 @@ public class MsgDataAnalysis {
             if (rule.getMatch().equals("keyword"))
                 if(ElementUtils.isContainAllKey(willFindText, rule.getKeyword(), false)){
                     //匹配关键字模式成功,应该标记敏感信息
-                    JSONObject findInfo = initInfoJsonObj(rule, String.valueOf(rule.getKeyword()));
+                    JSONObject findInfo = generateInfoJson(rule, String.valueOf(rule.getKeyword()));
                     stdout.println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                     findInfosSet.add(findInfo);
                 }
@@ -164,7 +163,7 @@ public class MsgDataAnalysis {
                                     group = group.substring(0, RESULT_SIZE);
                                 }
 
-                                JSONObject findInfo = initInfoJsonObj(rule, group);
+                                JSONObject findInfo = generateInfoJson(rule, group);
                                 stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                                 findInfosSet.add(findInfo);
                             }
@@ -190,7 +189,7 @@ public class MsgDataAnalysis {
      * @param group
      * @return
      */
-    private static JSONObject initInfoJsonObj(FingerPrintRule rule, String group) {
+    private static JSONObject generateInfoJson(FingerPrintRule rule, String group) {
         JSONObject findInfo = new JSONObject();
         findInfo.put(type, rule.getType()); // "type": "敏感内容",
         findInfo.put(describe, rule.getDescribe()); //"describe": "身份证",
