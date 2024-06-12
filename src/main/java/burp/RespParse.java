@@ -60,26 +60,26 @@ public class RespParse {
         }
 
         //拆分提取的URL和PATH为两个set 用于进一步处理操作
-        Map<String, Set> setMap = SplitExtractUrlOrPath(uriSet);
-        Set<String> urlSet = setMap.get(URL_KEY);
-        Set<String> pathSet = setMap.get(PATH_KEY);
+        Map<String, List> setMap = SplitExtractUrlOrPath(uriSet);
+        List<String> urlList = setMap.get(URL_KEY);
+        List<String> pathList = setMap.get(PATH_KEY);
 
         //过滤无用的请求URL
         //根据用户配置文件信息过滤其他无用的URL
-        urlSet = filterUrlByConfig(urlSet);
+        urlList = filterUrlByConfig(urlList);
         //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
-        urlSet = filterUrlByHost(msgInfo.getReqHost(),  urlSet);
-        if (urlSet.size() > 0)
-            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlSet.size()));
-            for (String s : urlSet)
+        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList);
+        if (urlList.size() > 0)
+            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
+            for (String s : urlList)
                 stdout.println(String.format("[*] INFO URL: %s", s));
 
         //过滤无用的PATH内容
-        pathSet = filterUselessPathsByKey(pathSet);
-        pathSet = filterUselessPathsByEqual(pathSet);
-        if (pathSet.size() > 0)
-            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), pathSet.size()));
-            for (String s : pathSet)
+        pathList = filterUselessPathsByKey(pathList);
+        pathList = filterUselessPathsByEqual(pathList);
+        if (pathList.size() > 0)
+            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
+            for (String s : pathList)
                 stdout.println(String.format("[*] INFO PATH: %s", s));
 
 
@@ -297,38 +297,18 @@ public class RespParse {
                 .trim();
     }
 
-    /**
-     * 通过new Url功能过滤提取出来的URl
-     * @param matchUrlSet
-     * @return
-     */
-    public static Set<String> filterUrlByNew(Set<String> matchUrlSet){
-        if (matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
-
-        Set<String> newUrlSet = new HashSet<>();
-        for (String matchUrl : matchUrlSet){
-            try {
-                URL url = new URL(matchUrl);
-                newUrlSet.add(url.toString());
-            } catch (Exception e) {
-                stderr.println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
-                continue;
-            }
-        }
-        return newUrlSet;
-    }
 
     /**
      * 过滤提取出的URL列表 仅保留指定域名的
      * @param rawDomain
-     * @param matchUrlSet
+     * @param matchUrlList
      * @return
      */
-    public static Set<String> filterUrlByHost(String rawDomain,  Set<String> matchUrlSet){
-        if (rawDomain == null || rawDomain == "" || matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
+    public static List<String> filterUrlByHost(String rawDomain,  List<String> matchUrlList){
+        if (rawDomain == null || rawDomain == "" || matchUrlList == null || matchUrlList.isEmpty()) return matchUrlList;
 
-        Set<String> newUrlSet = new HashSet<>();
-        for (String matchUrl : matchUrlSet){
+        List<String> newUrlList = new ArrayList<>();
+        for (String matchUrl : matchUrlList){
             //对比提取出来的URL和请求URL的域名部分是否相同，不相同的一般不是
             try {
                 String newDomain = (new URL(matchUrl)).getHost();
@@ -339,83 +319,85 @@ public class RespParse {
                 stderr.println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
                 continue;
             }
-            newUrlSet.add(matchUrl);
+            newUrlList.add(matchUrl);
         }
-        return newUrlSet;
+        return newUrlList;
     }
 
     /**
      * 拆分提取出来的Url集合中的URl和Path
-     * @param matchUrlSet
+     * @param matchUriSet
      * @return
      */
-    public static Map<String, Set> SplitExtractUrlOrPath(Set<String> matchUrlSet) {
-        Map<String, Set> setMap = new HashMap<>();
-        Set<String> urlSet = new HashSet<>();
-        Set<String> pathSet = new HashSet<>();
+    public static Map<String, List> SplitExtractUrlOrPath(Set<String> matchUriSet) {
+        Map<String, List> setMap = new HashMap<>();
+        ArrayList<String> urlList = new ArrayList<>();
+        ArrayList<String> pathList = new ArrayList<>();
 
-        for (String matchUrl : matchUrlSet){
-            if (matchUrl.contains("://")){
-                urlSet.add(matchUrl);
+        for (String uri : matchUriSet){
+            if (uri.contains("://")){
+                urlList.add(uri);
             }else {
-                pathSet.add(matchUrl);
+                pathList.add(uri);
             }
         }
 
-        setMap.put(URL_KEY, urlSet);
-        setMap.put(PATH_KEY, pathSet);
+        setMap.put(URL_KEY,  urlList);
+        setMap.put(PATH_KEY, pathList);
         return setMap;
     }
 
     /**
      * 过滤无用的提取路径 通过判断和指定的路径相等
-     * @param matchPathSet
+     * @param matchList
      * @return
      */
-    private static Set<String> filterUselessPathsByEqual(Set<String> matchPathSet) {
-        Set<String> newPathSet = new HashSet<>();
-        for (String path : matchPathSet){
-            if(!ElementUtils.isEqualsOneKey(path, CONF_BLACK_PATH_EQUALS, false)){
-                newPathSet.add(path);
+    private static List<String> filterUselessPathsByEqual(List<String> matchList) {
+        List<String> newList = new ArrayList<>();
+        for (String s : matchList){
+            if(!ElementUtils.isEqualsOneKey(s, CONF_BLACK_PATH_EQUALS, false)){
+                newList.add(s);
             }
         }
-        return newPathSet;
+        return newList;
     }
 
     /**
      * 过滤无用的提取路径 通过判断是否包含无用关键字
-     * @param matchPathSet
+     * @param matchList
      * @return
      */
-    private static Set<String> filterUselessPathsByKey(Set<String> matchPathSet) {
-        Set<String> newPathSet = new HashSet<>();
-        for (String path : matchPathSet){
-            if(!ElementUtils.isContainOneKey(path, CONF_BLACK_PATH_KEYS, false)){
-                newPathSet.add(path);
+    private static List<String> filterUselessPathsByKey(List<String> matchList) {
+        if (matchList == null || matchList.isEmpty()) return matchList;
+
+        List<String> newList = new ArrayList<>();
+        for (String s : matchList){
+            if(!ElementUtils.isContainOneKey(s, CONF_BLACK_PATH_KEYS, false)){
+                newList.add(s);
             }
         }
-        return newPathSet;
+        return newList;
     }
 
     /**
      * 基于配置信息过滤提取的请求URL
-     * @param matchUrlSet
+     * @param matchList
      * @return
      */
-    private static Set<String> filterUrlByConfig(Set<String> matchUrlSet) {
-        if (matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
+    private static List<String> filterUrlByConfig(List<String> matchList) {
+        if (matchList == null || matchList.isEmpty()) return matchList;
 
-        Set<String> newUrlSet = new HashSet<>();
-        for (String matchUrl : matchUrlSet){
+        List<String> newList = new ArrayList<>();
+        for (String s : matchList){
             try {
-                URL url = new URL(matchUrl);
+                URL url = new URL(s);
                 //匹配黑名单域名 //排除被禁止的域名URL, baidu.com等常被应用的域名, 这些js是一般是没用的, 为空时不操作
                 if(ElementUtils.isContainOneKey(url.getHost(), CONF_BLACK_URL_DOMAIN, false)){
                     continue;
                 }
 
                 // 排除黑名单后缀 jpg、mp3等等
-                if(ElementUtils.isEqualsOneKey(HttpMsgInfo.parseUrlExt(matchUrl), CONF_BLACK_URL_EXT, false)){
+                if(ElementUtils.isEqualsOneKey(HttpMsgInfo.parseUrlExt(s), CONF_BLACK_URL_EXT, false)){
                     continue;
                 }
 
@@ -424,15 +406,15 @@ public class RespParse {
                     continue;
                 }
 
-                newUrlSet.add(matchUrl);
+                newList.add(s);
             } catch (Exception e) {
-                stderr.println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
+                stderr.println(String.format("[!] new URL(%s) -> Error: %s", s, e.getMessage()));
                 continue;
             }
 
 
-            newUrlSet.add(matchUrl);
+            newList.add(s);
         }
-        return newUrlSet;
+        return newList;
     }
 }
