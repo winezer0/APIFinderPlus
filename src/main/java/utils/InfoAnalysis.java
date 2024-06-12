@@ -153,38 +153,44 @@ public class InfoAnalysis {
             //多个正则匹配
             if (rule.getMatch().equals("regular")){
                 for (String patter : rule.getKeyword()){
-                    try{
-                        for (int start = 0; start < willFindText.length(); start += CHUNK_SIZE) {
-                            int end = Math.min(start + CHUNK_SIZE, willFindText.length());
-                            String beFindContentChunk = willFindText.substring(start, end);
-
-                            Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
-                            Matcher matcher = pattern.matcher(beFindContentChunk);
-                            while (matcher.find()) {
-                                String group = matcher.group();
-                                //响应超过长度时 截断
-                                if (group.length() > RESULT_SIZE) {
-                                    group = group.substring(0, RESULT_SIZE);
-                                }
-
-                                JSONObject findInfo = generateInfoJson(rule, group);
-                                stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
-                                findInfosSet.add(findInfo);
-                            }
-                        }
-                    } catch (PatternSyntaxException e) {
-                        stderr.println("[!] 正则表达式语法错误: " + patter);
-                    } catch (NullPointerException e) {
-                        stderr.println("[!] 正则表达式传入null: " + patter);
-                    } catch (Exception e){
-                        stderr.println("[!] 匹配出现其他报错: " + e.getMessage());
-                        e.printStackTrace();
+                    Set<String> groups = regularFindInfo(willFindText, patter);
+                    if (groups.size() > 0){
+                        JSONObject findInfo = generateInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
+                        stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
+                        findInfosSet.add(findInfo);
                     }
                 }
             }
         }
 
         return new JSONArray(findInfosSet);
+    }
+
+    private static Set<String> regularFindInfo(String willFindText, String patter) {
+        Set<String> groups = new HashSet<>();
+        try{
+            for (int start = 0; start < willFindText.length(); start += CHUNK_SIZE) {
+                int end = Math.min(start + CHUNK_SIZE, willFindText.length());
+                String beFindContentChunk = willFindText.substring(start, end);
+
+                Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(beFindContentChunk);
+                while (matcher.find()) {
+                    String group = matcher.group();
+                    //响应超过长度时 截断
+                    if (group.length() > RESULT_SIZE) group = group.substring(0, RESULT_SIZE);
+                    groups.add(group);
+                }
+            }
+        } catch (PatternSyntaxException e) {
+            stderr.println("[!] 正则表达式语法错误: " + patter);
+        } catch (NullPointerException e) {
+            stderr.println("[!] 正则表达式传入null: " + patter);
+        } catch (Exception e){
+            stderr.println("[!] 匹配出现其他报错: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return groups;
     }
 
     /**
