@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static burp.BurpExtender.*;
-import com.alibaba.fastjson2.JSON;
 
 
 public class RespParse {
@@ -67,7 +66,7 @@ public class RespParse {
 
         //过滤无用的请求URL
         //根据用户配置文件信息过滤其他无用的URL
-        urlSet = filterUrlByGlobalConfig(urlSet);
+        urlSet = filterUrlByConfig(urlSet);
         //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
         urlSet = filterUrlByHost(msgInfo.getReqHost(),  urlSet);
         if (urlSet.size() > 0)
@@ -85,9 +84,10 @@ public class RespParse {
 
 
         //todo: 必须：实现响应敏感信息提取
-        findInfoByGlobalConfig(msgInfo);
+        JSONArray findInfoArray = findInfoByConfig(msgInfo);
+        stdout.println(String.format("[+] 提取敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
-        //TODO: 必须：输出已提取的果信息
+        //TODO: 必须：输出已提取的信息
         //Todo: 必须：对PATH进行计算,计算出真实的URL路径
 
         //TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
@@ -102,8 +102,9 @@ public class RespParse {
     /**
      * 根据规则提取敏感信息
      * @param msgInfo
+     * @return
      */
-    private static void findInfoByGlobalConfig(HttpMsgInfo msgInfo) {
+    private static JSONArray findInfoByConfig(HttpMsgInfo msgInfo) {
         // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
         Set<JSONObject> findInfosSet = new HashSet<>();
 
@@ -130,20 +131,13 @@ public class RespParse {
             }
 
             // 开始提取操作
-            boolean isMatch = false;
-
             //多个关键字匹配
             if (rule.getMatch().equals("keyword"))
                 if(ElementUtils.isContainAllKey(beFindContent, rule.getKeyword(), false)){
                     //匹配关键字模式成功,应该标记敏感信息
-                    JSONObject findInfo = new JSONObject();
-                    findInfo.put("type", rule.getType());
-                    findInfo.put("value", rule.getKeyword());
-                    findInfo.put("important", rule.getIsImportant());
-                    findInfo.put("describe",rule.getDescribe());
+                    JSONObject findInfo = getFindInfoJsonObj(rule, String.valueOf(rule.getKeyword()));
                     stdout.println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                     findInfosSet.add(findInfo);
-                    isMatch = true;
                 }
 
             //多个正则匹配
@@ -163,14 +157,9 @@ public class RespParse {
                                     group = group.substring(0, RESULT_SIZE);
                                 }
 
-                                JSONObject findInfo = new JSONObject();
-                                findInfo.put("type", rule.getType());
-                                findInfo.put("value", group);
-                                findInfo.put("important", rule.getIsImportant());
-                                findInfo.put("describe",rule.getDescribe());
-                                stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo));
+                                JSONObject findInfo = getFindInfoJsonObj(rule, group);
+                                stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                                 findInfosSet.add(findInfo);
-                                isMatch = true;
                             }
                         }
                     } catch (PatternSyntaxException e) {
@@ -185,10 +174,23 @@ public class RespParse {
             }
         }
 
-        JSONArray findInfosArray = new JSONArray(findInfosSet);
-        stdout.println(String.format("[+] 提取敏感信息数量:%s -> %s", findInfosArray.size(), findInfosArray.toJSONString()));
+        return new JSONArray(findInfosSet);
     }
 
+    /**
+     * 基于规则和结果生成格式化的信息
+     * @param rule
+     * @param group
+     * @return
+     */
+    private static JSONObject getFindInfoJsonObj(FingerPrintRule rule, String group) {
+        JSONObject findInfo = new JSONObject();
+        findInfo.put("type", rule.getType());
+        findInfo.put("important", rule.getIsImportant());
+        findInfo.put("describe", rule.getDescribe());
+        findInfo.put("value", group);
+        return findInfo;
+    }
 
 
     /**
@@ -401,7 +403,7 @@ public class RespParse {
      * @param matchUrlSet
      * @return
      */
-    private static Set<String> filterUrlByGlobalConfig(Set<String> matchUrlSet) {
+    private static Set<String> filterUrlByConfig(Set<String> matchUrlSet) {
         if (matchUrlSet == null || matchUrlSet.isEmpty()) return matchUrlSet;
 
         Set<String> newUrlSet = new HashSet<>();
