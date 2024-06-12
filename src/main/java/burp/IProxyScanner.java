@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static utils.ElementUtils.isContainKeys;
-import static utils.ElementUtils.isEqualsKeys;
+import static utils.ElementUtils.isContainOneKey;
+import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -67,7 +67,7 @@ public class IProxyScanner implements IProxyListener {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
             //判断是否是正常的响应 //返回结果为空则退出
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                stdout.println("[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
+                //stdout.println("[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
                 return;
             }
 
@@ -78,14 +78,14 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //匹配黑名单域名
-            if(isContainKeys(msgInfo.getReqHost(), CONF_BLACK_URL_DOMAIN, false)){
-                stdout.println("[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
+            if(ElementUtils.isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_DOMAIN, false)){
+                //stdout.println("[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && isEqualsKeys(msgInfo.getRespStatus(), CONF_NEED_RECORD_STATUS, true)){
+            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && ElementUtils.isEqualsOneKey(msgInfo.getRespStatus(), CONF_NEED_RECORD_STATUS, true)){
                 urlPathRecordMap.add(msgInfo.getReqBasePath());
                 stdout.println(String.format("[+] Record Url: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
                 executorService.submit(new Runnable() {
@@ -97,15 +97,15 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 排除黑名单后缀
-            if(isEqualsKeys(msgInfo.getReqPathExt(), CONF_BLACK_URL_EXT, false)){
-                stdout.println("[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
+            if(ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_BLACK_URL_EXT, false)){
+                //stdout.println("[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //排除黑名单路径 这些JS文件是通用的、无价值的、
             //String blackPaths = "jquery.js|xxx.js";
-            if(isContainKeys(msgInfo.getReqPath(), CONF_BLACK_URL_PATH, false)){
-                stdout.println("[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
+            if(ElementUtils.isContainOneKey(msgInfo.getReqPath(), CONF_BLACK_URL_PATH, false)){
+                //stdout.println("[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
@@ -116,7 +116,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             if (msgInfo.getRespStatus().equals("404")){
-                stdout.println("[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
+                //stdout.println("[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
@@ -182,7 +182,7 @@ public class IProxyScanner implements IProxyListener {
                             String reqUrl = (String) oneMsgData.get("req_url");
                             byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
                             byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
-                            stdout.println(String.format("[+] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
+                            stdout.println(String.format("[*] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
 
                             //将请求响应数据整理出新的数据
                             HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);

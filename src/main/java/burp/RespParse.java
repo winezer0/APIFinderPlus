@@ -1,7 +1,10 @@
 package burp;
 
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
+import utils.ElementUtils;
 
 import java.io.PrintWriter;
 import java.net.URI;
@@ -11,10 +14,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static burp.BurpExtender.*;
-import static utils.ElementUtils.isContainKeys;
-import static utils.ElementUtils.isEqualsKeys;
+import com.alibaba.fastjson2.JSON;
+
 
 public class RespParse {
     private static PrintWriter stdout = BurpExtender.getStdout();
@@ -31,8 +35,8 @@ public class RespParse {
     public static final String URL_KEY = "url";
     public static final String PATH_KEY = "path";
 
-    private static final int MAX_SIZE = 50000; // 设置最大字节大小为40000
-    private static final int RESULT_SIZE = 10000;
+    private static final int MAX_SIZE = 50000; //如果数组超过 50000 个字节，则截断
+    private static final int RESULT_SIZE = 1024;
 
     public static void analysisReqData(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
@@ -46,13 +50,13 @@ public class RespParse {
 
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
-        stdout.println(String.format("[+] 初步提取的URL数量: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
+        stdout.println(String.format("[*] 初步提取的URL数量: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
         urlSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
-        if (isEqualsKeys(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
+        if (ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
-            stdout.println(String.format("[+] 初步提取的URI数量: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
+            stdout.println(String.format("[*] 初步提取的URI数量: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             urlSet.addAll(extractUriFromJs);
         }
 
@@ -100,10 +104,8 @@ public class RespParse {
      * @param msgInfo
      */
     private static void findInfoByGlobalConfig(HttpMsgInfo msgInfo) {
-        Set<String> findInfos = new LinkedHashSet<>();
-
-        String respText;
-        String reqUrlPath;
+        // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
+        Set<JSONObject> findInfosSet = new HashSet<>();
 
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
@@ -116,18 +118,75 @@ public class RespParse {
                 continue;
             }
 
-            //TODO: 定位查找范围
-            String locationContent = "";
+            // 定位查找范围
+            String beFindContent = "";
             if ("body".equalsIgnoreCase(rule.getLocation())) {
-                locationContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+                beFindContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
             } else if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
-                locationContent = msgInfo.getReqPath();
+                beFindContent = msgInfo.getReqPath();
             } else {
                 stderr.println("[!] 未知指纹位置：" + rule.getLocation());
                 continue;
             }
-            //TODO: 开始提取操作
+
+            // 开始提取操作
+            boolean isMatch = false;
+
+            //多个关键字匹配
+            if (rule.getMatch().equals("keyword"))
+                if(ElementUtils.isContainAllKey(beFindContent, rule.getKeyword(), false)){
+                    //匹配关键字模式成功,应该标记敏感信息
+                    JSONObject findInfo = new JSONObject();
+                    findInfo.put("type", rule.getType());
+                    findInfo.put("value", rule.getKeyword());
+                    findInfo.put("important", rule.getIsImportant());
+                    findInfo.put("describe",rule.getDescribe());
+                    stdout.println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
+                    findInfosSet.add(findInfo);
+                    isMatch = true;
+                }
+
+            //多个正则匹配
+            if (rule.getMatch().equals("regular")){
+                for (String patter : rule.getKeyword()){
+                    try{
+                        for (int start = 0; start < beFindContent.length(); start += CHUNK_SIZE) {
+                            int end = Math.min(start + CHUNK_SIZE, beFindContent.length());
+                            String beFindContentChunk = beFindContent.substring(start, end);
+
+                            Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
+                            Matcher matcher = pattern.matcher(beFindContentChunk);
+                            while (matcher.find()) {
+                                String group = matcher.group();
+                                //响应超过长度时 截断
+                                if (group.length() > RESULT_SIZE) {
+                                    group = group.substring(0, RESULT_SIZE);
+                                }
+
+                                JSONObject findInfo = new JSONObject();
+                                findInfo.put("type", rule.getType());
+                                findInfo.put("value", group);
+                                findInfo.put("important", rule.getIsImportant());
+                                findInfo.put("describe",rule.getDescribe());
+                                stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo));
+                                findInfosSet.add(findInfo);
+                                isMatch = true;
+                            }
+                        }
+                    } catch (PatternSyntaxException e) {
+                        stderr.println("[!] 正则表达式语法错误: " + patter);
+                    } catch (NullPointerException e) {
+                        stderr.println("[!] 正则表达式传入null: " + patter);
+                    } catch (Exception e){
+                        stderr.println("[!] 匹配出现其他报错: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
+
+        JSONArray findInfosArray = new JSONArray(findInfosSet);
+        stdout.println(String.format("[+] 提取敏感信息数量:%s -> %s", findInfosArray.size(), findInfosArray.toJSONString()));
     }
 
 
@@ -315,7 +374,7 @@ public class RespParse {
     private static Set<String> filterUselessPathsByEqual(Set<String> matchPathSet) {
         Set<String> newPathSet = new HashSet<>();
         for (String path : matchPathSet){
-            if(!isEqualsKeys(path, CONF_BLACK_PATH_EQUALS, false)){
+            if(!ElementUtils.isEqualsOneKey(path, CONF_BLACK_PATH_EQUALS, false)){
                 newPathSet.add(path);
             }
         }
@@ -330,7 +389,7 @@ public class RespParse {
     private static Set<String> filterUselessPathsByKey(Set<String> matchPathSet) {
         Set<String> newPathSet = new HashSet<>();
         for (String path : matchPathSet){
-            if(!isContainKeys(path, CONF_BLACK_PATH_KEYS, false)){
+            if(!ElementUtils.isContainOneKey(path, CONF_BLACK_PATH_KEYS, false)){
                 newPathSet.add(path);
             }
         }
@@ -350,17 +409,17 @@ public class RespParse {
             try {
                 URL url = new URL(matchUrl);
                 //匹配黑名单域名 //排除被禁止的域名URL, baidu.com等常被应用的域名, 这些js是一般是没用的, 为空时不操作
-                if(isContainKeys(url.getHost(), CONF_BLACK_URL_DOMAIN, false)){
+                if(ElementUtils.isContainOneKey(url.getHost(), CONF_BLACK_URL_DOMAIN, false)){
                     continue;
                 }
 
                 // 排除黑名单后缀 jpg、mp3等等
-                if(isEqualsKeys(HttpMsgInfo.parseUrlExt(matchUrl), CONF_BLACK_URL_EXT, false)){
+                if(ElementUtils.isEqualsOneKey(HttpMsgInfo.parseUrlExt(matchUrl), CONF_BLACK_URL_EXT, false)){
                     continue;
                 }
 
                 //排除黑名单路径 这些JS文件是通用的、无价值的、
-                if(isContainKeys(url.getPath(), CONF_BLACK_URL_PATH, false)){
+                if(ElementUtils.isContainOneKey(url.getPath(), CONF_BLACK_URL_PATH, false)){
                     continue;
                 }
 
