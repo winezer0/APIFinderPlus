@@ -38,6 +38,43 @@ public class RespParse {
     private static final int RESULT_SIZE = 1024;
 
     public static void analysisReqData(HttpMsgInfo msgInfo) {
+        Map<String, List> setMap = findUriInfo(msgInfo);
+        List<String> urlList = setMap.get(URL_KEY);
+        List<String> pathList = setMap.get(PATH_KEY);
+
+        //过滤无用的请求URL
+        //根据用户配置文件信息过滤其他无用的URL
+        urlList = filterUrlByConfig(urlList);
+        //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
+        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList);
+        stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
+        for (String s : urlList)
+            stdout.println(String.format("[*] INFO URL: %s", s));
+
+        //过滤无用的PATH内容
+        pathList = filterUselessPathByKey(pathList);
+        pathList = filterUselessPathByEqual(pathList);
+        stdout.println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
+        for (String s : pathList)
+            stdout.println(String.format("[*] INFO PATH: %s", s));
+
+        // 实现响应敏感信息提取
+        JSONArray findInfoArray = findSensitiveInfoByConfig(msgInfo);
+        stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
+
+        //TODO: 必须：输出已提取的信息
+        //Todo: 必须：对PATH进行计算,计算出真实的URL路径
+
+        //TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
+        //TODO: 扩展：实现UI显示
+
+        //TODO: 扩展：增加通过响应关键字排除 404或者错误页面的功能
+        //TODO: 扩展：排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
+        //TODO: 扩展：初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
+
+    }
+
+    private static Map<String, List> findUriInfo(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
         Set<String> uriSet = new HashSet<>();
 
@@ -61,42 +98,7 @@ public class RespParse {
 
         //拆分提取的URL和PATH为两个set 用于进一步处理操作
         Map<String, List> setMap = SplitExtractUrlOrPath(uriSet);
-        List<String> urlList = setMap.get(URL_KEY);
-        List<String> pathList = setMap.get(PATH_KEY);
-
-        //过滤无用的请求URL
-        //根据用户配置文件信息过滤其他无用的URL
-        urlList = filterUrlByConfig(urlList);
-        //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
-        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList);
-        if (urlList.size() > 0)
-            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
-            for (String s : urlList)
-                stdout.println(String.format("[*] INFO URL: %s", s));
-
-        //过滤无用的PATH内容
-        pathList = filterUselessPathsByKey(pathList);
-        pathList = filterUselessPathsByEqual(pathList);
-        if (pathList.size() > 0)
-            stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
-            for (String s : pathList)
-                stdout.println(String.format("[*] INFO PATH: %s", s));
-
-
-        // 实现响应敏感信息提取
-        JSONArray findInfoArray = findInfoByConfig(msgInfo);
-        stdout.println(String.format("[+] 提取敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
-
-        //TODO: 必须：输出已提取的信息
-        //Todo: 必须：对PATH进行计算,计算出真实的URL路径
-
-        //TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
-        //TODO: 扩展：实现UI显示
-
-        //TODO: 扩展：增加通过响应关键字排除 404或者错误页面的功能
-        //TODO: 扩展：排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
-        //TODO: 扩展：初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
-
+        return setMap;
     }
 
     /**
@@ -104,7 +106,7 @@ public class RespParse {
      * @param msgInfo
      * @return
      */
-    private static JSONArray findInfoByConfig(HttpMsgInfo msgInfo) {
+    private static JSONArray findSensitiveInfoByConfig(HttpMsgInfo msgInfo) {
         // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
         Set<JSONObject> findInfosSet = new HashSet<>();
 
@@ -352,7 +354,7 @@ public class RespParse {
      * @param matchList
      * @return
      */
-    private static List<String> filterUselessPathsByEqual(List<String> matchList) {
+    private static List<String> filterUselessPathByEqual(List<String> matchList) {
         List<String> newList = new ArrayList<>();
         for (String s : matchList){
             if(!ElementUtils.isEqualsOneKey(s, CONF_BLACK_PATH_EQUALS, false)){
@@ -367,7 +369,7 @@ public class RespParse {
      * @param matchList
      * @return
      */
-    private static List<String> filterUselessPathsByKey(List<String> matchList) {
+    private static List<String> filterUselessPathByKey(List<String> matchList) {
         if (matchList == null || matchList.isEmpty()) return matchList;
 
         List<String> newList = new ArrayList<>();
