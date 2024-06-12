@@ -1,9 +1,11 @@
 package burp;
 
+import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
+import model.RespInfo;
 import utils.ElementUtils;
 
 import java.io.PrintWriter;
@@ -19,7 +21,7 @@ import java.util.regex.PatternSyntaxException;
 import static burp.BurpExtender.*;
 
 
-public class RespParse {
+public class MsgDataAnalysis {
     private static final PrintWriter stdout = BurpExtender.getStdout();
     private static final PrintWriter stderr = BurpExtender.getStderr();
 
@@ -33,29 +35,35 @@ public class RespParse {
     public static final String URL_KEY = "url";
     public static final String PATH_KEY = "path";
 
+    public static final String type = "type";
+    public static final String describe = "describe";
+    public static final String accuracy = "accuracy";
+    public static final String important = "important";
+    public static final String value = "value";
+
     private static final int MAX_SIZE = 50000; //如果数组超过 50000 个字节，则截断
     private static final int RESULT_SIZE = 1024;
 
-    public static void analysisReqData(HttpMsgInfo msgInfo) {
+    public static RespInfo analysisMsgInfo(HttpMsgInfo msgInfo) {
         //提取URL和PATH信息
         Set<String> uriSet = findUriInfo(msgInfo);
         //拆分提取的URL和PATH为两个set 用于进一步处理操作
-        Map<String, List> setMap = SplitExtractUrlOrPath(uriSet);
-        List<String> urlList = setMap.get(URL_KEY);
-        List<String> pathList = setMap.get(PATH_KEY);
+        Map<String, List> map = SeparateUrlOrPath(uriSet);
+        List<String> urlList = map.get(URL_KEY);
+        List<String> pathList = map.get(PATH_KEY);
 
         //过滤无用的请求URL
-        //根据用户配置文件信息过滤其他无用的URL
-        urlList = filterUrlByConfig(urlList);
-        //保留本域名的URL,会检测格式 Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
-        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList);
+        urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
+        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList); //仅保留本域名的URL // Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
         stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
         for (String s : urlList)
             stdout.println(String.format("[*] INFO URL: %s", s));
 
         //过滤无用的PATH内容
-        pathList = filterUselessPathByKey(pathList);
-        pathList = filterUselessPathByEqual(pathList);
+        pathList = filterPathByContainUselessKey(pathList); //过滤包含禁止关键字的PATH
+        pathList = filterPathByEqualUselessPath(pathList); //过滤等于禁止PATH的PATH
+        pathList = filterPathByContainChinese(pathList); //过滤包含中文的PATH
+
         stdout.println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
         for (String s : pathList)
             stdout.println(String.format("[*] INFO PATH: %s", s));
@@ -64,16 +72,12 @@ public class RespParse {
         JSONArray findInfoArray = findSensitiveInfoByConfig(msgInfo);
         stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
-        //TODO: 必须：输出已提取的信息
-        //Todo: 必须：对PATH进行计算,计算出真实的URL路径
-
-        //TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
-        //TODO: 扩展：实现UI显示
-
-        //TODO: 扩展：增加通过响应关键字排除 404或者错误页面的功能
-        //TODO: 扩展：排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
-        //TODO: 扩展：初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
-
+        //返回敏感信息内容
+        RespInfo respInfo = new RespInfo();
+        respInfo.setUrlList(urlList);
+        respInfo.setPathList(pathList);
+        respInfo.setInfoArray(findInfoArray);
+        return respInfo;
     }
 
     /**
@@ -81,7 +85,7 @@ public class RespParse {
      * @param msgInfo
      * @return
      */
-    private static Set<String> findUriInfo(HttpMsgInfo msgInfo) {
+    public static Set<String> findUriInfo(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
         Set<String> uriSet = new HashSet<>();
 
@@ -111,27 +115,23 @@ public class RespParse {
      * @param msgInfo
      * @return
      */
-    private static JSONArray findSensitiveInfoByConfig(HttpMsgInfo msgInfo) {
+    public static JSONArray findSensitiveInfoByConfig(HttpMsgInfo msgInfo) {
         // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
         Set<JSONObject> findInfosSet = new HashSet<>();
 
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
-            // 过滤掉配置选项
-            if (rule.getType().contains("CONF_")) {
-                continue;
-            }
-            //忽略关闭的选项
-            if (!rule.getIsOpen()){
+            //忽略关闭的选项 // 过滤掉配置选项
+            if (!rule.getIsOpen() || rule.getType().contains("CONF_")){
                 continue;
             }
 
             // 定位查找范围
-            String beFindContent = "";
+            String willFindText;
             if ("body".equalsIgnoreCase(rule.getLocation())) {
-                beFindContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+                willFindText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
             } else if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
-                beFindContent = msgInfo.getReqPath();
+                willFindText = msgInfo.getReqPath();
             } else {
                 stderr.println("[!] 未知指纹位置：" + rule.getLocation());
                 continue;
@@ -140,9 +140,9 @@ public class RespParse {
             // 开始提取操作
             //多个关键字匹配
             if (rule.getMatch().equals("keyword"))
-                if(ElementUtils.isContainAllKey(beFindContent, rule.getKeyword(), false)){
+                if(ElementUtils.isContainAllKey(willFindText, rule.getKeyword(), false)){
                     //匹配关键字模式成功,应该标记敏感信息
-                    JSONObject findInfo = getFindInfoJsonObj(rule, String.valueOf(rule.getKeyword()));
+                    JSONObject findInfo = initInfoJsonObj(rule, String.valueOf(rule.getKeyword()));
                     stdout.println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                     findInfosSet.add(findInfo);
                 }
@@ -151,9 +151,9 @@ public class RespParse {
             if (rule.getMatch().equals("regular")){
                 for (String patter : rule.getKeyword()){
                     try{
-                        for (int start = 0; start < beFindContent.length(); start += CHUNK_SIZE) {
-                            int end = Math.min(start + CHUNK_SIZE, beFindContent.length());
-                            String beFindContentChunk = beFindContent.substring(start, end);
+                        for (int start = 0; start < willFindText.length(); start += CHUNK_SIZE) {
+                            int end = Math.min(start + CHUNK_SIZE, willFindText.length());
+                            String beFindContentChunk = willFindText.substring(start, end);
 
                             Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
                             Matcher matcher = pattern.matcher(beFindContentChunk);
@@ -164,7 +164,7 @@ public class RespParse {
                                     group = group.substring(0, RESULT_SIZE);
                                 }
 
-                                JSONObject findInfo = getFindInfoJsonObj(rule, group);
+                                JSONObject findInfo = initInfoJsonObj(rule, group);
                                 stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                                 findInfosSet.add(findInfo);
                             }
@@ -190,12 +190,13 @@ public class RespParse {
      * @param group
      * @return
      */
-    private static JSONObject getFindInfoJsonObj(FingerPrintRule rule, String group) {
+    private static JSONObject initInfoJsonObj(FingerPrintRule rule, String group) {
         JSONObject findInfo = new JSONObject();
-        findInfo.put("type", rule.getType());
-        findInfo.put("important", rule.getIsImportant());
-        findInfo.put("describe", rule.getDescribe());
-        findInfo.put("value", group);
+        findInfo.put(type, rule.getType()); // "type": "敏感内容",
+        findInfo.put(describe, rule.getDescribe()); //"describe": "身份证",
+        findInfo.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
+        findInfo.put(important, rule.getIsImportant()); //"isImportant": true,
+        findInfo.put(value, group);
         return findInfo;
     }
 
@@ -304,7 +305,6 @@ public class RespParse {
                 .trim();
     }
 
-
     /**
      * 过滤提取出的URL列表 仅保留指定域名的
      * @param rawDomain
@@ -336,7 +336,7 @@ public class RespParse {
      * @param matchUriSet
      * @return
      */
-    public static Map<String, List> SplitExtractUrlOrPath(Set<String> matchUriSet) {
+    public static Map<String, List> SeparateUrlOrPath(Set<String> matchUriSet) {
         Map<String, List> setMap = new HashMap<>();
         ArrayList<String> urlList = new ArrayList<>();
         ArrayList<String> pathList = new ArrayList<>();
@@ -359,7 +359,7 @@ public class RespParse {
      * @param matchList
      * @return
      */
-    private static List<String> filterUselessPathByEqual(List<String> matchList) {
+    public static List<String> filterPathByEqualUselessPath(List<String> matchList) {
         List<String> newList = new ArrayList<>();
         for (String s : matchList){
             if(!ElementUtils.isEqualsOneKey(s, CONF_BLACK_PATH_EQUALS, false)){
@@ -374,7 +374,7 @@ public class RespParse {
      * @param matchList
      * @return
      */
-    private static List<String> filterUselessPathByKey(List<String> matchList) {
+    public static List<String> filterPathByContainUselessKey(List<String> matchList) {
         if (matchList == null || matchList.isEmpty()) return matchList;
 
         List<String> newList = new ArrayList<>();
@@ -424,4 +424,22 @@ public class RespParse {
         }
         return newList;
     }
+
+    /**
+     * 过滤无用的提取路径 通过判断是否包含中文路径
+     * @param matchList
+     * @return
+     */
+    public static List<String> filterPathByContainChinese(List<String> matchList) {
+        if (matchList == null || matchList.isEmpty()) return matchList;
+
+        List<String> newList = new ArrayList<>();
+        for (String s : matchList){
+            if(!CHINESE_PATTERN.matcher(s).find()){
+                newList.add(s);
+            }
+        }
+        return newList;
+    }
+
 }

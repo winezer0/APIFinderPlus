@@ -13,6 +13,17 @@ import java.util.List;
 
 import static utils.BurpFileUtils.ReadPluginConfFile;
 
+//TODO: 必须：输出已提取的信息
+//Todo: 必须：对PATH进行计算,计算出真实的URL路径
+
+//TODO: 扩展：递归探测已提取的URL (使用burp内置的库,流量需要在logger在logger中显示)
+//TODO: 扩展：实现UI显示
+
+//TODO: 扩展：增加通过响应关键字排除 404或者错误页面的功能
+//TODO: 扩展：排除已经访问的URL  (可选|非必要, 再次访问时都会过滤掉的,不会加入进程列表)
+//TODO: 扩展：初始化时,给已提取URL PATH和 已添加URL赋值 (可选|非必要,不会加入进程列表)
+
+
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     private static IBurpExtenderCallbacks callbacks;
     private static PrintWriter stdout;
