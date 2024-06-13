@@ -24,8 +24,6 @@ public class InfoAnalyse {
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字节，则截断
 
     public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
-        //TODO:过滤功能不正常 需要调试修复
-
         //提取URL和PATH信息
         Set<String> uriSet = findUriInfo(msgInfo);
         stdout_println(LOG_DEBUG, String.format("[*] 采集URL|PATH数量:%s", uriSet.size()));
@@ -41,7 +39,7 @@ public class InfoAnalyse {
         urlList = filterUrls(msgInfo, urlList);
         stdout_println(LOG_DEBUG, String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
         for (String s : urlList)
-            stdout_println(LOG_DEBUG, String.format("[*] INFO URL: %s", s));
+            stdout_println(LOG_DEBUG, String.format("[*] EXTRACT URL: %s", s));
 
         //采path处理
         List<String> pathList = map.get(PATH_KEY);
@@ -51,12 +49,19 @@ public class InfoAnalyse {
         pathList = filterPaths(msgInfo, pathList);
         stdout_println(LOG_DEBUG, String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
         for (String s : pathList)
-            stdout_println(LOG_DEBUG, String.format("[*] INFO PATH: %s", s));
+            stdout_println(LOG_DEBUG, String.format("[*] EXTRACT PATH: %s", s));
+        //todo: 提取的PATH需要进一步过滤处理
+        // HTML解码  forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=81
+        // 考虑增加后缀过滤功能 static/image/k8-2.png
+        // 考虑增加已有URL过滤 /bbs/login
+        // 计算真实URL
+        // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
         //实现响应敏感信息提取
         JSONArray findInfoArray = findSensitiveInfoByConfig(msgInfo);
-        //todo: 遍历敏感信息Array,删除 实际上为空的敏感信息
         stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
+        for (Object s : findInfoArray)
+            stdout_println(LOG_DEBUG, String.format("[*] EXTRACT INFO: %s", ((JSONObject)s).toJSONString()));
 
         ///////////////////////////返回最终结果///////////////////////////
         JSONObject analyseInfo = new JSONObject();
@@ -82,7 +87,7 @@ public class InfoAnalyse {
         pathList = filterUriBySelfContain(msgInfo.getReqPath(), pathList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s -> %s", pathList.size(), pathList));
 
-        //过滤包含禁止关键字的PATH //TODO: 使用该选项会影响大部分的提取情况,需要优化 和 支持关闭 使用提取选项补充
+        //过滤包含禁止关键字的PATH
         pathList = filterPathByContainUselessKey(pathList, CONF_BLACK_PATH_KEYS);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤包含禁止关键字的PATH:%s -> %s", pathList.size(), pathList));
 
@@ -108,7 +113,7 @@ public class InfoAnalyse {
         urlList = removeDuplicates(urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s -> %s", urlList.size(), urlList));
 
-        //仅保留主域名相关URL //功能测试通过 //TODO: 因为部分关联资产时别的IP的，所以需要支持关闭功能,使用 CONF_BLACK_URL_HOSTS 补充
+        //仅保留主域名相关URL
         urlList = filterUrlByMainHost(msgInfo.getReqRootDomain(), urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s -> %s", urlList.size(), urlList));
 
