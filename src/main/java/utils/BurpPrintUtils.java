@@ -66,7 +66,7 @@ public class BurpPrintUtils {
     }
 
     public static void stderr_println(Object msg){
-        stderr_println(LOG_INFO,msg);
+        stderr_println(LOG_ERROR,msg);
     }
 
     public static void system_println(Object msg){
