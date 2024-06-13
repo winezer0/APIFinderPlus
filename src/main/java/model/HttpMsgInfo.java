@@ -8,7 +8,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.CRC32;
-import static com.bit4woo.utilbox.utils.DomainUtils.getRootDomain;
+
+import static utilbox.DomainUtils.getRootDomain;
 
 //创建一个类用于存储 代理 流量的解析结果
 public class HttpMsgInfo {
