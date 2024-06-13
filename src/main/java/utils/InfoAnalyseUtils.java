@@ -54,7 +54,6 @@ public class InfoAnalyseUtils {
 
         //过滤无用的请求URL
         urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
-
         //已优化 获取本主域名的URL资产 后续可以修改为空 增加攻击面
         System.out.println(String.format("当前URL:%s HOST:%s RootDomain:%s",
                 msgInfo.getReqUrl(), msgInfo.getReqHost(), msgInfo.getReqRootDomain()));
