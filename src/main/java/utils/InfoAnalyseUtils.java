@@ -355,21 +355,20 @@ public class InfoAnalyseUtils {
 
     /**
      * 过滤提取出的URL列表 仅保留指定域名的
-     * @param rawDomain
+     * @param baseHost
      * @param matchUrlList
      * @return
      */
-    public static List<String> filterUrlByHost(String rawDomain,  List<String> matchUrlList){
-        if (rawDomain == null || rawDomain == "" || matchUrlList == null || matchUrlList.isEmpty()) return matchUrlList;
+    public static List<String> filterUrlByHost(String baseHost,  List<String> matchUrlList){
+        if (baseHost == null || baseHost == "" || matchUrlList == null || matchUrlList.isEmpty()) return matchUrlList;
 
         List<String> newUrlList = new ArrayList<>();
         for (String matchUrl : matchUrlList){
             //对比提取出来的URL和请求URL的域名部分是否相同，不相同的一般不是
             try {
-                String newDomain = (new URL(matchUrl)).getHost();
-                if (!rawDomain.equalsIgnoreCase(newDomain)) {
+                String newHost = (new URL(matchUrl)).getHost();
+                if (!newHost.contains(baseHost))
                     continue;
-                }
             } catch (Exception e) {
                 stderr.println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
                 continue;
