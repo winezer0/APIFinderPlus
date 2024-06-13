@@ -124,7 +124,7 @@ public class TextUtils {
     /**
      * 提取两个字符串之间的内容
      *
-     * @param input 输入字符串
+     * @param inputText 输入字符串
      * @param start 开始标记
      * @param end   结束标记
      * @return 提取的字符串内容

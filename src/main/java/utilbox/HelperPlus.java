@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static utils.BurpPrintUtils.system_println;
+
 /**
  * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/HelperPlus.java
  * author: bit4woo
@@ -863,18 +865,18 @@ public class HelperPlus {
         headerList.add("User: sssss");
         headerList.add("Agent: sssss");
         List<String> newHeader = removeHeader(headerList, "Use");
-        System.out.println(newHeader.toString());
+        system_println(newHeader.toString());
         newHeader = addOrUpdateHeader(headerList, "Use1", "xxxx");
-        System.out.println(newHeader.toString());
+        system_println(newHeader.toString());
     }
 
     private static void test2() {
         String url = "http://www.baidu.com";
         String url2 = "https://www.baidu.com:443";
-        System.out.println(addUrlDefaultPort(url));
-        System.out.println(removeUrlDefaultPort(url2));
-        System.out.println(removeUrlDefaultPort(url));
-        System.out.println(addUrlDefaultPort(url));
+        system_println(addUrlDefaultPort(url));
+        system_println(removeUrlDefaultPort(url2));
+        system_println(removeUrlDefaultPort(url));
+        system_println(addUrlDefaultPort(url));
     }
 
     public static void main(String args[]) {

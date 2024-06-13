@@ -12,6 +12,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static utils.BurpPrintUtils.system_println;
+
 /**
  *
  */
@@ -294,12 +296,12 @@ public class IPAddressUtils {
             List<String> list = new ArrayList<>(IPSet);
             SubnetUtils oldsamllerNetwork = new SubnetUtils(list.get(0).trim() + "/24");
             for (int mask = 24; mask <= 32; mask++) {
-                //System.out.println(mask);
+                //system_println(mask);
                 SubnetUtils samllerNetwork = new SubnetUtils(list.get(0).trim() + "/" + mask);
                 for (String ip : IPSet) {
                     ip = ipClean(ip);
                     if (!isValidIPv4NoPort(ip)) {
-                        System.out.println(ip + "invalid IP address, skip to handle it!");
+                        system_println(ip + "invalid IP address, skip to handle it!");
                         continue;
                     }
                     if (samllerNetwork.getInfo().isInRange(ip) || samllerNetwork.getInfo().getBroadcastAddress().equals(ip.trim()) || samllerNetwork.getInfo().getNetworkAddress().equals(ip.trim())) {
@@ -357,8 +359,8 @@ public class IPAddressUtils {
                 if (ips.length == 2) {
                     String startip = ips[0].trim();
                     String endip = ips[1].trim();
-                    //System.out.println(startip);
-                    //System.out.println(endip);
+                    //system_println(startip);
+                    //system_println(endip);
                     IPAddressString string1 = new IPAddressString(startip);
                     IPAddressString string2 = new IPAddressString(endip);
                     IPAddress addr1 = string1.getAddress();
@@ -367,7 +369,7 @@ public class IPAddressUtils {
                     Iterator<? extends IPAddress> it = range.iterator();
                     while (it.hasNext()) {
                         IPAddress item = it.next();
-                        //System.out.println(item.toString());
+                        //system_println(item.toString());
                         IPList.add(item.toString());
                     }
                 }
@@ -539,7 +541,7 @@ public class IPAddressUtils {
     public static void test3() {
         Set<String> a = new HashSet<String>();
         a.add("218.213.102.6/31");
-        System.out.println(toIPSet(a));
+        system_println(toIPSet(a));
         Set<String> subnets = new HashSet<String>();
         subnets.add("2402:db40:1::/48");
         System.out.print(toIPSet(subnets));
@@ -548,13 +550,13 @@ public class IPAddressUtils {
         Set<String> IPsOfDomain = new HashSet<>();
         IPsOfDomain.addAll(Arrays.asList(Domains.split(", ")));
         Set<String> subnets1 = toSmallerSubNets(IPsOfDomain);
-        System.out.println(subnets1);
+        system_println(subnets1);
     }
 
     public static void main(String[] args) throws AddressStringException {
 //        test3();
         List<String> iplist = IPAddressUtils.grepIPv4MayPort("https://104.17.174.7:2096");
-        System.out.println(iplist);
+        system_println(iplist);
         
     }
 }

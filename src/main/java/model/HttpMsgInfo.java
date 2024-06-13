@@ -10,11 +10,10 @@ import java.util.Arrays;
 import java.util.zip.CRC32;
 
 import static utilbox.DomainUtils.getRootDomain;
+import static utils.BurpPrintUtils.*;
 
 //创建一个类用于存储 代理 流量的解析结果
 public class HttpMsgInfo {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
     private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     private String reqUrl = null;
@@ -114,7 +113,7 @@ public class HttpMsgInfo {
             //构造基本URL, 不包含请求文件
             reqBasePath = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
         } catch (MalformedURLException e) {
-            stderr.println(String.format("Invalid URL: %s -> Error: %s", requestUrl, e.getMessage()));
+            stderr_println(String.format("Invalid URL: %s -> Error: %s", requestUrl, e.getMessage()));
             e.printStackTrace();
         }
     }

@@ -1,19 +1,18 @@
 package dataModel;
 
 import burp.BurpExtender;
-import burp.IExtensionHelpers;
 import model.HttpMsgInfo;
 
-import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MsgDataTable {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
+import static utils.BurpPrintUtils.*;
 
+public class MsgDataTable {
     //数据表名称
     static String tableName = "msg_data";
 
@@ -39,7 +38,7 @@ public class MsgDataTable {
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout.println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout_println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
@@ -61,7 +60,7 @@ public class MsgDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr.println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
             e.printStackTrace();
         }
 

@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import dataModel.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
+import utils.BurpPrintUtils;
 
 import javax.swing.*;
 import java.io.PrintWriter;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static utils.BurpFileUtils.ReadPluginConfFile;
+import static utils.BurpPrintUtils.*;
 
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
@@ -58,7 +60,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static List<String> CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
 
-    private static DBService dbService;
+    private static DBService dbService;  //数据库实例
+
+    public static int SHOW_MSG_LEVEL = LOG_DEBUG;  //显示消息级别
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
@@ -67,6 +71,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         this.stdout = new PrintWriter(callbacks.getStdout(), true);
         this.stderr = new PrintWriter(callbacks.getStderr(), true);
 
+        //初始化输出类
+        BurpPrintUtils burpPrintUtils = new BurpPrintUtils();
 
         SwingUtilities.invokeLater(new Runnable() { public void run() {
             // 读取配置文件参数
@@ -113,7 +119,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                             }
                     }
 
-                    stdout.println(String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
+                    stdout_println(String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
                 }
             }
 
@@ -132,19 +138,19 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         }});
 
         //表示打印成功
-        stdout.println(String.format("[+] %s Load success ...", this.extensionName));
+        stdout_println(String.format("[+] %s Load success ...", this.extensionName));
     }
 
     @Override
     public void extensionUnloaded() {
         // 扩展卸载时，立刻关闭线程池
-        stdout.println("[+] Plugin will unloaded, cleaning resources...");
+        stdout_println("[+] Plugin will unloaded, cleaning resources...");
 
         // 立刻关闭线程池
         if (iProxyScanner.executorService != null) {
             // 尝试立即关闭所有正在执行的任务
             List<Runnable> notExecutedTasks = iProxyScanner.executorService.shutdownNow();
-            stdout.println("[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
+            stdout_println("[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
         }
 
         //Todo: 停止面板更新器, 待实现数据查询面板
@@ -153,13 +159,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         // 关闭数据库连接
         if (dbService != null) {
             dbService.closeConnection();
-            stdout.println("[+] 断开数据连接成功.");
+            stdout_println("[+] 断开数据连接成功.");
         }
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();
-        stdout.println("[+] 定时爬去任务断开成功.");
+        stdout_println("[+] 定时爬去任务断开成功.");
 
-        stdout.println(String.format("[-] %s Unloaded ...", this.extensionName));
+        stdout_println(String.format("[-] %s Unloaded ...", this.extensionName));
     }
 }

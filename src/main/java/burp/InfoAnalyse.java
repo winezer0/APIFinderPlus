@@ -6,7 +6,6 @@ import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import utils.ElementUtils;
 
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,12 +16,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static burp.BurpExtender.*;
+import static utils.BurpPrintUtils.*;
 
 public class InfoAnalyse {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
-
     static final int CHUNK_SIZE = 20000; // 分割大小
     private static final Pattern FIND_URL_FROM_HTML_PATTERN = Pattern.compile("(http|https)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
 
@@ -71,22 +67,22 @@ public class InfoAnalyse {
 
         // 实现响应敏感信息提取
         JSONArray findInfoArray = findSensitiveInfoByConfig(msgInfo);
-        stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
+        stdout_println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
-        stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
+        stdout_println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
         for (String s : urlList)
-            stdout.println(String.format("[*] INFO URL: %s", s));
+            stdout_println(String.format("[*] INFO URL: %s", s));
 
-        stdout.println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
+        stdout_println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
         for (String s : pathList)
-            stdout.println(String.format("[*] INFO PATH: %s", s));
+            stdout_println(String.format("[*] INFO PATH: %s", s));
 
         // 创建一个 JSONObject 用来组合这三个 结果 JSONArray
         JSONObject analyseInfo = new JSONObject();
         analyseInfo.put(URL_KEY, urlList);
         analyseInfo.put(PATH_KEY, pathList);
         analyseInfo.put(INFO_KEY, findInfoArray);
-        stdout.println(String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
+        stdout_println(String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
         return analyseInfo;
     }
 
@@ -102,7 +98,7 @@ public class InfoAnalyse {
         List<String> list = new ArrayList<>();
         for (String uri : matchUriList){
             if (!baseUri.contains(uri))  {
-                System.out.println(String.format("%s 不包含 %s", baseUri, uri));
+                system_println(String.format("%s 不包含 %s", baseUri, uri));
                 list.add(uri);}
         }
         return list;
@@ -145,14 +141,14 @@ public class InfoAnalyse {
 
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
-        stdout.println(String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
+        stdout_println(String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
         uriSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
         if (ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
-            stdout.println(String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
+            stdout_println(String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             uriSet.addAll(extractUriFromJs);
         }
 
@@ -189,7 +185,7 @@ public class InfoAnalyse {
             } else if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
                 willFindText = msgInfo.getReqPath();
             } else {
-                stderr.println("[!] 未知指纹位置：" + rule.getLocation());
+                stderr_println("[!] 未知指纹位置：" + rule.getLocation());
                 continue;
             }
 
@@ -199,7 +195,7 @@ public class InfoAnalyse {
                 if(ElementUtils.isContainAllKey(willFindText, rule.getKeyword(), false)){
                     //匹配关键字模式成功,应该标记敏感信息
                     JSONObject findInfo = generateInfoJson(rule, String.valueOf(rule.getKeyword()));
-                    stdout.println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
+                    stdout_println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                     findInfosSet.add(findInfo);
                 }
 
@@ -209,7 +205,7 @@ public class InfoAnalyse {
                     Set<String> groups = regularMatchInfo(willFindText, patter);
                     if (groups.size() > 0){
                         JSONObject findInfo = generateInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
-                        stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
+                        stdout_println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                         findInfosSet.add(findInfo);
                     }
                 }
@@ -242,11 +238,11 @@ public class InfoAnalyse {
                 }
             }
         } catch (PatternSyntaxException e) {
-            stderr.println("[!] 正则表达式语法错误: " + patter);
+            stderr_println("[!] 正则表达式语法错误: " + patter);
         } catch (NullPointerException e) {
-            stderr.println("[!] 正则表达式传入null: " + patter);
+            stderr_println("[!] 正则表达式传入null: " + patter);
         } catch (Exception e){
-            stderr.println("[!] 匹配出现其他报错: " + e.getMessage());
+            stderr_println("[!] 匹配出现其他报错: " + e.getMessage());
             e.printStackTrace();
         }
         return groups;
@@ -295,7 +291,7 @@ public class InfoAnalyse {
             Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
             while (matcher.find()) {
                 String matchUrl = matcher.group();
-                //stdout.println(String.format("[*] 初步提取信息:%s", matchUrl));
+                //stdout_println(String.format("[*] 初步提取信息:%s", matchUrl));
                 //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
                 if (!matchUrl.contains("http") && matchUrl.startsWith("/")) {
                     try {
@@ -390,7 +386,7 @@ public class InfoAnalyse {
                 if (!newHost.contains(baseHost))
                     continue;
             } catch (Exception e) {
-                stderr.println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
+                stderr_println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
                 continue;
             }
             newUrlList.add(matchUrl);
@@ -482,7 +478,7 @@ public class InfoAnalyse {
 
                 newList.add(s);
             } catch (Exception e) {
-                stderr.println(String.format("[!] new URL(%s) -> Error: %s", s, e.getMessage()));
+                stderr_println(String.format("[!] new URL(%s) -> Error: %s", s, e.getMessage()));
                 continue;
             }
 

@@ -1,17 +1,11 @@
 package dataModel;
 
-import burp.BurpExtender;
-import burp.IExtensionHelpers;
 import model.HttpMsgInfo;
-
-import java.io.PrintWriter;
 import java.sql.*;
 
-public class RecordUrlsTable {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
+import static utils.BurpPrintUtils.*;
 
+public class RecordUrlsTable {
     //数据表名称
     static String tableName = "record_urls";
 
@@ -46,7 +40,7 @@ public class RecordUrlsTable {
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout.println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqBasePath(), msgInfo.getMsgHash()));
+                stdout_println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqBasePath(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
@@ -65,7 +59,7 @@ public class RecordUrlsTable {
                 }
             }
         } catch (Exception e) {
-            stderr.println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
             e.printStackTrace();
         }
 

@@ -233,7 +233,7 @@ public class RegexUtils {
 
 	/**
 	 * Regular expression that matches domain names using either {@link #STRICT_HOST_NAME} or
-	 * {@link #IP_ADDRESS}
+	 * {@link #IP_ADDRESS_STRING}
 	 */
 	private static final String STRICT_DOMAIN_NAME = "(?:" + STRICT_HOST_NAME + "|"
 			+ IP_ADDRESS_STRING + ")";

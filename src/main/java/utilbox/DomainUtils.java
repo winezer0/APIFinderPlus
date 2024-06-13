@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
+import static utils.BurpPrintUtils.system_println;
+
 public class DomainUtils {
 
 
@@ -133,7 +135,7 @@ public class DomainUtils {
         domainRegex = domainRegex.replaceAll("\\.", "\\\\.");//  . ---> \.  即域名中的点表示原意,不是正则中的点
 
         domainRegex = domainRegex.replaceAll("\\*", "\\.\\*");//  * ---> .*  即*就是正则中的.*
-        //System.out.println(domainRegex);
+        //system_println(domainRegex);
 
         return TextUtils.isRegexMatch(StrDomain, domainRegex);
     }
@@ -196,11 +198,11 @@ public class DomainUtils {
                 }
             } else if (lookup.getResult() == Lookup.TRY_AGAIN) {
                 if (resolver == null) {
-                    System.out.println("DNS Query Failed with default server, try with 8.8.8.8");
+                    system_println("DNS Query Failed with default server, try with 8.8.8.8");
                     return dnsQuery(domain, "8.8.8.8");
                 }
                 if (server.equals("8.8.8.8")) {
-                    System.out.println("DNS Query Failed with 8.8.8.8, try with 223.6.6.6");
+                    system_println("DNS Query Failed with 8.8.8.8, try with 223.6.6.6");
                     return dnsQuery(domain, "223.6.6.6");
                 }
             }
@@ -472,28 +474,28 @@ public class DomainUtils {
 
 
     public static void testWildCard() {
-        System.out.println(isMatchWildCardDomain("*.baidu.com", "www.baidu.com"));
-        System.out.println(isMatchWildCardDomain("*.seller.*.example.*", "xxx.xxx.seller.xxx.example.com"));
-        System.out.println(isMatchWildCardDomain("*.seller.*.example.*", "seller.xx.example.com"));
-        System.out.println(isMatchWildCardDomain("*.*", "aaa"));
-        System.out.println(isMatchWildCardDomain("*.*", "aa.aa"));
+        system_println(isMatchWildCardDomain("*.baidu.com", "www.baidu.com"));
+        system_println(isMatchWildCardDomain("*.seller.*.example.*", "xxx.xxx.seller.xxx.example.com"));
+        system_println(isMatchWildCardDomain("*.seller.*.example.*", "seller.xx.example.com"));
+        system_println(isMatchWildCardDomain("*.*", "aaa"));
+        system_println(isMatchWildCardDomain("*.*", "aa.aa"));
     }
 
     public static void testWild() {
-        System.out.println(isValidWildCardDomain("*.baidu.com"));
-        System.out.println(isValidWildCardDomain("*.seller.*.example.com"));
-        System.out.println(isValidWildCardDomain("*.seller.*.example.*"));
-        System.out.println(isValidWildCardDomain("*xxx*.baidu.com"));
-        System.out.println(isValidWildCardDomain("*.*"));
+        system_println(isValidWildCardDomain("*.baidu.com"));
+        system_println(isValidWildCardDomain("*.seller.*.example.com"));
+        system_println(isValidWildCardDomain("*.seller.*.example.*"));
+        system_println(isValidWildCardDomain("*xxx*.baidu.com"));
+        system_println(isValidWildCardDomain("*.*"));
     }
 
 
     public static void main(String[] args) {
-        //System.out.println(isWhiteListTDL("test.example.co.th","example.com"));
-        System.out.println(isValidDomainMayPort("test-api.xxx.services:22"));
+        //system_println(isWhiteListTDL("test.example.co.th","example.com"));
+        system_println(isValidDomainMayPort("test-api.xxx.services:22"));
         //testWild();
 
-        //System.out.println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
-        //System.out.println(dnsquery("www.google1.com",null));
+        //system_println(isValidWildCardDomain("aaaaaaaaa-aaaaaaaaaaaaaaa-aaaaaaaaaaaaaa.www1.baidu.com"));
+        //system_println(dnsquery("www.google1.com",null));
     }
 }

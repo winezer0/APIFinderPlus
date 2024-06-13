@@ -9,11 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class BurpFileUtils {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
+import static utils.BurpPrintUtils.stderr_println;
+import static utils.BurpPrintUtils.stdout_println;
 
+public class BurpFileUtils {
     /**
      * 检查指定路径的文件是否存在
      * @param filePath 文件的路径
@@ -48,7 +47,7 @@ public class BurpFileUtils {
                 content.append(line).append("\n");
             }
         } catch (IOException e) {
-            stderr.println(e.getMessage());
+            stderr_println(e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -66,7 +65,7 @@ public class BurpFileUtils {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 
             if (inputStream == null) {
-                stderr.println("无法找到资源: " + resourceName);
+                stderr_println("无法找到资源: " + resourceName);
                 return null;
             }
 
@@ -75,7 +74,7 @@ public class BurpFileUtils {
                 content.append(line).append("\n");
             }
         } catch (IOException e) {
-            stderr.println(e.getMessage());
+            stderr_println(e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -107,11 +106,11 @@ public class BurpFileUtils {
         String configPath = concatPath(extensionPath, configName);
 
         if(isFileExists(configPath)){
-            stdout.println(String.format("[+] Custom Config File Path: %s", configPath));
+            stdout_println(String.format("[+] Custom Config File Path: %s", configPath));
             configJson = readFileToString(configPath);
         }else {
             configName = String.format("conf/%s", configName);
-            stdout.println(String.format("[+] User Jar File Inner Config: %s -> %s", extensionPath, configName));
+            stdout_println(String.format("[+] User Jar File Inner Config: %s -> %s", extensionPath, configName));
             configJson = readResourceToString(configName);
         }
         return configJson;

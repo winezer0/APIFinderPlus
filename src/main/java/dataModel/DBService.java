@@ -1,19 +1,16 @@
 package dataModel;
 
 import burp.BurpExtender;
-import burp.IExtensionHelpers;
 import utils.BurpFileUtils;
 
-import java.io.PrintWriter;
-import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import static utils.BurpPrintUtils.*;
 
 public class DBService {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
-
     //指定sqlite数据库配置文件路径
     private static final String CONNECTION_STRING = "jdbc:sqlite:" + BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinder.db");
     private static DBService instance;
@@ -45,16 +42,16 @@ public class DBService {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA foreign_keys = ON");
             } catch (SQLException e) {
-                stderr.println(String.format("[!] set foreign_keys error. -> %s", e.getMessage()));
+                stderr_println(String.format("[!] set foreign_keys error. -> %s", e.getMessage()));
                 e.printStackTrace();
             }
 
-            stdout.println("[+] SQLite database connection initialized successfully. ");
+            stdout_println("[+] SQLite database connection initialized successfully. ");
         } catch (ClassNotFoundException e) {
-            stderr.println(String.format("[!] JDBC driver not found. -> %s", e.getMessage()));
+            stderr_println(String.format("[!] JDBC driver not found. -> %s", e.getMessage()));
             e.printStackTrace();
         } catch (SQLException e) {
-            stderr.println(String.format("[!] Failed to connect db. -> %s", e.getMessage()));
+            stderr_println(String.format("[!] Failed to connect db. -> %s", e.getMessage()));
             e.printStackTrace();
         }
     }
@@ -78,9 +75,9 @@ public class DBService {
     private void execCreatTableSql(String creatTableSql, String tableName) {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(creatTableSql);
-            stdout.println(String.format("[+] create db %s success ...", tableName));
+            stdout_println(String.format("[+] create db %s success ...", tableName));
         } catch (Exception e) {
-            stderr.println(String.format("[!] create db %s failed -> %s", tableName, e.getMessage()));
+            stderr_println(String.format("[!] create db %s failed -> %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
     }
@@ -97,7 +94,7 @@ public class DBService {
                 this.connection.close();
             }
         } catch (SQLException e) {
-            stderr.println(String.format("关闭数据库连接时发生错误: %s", e.getMessage()));
+            stderr_println(String.format("关闭数据库连接时发生错误: %s", e.getMessage()));
             e.printStackTrace();
         }
     }

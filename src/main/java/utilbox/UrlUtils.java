@@ -336,14 +336,14 @@ public class UrlUtils {
         String url1 = "http://www.example.com";
         String url2 = "https://www.example.com:8080";
         String url3 = "ftp://www.example.com:21/files#1111";
-        //System.out.println(url2.split("#")[0]);
+        //system_println(url2.split("#")[0]);
 
-        //System.out.println(grepUrls(ccc));
+        //system_println(grepUrls(ccc));
         System.out.println(grepUrlsInQuotes(ccc));
         System.out.println(grepUrls(ccc));
         System.out.println(grepUrlsWithProtocol(ccc));
         System.out.println(removeUrlDefaultPort(url3));
-        //System.out.println(grepURL1(ccc));
+        //system_println(grepURL1(ccc));
     }
 
 }

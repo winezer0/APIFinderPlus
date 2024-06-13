@@ -1,20 +1,13 @@
 package dataModel;
 
-import burp.BurpExtender;
-import burp.IExtensionHelpers;
 import model.HttpMsgInfo;
-
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import static utils.BurpPrintUtils.*;
 
 public class ReqDataTable {
-    private static final PrintWriter stdout = BurpExtender.getStdout();
-    private static final PrintWriter stderr = BurpExtender.getStderr();
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
-
     //数据表名称
     static String tableName = "req_data";
 
@@ -51,7 +44,7 @@ public class ReqDataTable {
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout.println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout_println(String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
@@ -81,7 +74,7 @@ public class ReqDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr.println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
             e.printStackTrace();
         }
 
@@ -119,7 +112,7 @@ public class ReqDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr.println(String.format("[-] Error fetch And Mark Req Data To Analysis: %s", e.getMessage()));
+            stderr_println(String.format("[-] Error fetch And Mark Req Data To Analysis: %s", e.getMessage()));
             e.printStackTrace();
         }
 

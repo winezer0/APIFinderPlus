@@ -81,11 +81,11 @@ public class CharsetUtils {
 //		Map<String, Charset> charsets = Charset.availableCharsets();
 //
 //		// 打印所有字符编码集的规范名称
-//		System.out.println("Available Charsets:");
+//		system_println("Available Charsets:");
 //		for (String name : charsets.keySet()) {
-//			System.out.println(name);
+//			system_println(name);
 //		}
-		
+
 		System.out.println(detectCharset("中国中文11111".getBytes("UTF-8")));
 	}
 }
