@@ -28,7 +28,7 @@ public class InfoAnalyse {
 
         //提取URL和PATH信息
         Set<String> uriSet = findUriInfo(msgInfo);
-        stdout_println(LOG_DEBUG, String.format("[*] 所有采集UR数量:%s", uriSet.size()));
+        stdout_println(LOG_DEBUG, String.format("[*] 采集URL|PATH数量:%s", uriSet.size()));
 
         //拆分提取的URL和PATH为两个 List 用于进一步处理操作
         Map<String, List> map = SeparateUrlOrPath(uriSet);
