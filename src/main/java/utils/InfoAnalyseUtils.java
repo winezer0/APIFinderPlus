@@ -351,10 +351,7 @@ public class InfoAnalyseUtils {
                 }
             }
         }
-
-        //需要排除非本域名的URL  已实现
-        //需要排除非黑名单域名、黑名单路径、黑名单的API
-
+        
         return findUris;
     }
 
