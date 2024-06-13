@@ -19,7 +19,6 @@ import java.util.regex.PatternSyntaxException;
 
 import static burp.BurpExtender.*;
 
-
 public class InfoAnalyseUtils {
     private static final PrintWriter stdout = BurpExtender.getStdout();
     private static final PrintWriter stderr = BurpExtender.getStderr();
@@ -55,7 +54,15 @@ public class InfoAnalyseUtils {
 
         //过滤无用的请求URL
         urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
-        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList); //仅保留本域名的URL // Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
+        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList); //仅保留本域名的URL
+
+
+        // Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
+        // Todo: 分析的URL需要排除网站自身根目录 | 自身URL
+        // Todo: 需要格式化提取的URL
+        // Todo: 需要重做去重功能 URL去重不成功
+        urlList = removeDuplicates(urlList);  // 去重
+
         stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
         for (String s : urlList)
             stdout.println(String.format("[*] INFO URL: %s", s));
@@ -64,6 +71,7 @@ public class InfoAnalyseUtils {
         pathList = filterPathByContainUselessKey(pathList); //过滤包含禁止关键字的PATH
         pathList = filterPathByEqualUselessPath(pathList); //过滤等于禁止PATH的PATH
         pathList = filterPathByContainChinese(pathList); //过滤包含中文的PATH
+        pathList = removeDuplicates(pathList);  // 去重
 
         stdout.println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
         for (String s : pathList)
@@ -81,9 +89,7 @@ public class InfoAnalyseUtils {
         analyseInfo.put(INFO_KEY, findInfoArray);
         stdout.println(String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
 
-        //TODO 需要重做去重功能 URL去重不成功
-        //TODO 分析的URL需要排除网站自身根目录 | 自身URL
-        //TODO 需要格式化提取的URL
+
 
         return analyseInfo;
     }
@@ -99,6 +105,12 @@ public class InfoAnalyseUtils {
                 || analyseInfo.getJSONArray(INFO_KEY).size()>0;
     }
 
+    /**
+     * 列表元素去重
+     */
+    public static List<String> removeDuplicates(List<String> list) {
+        return new ArrayList<>(new HashSet<>(list));
+    }
 
     /**
      * 提取响应体中的URL和PATH
