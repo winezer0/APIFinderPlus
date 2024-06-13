@@ -42,6 +42,15 @@
             <scope>compile</scope>
         </dependency>
 
+
+        <!-- https://github.com/bit4woo/java_utilbox -->
+        <!--本地引用-->
+        <dependency>
+            <groupId>com.bit4woo.utilbox</groupId>
+            <artifactId>java-utilbox</artifactId>
+            <version>0.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

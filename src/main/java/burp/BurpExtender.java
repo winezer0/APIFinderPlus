@@ -146,9 +146,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         stdout.println(String.format("[+] %s Load success ...", this.extensionName));
     }
 
-
-
-
     @Override
     public void extensionUnloaded() {
         // 扩展卸载时，立刻关闭线程池
