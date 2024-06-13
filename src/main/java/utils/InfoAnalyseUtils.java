@@ -99,7 +99,7 @@ public class InfoAnalyseUtils {
                     stdout_println(LOG_DEBUG, String.format("[*] Black Hosts Filter %s", urlStr));
                 }
             } catch (MalformedURLException e) {
-                stderr_println(String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
+                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
             }
         }
         return list;
@@ -148,7 +148,7 @@ public class InfoAnalyseUtils {
                     stdout_println(LOG_DEBUG, String.format("[*] Black Paths Filter %s", urlStr));
                 }
             } catch (MalformedURLException e) {
-                stderr_println(String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
+                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
             }
         }
         return list;
@@ -191,7 +191,7 @@ public class InfoAnalyseUtils {
                 if (!newHost.contains(baseHost))
                     continue;
             } catch (Exception e) {
-                stderr_println(String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
+                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
                 continue;
             }
             newUrlList.add(matchUrl);
@@ -344,6 +344,7 @@ public class InfoAnalyseUtils {
                         //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
                         matchUrl = baseUrl.resolve(matchUrl).toString();
                     } catch (URISyntaxException e) {
+                        stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
                         continue;
                     }
                 }
