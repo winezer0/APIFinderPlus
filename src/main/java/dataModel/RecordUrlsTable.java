@@ -23,7 +23,7 @@ public class RecordUrlsTable {
             + " req_host TEXT NOT NULL,\n"
             + " req_port TEXT NOT NULL,\n"
             + " req_path_dir TEXT NOT NULL,\n"
-            + " resp_status TEXT\n"
+            + " resp_status TEXT NOT NULL\n"
             + ");";
 
     //插入数据库
@@ -51,7 +51,7 @@ public class RecordUrlsTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(req_proto, req_host, req_port, req_path_dir,resp_status) VALUES (?, ?, ?, ?, ?)";
+                        "(req_proto, req_host, req_port, req_path_dir, resp_status) VALUES (?, ?, ?, ?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     setStmt(insertStmt, msgInfo);
                     insertStmt.executeUpdate();
@@ -79,6 +79,4 @@ public class RecordUrlsTable {
         stmt.setString(4, msgInfo.getReqPathDir());
         stmt.setString(5, msgInfo.getRespStatus());
     }
-
-
 }
