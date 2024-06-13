@@ -170,37 +170,40 @@ public class IProxyScanner implements IProxyListener {
             executorService.submit(() -> {
                 try {
                     //当添加进程还比较多的时候,暂时不进行响应数据处理
-                    if (executorService.getActiveCount() >= 6){
+                    if (executorService.getActiveCount() >= 6)
                         return;
-                    }
 
                     //解析响应体数据
                     //1、判断是否有URL数据需要解析
                     Integer oneMsgDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis();
+                    if (oneMsgDataIndex < 1)
+                        return;
+
                     //2、获取解析的Url数据
-                    if (oneMsgDataIndex > 0){
-                        //获取 msgDataIndex 对应的数据
-                        Map<String, Object> oneMsgData = MsgDataTable.selectMsgDataById(oneMsgDataIndex);
-                        if (oneMsgData !=null && !oneMsgData.isEmpty()){
-                            String msgHash = (String) oneMsgData.get("msg_hash");
-                            String reqUrl = (String) oneMsgData.get("req_url");
-                            byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
-                            byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
-                            stdout.println(String.format("[*] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
+                    //2.1 获取 msgDataIndex 对应的数据
+                    Map<String, Object> oneMsgData = MsgDataTable.selectMsgDataById(oneMsgDataIndex);
+                    if (oneMsgData ==null || oneMsgData.isEmpty())
+                        return;
 
-                            //将请求响应数据整理出新的数据
-                            HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
+                    String msgHash = (String) oneMsgData.get("msg_hash");
+                    String reqUrl = (String) oneMsgData.get("req_url");
+                    byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
+                    byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
+                    stdout.println(String.format("[*] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
 
-                            //分析请求数据
-                            JSONObject analyseInfo = InfoAnalyseUtils.analysisMsgInfo(oneMsgInfo);
-                            //将分析结果写入数据库
-                            if(analyseInfoIsNotEmpty(analyseInfo)){
-                                int analyseDataIndex = AnalyseDataTable.insertAnalyseData(oneMsgInfo, analyseInfo);
-                                if (analyseDataIndex > 0)
-                                    stdout.println(String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", oneMsgInfo.getReqUrl(), oneMsgInfo.getMsgHash()));
-                            }
-                        }
-                    }
+                    //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
+                    HttpMsgInfo msgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
+                    JSONObject analyseInfo = InfoAnalyseUtils.analysisMsgInfo(msgInfo);
+                    if(!analyseInfoIsNotEmpty(analyseInfo))
+                        return;
+
+                    //2.3 将分析结果写入数据库
+                    int analyseDataIndex = AnalyseDataTable.insertAnalyseData(msgInfo, analyseInfo);
+                    if (analyseDataIndex > 0)
+                        stdout.println(String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                    else return;
+
+
 
                 } catch (Exception e) {
                     stderr.println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
