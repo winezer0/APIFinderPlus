@@ -49,7 +49,7 @@ public class IProxyScanner implements IProxyListener {
                 Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.AbortPolicy() // 当任务太多时抛出异常，可以根据需要调整策略
         );
-        stdout_println("[+] run executorService maxPoolSize: " + coreCount + " ~ " + maxPoolSize + ", monitorExecutorServiceNumberOfIntervals: " + monitorExecutorServiceNumberOfIntervals);
+        stdout_println(LOG_INFO,"[+] run executorService maxPoolSize: " + coreCount + " ~ " + maxPoolSize + ", monitorExecutorServiceNumberOfIntervals: " + monitorExecutorServiceNumberOfIntervals);
 
         monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -65,19 +65,19 @@ public class IProxyScanner implements IProxyListener {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
             //判断是否是正常的响应 //返回结果为空则退出
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                //stdout_println("[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
                 return;
             }
 
             //看URL识别是否报错
             if (msgInfo.getReqBaseUrl() == null ||msgInfo.getReqBaseUrl().equals("-")){
-                stdout_println("[-] URL转化失败 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //匹配黑名单域名
             if(ElementUtils.isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_DOMAIN, false)){
-                //stdout_println("[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
@@ -85,7 +85,7 @@ public class IProxyScanner implements IProxyListener {
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
             if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && ElementUtils.isEqualsOneKey(msgInfo.getRespStatus(), CONF_NEED_RECORD_STATUS, true)){
                 urlPathRecordMap.add(msgInfo.getReqBasePath());
-                stdout_println(String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
+                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -96,31 +96,31 @@ public class IProxyScanner implements IProxyListener {
 
             // 排除黑名单后缀
             if(ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_BLACK_URL_EXT, false)){
-                //stdout_println("[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //排除黑名单路径 这些JS文件是通用的、无价值的、
             //String blackPaths = "jquery.js|xxx.js";
             if(ElementUtils.isContainOneKey(msgInfo.getReqPath(), CONF_BLACK_URL_PATH, false)){
-                //stdout_println("[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG, "[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             // 看status是否为30开头
             if (msgInfo.getRespStatus().startsWith("3")){
-                stdout_println("[-] URL的响应包状态码3XX 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG,"[-] URL的响应包状态码3XX 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             if (msgInfo.getRespStatus().equals("404")){
-                //stdout_println("[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG, "[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //判断URL是否已经扫描过
             if (urlScanRecordMap.get(msgInfo.getMsgHash()) > 0) {
-                //stdout_println(String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
 
@@ -152,7 +152,7 @@ public class IProxyScanner implements IProxyListener {
             // 存储到URL表
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
-                stdout_println(String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
+                stdout_println(LOG_INFO, String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
                         msgInfo.getReqUrl(), msgInfo.getMsgHash(), reqSource));
         }
     }
@@ -184,7 +184,7 @@ public class IProxyScanner implements IProxyListener {
                     String reqUrl = (String) oneMsgData.get("req_url");
                     byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
                     byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
-                    stdout_println(String.format("[*] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
+                    stdout_println(LOG_INFO, String.format("[*] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
 
                     //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
                     HttpMsgInfo msgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
@@ -195,16 +195,12 @@ public class IProxyScanner implements IProxyListener {
                     //2.3 将分析结果写入数据库
                     int analyseDataIndex = AnalyseDataTable.insertAnalyseData(msgInfo, analyseInfo);
                     if (analyseDataIndex > 0)
-                        stdout_println(String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                        stdout_println(LOG_INFO, String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                     else return;
-
-                    //TODO:PATH过滤功能不正常 需要调试修复
 
                     //todo: 处理API路径,计算出正式URL
 
                     //todo: 增加自动递归查询功能
-
-                    //todo: 增加按级别设置输出功能
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();

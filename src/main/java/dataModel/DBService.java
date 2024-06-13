@@ -46,7 +46,7 @@ public class DBService {
                 e.printStackTrace();
             }
 
-            stdout_println("[+] SQLite database connection initialized successfully. ");
+            stdout_println(LOG_INFO, "[+] SQLite database connection initialized successfully. ");
         } catch (ClassNotFoundException e) {
             stderr_println(String.format("[!] JDBC driver not found. -> %s", e.getMessage()));
             e.printStackTrace();
@@ -75,7 +75,7 @@ public class DBService {
     private void execCreatTableSql(String creatTableSql, String tableName) {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(creatTableSql);
-            stdout_println(String.format("[+] create db %s success ...", tableName));
+            stdout_println(LOG_INFO, String.format("[+] create db %s success ...", tableName));
         } catch (Exception e) {
             stderr_println(String.format("[!] create db %s failed -> %s", tableName, e.getMessage()));
             e.printStackTrace();

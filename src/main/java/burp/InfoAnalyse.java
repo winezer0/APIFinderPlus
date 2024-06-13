@@ -42,47 +42,74 @@ public class InfoAnalyse {
     public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
         //提取URL和PATH信息
         Set<String> uriSet = findUriInfo(msgInfo);
-        //拆分提取的URL和PATH为两个set 用于进一步处理操作
+        stdout_println(LOG_DEBUG, String.format("[*] 所有采集UR数量:%s", uriSet.size()));
+
+        //拆分提取的URL和PATH为两个 List 用于进一步处理操作
         Map<String, List> map = SeparateUrlOrPath(uriSet);
+
+        ///////////////////////////采集URL处理///////////////////////
         List<String> urlList = map.get(URL_KEY);
-        List<String> pathList = map.get(PATH_KEY);
+        stdout_println(LOG_DEBUG, String.format("[*] 初步采集URL数量:%s -> %s", urlList.size(), urlList));
 
-        //去重数据
+        //过滤重复内容
         urlList = removeDuplicates(urlList);
-        pathList = removeDuplicates(pathList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s -> %s", urlList.size(), urlList));
 
-        //过滤无用的请求URL
-        urlList = filterUrlByHost(msgInfo.getReqRootDomain(),  urlList); //仅保留（主）域名的URL
-        urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
-
-        //过滤无用的PATH内容
-        pathList = filterPathByContainUselessKey(pathList); //过滤包含禁止关键字的PATH
-        pathList = filterPathByEqualUselessPath(pathList); //过滤等于禁止PATH的PATH
-        pathList = filterPathByContainChinese(pathList); //过滤包含中文的PATH
-        //TODO:过滤功能不正常 需要调试修复
+        //仅保留（主）域名的URL
+        urlList = filterUrlByHost(msgInfo.getReqRootDomain(),  urlList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s -> %s", urlList.size(), urlList));
 
         //过滤自身包含的URL (包含说明相同)
-        urlList = filterUrlBySelf(msgInfo.getReqUrl(),  urlList); //过滤自身包含的URL (包含说明相同)
-        pathList = filterUrlBySelf(msgInfo.getReqPath(),  pathList); //过滤自身包含的Path (包含说明相同)
+        urlList = filterUrlBySelf(msgInfo.getReqUrl(),  urlList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的URL:%s -> %s", urlList.size(), urlList));
 
+        //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
+        urlList = filterUrlByConfig(urlList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤配置禁用URL:%s -> %s", urlList.size(), urlList));
+
+        ///////////////////////////采集PATH处理///////////////////////
+        List<String> pathList = map.get(PATH_KEY);
+        stdout_println(LOG_DEBUG, String.format("[*] 初步采集PATH数量:%s -> %s", urlList.size(), urlList));
+
+        //过滤重复内容
+        pathList = removeDuplicates(pathList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s -> %s", pathList.size(), pathList));
+
+        //过滤自身包含的Path (包含说明相同)
+        pathList = filterUrlBySelf(msgInfo.getReqPath(),  pathList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s -> %s", pathList.size(), pathList));
+
+        //过滤包含中文的PATH
+        pathList = filterPathByContainChinese(pathList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤中文PATH内容:%s -> %s", pathList.size(), pathList));
+
+        //过滤包含禁止关键字的PATH
+        pathList = filterPathByContainUselessKey(pathList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤包含禁止关键字的PATH:%s -> %s", pathList.size(), pathList));
+
+        //过滤等于禁止PATH的PATH
+        pathList = filterPathByEqualUselessPath(pathList);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤等于禁止PATH的PATH:%s -> %s", pathList.size(), pathList));
+
+        //TODO:过滤功能不正常 需要调试修复
         // 实现响应敏感信息提取
         JSONArray findInfoArray = findSensitiveInfoByConfig(msgInfo);
-        stdout_println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
+        stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
-        stdout_println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
+        stdout_println(LOG_DEBUG, String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
         for (String s : urlList)
-            stdout_println(String.format("[*] INFO URL: %s", s));
+            stdout_println(LOG_DEBUG, String.format("[*] INFO URL: %s", s));
 
-        stdout_println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
+        stdout_println(LOG_DEBUG, String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
         for (String s : pathList)
-            stdout_println(String.format("[*] INFO PATH: %s", s));
+            stdout_println(LOG_DEBUG, String.format("[*] INFO PATH: %s", s));
 
         // 创建一个 JSONObject 用来组合这三个 结果 JSONArray
         JSONObject analyseInfo = new JSONObject();
         analyseInfo.put(URL_KEY, urlList);
         analyseInfo.put(PATH_KEY, pathList);
         analyseInfo.put(INFO_KEY, findInfoArray);
-        stdout_println(String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
+        stdout_println(LOG_DEBUG, String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
         return analyseInfo;
     }
 
@@ -141,14 +168,14 @@ public class InfoAnalyse {
 
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
-        stdout_println(String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
+        stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
         uriSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
         if (ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
-            stdout_println(String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
+            stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             uriSet.addAll(extractUriFromJs);
         }
 
@@ -195,7 +222,7 @@ public class InfoAnalyse {
                 if(ElementUtils.isContainAllKey(willFindText, rule.getKeyword(), false)){
                     //匹配关键字模式成功,应该标记敏感信息
                     JSONObject findInfo = generateInfoJson(rule, String.valueOf(rule.getKeyword()));
-                    stdout_println(String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
+                    stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                     findInfosSet.add(findInfo);
                 }
 
@@ -205,7 +232,7 @@ public class InfoAnalyse {
                     Set<String> groups = regularMatchInfo(willFindText, patter);
                     if (groups.size() > 0){
                         JSONObject findInfo = generateInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
-                        stdout_println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
+                        stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                         findInfosSet.add(findInfo);
                     }
                 }
@@ -291,7 +318,6 @@ public class InfoAnalyse {
             Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
             while (matcher.find()) {
                 String matchUrl = matcher.group();
-                //stdout_println(String.format("[*] 初步提取信息:%s", matchUrl));
                 //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
                 if (!matchUrl.contains("http") && matchUrl.startsWith("/")) {
                     try {

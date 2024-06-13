@@ -9,8 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static utils.BurpPrintUtils.stderr_println;
-import static utils.BurpPrintUtils.stdout_println;
+import static utils.BurpPrintUtils.*;
 
 public class BurpFileUtils {
     /**
@@ -106,11 +105,11 @@ public class BurpFileUtils {
         String configPath = concatPath(extensionPath, configName);
 
         if(isFileExists(configPath)){
-            stdout_println(String.format("[+] Custom Config File Path: %s", configPath));
+            stdout_println(LOG_INFO, String.format("[+] Custom Config File Path: %s", configPath));
             configJson = readFileToString(configPath);
         }else {
             configName = String.format("conf/%s", configName);
-            stdout_println(String.format("[+] User Jar File Inner Config: %s -> %s", extensionPath, configName));
+            stdout_println(LOG_INFO, String.format("[+] User Jar File Inner Config: %s -> %s", extensionPath, configName));
             configJson = readResourceToString(configName);
         }
         return configJson;

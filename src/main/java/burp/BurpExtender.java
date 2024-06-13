@@ -117,7 +117,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                             }
                     }
 
-                    stdout_println(String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
+                    stdout_println(LOG_INFO, String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
                 }
             }
 
@@ -136,19 +136,19 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         }});
 
         //表示打印成功
-        stdout_println(String.format("[+] %s Load success ...", this.extensionName));
+        stdout_println(LOG_INFO, String.format("[+] %s Load success ...", this.extensionName));
     }
 
     @Override
     public void extensionUnloaded() {
         // 扩展卸载时，立刻关闭线程池
-        stdout_println("[+] Plugin will unloaded, cleaning resources...");
+        stdout_println(LOG_DEBUG, "[+] Plugin will unloaded, cleaning resources...");
 
         // 立刻关闭线程池
         if (iProxyScanner.executorService != null) {
             // 尝试立即关闭所有正在执行的任务
             List<Runnable> notExecutedTasks = iProxyScanner.executorService.shutdownNow();
-            stdout_println("[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
+            stdout_println(LOG_DEBUG, "[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
         }
 
         //Todo: 停止面板更新器, 待实现数据查询面板
@@ -157,13 +157,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         // 关闭数据库连接
         if (dbService != null) {
             dbService.closeConnection();
-            stdout_println("[+] 断开数据连接成功.");
+            stdout_println(LOG_DEBUG, "[+] 断开数据连接成功.");
         }
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();
-        stdout_println("[+] 定时爬去任务断开成功.");
+        stdout_println(LOG_DEBUG, "[+] 定时爬去任务断开成功.");
 
-        stdout_println(String.format("[-] %s Unloaded ...", this.extensionName));
+        stdout_println(LOG_INFO, String.format("[-] %s Unloaded ...", this.extensionName));
     }
 }
