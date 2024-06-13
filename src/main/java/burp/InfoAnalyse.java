@@ -226,7 +226,8 @@ public class InfoAnalyse {
         respBody = SubString(respBody, MAX_HANDLE_SIZE);
 
         // 针对html页面提取 直接的URL 已完成
-        List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
+        Set<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
+
         stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
         uriSet.addAll(extractUrlsFromHtml);
 

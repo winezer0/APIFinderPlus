@@ -272,6 +272,11 @@ public class InfoAnalyseUtils {
         return groups;
     }
 
+    /**
+     * 判断提取的信息是否是有效的
+     * @param group
+     * @return
+     */
     private static boolean isUsefulValue(String group) {
         String BlackValues = "admin@admin.com";
         if (isEqualsOneKey(group, BlackValues, false)){
@@ -310,13 +315,13 @@ public class InfoAnalyseUtils {
      * @param htmlText
      * @return
      */
-    public static List<String> extractDirectUrls(String reqUrl, String htmlText) {
+    public static Set<String> extractDirectUrls(String reqUrl, String htmlText) {
         // 使用正则表达式提取文本内容中的 URL
-        List<String> urlList = new ArrayList<>();
+        Set<String> urlSet = new HashSet<>();
 
         //直接跳过没有http关键字的场景
         if (!htmlText.contains("http")){
-            return urlList;
+            return urlSet;
         }
 
         // html文件内容长度
@@ -342,10 +347,10 @@ public class InfoAnalyseUtils {
                         continue;
                     }
                 }
-                urlList.add(matchUrl);
+                urlSet.add(matchUrl);
             }
         }
-        return urlList;
+        return urlSet;
     }
 
 
