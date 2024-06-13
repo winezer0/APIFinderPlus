@@ -4,11 +4,15 @@ import burp.BurpExtender;
 import burp.IHttpRequestResponse;
 import burp.IHttpService;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 
 public class BurpHttpUtils {
@@ -67,5 +71,53 @@ public class BurpHttpUtils {
 
         return onePathData;
 
+    }
+
+    /**
+     * 实现Gzip数据的解压
+     * @param compressed
+     * @return
+     * @throws IOException
+     */
+    public static byte[] gzipDecompress(byte[] compressed) throws IOException {
+        if (compressed == null || compressed.length == 0) {
+            return null;
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        GZIPInputStream gunzip = new GZIPInputStream(new ByteArrayInputStream(compressed));
+
+        byte[] buffer = new byte[256];
+        int n;
+        while ((n = gunzip.read(buffer)) >= 0) {
+            out.write(buffer, 0, n);
+        }
+
+        // Close the streams
+        gunzip.close();
+        out.close();
+
+        // Get the uncompressed data
+        return out.toByteArray();
+    }
+
+    /**
+     * 实现多个bytes数组的相加
+     * @param arrays
+     * @return
+     */
+    public static byte[] concatenateByteArrays(byte[]... arrays) {
+        int length = 0;
+        for (byte[] array : arrays) {
+            length += array.length;
+        }
+
+        byte[] result = new byte[length];
+        int offset = 0;
+        for (byte[] array : arrays) {
+            System.arraycopy(array, 0, result, offset, array.length);
+            offset += array.length;
+        }
+        return result;
     }
 }
