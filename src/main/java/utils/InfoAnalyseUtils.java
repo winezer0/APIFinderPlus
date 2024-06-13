@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
-import model.RespInfo;
+import model.AnalyseInfo;
 
 import java.io.PrintWriter;
 import java.net.URI;
@@ -20,7 +20,7 @@ import java.util.regex.PatternSyntaxException;
 import static burp.BurpExtender.*;
 
 
-public class InfoAnalysis {
+public class InfoAnalyseUtils {
     private static final PrintWriter stdout = BurpExtender.getStdout();
     private static final PrintWriter stderr = BurpExtender.getStderr();
 
@@ -43,7 +43,7 @@ public class InfoAnalysis {
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字节，则截断
     private static final int RESULT_SIZE = 1024;
 
-    public static RespInfo analysisMsgInfo(HttpMsgInfo msgInfo) {
+    public static AnalyseInfo analysisMsgInfo(HttpMsgInfo msgInfo) {
         //提取URL和PATH信息
         Set<String> uriSet = findUriInfo(msgInfo);
         //拆分提取的URL和PATH为两个set 用于进一步处理操作
@@ -72,7 +72,7 @@ public class InfoAnalysis {
         stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
         //返回敏感信息内容
-        RespInfo respInfo = new RespInfo();
+        AnalyseInfo respInfo = new AnalyseInfo();
         respInfo.setUrlList(urlList);
         respInfo.setPathList(pathList);
         respInfo.setInfoArray(findInfoArray);

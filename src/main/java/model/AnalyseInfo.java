@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //存储响应提取信息的模型
-public class RespInfo {
+public class AnalyseInfo {
     List<String> urlList = new ArrayList<>();
     List<String> pathList = new ArrayList<>();
     JSONArray infoArray = new JSONArray();
