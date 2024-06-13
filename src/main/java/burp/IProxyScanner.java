@@ -1,9 +1,10 @@
 package burp;
 
+import com.alibaba.fastjson2.JSONObject;
+import dataModel.AnalyseDataTable;
 import dataModel.MsgDataTable;
 import dataModel.RecordUrlsTable;
 import dataModel.ReqDataTable;
-import model.AnalyseInfo;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 import utils.ElementUtils;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
+import static utils.InfoAnalyseUtils.analyseInfoIsNotEmpty;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -88,7 +90,7 @@ public class IProxyScanner implements IProxyListener {
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
             if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && ElementUtils.isEqualsOneKey(msgInfo.getRespStatus(), CONF_NEED_RECORD_STATUS, true)){
                 urlPathRecordMap.add(msgInfo.getReqBasePath());
-                stdout.println(String.format("[+] Record Url: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
+                stdout.println(String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -190,11 +192,15 @@ public class IProxyScanner implements IProxyListener {
                             HttpMsgInfo oneMsgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
 
                             //分析请求数据
-                            AnalyseInfo analysisResult = InfoAnalyseUtils.analysisMsgInfo(oneMsgInfo);
-                            //TODO 将分析结果写入数据库
+                            JSONObject analyseInfo = InfoAnalyseUtils.analysisMsgInfo(oneMsgInfo);
+                            //将分析结果写入数据库
+                            if(analyseInfoIsNotEmpty(analyseInfo)){
+                                int analyseDataIndex = AnalyseDataTable.insertAnalyseData(oneMsgInfo, analyseInfo);
+                                if (analyseDataIndex > 0)
+                                    stdout.println(String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", oneMsgInfo.getReqUrl(), oneMsgInfo.getMsgHash()));
+                            }
                         }
                     }
-
 
                 } catch (Exception e) {
                     stderr.println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));

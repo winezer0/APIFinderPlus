@@ -6,7 +6,6 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
-import model.AnalyseInfo;
 
 import java.io.PrintWriter;
 import java.net.URI;
@@ -35,6 +34,7 @@ public class InfoAnalyseUtils {
 
     public static final String URL_KEY = "url";
     public static final String PATH_KEY = "path";
+    public static final String INFO_KEY = "info";
 
     public static final String type = "type";
     public static final String describe = "describe";
@@ -45,7 +45,7 @@ public class InfoAnalyseUtils {
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字节，则截断
     private static final int RESULT_SIZE = 1024;
 
-    public static AnalyseInfo analysisMsgInfo(HttpMsgInfo msgInfo) {
+    public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
         //提取URL和PATH信息
         Set<String> uriSet = findUriInfo(msgInfo);
         //拆分提取的URL和PATH为两个set 用于进一步处理操作
@@ -74,12 +74,31 @@ public class InfoAnalyseUtils {
         stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
         //返回敏感信息内容
-        AnalyseInfo analyseInfo = new AnalyseInfo();
-        analyseInfo.setUrlList(urlList);
-        analyseInfo.setPathList(pathList);
-        analyseInfo.setInfoArray(findInfoArray);
+        // 创建一个 JSONObject 用来组合这三个 结果 JSONArray
+        JSONObject analyseInfo = new JSONObject();
+        analyseInfo.put(URL_KEY, urlList);
+        analyseInfo.put(PATH_KEY, pathList);
+        analyseInfo.put(INFO_KEY, findInfoArray);
+        stdout.println(String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
+
+        //TODO 需要重做去重功能 URL去重不成功
+        //TODO 分析的URL需要排除网站自身根目录 | 自身URL
+        //TODO 需要格式化提取的URL
+
         return analyseInfo;
     }
+
+    /**
+     * 判断提取的敏感信息是否都为空值
+     * @param analyseInfo
+     * @return
+     */
+    public static boolean analyseInfoIsNotEmpty(JSONObject analyseInfo) {
+        return analyseInfo.getJSONArray(URL_KEY).size()>0
+                || analyseInfo.getJSONArray(PATH_KEY).size()>0
+                || analyseInfo.getJSONArray(INFO_KEY).size()>0;
+    }
+
 
     /**
      * 提取响应体中的URL和PATH
