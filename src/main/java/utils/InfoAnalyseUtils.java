@@ -55,8 +55,10 @@ public class InfoAnalyseUtils {
         //过滤无用的请求URL
         urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
 
-        // Todo: 优化思路 可选择关闭|改为主域名 增加攻击面
-        urlList = filterUrlByHost(msgInfo.getReqHost(),  urlList); //仅保留本域名的URL
+        //已优化 获取本主域名的URL资产 后续可以修改为空 增加攻击面
+        System.out.println(String.format("当前URL:%s HOST:%s RootDomain:%s",
+                msgInfo.getReqUrl(), msgInfo.getReqHost(), msgInfo.getReqRootDomain()));
+        urlList = filterUrlByHost(msgInfo.getReqRootDomain(),  urlList); //仅保留本域名的URL
         // Todo: 格式化提取的URL 排除网站自身根目录 | 自身URL
 
         stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
