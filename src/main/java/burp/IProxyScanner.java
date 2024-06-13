@@ -203,8 +203,13 @@ public class IProxyScanner implements IProxyListener {
                         stdout.println(String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                     else return;
 
+                    //TODO:PATH过滤功能不正常 需要调试修复
 
+                    //todo: 处理API路径,计算出正式URL
 
+                    //todo: 增加自动递归查询功能
+
+                    //todo: 增加按级别设置输出功能
                 } catch (Exception e) {
                     stderr.println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();

@@ -42,6 +42,7 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- 将 java util box 的内容复制进来 便于改造-->
         <!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
         <dependency>
             <groupId>commons-net</groupId>

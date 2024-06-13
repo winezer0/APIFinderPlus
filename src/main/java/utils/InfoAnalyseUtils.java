@@ -52,33 +52,35 @@ public class InfoAnalyseUtils {
         List<String> urlList = map.get(URL_KEY);
         List<String> pathList = map.get(PATH_KEY);
 
-        //过滤无用的请求URL
-        urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
-        //已优化 获取本主域名的URL资产 后续可以修改为空 增加攻击面
-        System.out.println(String.format("当前URL:%s HOST:%s RootDomain:%s",
-                msgInfo.getReqUrl(), msgInfo.getReqHost(), msgInfo.getReqRootDomain()));
-        urlList = filterUrlByHost(msgInfo.getReqRootDomain(),  urlList); //仅保留本域名的URL
-        // Todo: 格式化提取的URL 排除网站自身根目录 | 自身URL
+        //去重数据
+        urlList = removeDuplicates(urlList);
+        pathList = removeDuplicates(pathList);
 
-        stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
-        for (String s : urlList)
-            stdout.println(String.format("[*] INFO URL: %s", s));
+        //过滤无用的请求URL
+        urlList = filterUrlByHost(msgInfo.getReqRootDomain(),  urlList); //仅保留（主）域名的URL
+        urlList = filterUrlByConfig(urlList); //根据用户配置的黑名单域名|路径|后缀 信息过滤无用的URL
 
         //过滤无用的PATH内容
         pathList = filterPathByContainUselessKey(pathList); //过滤包含禁止关键字的PATH
         pathList = filterPathByEqualUselessPath(pathList); //过滤等于禁止PATH的PATH
         pathList = filterPathByContainChinese(pathList); //过滤包含中文的PATH
-        stdout.println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
-        for (String s : pathList)
-            stdout.println(String.format("[*] INFO PATH: %s", s));
+        //TODO:过滤功能不正常 需要调试修复
+
+        //过滤自身包含的URL (包含说明相同)
+        urlList = filterUrlBySelf(msgInfo.getReqUrl(),  urlList); //过滤自身包含的URL (包含说明相同)
+        pathList = filterUrlBySelf(msgInfo.getReqPath(),  pathList); //过滤自身包含的Path (包含说明相同)
 
         // 实现响应敏感信息提取
         JSONArray findInfoArray = findSensitiveInfoByConfig(msgInfo);
         stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
-        //去重数据
-        urlList = removeDuplicates(urlList);
-        pathList = removeDuplicates(pathList);
+        stdout.println(String.format("[+] 有效URL数量: %s -> %s", msgInfo.getReqUrl(), urlList.size()));
+        for (String s : urlList)
+            stdout.println(String.format("[*] INFO URL: %s", s));
+
+        stdout.println(String.format("[+] 有效PATH数量: %s -> %s", msgInfo.getReqUrl(), pathList.size()));
+        for (String s : pathList)
+            stdout.println(String.format("[*] INFO PATH: %s", s));
 
         // 创建一个 JSONObject 用来组合这三个 结果 JSONArray
         JSONObject analyseInfo = new JSONObject();
@@ -87,6 +89,24 @@ public class InfoAnalyseUtils {
         analyseInfo.put(INFO_KEY, findInfoArray);
         stdout.println(String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
         return analyseInfo;
+    }
+
+    /**
+     * 过滤提取的值 在请求字符串内的项
+     * @param baseUri
+     * @param matchUriList
+     * @return
+     */
+    public static List<String> filterUrlBySelf(String baseUri, List<String> matchUriList) {
+        if (baseUri == null || baseUri == "" || matchUriList == null || matchUriList.isEmpty()) return matchUriList;
+
+        List<String> list = new ArrayList<>();
+        for (String uri : matchUriList){
+            if (!baseUri.contains(uri))  {
+                System.out.println(String.format("%s 不包含 %s", baseUri, uri));
+                list.add(uri);}
+        }
+        return list;
     }
 
     /**
@@ -126,14 +146,14 @@ public class InfoAnalyseUtils {
 
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
-        stdout.println(String.format("[*] 初步提取的URL数量: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
+        stdout.println(String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
         uriSet.addAll(extractUrlsFromHtml);
 
         // 针对JS页面提取
         if (ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
-            stdout.println(String.format("[*] 初步提取的URI数量: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
+            stdout.println(String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             uriSet.addAll(extractUriFromJs);
         }
 
