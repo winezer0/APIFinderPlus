@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.CRC32;
+import static com.bit4woo.utilbox.utils.DomainUtils.getRootDomain;
 
 //创建一个类用于存储 代理 流量的解析结果
 public class HttpMsgInfo {
@@ -19,6 +20,7 @@ public class HttpMsgInfo {
     private String reqMethod = null;
     private String reqProto = null;
     private String reqHost = null;
+    private String reqRootDomain = null;
     private int reqPort = -1;
     private String reqPath = null;
     private String reqPathExt = null;
@@ -96,6 +98,8 @@ public class HttpMsgInfo {
             reqProto = urlObj.getProtocol();
             //从URL中获取请求host
             reqHost = urlObj.getHost();
+            //获取主域名
+            reqRootDomain = getRootDomain(reqHost);
             //从URL中获取请求Port
             reqPort = urlObj.getPort();
             //解析请求文件的后缀
@@ -279,6 +283,10 @@ public class HttpMsgInfo {
 
     public int getRespBodyOffset() {
         return respBodyOffset;
+    }
+
+    public String getReqRootDomain() {
+        return reqRootDomain;
     }
 
     public void setRespBytes(byte[] respBytes) {
