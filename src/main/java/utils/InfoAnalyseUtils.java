@@ -74,11 +74,11 @@ public class InfoAnalyseUtils {
         stdout.println(String.format("[+] 敏感信息数量:%s -> %s", findInfoArray.size(), findInfoArray.toJSONString()));
 
         //返回敏感信息内容
-        AnalyseInfo respInfo = new AnalyseInfo();
-        respInfo.setUrlList(urlList);
-        respInfo.setPathList(pathList);
-        respInfo.setInfoArray(findInfoArray);
-        return respInfo;
+        AnalyseInfo analyseInfo = new AnalyseInfo();
+        analyseInfo.setUrlList(urlList);
+        analyseInfo.setPathList(pathList);
+        analyseInfo.setInfoArray(findInfoArray);
+        return analyseInfo;
     }
 
     /**
