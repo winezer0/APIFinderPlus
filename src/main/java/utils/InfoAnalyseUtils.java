@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static utils.BurpPrintUtils.*;
+import static utils.ElementUtils.isEqualsOneKey;
 
 public class InfoAnalyseUtils {
     public static final String URL_KEY = "URL_KEY";
@@ -34,12 +35,13 @@ public class InfoAnalyseUtils {
     public static List<String> filterPathByEqualUselessPath(List<String> matchList, List<String>  blackPathEquals) {
         List<String> newList = new ArrayList<>();
         for (String path : matchList){
-            if(!ElementUtils.isEqualsOneKey(path, blackPathEquals, false)){
+            if(!isEqualsOneKey(path, blackPathEquals, false)){
                 newList.add(path);
             }
         }
         return newList;
     }
+
 
     /**
      * 过滤无用的提取路径 通过判断是否包含无用关键字
@@ -58,6 +60,7 @@ public class InfoAnalyseUtils {
         return newList;
     }
 
+
     /**
      * 过滤无用的提取路径 通过判断是否包含中文路径
      * @param matchList
@@ -74,6 +77,7 @@ public class InfoAnalyseUtils {
         }
         return newList;
     }
+
 
     /**
      * 过滤黑名单HOST域名
@@ -101,6 +105,7 @@ public class InfoAnalyseUtils {
         return list;
     }
 
+
     /**
      * 过滤黑名单后缀名 图片后缀之类的不需要提取请求信息
      * @param urls
@@ -113,7 +118,7 @@ public class InfoAnalyseUtils {
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {
             String suffix = HttpMsgInfo.parseUrlExt(urlStr);
-            if (!ElementUtils.isEqualsOneKey(suffix, blackSuffixes, false)) {
+            if (!isEqualsOneKey(suffix, blackSuffixes, false)) {
                 list.add(urlStr);
             }else {
                 stdout_println(LOG_DEBUG, String.format("[*] Black Suffix Filter %s", urlStr));
@@ -121,6 +126,7 @@ public class InfoAnalyseUtils {
         }
         return list;
     }
+
 
     /**
      * 过滤黑名单路径 /jquery.js 之类的不需要提取信息
@@ -148,6 +154,7 @@ public class InfoAnalyseUtils {
         return list;
     }
 
+
     /**
      * 过滤提取的值 在请求字符串内的项
      * @param baseUri
@@ -165,6 +172,7 @@ public class InfoAnalyseUtils {
         }
         return list;
     }
+
 
     /**
      * 过滤提取出的URL列表 仅保留自身域名的
@@ -191,12 +199,14 @@ public class InfoAnalyseUtils {
         return newUrlList;
     }
 
+
     /**
      * List<String> list 元素去重
      */
     public static List<String> removeDuplicates(List<String> list) {
         return new ArrayList<>(new HashSet<>(list));
     }
+
 
     /**
      * 拆分提取出来的Url集合中的URl和Path
@@ -221,6 +231,7 @@ public class InfoAnalyseUtils {
         return setMap;
     }
 
+
     /**
      * 正则提取文本中的内容
      * @param willFindText
@@ -240,9 +251,14 @@ public class InfoAnalyseUtils {
                     String group = matcher.group();
                     //格式化响应
                     group = removeSymbol(group);
+                    
                     //响应超过长度时 截断
-                    if (group.length() > RESULT_SIZE) group = group.substring(0, RESULT_SIZE);
-                    groups.add(group);
+                    if (group.length() > RESULT_SIZE)
+                        group = group.substring(0, RESULT_SIZE);
+
+                    //判断group是否存在价值
+                    if (isUsefulValue(group))
+                        groups.add(group);
                 }
             }
         } catch (PatternSyntaxException e) {
@@ -256,6 +272,24 @@ public class InfoAnalyseUtils {
         return groups;
     }
 
+    private static boolean isUsefulValue(String group) {
+        String BlackValues = "admin@admin.com";
+        if (isEqualsOneKey(group, BlackValues, false)){
+            stderr_println(LOG_DEBUG, String.format("提取结果 [%s] 禁止保存", group));
+            return false;
+        }
+
+        if (group.contains(":")){
+            if (group.split(":", 2)[1].trim()==""){
+                stderr_println(LOG_DEBUG, String.format("提取结果 [%s] 没有价值", group));
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
     /**
      * 从文本中截取指定长度的响应
      * @param text
@@ -268,6 +302,7 @@ public class InfoAnalyseUtils {
         }
         return text;
     }
+
 
     /**
      * 从html内容中提取url信息
@@ -313,6 +348,7 @@ public class InfoAnalyseUtils {
         return urlList;
     }
 
+
     /**
      * 从Js内容中提取uri/url信息
      * @param jsText
@@ -355,6 +391,7 @@ public class InfoAnalyseUtils {
 
         return findUris;
     }
+
 
     /**
      * 对提取的信息进行简单的格式处理

@@ -96,6 +96,7 @@ public class InfoAnalyse {
         return pathList;
     }
 
+
     /**
      * 过滤提取的URL
      * @param msgInfo
@@ -146,6 +147,7 @@ public class InfoAnalyse {
         return findInfo;
     }
 
+
     /**
      * 根据规则提取敏感信息
      * @param msgInfo
@@ -180,7 +182,6 @@ public class InfoAnalyse {
                 continue;
             }
 
-            // 开始提取操作
             //多个关键字匹配
             if (rule.getMatch().equals("keyword"))
                 if(ElementUtils.isContainAllKey(willFindText, rule.getKeyword(), false)){
