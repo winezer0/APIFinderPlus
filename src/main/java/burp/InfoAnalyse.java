@@ -1,11 +1,10 @@
-package utils;
+package burp;
 
-import burp.BurpExtender;
-import burp.IExtensionHelpers;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
+import utils.ElementUtils;
 
 import java.io.PrintWriter;
 import java.net.URI;
@@ -19,7 +18,7 @@ import java.util.regex.PatternSyntaxException;
 
 import static burp.BurpExtender.*;
 
-public class InfoAnalyseUtils {
+public class InfoAnalyse {
     private static final PrintWriter stdout = BurpExtender.getStdout();
     private static final PrintWriter stderr = BurpExtender.getStderr();
     private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;

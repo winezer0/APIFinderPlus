@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static utils.InfoAnalyseUtils.*;
+import static burp.InfoAnalyse.*;
 
 public class AnalyseDataTable {
     private static final PrintWriter stdout = BurpExtender.getStdout();

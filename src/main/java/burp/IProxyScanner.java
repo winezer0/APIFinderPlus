@@ -8,7 +8,6 @@ import dataModel.ReqDataTable;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 import utils.ElementUtils;
-import utils.InfoAnalyseUtils;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -16,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static utils.InfoAnalyseUtils.analyseInfoIsNotEmpty;
+import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -193,7 +192,7 @@ public class IProxyScanner implements IProxyListener {
 
                     //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
                     HttpMsgInfo msgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
-                    JSONObject analyseInfo = InfoAnalyseUtils.analysisMsgInfo(msgInfo);
+                    JSONObject analyseInfo = InfoAnalyse.analysisMsgInfo(msgInfo);
                     if(!analyseInfoIsNotEmpty(analyseInfo))
                         return;
 
