@@ -285,7 +285,6 @@ public class DomainUtils {
             int lastIndex = inputDomain.lastIndexOf(".");
             if (lastIndex != -1 && lastIndex + 1 <= inputDomain.length()) {
                 String suffix = inputDomain.substring(lastIndex + 1);
-                System.out.println(suffix);
                 if (customPublicSuffixes.contains(suffix)) {
                     int secondLastIndex = inputDomain.lastIndexOf(".", lastIndex - 1);
                     if (secondLastIndex != -1 && secondLastIndex + 1 <= inputDomain.length()) {
