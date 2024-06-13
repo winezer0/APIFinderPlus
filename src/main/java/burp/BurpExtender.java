@@ -70,9 +70,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         this.helpers = callbacks.getHelpers();
         this.stdout = new PrintWriter(callbacks.getStdout(), true);
         this.stderr = new PrintWriter(callbacks.getStderr(), true);
-
-        //初始化输出类
-        BurpPrintUtils burpPrintUtils = new BurpPrintUtils();
+        new BurpPrintUtils(this.stdout, this.stderr);  //初始化输出类
 
         SwingUtilities.invokeLater(new Runnable() { public void run() {
             // 读取配置文件参数
