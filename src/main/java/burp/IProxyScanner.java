@@ -76,7 +76,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //匹配黑名单域名
-            if(ElementUtils.isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_DOMAIN, false)){
+            if(ElementUtils.isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_HOSTS, false)){
                 stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }

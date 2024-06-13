@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static burp.InfoAnalyse.*;
+import static utils.InfoAnalyseUtils.*;
 
 public class AnalyseDataTable {
     //数据表名称

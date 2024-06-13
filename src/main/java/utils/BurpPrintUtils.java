@@ -32,9 +32,12 @@ public class BurpPrintUtils {
      * @param msg
      */
     public static void stdout_println(Integer msgLevel, Object msg){
-        if(msgLevel <=  SHOW_MSG_LEVEL){
+        if(msgLevel <=  SHOW_MSG_LEVEL)
             stdout.println(msg);
-        }
+
+        //显示到系统窗口,便于调试
+        if (SHOW_MSG_LEVEL >= LOG_DEBUG)
+            System.out.println(msg);
     }
 
 
@@ -44,9 +47,12 @@ public class BurpPrintUtils {
      * @param msg
      */
     public static void stderr_println(Integer msgLevel, Object msg){
-        if(msgLevel <=  SHOW_MSG_LEVEL){
+        if(msgLevel <=  SHOW_MSG_LEVEL)
             stderr.println(msg);
-        }
+
+        //显示到系统窗口,便于调试
+        if (SHOW_MSG_LEVEL >= LOG_DEBUG)
+            System.out.println(msg);
     }
 
 
@@ -56,9 +62,8 @@ public class BurpPrintUtils {
      * @param msg
      */
     public static void system_println(Integer msgLevel, Object msg){
-        if(msgLevel <=  SHOW_MSG_LEVEL){
+        if(msgLevel <=  SHOW_MSG_LEVEL)
             System.out.println(msg);
-        }
     }
 
     public static void stdout_println(Object msg){
