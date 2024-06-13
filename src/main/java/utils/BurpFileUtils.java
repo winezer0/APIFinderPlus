@@ -2,6 +2,7 @@ package utils;
 
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
+import burp.IExtensionHelpers;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -9,8 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class BurpFileUtils {
-    private static PrintWriter stdout = BurpExtender.getStdout();
-    private static PrintWriter stderr = BurpExtender.getStderr();
+    private static final PrintWriter stdout = BurpExtender.getStdout();
+    private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     /**
      * 检查指定路径的文件是否存在

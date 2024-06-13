@@ -1,27 +1,26 @@
 package burp;
 
-import dataModel.RecordUrlsTable;
 import dataModel.MsgDataTable;
+import dataModel.RecordUrlsTable;
 import dataModel.ReqDataTable;
+import model.AnalyseInfo;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
-import model.AnalyseInfo;
 import utils.ElementUtils;
 import utils.InfoAnalyseUtils;
 
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static utils.ElementUtils.isContainOneKey;
-import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
-    private static PrintWriter stdout = BurpExtender.getStdout();
-    private static PrintWriter stderr = BurpExtender.getStderr();
-    private static IExtensionHelpers helpers = BurpExtender.getHelpers();
+    private static final PrintWriter stdout = BurpExtender.getStdout();
+    private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
     private static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash

@@ -11,9 +11,9 @@ import java.util.zip.CRC32;
 
 //创建一个类用于存储 代理 流量的解析结果
 public class HttpMsgInfo {
-    private static PrintWriter stdout = BurpExtender.getStdout();
-    private static PrintWriter stderr = BurpExtender.getStderr();
-    private static IExtensionHelpers helpers = BurpExtender.getHelpers();;
+    private static final PrintWriter stdout = BurpExtender.getStdout();
+    private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     private String reqUrl = null;
     private String reqMethod = null;

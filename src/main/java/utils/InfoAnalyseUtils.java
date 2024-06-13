@@ -1,6 +1,7 @@
 package utils;
 
 import burp.BurpExtender;
+import burp.IExtensionHelpers;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
@@ -23,6 +24,7 @@ import static burp.BurpExtender.*;
 public class InfoAnalyseUtils {
     private static final PrintWriter stdout = BurpExtender.getStdout();
     private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     static final int CHUNK_SIZE = 20000; // 分割大小
     private static final Pattern FIND_URL_FROM_HTML_PATTERN = Pattern.compile("(http|https)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");

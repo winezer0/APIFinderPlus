@@ -8,9 +8,9 @@ import java.io.PrintWriter;
 import java.sql.*;
 
 public class RecordUrlsTable {
-    private static PrintWriter stdout = BurpExtender.getStdout();
-    private static PrintWriter stderr = BurpExtender.getStderr();
-    private static IExtensionHelpers helpers = BurpExtender.getHelpers();
+    private static final PrintWriter stdout = BurpExtender.getStdout();
+    private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     //数据表名称
     static String tableName = "record_urls";

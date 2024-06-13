@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DBService {
-    private static PrintWriter stdout = BurpExtender.getStdout();
-    private static PrintWriter stderr = BurpExtender.getStderr();
-    private static IExtensionHelpers helpers = BurpExtender.getHelpers();
+    private static final PrintWriter stdout = BurpExtender.getStdout();
+    private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     //指定sqlite数据库配置文件路径
     private static final String CONNECTION_STRING = "jdbc:sqlite:" + BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinder.db");

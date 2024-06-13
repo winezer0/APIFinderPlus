@@ -6,9 +6,9 @@ import java.io.PrintWriter;
 import java.util.List;
 
 public class ElementUtils {
-    private static PrintWriter stdout = BurpExtender.getStdout();
-    private static PrintWriter stderr = BurpExtender.getStderr();
-    private static IExtensionHelpers helpers = BurpExtender.getHelpers();;
+    private static final PrintWriter stdout = BurpExtender.getStdout();
+    private static final PrintWriter stderr = BurpExtender.getStderr();
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
     /**
      * 判断字符串 是否 等于 元素列表中的任意元素 忽略大小写
