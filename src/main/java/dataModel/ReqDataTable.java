@@ -21,16 +21,17 @@ public class ReqDataTable {
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n".replace("tableName", tableName)
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + "msg_id TEXT,\n"
-            + "msg_hash TEXT,\n"
+            + "msg_id TEXT NOT NULL,\n"
+            + "msg_hash TEXT NOT NULL,\n"
             + "req_url TEXT NOT NULL,\n"
-            + "req_proto TEXT,\n"
-            + "req_host TEXT, \n"
-            + "req_port INTEGER,\n"
-            + "req_method TEXT,\n"
-            + "resp_status TEXT,\n"
-            + "msg_data_index INTEGER,\n"
-            + "run_status TEXT\n"
+            + "req_proto TEXT NOT NULL,\n"
+            + "req_host TEXT NOT NULL, \n"
+            + "req_port INTEGER NOT NULL,\n"
+            + "req_method TEXT NOT NULL,\n"
+            + "resp_status TEXT NOT NULL,\n"
+            + "msg_data_index INTEGER NOT NULL,\n"
+            + "run_status TEXT NOT NULL,\n"
+            + "req_source TEXT NOT NULL\n" //请求来源
             + ");";
 
 
@@ -39,7 +40,7 @@ public class ReqDataTable {
     public static final String ANALYSE_END = "解析完成";
 
     //插入数据库
-    public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex) {
+    public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex, String reqSource) {
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?".replace("tableName", tableName);
@@ -55,8 +56,8 @@ public class ReqDataTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(msg_id, msg_hash, req_url, req_proto, req_host, req_port, req_method, resp_status, msg_data_index, run_status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "(msg_id, msg_hash, req_url, req_proto, req_host, req_port, req_method, resp_status, msg_data_index, run_status, req_source) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setInt(1, msgId);
                     insertStmt.setString(2, msgInfo.getMsgHash());
@@ -68,6 +69,7 @@ public class ReqDataTable {
                     insertStmt.setString(8, msgInfo.getRespStatus());
                     insertStmt.setInt(9, msgDataIndex);
                     insertStmt.setString(10, ANALYSE_WAIT);
+                    insertStmt.setString(11, reqSource);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值

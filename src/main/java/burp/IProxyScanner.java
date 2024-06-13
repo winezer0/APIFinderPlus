@@ -137,7 +137,7 @@ public class IProxyScanner implements IProxyListener {
                     msgInfo.setRespBytes(respBytes);
                     //加入请求列表
                     int msgId = iInterceptedProxyMessage.getMessageReference();
-                    storeReqData(msgInfo, msgId);
+                    storeReqData(msgInfo, msgId, "ProxyMessage");
                 }
             });
         }
@@ -148,14 +148,15 @@ public class IProxyScanner implements IProxyListener {
      * @param msgInfo
      * @param msgId
      */
-    private void storeReqData(HttpMsgInfo msgInfo, int msgId) {
+    private void storeReqData(HttpMsgInfo msgInfo, int msgId, String reqSource) {
         //存储请求体|响应体数据
         int msgDataIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
         if (msgDataIndex > 0){
             // 存储到URL表
-            int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex);
+            int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
-                stdout.println(String.format("[+] Success Add Task: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                stdout.println(String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
+                        msgInfo.getReqUrl(), msgInfo.getMsgHash(), reqSource));
         }
     }
 
