@@ -19,7 +19,7 @@ public class ByteArrayUtils {
     public static String getSystemCharSet() {
         return Charset.defaultCharset().toString();
 
-        //system_println(System.getProperty("file.encoding"));
+        //System.out.println(System.getProperty("file.encoding"));
     }
 
 
