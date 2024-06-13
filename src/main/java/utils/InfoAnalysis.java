@@ -40,7 +40,7 @@ public class InfoAnalysis {
     public static final String important = "important";
     public static final String value = "value";
 
-    private static final int MAX_SIZE = 50000; //如果数组超过 50000 个字节，则截断
+    private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字节，则截断
     private static final int RESULT_SIZE = 1024;
 
     public static RespInfo analysisMsgInfo(HttpMsgInfo msgInfo) {
@@ -93,6 +93,9 @@ public class InfoAnalysis {
                 HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),
                 StandardCharsets.UTF_8);
 
+        //截取最大响应体长度
+        respBody = SubString(respBody, MAX_HANDLE_SIZE);
+
         // 针对html页面提取 直接的URL 已完成
         List<String> extractUrlsFromHtml = extractDirectUrls(msgInfo.getReqUrl(), respBody);
         stdout.println(String.format("[*] 初步提取的URL数量: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
@@ -133,6 +136,9 @@ public class InfoAnalysis {
                         HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),
                         StandardCharsets.UTF_8);
                 //willFindText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+
+                //截取最大响应体长度
+                willFindText = SubString(willFindText, MAX_HANDLE_SIZE);
             } else if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
                 willFindText = msgInfo.getReqPath();
             } else {
@@ -153,7 +159,7 @@ public class InfoAnalysis {
             //多个正则匹配
             if (rule.getMatch().equals("regular")){
                 for (String patter : rule.getKeyword()){
-                    Set<String> groups = regularFindInfo(willFindText, patter);
+                    Set<String> groups = regularMatchInfo(willFindText, patter);
                     if (groups.size() > 0){
                         JSONObject findInfo = generateInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
                         stdout.println(String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
@@ -166,7 +172,13 @@ public class InfoAnalysis {
         return new JSONArray(findInfosSet);
     }
 
-    private static Set<String> regularFindInfo(String willFindText, String patter) {
+    /**
+     * 正则提取文本中的内容
+     * @param willFindText
+     * @param patter
+     * @return
+     */
+    private static Set<String> regularMatchInfo(String willFindText, String patter) {
         Set<String> groups = new HashSet<>();
         try{
             for (int start = 0; start < willFindText.length(); start += CHUNK_SIZE) {
@@ -451,4 +463,16 @@ public class InfoAnalysis {
         return newList;
     }
 
+    /**
+     * 从文本中截取指定长度的响应
+     * @param text
+     * @param maxSize
+     * @return
+     */
+    public static String SubString(String text, int maxSize) {
+        if (text != null && text.length() > maxSize){
+            text = text.substring(0, maxSize);
+        }
+        return text;
+    }
 }

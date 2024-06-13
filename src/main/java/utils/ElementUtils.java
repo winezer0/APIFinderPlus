@@ -10,7 +10,6 @@ public class ElementUtils {
     private static PrintWriter stderr = BurpExtender.getStderr();
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();;
 
-
     /**
      * 判断字符串 是否 等于 元素列表中的任意元素 忽略大小写
      *
@@ -112,7 +111,6 @@ public class ElementUtils {
         }
         return true;
     }
-
 
     /**
      * 小写和去两端字符

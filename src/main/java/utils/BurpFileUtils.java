@@ -115,6 +115,12 @@ public class BurpFileUtils {
         return configJson;
     }
 
+    /**
+     * 获取插件同级目录下的指定文件
+     * @param callbacks
+     * @param fileName
+     * @return
+     */
     public static Path getPluginDirFilePath(IBurpExtenderCallbacks callbacks, String fileName) {
         Path path = Paths.get(getPluginPath(callbacks), fileName);
         return path.toAbsolutePath();
