@@ -58,8 +58,6 @@ public class InfoAnalyseUtils {
         return newList;
     }
 
-
-
     /**
      * 过滤无用的提取路径 通过判断是否包含中文路径
      * @param matchList
@@ -76,7 +74,6 @@ public class InfoAnalyseUtils {
         }
         return newList;
     }
-
 
     /**
      * 过滤黑名单HOST域名
@@ -125,6 +122,12 @@ public class InfoAnalyseUtils {
         return list;
     }
 
+    /**
+     * 过滤黑名单路径 /jquery.js 之类的不需要提取信息
+     * @param urls
+     * @param blackPaths
+     * @return
+     */
     public static List<String> filterBlackPaths(List<String> urls, List<String> blackPaths) {
         if (urls == null || urls.isEmpty()) return urls;
 
@@ -189,7 +192,7 @@ public class InfoAnalyseUtils {
     }
 
     /**
-     * 列表元素去重
+     * List<String> list 元素去重
      */
     public static List<String> removeDuplicates(List<String> list) {
         return new ArrayList<>(new HashSet<>(list));
@@ -217,7 +220,6 @@ public class InfoAnalyseUtils {
         setMap.put(PATH_KEY, pathList);
         return setMap;
     }
-
 
     /**
      * 正则提取文本中的内容
@@ -253,7 +255,6 @@ public class InfoAnalyseUtils {
         }
         return groups;
     }
-
 
     /**
      * 从文本中截取指定长度的响应
@@ -351,7 +352,7 @@ public class InfoAnalyseUtils {
                 }
             }
         }
-        
+
         return findUris;
     }
 
