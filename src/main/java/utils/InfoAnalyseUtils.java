@@ -359,7 +359,7 @@ public class InfoAnalyseUtils {
     }
 
     /**
-     * 对提取的URL进行简单的格式处理
+     * 对提取的信息进行简单的格式处理
      * @param extractUri
      * @return
      */
