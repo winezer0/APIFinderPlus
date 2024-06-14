@@ -335,20 +335,20 @@ public class InfoAnalyseUtils {
             htmlChunk = htmlChunk.replace("\\/","/");
             Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
             while (matcher.find()) {
-                String matchUrl = matcher.group();
+                String matchUri = matcher.group();
                 //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
-                if (!matchUrl.contains("http") && matchUrl.startsWith("/")) {
+                if (!matchUri.contains("http") && matchUri.startsWith("/")) {
                     try {
                         //使用当前请求的reqUrl创建URI对象
                         URI baseUrl = new URI(reqUrl);
                         //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
-                        matchUrl = baseUrl.resolve(matchUrl).toString();
+                        matchUri = baseUrl.resolve(matchUri).toString();
                     } catch (URISyntaxException e) {
-                        stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
+                        stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUri, e.getMessage()));
                         continue;
                     }
                 }
-                urlSet.add(matchUrl);
+                urlSet.add(matchUri);
             }
         }
         return urlSet;
