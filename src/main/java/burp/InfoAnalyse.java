@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import utils.ElementUtils;
+import utils.InfoUriFilterUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -20,6 +21,10 @@ public class InfoAnalyse {
     public static final String accuracy = "accuracy";
     public static final String important = "important";
     public static final String value = "value";
+
+    public static final String URL_KEY = "URL_KEY";
+    public static final String PATH_KEY = "PATH_KEY";
+    public static final String INFO_KEY = "INFO_KEY";
 
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字节，则截断
 
@@ -80,23 +85,23 @@ public class InfoAnalyse {
      */
     private static List<String> filterPaths(HttpMsgInfo msgInfo, List<String> pathList) {
         //过滤重复内容
-        pathList = removeDuplicates(pathList);
+        pathList = InfoUriFilterUtils.removeDuplicates(pathList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s -> %s", pathList.size(), pathList));
 
         //过滤自身包含的Path (包含说明相同)
-        pathList = filterUriBySelfContain(msgInfo.getReqPath(), pathList);
+        pathList = InfoUriFilterUtils.filterUriBySelfContain(msgInfo.getReqPath(), pathList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s -> %s", pathList.size(), pathList));
 
         //过滤包含禁止关键字的PATH
-        pathList = filterPathByContainUselessKey(pathList, CONF_BLACK_PATH_KEYS);
+        pathList = InfoUriFilterUtils.filterPathByContainUselessKey(pathList, CONF_BLACK_PATH_KEYS);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤包含禁止关键字的PATH:%s -> %s", pathList.size(), pathList));
 
         //过滤包含中文的PATH
-        pathList = filterPathByContainChinese(pathList);
+        pathList = InfoUriFilterUtils.filterPathByContainChinese(pathList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤中文PATH内容:%s -> %s", pathList.size(), pathList));
 
         //过滤等于禁止PATH的PATH
-        pathList = filterPathByEqualUselessPath(pathList, CONF_BLACK_PATH_EQUALS);
+        pathList = InfoUriFilterUtils.filterPathByEqualUselessPath(pathList, CONF_BLACK_PATH_EQUALS);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤等于禁止PATH的PATH:%s -> %s", pathList.size(), pathList));
         return pathList;
     }
@@ -110,27 +115,27 @@ public class InfoAnalyse {
      */
     private static List<String> filterUrls(HttpMsgInfo msgInfo, List<String> urlList) {
         //过滤重复内容
-        urlList = removeDuplicates(urlList);
+        urlList = InfoUriFilterUtils.removeDuplicates(urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s -> %s", urlList.size(), urlList));
 
         //仅保留主域名相关URL
-        urlList = filterUrlByMainHost(msgInfo.getReqRootDomain(), urlList);
+        urlList = InfoUriFilterUtils.filterUrlByMainHost(msgInfo.getReqRootDomain(), urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s -> %s", urlList.size(), urlList));
 
         //过滤自身包含的URL (包含说明相同) //功能测试通过
-        urlList = filterUriBySelfContain(msgInfo.getReqUrl(), urlList);
+        urlList = InfoUriFilterUtils.filterUriBySelfContain(msgInfo.getReqUrl(), urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的URL:%s -> %s", urlList.size(), urlList));
 
         //过滤黑名单host
-        urlList = filterBlackHosts(urlList, CONF_BLACK_URL_HOSTS);
+        urlList = InfoUriFilterUtils.filterBlackHosts(urlList, CONF_BLACK_URL_HOSTS);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单主机:%s -> %s", urlList.size(), urlList));
 
         //过滤黑名单Path
-        urlList = filterBlackPaths(urlList, CONF_BLACK_URL_PATH);
+        urlList = InfoUriFilterUtils.filterBlackPaths(urlList, CONF_BLACK_URL_PATH);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单路径:%s -> %s", urlList.size(), urlList));
 
         //过滤黑名单suffix
-        urlList = filterBlackSuffixes(urlList, CONF_BLACK_URL_EXT);
+        urlList = InfoUriFilterUtils.filterBlackSuffixes(urlList, CONF_BLACK_URL_EXT);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单后缀:%s -> %s", urlList.size(), urlList));
         return urlList;
     }
@@ -249,6 +254,29 @@ public class InfoAnalyse {
 
 
     /**
+     * 拆分提取出来的Url集合中的URl和Path
+     * @param matchUriSet
+     * @return
+     */
+    public static Map<String, List> SeparateUrlOrPath(Set<String> matchUriSet) {
+        Map<String, List> setMap = new HashMap<>();
+        ArrayList<String> urlList = new ArrayList<>();
+        ArrayList<String> pathList = new ArrayList<>();
+
+        for (String uri : matchUriSet){
+            if (uri.contains("https://") || uri.contains("http://")){
+                urlList.add(uri);
+            }else {
+                pathList.add(uri);
+            }
+        }
+
+        setMap.put(URL_KEY,  urlList);
+        setMap.put(PATH_KEY, pathList);
+        return setMap;
+    }
+
+    /**
      * 判断提取的敏感信息是否都为空值
      * @param analyseInfo
      * @return
@@ -256,7 +284,6 @@ public class InfoAnalyse {
     public static boolean analyseInfoIsNotEmpty(JSONObject analyseInfo) {
         return analyseInfo.getJSONArray(URL_KEY).size()>0
                 || analyseInfo.getJSONArray(PATH_KEY).size()>0
-                || analyseInfo.getJSONArray(INFO_KEY).size()>0;
+                || analyseInfo.getJSONArray(InfoAnalyse.INFO_KEY).size()>0;
     }
-
 }

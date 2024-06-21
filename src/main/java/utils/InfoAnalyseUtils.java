@@ -1,11 +1,9 @@
 package utils;
 
-import model.HttpMsgInfo;
+import org.apache.commons.text.StringEscapeUtils;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,221 +13,13 @@ import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isEqualsOneKey;
 
 public class InfoAnalyseUtils {
-    public static final String URL_KEY = "URL_KEY";
-    public static final String PATH_KEY = "PATH_KEY";
-    public static final String INFO_KEY = "INFO_KEY";
+
     static final int CHUNK_SIZE = 20000; // 分割大小
     private static final int RESULT_SIZE = 1024;
 
-    private static final Pattern CHINESE_PATTERN = Pattern.compile("[\u4E00-\u9FA5]");
     private static final Pattern FIND_URL_FROM_HTML_PATTERN = Pattern.compile("(http|https)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
     private static final Pattern FIND_PATH_FROM_JS_PATTERN = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
     private static final Pattern FIND_PATH_FROM_JS_PATTERN2 = Pattern.compile("\"(/[^\"\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*)\"|'(/[^'\\\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*?)'");
-
-
-    /**
-     * 过滤无用的提取路径 通过判断和指定的路径相等
-     * @param matchList
-     * @return
-     */
-    public static List<String> filterPathByEqualUselessPath(List<String> matchList, List<String>  blackPathEquals) {
-        List<String> newList = new ArrayList<>();
-        for (String path : matchList){
-            if(!isEqualsOneKey(path, blackPathEquals, false)){
-                newList.add(path);
-            }
-        }
-        return newList;
-    }
-
-
-    /**
-     * 过滤无用的提取路径 通过判断是否包含无用关键字
-     * @param matchList
-     * @return
-     */
-    public static List<String> filterPathByContainUselessKey(List<String> matchList, List<String> blackPathKeys) {
-        if (matchList == null || matchList.isEmpty()) return matchList;
-
-        List<String> newList = new ArrayList<>();
-        for (String s : matchList){
-            if(!ElementUtils.isContainOneKey(s, blackPathKeys, false)){
-                newList.add(s);
-            }
-        }
-        return newList;
-    }
-
-
-    /**
-     * 过滤无用的提取路径 通过判断是否包含中文路径
-     * @param matchList
-     * @return
-     */
-    public static List<String> filterPathByContainChinese(List<String> matchList) {
-        if (matchList == null || matchList.isEmpty()) return matchList;
-
-        List<String> newList = new ArrayList<>();
-        for (String s : matchList){
-            if(!CHINESE_PATTERN.matcher(s).find()){
-                newList.add(s);
-            }
-        }
-        return newList;
-    }
-
-
-    /**
-     * 过滤黑名单HOST域名
-     * @param urls
-     * @param blackHosts
-     * @return
-     */
-    public static List<String> filterBlackHosts(List<String> urls, List<String> blackHosts) {
-        if (blackHosts==null || blackHosts.isEmpty()||urls==null||urls.isEmpty()) return urls;
-
-        List<String> list = new ArrayList<>();
-        for (String urlStr : urls) {
-            try {
-                URL url = new URL(urlStr);
-                String host = url.getHost();
-                if (!ElementUtils.isContainOneKey(host, blackHosts, false)) {
-                    list.add(urlStr);
-                }else {
-                    stdout_println(LOG_DEBUG, String.format("[*] Black Hosts Filter %s", urlStr));
-                }
-            } catch (MalformedURLException e) {
-                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
-            }
-        }
-        return list;
-    }
-
-
-    /**
-     * 过滤黑名单后缀名 图片后缀之类的不需要提取请求信息
-     * @param urls
-     * @param blackSuffixes
-     * @return
-     */
-    public static List<String> filterBlackSuffixes(List<String> urls, List<String> blackSuffixes) {
-        if (blackSuffixes==null || blackSuffixes.isEmpty()||urls==null||urls.isEmpty()) return urls;
-
-        List<String> list = new ArrayList<>();
-        for (String urlStr : urls) {
-            String suffix = HttpMsgInfo.parseUrlExt(urlStr);
-            if (!isEqualsOneKey(suffix, blackSuffixes, false)) {
-                list.add(urlStr);
-            }else {
-                stdout_println(LOG_DEBUG, String.format("[*] Black Suffix Filter %s", urlStr));
-            }
-        }
-        return list;
-    }
-
-
-    /**
-     * 过滤黑名单路径 /jquery.js 之类的不需要提取信息
-     * @param urls
-     * @param blackPaths
-     * @return
-     */
-    public static List<String> filterBlackPaths(List<String> urls, List<String> blackPaths) {
-        if (urls == null || urls.isEmpty()) return urls;
-
-        List<String> list = new ArrayList<>();
-        for (String urlStr : urls) {
-            try {
-                URL url = new URL(urlStr);
-                String path = url.getPath();
-                if (!ElementUtils.isContainOneKey(path, blackPaths, false)) {
-                    list.add(urlStr);
-                }else {
-                    stdout_println(LOG_DEBUG, String.format("[*] Black Paths Filter %s", urlStr));
-                }
-            } catch (MalformedURLException e) {
-                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
-            }
-        }
-        return list;
-    }
-
-
-    /**
-     * 过滤提取的值 在请求字符串内的项
-     * @param baseUri
-     * @param matchUriList
-     * @return
-     */
-    public static List<String> filterUriBySelfContain(String baseUri, List<String> matchUriList) {
-        if (baseUri == null || baseUri == "" || matchUriList == null || matchUriList.isEmpty()) return matchUriList;
-
-        List<String> list = new ArrayList<>();
-        for (String uri : matchUriList){
-            if (!baseUri.contains(uri))  {
-                system_println(String.format("%s 不包含 %s", baseUri, uri));
-                list.add(uri);}
-        }
-        return list;
-    }
-
-
-    /**
-     * 过滤提取出的URL列表 仅保留自身域名的
-     * @param baseHost
-     * @param matchUrlList
-     * @return
-     */
-    public static List<String> filterUrlByMainHost(String baseHost, List<String> matchUrlList){
-        if (baseHost == null || baseHost == "" || matchUrlList == null || matchUrlList.isEmpty()) return matchUrlList;
-
-        List<String> newUrlList = new ArrayList<>();
-        for (String matchUrl : matchUrlList){
-            //对比提取出来的URL和请求URL的域名部分是否相同，不相同的一般不是
-            try {
-                String newHost = (new URL(matchUrl)).getHost();
-                if (!newHost.contains(baseHost))
-                    continue;
-            } catch (Exception e) {
-                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));
-                continue;
-            }
-            newUrlList.add(matchUrl);
-        }
-        return newUrlList;
-    }
-
-
-    /**
-     * List<String> list 元素去重
-     */
-    public static List<String> removeDuplicates(List<String> list) {
-        return new ArrayList<>(new HashSet<>(list));
-    }
-
-
-    /**
-     * 拆分提取出来的Url集合中的URl和Path
-     * @param matchUriSet
-     * @return
-     */
-    public static Map<String, List> SeparateUrlOrPath(Set<String> matchUriSet) {
-        Map<String, List> setMap = new HashMap<>();
-        ArrayList<String> urlList = new ArrayList<>();
-        ArrayList<String> pathList = new ArrayList<>();
-
-        for (String uri : matchUriSet){
-            if (uri.contains("https://") || uri.contains("http://")){
-                urlList.add(uri);
-            }else {
-                pathList.add(uri);
-            }
-        }
-
-        setMap.put(URL_KEY,  urlList);
-        setMap.put(PATH_KEY, pathList);
-        return setMap;
-    }
 
 
     /**
@@ -250,7 +40,7 @@ public class InfoAnalyseUtils {
                 while (matcher.find()) {
                     String group = matcher.group();
                     //格式化响应
-                    group = removeSymbol(group);
+                    group = formatUri(group);
 
                     //响应超过长度时 截断
                     if (group.length() > RESULT_SIZE)
@@ -272,8 +62,9 @@ public class InfoAnalyseUtils {
         return groups;
     }
 
+
     /**
-     * 判断提取的信息是否是有效的
+     * 判断提取的信息是否是有效的 需要持续更新
      * @param group
      * @return
      */
@@ -335,7 +126,7 @@ public class InfoAnalyseUtils {
             htmlChunk = htmlChunk.replace("\\/","/");
             Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
             while (matcher.find()) {
-                String matchUri = matcher.group();
+                String matchUri = formatUri(matcher.group());
                 //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
                 if (!matchUri.contains("http") && matchUri.startsWith("/")) {
                     try {
@@ -374,7 +165,7 @@ public class InfoAnalyseUtils {
             while (m.find(matcher_start)){
                 String matchGroup = m.group(1);
                 if (matchGroup != null){
-                    findUris.add(removeSymbol(matchGroup));
+                    findUris.add(formatUri(matchGroup));
                 }
                 matcher_start = m.end();
             }
@@ -385,12 +176,12 @@ public class InfoAnalyseUtils {
                 // 检查第一个捕获组
                 String group1 = matcher_result.group(1);
                 if (group1 != null) {
-                    findUris.add(removeSymbol(group1));
+                    findUris.add(formatUri(group1));
                 }
                 // 检查第二个捕获组
                 String group2 = matcher_result.group(2);
                 if (group2 != null) {
-                    findUris.add(removeSymbol(group2));
+                    findUris.add(formatUri(group2));
                 }
             }
         }
@@ -398,9 +189,19 @@ public class InfoAnalyseUtils {
         return findUris;
     }
 
-
     /**
      * 对提取的信息进行简单的格式处理
+     * @param extractUri
+     * @return
+     */
+    public static String formatUri(String extractUri){
+        extractUri = removeSymbol(extractUri);
+        extractUri = decodeHtml(extractUri);
+        return extractUri;
+    }
+
+    /**
+     * 对提取的信息去除有影响的字符
      * @param extractUri
      * @return
      */
@@ -415,4 +216,52 @@ public class InfoAnalyseUtils {
 
         return extractUri;
     }
+
+    /**
+     * 解码HTML字符串。
+     *
+     * @param htmlEncodedString 要解码的HTML编码字符串
+     * @return 解码后的字符串
+     */
+    public static String decodeHtml(String htmlEncodedString) {
+        if (htmlEncodedString != null || htmlEncodedString != "")
+            htmlEncodedString = StringEscapeUtils.unescapeHtml4(htmlEncodedString);
+        return htmlEncodedString;
+    }
+
+    /**
+     * 计算URl和路径拼接
+     * @param reqUrl
+     * @param uri
+     * @return
+     */
+    public static String UrlAddPath(String reqUrl, String uri){
+        //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
+
+        try {
+            //使用当前请求的reqUrl创建URI对象
+            URI baseUrl = new URI(reqUrl);
+            //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
+            uri = baseUrl.resolve(uri).toString();
+        } catch (URISyntaxException e) {
+            stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", uri, e.getMessage()));
+            return null;
+        }
+        return uri;
+    }
+
+    public static void main(String[] args) {
+        List<String> urlList = Arrays.asList("https://34.96.228.184:8888/club/forum.php",
+                "https://34.96.228.184:8888/club/",
+                "https://34.96.228.184:8888/bbs"
+        );
+        List<String> pathList = Arrays.asList("forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=75\",\"/promotions/jackpot2023\",\"data/cache/style_1_forum_index.css?lo9\",\"static/image/k8-2.png\",\"static/image/jackpot_prize_pool/2-pc2.png\",\"static/js/common.js?lo9\",\"plugin.php?id=qidou_assign\",\"/bbs/login\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=81\",\"search.php?searchsubmit=yes\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=83\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=82\",\"data/cache/style_1_widthauto.css?lo9\",\"static/image/home/k8logo.png\",\"static/image/jackpot_prize_pool/3-pc.png\",\"/bbs/register\",\"static/image/jackpot_prize_pool/arrow.webp\",\"member.php?mod=logging&amp;action=login&amp;loginsubmit=yes&amp;infloat=yes&amp;lssubmit=yes\",\"member.php?mod=register\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=74\",\"static/image/money-icon.png\",\"static/image/dialognew.png\",\"static/image/k8-app-icon.png\",\"template/default/css/use_common.css\",\"static/image/jackpot_prize_pool/2-image.png\",\"static/image/home/home.png\",\"data/cache/style_1_common.css?lo9\",\"/club/forum.php?mod=viewthread&tid=8153&fid=82\",\"static/image/home/activity.png\",\"static/image/home/game.png\",\"/club/forum.php?mod=viewthread&tid=8265&fid=82\",\"static/js/forum.js?lo9\",\"template/default/css/use_forum_viewthread.css?lo9\",\"template/default/css/nice-select.css?lo9\",\"/club/forum.php?mod=viewthread&tid=8264&fid=82\",\"static/js/logging.js?lo9\",\"/club/forum.php?mod=viewthread&tid=8266&fid=82\",\"static/image/common/favicon.ico\",\"static/image/home/xuetang.png\",\"template/default/css/dialog.css?lo9\",\"/club/forum.php?mod=viewthread&tid=8302fid=83\",\"static/image/money_circle.png\",\"member.php?mod=logging&action=login\",\"static/image/K8.png\",\"template/default/css/use_common.css?lo9\",\"forum.php?mod=ajax&action=notices\",\"plugin.php?id=jyjbwl:index\",\"static/image/k8.png\",\"static/image/k8_icon_0112.png\",\"static/image/jackpot_prize_pool/DINAlternateBold.ttf".split(","));
+        for (String url : urlList)
+            for (String path : pathList){
+                path = formatUri(path);
+                System.out.println(String.format("%s <--> %s %s", UrlAddPath(url,path), url, path));
+            }
+    }
+
+
 }
