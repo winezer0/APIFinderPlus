@@ -26,7 +26,7 @@ public class InfoAnalyse {
     public static final String PATH_KEY = "PATH_KEY";
     public static final String INFO_KEY = "INFO_KEY";
 
-    private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字节，则截断
+    private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
     public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
         //提取URL和PATH信息
@@ -56,7 +56,7 @@ public class InfoAnalyse {
         for (String s : pathList)
             stdout_println(LOG_DEBUG, String.format("[*] EXTRACT PATH: %s", s));
         //todo: 提取的PATH需要进一步过滤处理
-        // HTML解码  forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=81
+        // 已完成 在提取时处理 HTML解码  forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=81
         // 考虑增加后缀过滤功能 static/image/k8-2.png
         // 考虑增加已有URL过滤 /bbs/login
         // 计算真实URL
