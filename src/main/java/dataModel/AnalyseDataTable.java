@@ -40,7 +40,7 @@ public class AnalyseDataTable {
             + ");";
 
     //插入数据库
-    public static int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
+    public static synchronized int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
@@ -99,7 +99,5 @@ public class AnalyseDataTable {
 
         return generatedId; // 返回ID值，无论是更新还是插入
     }
-
-
-
+    
 }
