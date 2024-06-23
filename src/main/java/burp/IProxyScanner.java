@@ -8,14 +8,14 @@ import dataModel.ReqDataTable;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 import utils.ElementUtils;
-import utils.InfoAnalyse;
+import model.InfoAnalyse;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static utils.InfoAnalyse.analyseInfoIsNotEmpty;
+import static model.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utils.BurpPrintUtils.*;
 
 
@@ -206,9 +206,10 @@ public class IProxyScanner implements IProxyListener {
                         //计算动态URL、要求获取 id|msg_hash、PATHS列表 限制
 
                         //计算|更新|获取 域名的根树  //基于 域名,record_path
+                        //todo 实现根树计算函数
 
                         //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
-
+                        //todo 实现 基于根数的路径计算函数
 
                         //todo: 提取的PATH需要进一步过滤处理
                         // 考虑增加后缀过滤功能 static/image/k8-2.png

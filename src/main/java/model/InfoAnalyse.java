@@ -1,10 +1,9 @@
-package utils;
+package model;
 
 import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import model.FingerPrintRule;
-import model.HttpMsgInfo;
+import utils.InfoUriFilterUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
