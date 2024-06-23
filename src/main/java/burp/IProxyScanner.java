@@ -170,7 +170,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    Integer needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis(true);
+                    Integer needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(true);
                     if (needAnalyseDataIndex != -1){
                         // 1 获取 msgDataIndex 对应的数据
                         Map<String, Object> needAnalyseData = MsgDataTable.selectMsgDataById(needAnalyseDataIndex);
@@ -198,19 +198,26 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
-                    needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis(false);
+                    needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(false);
                     if (needAnalyseDataIndex == -1){
+                        //todo: 基于记录的请求路径 计算真实URL
                         //开始基于已有数据计算
                         stdout_println(LOG_INFO, "[[*] 暂无需要分析数据, 开始进行动态API计算...");
+                        //计算动态URL、要求获取 id|msg_hash、PATHS列表 限制
+
+                        //计算|更新|获取 域名的根树  //基于 域名,record_path
+
+                        //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
+
+
+                        //todo: 提取的PATH需要进一步过滤处理
+                        // 考虑增加后缀过滤功能 static/image/k8-2.png
+                        // 考虑增加已有URL过滤 /bbs/login
+                        // 考虑增加 参数处理 plugin.php?id=qidou_assign
                     }
 
-                    //todo: 基于记录的请求路径 计算真实URL
-                    //3、基于当前分析的结果进行判断
 
-                    //todo: 提取的PATH需要进一步过滤处理
-                    // 考虑增加后缀过滤功能 static/image/k8-2.png
-                    // 考虑增加已有URL过滤 /bbs/login
-                    // 考虑增加 参数处理 plugin.php?id=qidou_assign
+
 
                     //todo: 增加自动递归查询功能
                 } catch (Exception e) {
