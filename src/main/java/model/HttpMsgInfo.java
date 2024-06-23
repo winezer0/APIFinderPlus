@@ -77,12 +77,9 @@ public class HttpMsgInfo {
         //从响应结果解析部分信息
         parseRespBytes(responseBytes);
 
-        //请求响应信息的简单hash值
+        //请求响应信息的简单hash值 因为中间可能截断了超大的响应体 , 因此最好手动传入 msgHash
         msgHash = msgInfoHash;
-        //计算新的msgHash
-        if (msgHash == null || "".equals(msgHash))
-            msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
-        //基于reqBaseUrl 和 respBodyLenVague 计算 可以忽略大部分 相同URL、不同参数 请求响应相同的情况
+        if (msgHash == null || "".equals(msgHash)) msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
     }
 
     /**
