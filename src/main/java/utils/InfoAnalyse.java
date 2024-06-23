@@ -100,7 +100,7 @@ public class InfoAnalyse {
             stdout_println(LOG_DEBUG, String.format("[*] 过滤等于禁止PATH的PATH:%s -> %s", analysedPathList.size(), analysedPathList));
         }
 
-        //简单基于Path计算URL
+        //基于Path简单计算URL 已验证，常规网站采集的PATH生成的URL基本都是正确的
         List<String> analysedApiList = UrlAddPath(msgInfo.getReqUrl(), analysedPathList);
         stdout_println(LOG_DEBUG, String.format("[+] 简单计算API数量: %s -> %s", msgInfo.getReqUrl(), analysedApiList.size()));
 
@@ -109,16 +109,6 @@ public class InfoAnalyse {
             analysedApiList = InfoUriFilterUtils.removeDuplicates(analysedApiList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s -> %s", analysedApiList.size(), analysedApiList));
         }
-
-        //todo: 提取的PATH需要进一步过滤处理
-        // 已完成 在提取时处理 HTML解码  forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=81
-        // 已完成 简单计算URL 已验证，常规网站采集的PATH生成的URL基本都是正确的
-
-        // 计算真实URL
-        // 考虑增加后缀过滤功能 static/image/k8-2.png
-        // 考虑增加已有URL过滤 /bbs/login
-        // 考虑增加 参数处理 plugin.php?id=qidou_assign
-
 
         ///////////////////////////返回最终结果///////////////////////////
         JSONObject analyseInfo = new JSONObject();

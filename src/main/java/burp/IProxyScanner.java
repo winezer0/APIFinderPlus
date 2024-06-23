@@ -198,7 +198,12 @@ public class IProxyScanner implements IProxyListener {
                     if (analyseDataIndex > 0)
                         stdout_println(LOG_INFO, String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
 
-                    //todo: 处理API路径,计算出正式URL
+                    //todo: 基于记录的请求路径 计算真实URL
+
+                    //todo: 提取的PATH需要进一步过滤处理
+                    // 考虑增加后缀过滤功能 static/image/k8-2.png
+                    // 考虑增加已有URL过滤 /bbs/login
+                    // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
                     //todo: 增加自动递归查询功能
                 } catch (Exception e) {
