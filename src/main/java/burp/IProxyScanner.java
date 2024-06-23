@@ -8,13 +8,14 @@ import dataModel.ReqDataTable;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 import utils.ElementUtils;
+import utils.InfoAnalyse;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
+import static utils.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utils.BurpPrintUtils.*;
 
 
@@ -196,7 +197,6 @@ public class IProxyScanner implements IProxyListener {
                     int analyseDataIndex = AnalyseDataTable.insertAnalyseData(msgInfo, analyseInfo);
                     if (analyseDataIndex > 0)
                         stdout_println(LOG_INFO, String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
-                    else return;
 
                     //todo: 处理API路径,计算出正式URL
 

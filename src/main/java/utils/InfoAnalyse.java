@@ -1,10 +1,10 @@
-package burp;
+package utils;
 
+import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
-import utils.InfoUriFilterUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -131,23 +131,6 @@ public class InfoAnalyse {
     }
 
     /**
-     * 基于规则和结果生成格式化的信息
-     * @param rule
-     * @param group
-     * @return
-     */
-    private static JSONObject generateInfoJson(FingerPrintRule rule, String group) {
-        JSONObject findInfo = new JSONObject();
-        findInfo.put(type, rule.getType()); // "type": "敏感内容",
-        findInfo.put(describe, rule.getDescribe()); //"describe": "身份证",
-        findInfo.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
-        findInfo.put(important, rule.getIsImportant()); //"isImportant": true,
-        findInfo.put(value, group);
-        return findInfo;
-    }
-
-
-    /**
      * 根据规则提取敏感信息
      * @param msgInfo
      * @return
@@ -204,6 +187,21 @@ public class InfoAnalyse {
         return new JSONArray(findInfosSet);
     }
 
+    /**
+     * 基于规则和结果生成格式化的敏感信息存储结构
+     * @param rule
+     * @param group
+     * @return
+     */
+    private static JSONObject generateInfoJson(FingerPrintRule rule, String group) {
+        JSONObject findInfo = new JSONObject();
+        findInfo.put(type, rule.getType()); // "type": "敏感内容",
+        findInfo.put(describe, rule.getDescribe()); //"describe": "身份证",
+        findInfo.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
+        findInfo.put(important, rule.getIsImportant()); //"isImportant": true,
+        findInfo.put(value, group);
+        return findInfo;
+    }
 
     /**
      * 提取响应体中的URL和PATH
@@ -237,9 +235,8 @@ public class InfoAnalyse {
         return uriSet;
     }
 
-
     /**
-     * 拆分提取出来的Url集合中的URl和Path
+     * 拆分提取出来的Uri集合中的URl和Path
      * @param matchUriSet
      * @return
      */
@@ -262,7 +259,7 @@ public class InfoAnalyse {
     }
 
     /**
-     * 判断提取的敏感信息是否都为空值
+     * 判断提取的敏感信息（URL|PATH|INFO）是否都为空值
      * @param analyseInfo
      */
     public static boolean analyseInfoIsNotEmpty(JSONObject analyseInfo) {
