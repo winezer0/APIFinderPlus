@@ -197,7 +197,7 @@ public class PathTreeInfo {
         String targetKey = parts.get(0);
         int maxKeyCounts = counts(rootTree.toJSONString(), String.format("\"%s\"", targetKey));
         List<JSONArray> findNodePaths = findNodePathsRecursive(rootTree, targetKey, new JSONArray(), maxKeyCounts, new AtomicInteger(0));
-        System.out.println(String.format("初步寻找到如下数据:%s", findNodePaths));
+//        System.out.println(String.format("初步寻找到如下数据:%s", findNodePaths));
 
         //找到一个节点信息
         if (findNodePaths.size() == 1 || parts.size() <= 1) {
@@ -207,10 +207,9 @@ public class PathTreeInfo {
 
         //找到多个节点信息 并且还有其他关键字可以查找
         if (findNodePaths.size() > 1 && parts.size() > 1) {
-            System.out.println("找到多个节点信息 并且 还有下一节的数据, 尝试继续分析");
             for (JSONArray nodePath : findNodePaths) {
                 JSONObject subValueTree = findJsonValueByPaths(rootTree, nodePath);
-                System.out.println(String.format("根据 键路径 %s 在根树中找到值 %s", nodePath, subValueTree));
+//                System.out.println(String.format("根据 键路径 %s 在根树中找到值 %s", nodePath, subValueTree));
                 if (counts(subValueTree.toJSONString(), String.format("\"%s\"", parts.get(1))) > 0) {
                     //找到了对应的子节点数据,就决定是它了
                     endPaths.add(nodePath);
@@ -222,6 +221,30 @@ public class PathTreeInfo {
         }
 
         return endPaths;
+    }
+
+    /**
+     * 将列表中的键拼接起来
+     * @param endNodePaths
+     * @return
+     */
+    public static JSONArray concatNodePaths(List<JSONArray> endNodePaths) {
+        // 返回最终的列表
+        JSONArray findPaths = new JSONArray();
+        
+        if (endNodePaths != null && endNodePaths.size() > 0){
+            for (JSONArray endNodePath : endNodePaths) {
+                // 确保每个元素都是字符串，因为String.join需要处理字符串数组
+                List<String> stringPath = new ArrayList<>();
+                for (Object obj : endNodePath) {
+                    stringPath.add(obj.toString()); // 假设obj可以安全地转换为字符串
+                }
+                String joinedPath = String.join("/", stringPath);
+                findPaths.add(joinedPath);
+            }
+        }
+
+        return findPaths;
     }
 
     public static void main(String[] args) {
@@ -247,5 +270,8 @@ public class PathTreeInfo {
         //从树中寻找可能的节点路径
         List<JSONArray> endNodePaths = findNodePathInTree(tree, sub_parts);
         System.out.println(endNodePaths);
+
+        JSONArray findPaths = concatNodePaths(endNodePaths);
+        System.out.println(findPaths);
     }
 }
