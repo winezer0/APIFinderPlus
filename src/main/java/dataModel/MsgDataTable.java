@@ -29,7 +29,8 @@ public class MsgDataTable {
     //插入数据库
     public static synchronized int insertOrUpdateMsgData(HttpMsgInfo msgInfo) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ".replace("tableName", tableName);
+        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? "
+                .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -42,8 +43,8 @@ public class MsgDataTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(msg_hash, req_url, req_bytes, resp_bytes) VALUES (?, ?, ?, ?)";
+                String insertSql = "INSERT INTO tableName (msg_hash, req_url, req_bytes, resp_bytes) VALUES (?, ?, ?, ?)"
+                        .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getReqUrl());

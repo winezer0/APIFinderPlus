@@ -12,7 +12,8 @@ public class ReqDataTable {
     static String tableName = "req_data";
 
     //创建用于存储 需要处理的URL的原始请求响应
-    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n".replace("tableName", tableName)
+    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
+            .replace("tableName", tableName)
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + "msg_id TEXT NOT NULL,\n"
             + "msg_hash TEXT NOT NULL,\n"
@@ -48,9 +49,11 @@ public class ReqDataTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(msg_id, msg_hash, req_url, req_proto, req_host, req_port, req_method, resp_status, msg_data_index, run_status, req_source) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                String insertSql = ("INSERT INTO tableName (" +
+                        "msg_id, msg_hash, req_url, req_proto, req_host, req_port, " +
+                        "req_method, resp_status, msg_data_index, run_status, req_source) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setInt(1, msgId);
                     insertStmt.setString(2, msgInfo.getMsgHash());
@@ -83,7 +86,7 @@ public class ReqDataTable {
 
 
     //获取一条需要处理的数据，并且标记为处理中
-    public static synchronized int fetchAndMarkReqData(boolean needMark) {
+    public static synchronized int fetchAndMarkReqData(boolean updataStatus) {
         // 考虑开启事务
         int msgDataIndex = -1;
 
@@ -97,14 +100,13 @@ public class ReqDataTable {
                 .replace("tableName", tableName);
 
         DBService dbService = DBService.getInstance();
-        try (Connection conn = dbService.getNewConnection();
-             PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = dbService.getNewConnection(); PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
             ResultSet rs = selectStatement.executeQuery();
             if (rs.next()) {
                 int selectedMsgDataIndex = rs.getInt("msg_data_index");
 
                 //不更新索引直接返回查询到的索引号
-                if (!needMark)
+                if (!updataStatus)
                     return selectedMsgDataIndex;
 
                 //更新索引对应的数据

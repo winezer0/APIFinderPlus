@@ -171,7 +171,7 @@ public class IProxyScanner implements IProxyListener {
 
                     //任务1、获取需要解析的响应体数据并进行解析响
                     Integer needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(true);
-                    if (needAnalyseDataIndex != -1){
+                    if (needAnalyseDataIndex > 0){
                         // 1 获取 msgDataIndex 对应的数据
                         Map<String, Object> needAnalyseData = MsgDataTable.selectMsgDataById(needAnalyseDataIndex);
 
@@ -199,7 +199,7 @@ public class IProxyScanner implements IProxyListener {
 
                     //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
                     needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(false);
-                    if (needAnalyseDataIndex == -1){
+                    if (needAnalyseDataIndex > 0){
                         //todo: 基于记录的请求路径 计算真实URL
                         //开始基于已有数据计算
                         stdout_println(LOG_INFO, "[[*] 暂无需要分析数据, 开始进行动态API计算...");

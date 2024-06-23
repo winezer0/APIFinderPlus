@@ -44,8 +44,8 @@ public class RecordUrlsTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(req_proto, req_host, req_port, req_path_dir, resp_status) VALUES (?, ?, ?, ?, ?)";
+                String insertSql = "INSERT INTO tableName (req_proto, req_host, req_port, req_path_dir, resp_status) VALUES (?, ?, ?, ?, ?)"
+                        .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     setStmt(insertStmt, msgInfo);
                     insertStmt.executeUpdate();

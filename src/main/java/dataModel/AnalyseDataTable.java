@@ -57,14 +57,11 @@ public class AnalyseDataTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
-                        "(msg_hash, req_url, req_path, " +
-                        "find_url, find_url_num, " +
-                        "find_path, find_path_num, " +
-                        "find_info, find_info_num, " +
-                        "find_api, find_api_num, " +
-                        "smart_api, smart_api_num) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                String insertSql = ("INSERT INTO tableName (" +
+                        "msg_hash, req_url, req_path, find_url, find_url_num, find_path, find_path_num, " +
+                        "find_info, find_info_num, find_api, find_api_num, smart_api, smart_api_num) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        .replace("tableName", tableName) ;
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getReqUrl());
@@ -99,5 +96,5 @@ public class AnalyseDataTable {
 
         return generatedId; // 返回ID值，无论是更新还是插入
     }
-    
+
 }

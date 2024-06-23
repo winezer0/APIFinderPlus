@@ -69,6 +69,9 @@ public class DBService {
 
         // 用来创建数据库 analyse_path 存储分析后的数据
         execCreatTableSql(AnalyseDataTable.creatTableSQL, AnalyseDataTable.tableName);
+
+        // 创建存储根树的表
+        execCreatTableSql(PathTreeTable.creatTableSQL, PathTreeTable.tableName);
     }
 
     //创建数据表的语句
