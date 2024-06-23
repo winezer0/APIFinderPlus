@@ -68,6 +68,10 @@ public class MsgDataTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
+    public static String msg_hash = "msg_hash";
+    public static String req_url = "req_url";
+    public static String req_bytes = "req_bytes";
+    public static String resp_bytes = "resp_bytes";
 
     public static synchronized Map<String, Object> selectMsgDataById(Integer msgDataIndex){
         Map<String, Object> msgData = null;
@@ -81,10 +85,10 @@ public class MsgDataTable {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     msgData = new HashMap<>();
-                    msgData.put("msg_hash", rs.getString("msg_hash"));
-                    msgData.put("req_url", rs.getString("req_url"));
-                    msgData.put("req_bytes", rs.getBytes("req_bytes"));
-                    msgData.put("resp_bytes", rs.getBytes("resp_bytes"));
+                    msgData.put(msg_hash, rs.getString("msg_hash"));
+                    msgData.put(req_url, rs.getString("req_url"));
+                    msgData.put(req_bytes, rs.getBytes("req_bytes"));
+                    msgData.put(resp_bytes, rs.getBytes("resp_bytes"));
                 }
             }
         } catch (Exception e) {

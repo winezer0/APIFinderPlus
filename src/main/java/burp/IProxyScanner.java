@@ -175,15 +175,15 @@ public class IProxyScanner implements IProxyListener {
                         // 1 获取 msgDataIndex 对应的数据
                         Map<String, Object> needAnalyseData = MsgDataTable.selectMsgDataById(needAnalyseDataIndex);
 
-                        String msgHash = (String) needAnalyseData.get("msg_hash");
-                        String reqUrl = (String) needAnalyseData.get("req_url");
+                        String msgHash = (String) needAnalyseData.get(MsgDataTable.msg_hash);
+                        String reqUrl = (String) needAnalyseData.get(MsgDataTable.req_url);
                         stdout_println(LOG_INFO, String.format("[*] 分析数据信息: %s %s", reqUrl, msgHash));
 
                         //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
                         HttpMsgInfo msgInfo =  new HttpMsgInfo(
                                 reqUrl,
-                                (byte[]) needAnalyseData.get("req_bytes"),
-                                (byte[]) needAnalyseData.get("resp_bytes"),
+                                (byte[]) needAnalyseData.get(MsgDataTable.req_bytes),
+                                (byte[]) needAnalyseData.get(MsgDataTable.resp_bytes),
                                 msgHash);
 
                         //2.3 进行数据分析
