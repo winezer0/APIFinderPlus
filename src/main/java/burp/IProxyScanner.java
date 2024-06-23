@@ -199,25 +199,27 @@ public class IProxyScanner implements IProxyListener {
 
                     //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
                     needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(false);
-                    if (needAnalyseDataIndex > 0){
-                        //todo: 基于记录的请求路径 计算真实URL
+                    if (needAnalyseDataIndex <= 0){
                         //开始基于已有数据计算
-                        stdout_println(LOG_INFO, "[[*] 暂无需要分析数据, 开始进行动态API计算...");
-                        //计算动态URL、要求获取 id|msg_hash、PATHS列表 限制
+                        stdout_println(LOG_INFO, "[*] 暂无需要分析数据, 开始进行动态API计算...");
 
-                        //计算|更新|获取 域名的根树  //基于 域名,record_path
-                        //todo 实现根树计算函数
+                        //todo 从数据查询一条数据, 获取 id|msg_hash、PATHS列表 限制
+
+                        //todo 如果根树不存在,就开始计算根树 || 或者存在需要没有添加到根树中的记录URL
+
+                        //todo 从数据库获取最终的根树数据
+
+                        //todo 基于根树和paths列表计算新的字典
 
                         //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
-                        //todo 实现 基于根数的路径计算函数
-
-                        //todo: 提取的PATH需要进一步过滤处理
-                        // 考虑增加后缀过滤功能 static/image/k8-2.png
-                        // 考虑增加已有URL过滤 /bbs/login
-                        // 考虑增加 参数处理 plugin.php?id=qidou_assign
+                        //已完成 实现基于根数的路径计算函数
                     }
 
 
+                    //todo: 提取的PATH需要进一步过滤处理
+                    // 考虑增加后缀过滤功能 static/image/k8-2.png
+                    // 考虑增加已有URL过滤 /bbs/login
+                    // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
 
                     //todo: 增加自动递归查询功能
