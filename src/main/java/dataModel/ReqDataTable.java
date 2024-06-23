@@ -82,8 +82,8 @@ public class ReqDataTable {
     }
 
 
-    //获取一条需要处理的数据
-    public static synchronized int fetchAndMarkReqDataToAnalysis() {
+    //获取一条需要处理的数据，并且标记为处理中
+    public static synchronized int fetchAndMarkReqDataToAnalysis(boolean needMark) {
         // 考虑开启事务
         int msgDataIndex = -1;
 
@@ -103,11 +103,16 @@ public class ReqDataTable {
             if (rs.next()) {
                 int selectedMsgDataIndex = rs.getInt("msg_data_index");
 
+                //不更新索引直接返回查询到的索引号
+                if (!needMark)
+                    return selectedMsgDataIndex;
+
+                //更新索引对应的数据
                 try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                     updateStatement.setInt(1, selectedMsgDataIndex);
                     int affectedRows = updateStatement.executeUpdate();
                     if (affectedRows > 0) {
-                        msgDataIndex = rs.getInt("msg_data_index");
+                        msgDataIndex = selectedMsgDataIndex;
                     }
                 }
             }
