@@ -169,36 +169,43 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6)
                         return;
 
-                    //解析响应体数据
-                    //1、判断是否有URL数据需要解析
-                    Integer oneMsgDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis();
-                    if (oneMsgDataIndex < 1)
-                        return;
+                    //任务1、获取需要解析的响应体数据并进行解析响
+                    Integer needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis(true);
+                    if (needAnalyseDataIndex != -1){
+                        // 1 获取 msgDataIndex 对应的数据
+                        Map<String, Object> needAnalyseData = MsgDataTable.selectMsgDataById(needAnalyseDataIndex);
 
-                    //2、获取解析的Url数据
-                    //2.1 获取 msgDataIndex 对应的数据
-                    Map<String, Object> oneMsgData = MsgDataTable.selectMsgDataById(oneMsgDataIndex);
-                    if (oneMsgData ==null || oneMsgData.isEmpty())
-                        return;
+                        String msgHash = (String) needAnalyseData.get("msg_hash");
+                        String reqUrl = (String) needAnalyseData.get("req_url");
+                        stdout_println(LOG_INFO, String.format("[*] 分析数据信息: %s %s", reqUrl, msgHash));
 
-                    String msgHash = (String) oneMsgData.get("msg_hash");
-                    String reqUrl = (String) oneMsgData.get("req_url");
-                    byte[] reqBytes = (byte[]) oneMsgData.get("req_bytes");
-                    byte[] respBytes = (byte[]) oneMsgData.get("resp_bytes");
-                    stdout_println(LOG_INFO, String.format("[*] 分析请求信息: %s %s %s %s", reqUrl, msgHash, reqBytes.length, respBytes.length));
+                        //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
+                        HttpMsgInfo msgInfo =  new HttpMsgInfo(
+                                reqUrl,
+                                (byte[]) needAnalyseData.get("req_bytes"),
+                                (byte[]) needAnalyseData.get("resp_bytes"),
+                                msgHash);
 
-                    //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
-                    HttpMsgInfo msgInfo =  new HttpMsgInfo(reqUrl, reqBytes, respBytes, msgHash);
-                    JSONObject analyseInfo = InfoAnalyse.analysisMsgInfo(msgInfo);
-                    if(!analyseInfoIsNotEmpty(analyseInfo))
-                        return;
+                        //2.3 进行数据分析
+                        JSONObject analyseResult = InfoAnalyse.analysisMsgInfo(msgInfo);
 
-                    //2.3 将分析结果写入数据库
-                    int analyseDataIndex = AnalyseDataTable.insertAnalyseData(msgInfo, analyseInfo);
-                    if (analyseDataIndex > 0)
-                        stdout_println(LOG_INFO, String.format("[+] Success Insert Analyse Data: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                        //2.3 将分析结果写入数据库
+                        if(analyseInfoIsNotEmpty(analyseResult)){
+                            int analyseDataIndex = AnalyseDataTable.insertAnalyseData(msgInfo, analyseResult);
+                            if (analyseDataIndex > 0)
+                                stdout_println(LOG_INFO, String.format("[+] 数据分析完成: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                        }
+                    }
+
+                    //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
+                    needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqDataToAnalysis(false);
+                    if (needAnalyseDataIndex == -1){
+                        //开始基于已有数据计算
+                        stdout_println(LOG_INFO, "[[*] 暂无需要分析数据, 开始进行动态API计算...");
+                    }
 
                     //todo: 基于记录的请求路径 计算真实URL
+                    //3、基于当前分析的结果进行判断
 
                     //todo: 提取的PATH需要进一步过滤处理
                     // 考虑增加后缀过滤功能 static/image/k8-2.png
