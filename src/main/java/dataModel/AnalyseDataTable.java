@@ -24,21 +24,23 @@ public class AnalyseDataTable {
             + " req_url TEXT NOT NULL,\n"  //请求URL
             + " req_path TEXT NOT NULL,\n" //请求Path 便于补充根目录
             
-            + " analysed_url TEXT DEFAULT '',\n"    //分析出来的URL信息 (Json格式)
+            + " find_url TEXT DEFAULT '',\n"    //分析出来的URL信息 (Json格式)
             + " find_url_num INTEGER DEFAULT -1,\n"     //发现URL的数量
 
-            + " analysed_path TEXT DEFAULT '',\n"   //分析出来的URI信息 还需要补充路径 (Json格式)
+            + " find_path TEXT DEFAULT '',\n"   //分析出来的URI信息 还需要补充路径 (Json格式)
             + " find_path_num INTEGER DEFAULT -1,\n"    //发现PATH的数量
 
-            + " analysed_info TEXT DEFAULT '',\n"   //分析出来的敏感信息(Json格式)
+            + " find_info TEXT DEFAULT '',\n"   //分析出来的敏感信息(Json格式)
             + " find_info_num INTEGER DEFAULT -1,\n"    //发现INFO的数量
 
-            + " analysed_api DEFAULT '',\n"        //基于分析的不完整URI信息计算出来的URL (Json格式)
-            + " find_api_num INTEGER DEFAULT -1\n"     //发现API的数量
+            + " find_api DEFAULT '',\n"        //基于分析的不完整URI信息 直接拼接 出来的URL (Json格式)
+            + " find_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
+
+            + " smart_api DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
+            + " smart_api_num INTEGER DEFAULT -1\n"     //发现API的数量
             + ");";
 
     //插入数据库
-
     public static int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
@@ -58,11 +60,12 @@ public class AnalyseDataTable {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO tableName ".replace("tableName", tableName) +
                         "(msg_hash, req_url, req_path, " +
-                        "analysed_url, find_url_num, " +
-                        "analysed_path, find_path_num, " +
-                        "analysed_info, find_info_num, " +
-                        "analysed_api, find_api_num) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "find_url, find_url_num, " +
+                        "find_path, find_path_num, " +
+                        "find_info, find_info_num, " +
+                        "find_api, find_api_num, " +
+                        "smart_api, smart_api_num) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getReqUrl());
@@ -76,6 +79,9 @@ public class AnalyseDataTable {
 
                     insertStmt.setString(8, analyseInfo.getJSONArray(INFO_KEY).toJSONString());
                     insertStmt.setInt(9, analyseInfo.getJSONArray(INFO_KEY).size());
+
+                    insertStmt.setString(10, analyseInfo.getJSONArray(API_KEY).toJSONString());
+                    insertStmt.setInt(11, analyseInfo.getJSONArray(API_KEY).size());
 
                     insertStmt.executeUpdate();
 

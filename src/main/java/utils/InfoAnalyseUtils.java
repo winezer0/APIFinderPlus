@@ -232,22 +232,38 @@ public class InfoAnalyseUtils {
     /**
      * 计算URl和路径拼接
      * @param reqUrl
-     * @param uri
+     * @param path
      * @return
      */
-    public static String UrlAddPath(String reqUrl, String uri){
-        //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
-
+    public static String UrlAddPath(String reqUrl, String path){
+        String newUrl;
         try {
             //使用当前请求的reqUrl创建URI对象
             URI baseUrl = new URI(reqUrl);
             //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
-            uri = baseUrl.resolve(uri).toString();
+            newUrl = baseUrl.resolve(path).toString();
+            stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
         } catch (URISyntaxException e) {
-            stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", uri, e.getMessage()));
+            stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", path, e.getMessage()));
             return null;
         }
-        return uri;
+        return newUrl;
+    }
+
+    /**
+     * 计算URl和路径拼接
+     * @param reqUrl
+     * @param pathList
+     * @return
+     */
+    public static List<String> UrlAddPath(String reqUrl, List<String> pathList){
+        List<String> urlList = new ArrayList<>();
+        for(String path : pathList){
+            String newUrl = UrlAddPath(reqUrl, path);
+            if (newUrl != null && newUrl != "")
+                urlList.add(newUrl);
+        }
+        return urlList;
     }
 
     public static void main(String[] args) {

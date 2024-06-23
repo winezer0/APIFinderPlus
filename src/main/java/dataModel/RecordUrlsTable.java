@@ -7,7 +7,7 @@ import static utils.BurpPrintUtils.*;
 
 public class RecordUrlsTable {
     //数据表名称
-    static String tableName = "record_urls";
+    static String tableName = "record_paths";
 
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
