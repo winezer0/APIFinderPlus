@@ -165,7 +165,9 @@ public class InfoAnalyse {
 
             // 定位查找范围
             String willFindText;
-            if ("body".equalsIgnoreCase(rule.getLocation())) {
+            if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
+                willFindText = msgInfo.getReqPath();
+            } else {
                 //转换响应体,后续可能需要解决编码问题
                 willFindText = new String(
                         HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),
@@ -174,12 +176,8 @@ public class InfoAnalyse {
 
                 //截取最大响应体长度
                 willFindText = SubString(willFindText, MAX_HANDLE_SIZE);
-            } else if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
-                willFindText = msgInfo.getReqPath();
-            } else {
-                stderr_println("[!] 未知指纹位置：" + rule.getLocation());
-                continue;
             }
+
 
             //多个关键字匹配
             if (rule.getMatch().equals("keyword"))
