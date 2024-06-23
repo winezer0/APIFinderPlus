@@ -140,14 +140,13 @@ public class InfoAnalyse {
             String willFindText;
             if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
                 willFindText = msgInfo.getReqPath();
-            } else {
-                //转换响应体,后续可能需要解决编码问题
-                willFindText = new String(
-                        HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),
-                        StandardCharsets.UTF_8);
-                //willFindText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
-
-                //截取最大响应体长度
+            }
+//            else if ("body".equalsIgnoreCase(rule.getLocation())) {
+//                willFindText = new String(HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),  StandardCharsets.UTF_8);
+//                willFindText = SubString(willFindText, MAX_HANDLE_SIZE);
+//            }
+            else {
+                willFindText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
                 willFindText = SubString(willFindText, MAX_HANDLE_SIZE);
             }
 
