@@ -183,6 +183,7 @@ public class IProxyScanner implements IProxyListener {
                                 (String) needAnalyseData.get(MsgDataTable.req_url));
 
                         //2.3 进行数据分析
+                        stdout_println(LOG_INFO, String.format("[+] 数据分析开始: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         JSONObject analyseResult = InfoAnalyse.analysisMsgInfo(msgInfo);
 
                         //2.3 将分析结果写入数据库

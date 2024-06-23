@@ -92,8 +92,7 @@ public class MsgDataTable {
                 }
             }
         } catch (Exception e) {
-            BurpExtender.getStderr().println(String.format("[-] Error Select Msg Data By Id: %s", msgDataIndex));
-            e.printStackTrace();
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By Id: %s -> %s", msgDataIndex, e.getMessage()));
         }
         return msgData;
     }
