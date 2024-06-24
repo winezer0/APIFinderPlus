@@ -242,7 +242,7 @@ public class InfoAnalyseUtils {
             URI baseUrl = new URI(reqUrl);
             //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
             newUrl = baseUrl.resolve(path).toString();
-            stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
+//            stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
         } catch (URISyntaxException e) {
             stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", path, e.getMessage()));
             return null;
