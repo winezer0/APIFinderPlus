@@ -149,7 +149,7 @@ public class InfoUriFilterUtils {
         List<String> list = new ArrayList<>();
         for (String uri : matchUriList){
             if (!baseUri.contains(uri))  {
-                system_println(String.format("%s 不包含 %s", baseUri, uri));
+                // system_println(String.format("%s 不包含 %s", baseUri, uri));
                 list.add(uri);}
         }
         return list;
