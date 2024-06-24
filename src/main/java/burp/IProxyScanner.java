@@ -280,7 +280,7 @@ public class IProxyScanner implements IProxyListener {
                                 //找到路径数据,写入数据库进行存储
                                 if (!findUrlsSet.isEmpty()){
                                     JSONArray findUrlsArray = new JSONArray(findUrlsSet);
-                                    stdout_println(LOG_DEBUG, String.format("所有找到的数据 %s -> PATH %s", reqUrl, findUrlsArray));
+                                    stdout_println(LOG_DEBUG, String.format("[+] 动态URL分析结果 %s -> PATH %s", reqUrl, findUrlsArray.size()));
                                 }
                             }
                         }
