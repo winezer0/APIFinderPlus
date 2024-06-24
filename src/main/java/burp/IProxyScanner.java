@@ -238,13 +238,15 @@ public class IProxyScanner implements IProxyListener {
                         //todo 从数据库查询一条 path数据, 获取 id|msg_hash、PATHS列表
                         Map<String, Object> analysePathData = fetchOneAnalysePathData();
                         if (analysePathData != null) {
-                            int dataId = (int) analysePathData.get(Constants.DATA_ID);
-                            String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
+                            int dataId = (int) analysePathData.get(Constants.DATA_ID); //后面用来更新到数据表
+
+                            String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
-                            int runBasic = (int) analysePathData.get(Constants.BASIC_PATH_NUM);
+                            System.out.println(String.format("获取到域名%s对应的数据%s", reqHostPort, findPath));
 
                             // 5、从数据库中查询树信息表
-                            String pathTree = fetchOnePathTree(reqUrl);
+                            String pathTree = fetchOnePathTree(reqHostPort);
+                            System.out.println(String.format("获取到域名%s对应的数据%s", reqHostPort, pathTree));
 
                             //todo 基于根树和paths列表计算新的字典
                             //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过

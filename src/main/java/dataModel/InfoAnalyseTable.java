@@ -23,6 +23,7 @@ public class InfoAnalyseTable {
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + " msg_hash TEXT,\n"  //请求Hash信息
             + " req_url TEXT NOT NULL,\n"  //请求URL
+            + " req_host_port TEXT NOT NULL,\n"  //请求HOST PORT
 
             + " find_url TEXT DEFAULT '',\n"    //分析出来的URL信息 (Json格式)
             + " find_url_num INTEGER DEFAULT -1,\n"     //发现URL的数量
@@ -63,24 +64,25 @@ public class InfoAnalyseTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, find_url, find_url_num, find_path, find_path_num, find_info, find_info_num, find_api, find_api_num) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        "msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num, find_info, find_info_num, find_api, find_api_num) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName) ;
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getReqUrl());
+                    insertStmt.setString(3, msgInfo.getReqHostPort());
 
-                    insertStmt.setString(3, analyseInfo.getJSONArray(URL_KEY).toJSONString());
-                    insertStmt.setInt(4, analyseInfo.getJSONArray(URL_KEY).size());
+                    insertStmt.setString(4, analyseInfo.getJSONArray(URL_KEY).toJSONString());
+                    insertStmt.setInt(5, analyseInfo.getJSONArray(URL_KEY).size());
 
-                    insertStmt.setString(5, analyseInfo.getJSONArray(PATH_KEY).toJSONString());
-                    insertStmt.setInt(6, analyseInfo.getJSONArray(PATH_KEY).size());
+                    insertStmt.setString(6, analyseInfo.getJSONArray(PATH_KEY).toJSONString());
+                    insertStmt.setInt(7, analyseInfo.getJSONArray(PATH_KEY).size());
 
-                    insertStmt.setString(7, analyseInfo.getJSONArray(INFO_KEY).toJSONString());
-                    insertStmt.setInt(8, analyseInfo.getJSONArray(INFO_KEY).size());
+                    insertStmt.setString(8, analyseInfo.getJSONArray(INFO_KEY).toJSONString());
+                    insertStmt.setInt(9, analyseInfo.getJSONArray(INFO_KEY).size());
 
-                    insertStmt.setString(9, analyseInfo.getJSONArray(API_KEY).toJSONString());
-                    insertStmt.setInt(10, analyseInfo.getJSONArray(API_KEY).size());
+                    insertStmt.setString(10, analyseInfo.getJSONArray(API_KEY).toJSONString());
+                    insertStmt.setInt(11, analyseInfo.getJSONArray(API_KEY).size());
 
                     insertStmt.executeUpdate();
 
@@ -106,22 +108,33 @@ public class InfoAnalyseTable {
      * @return
      */
     public static synchronized Map<String, Object> fetchOneAnalysePathData(){
-        Map<String, Object> pathData = null;
+        JSONObject pathData = new JSONObject();
 
         // 首先选取一条记录的ID
-        String selectSQL = "SELECT * FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
+        String selectSQL = "SELECT id,req_host_port,find_path FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+                .replace("tableName", tableName);
+
+        //更新状态
+        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_END' WHERE id = ?;"
+                .replace("ANALYSE_END", Constants.ANALYSE_END)
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pathData = new HashMap<>();
-                    pathData.put(Constants.DATA_ID, rs.getInt("id"));
-                    pathData.put(Constants.REQ_URL, rs.getString("req_url"));
+                    int selectedId = rs.getInt("id");
+
+                    pathData.put(Constants.DATA_ID, selectedId);
+                    pathData.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
                     pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
-                    pathData.put(Constants.BASIC_PATH_NUM, rs.getInt("basic_path_num"));
+                    
+                    //更新索引对应的数据
+                    try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+                        updateStatement.setInt(1, selectedId);
+                        updateStatement.executeUpdate();
+                    }
                 }
             }
         } catch (Exception e) {
