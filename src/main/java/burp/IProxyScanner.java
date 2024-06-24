@@ -193,7 +193,7 @@ public class IProxyScanner implements IProxyListener {
 
                         //2.3 将分析结果写入数据库
                         if(analyseInfoIsNotEmpty(analyseResult)){
-                            int analyseDataIndex = AnalyseInfoTable.insertAnalyseData(msgInfo, analyseResult);
+                            int analyseDataIndex = InfoAnalyseTable.insertAnalyseData(msgInfo, analyseResult);
                             if (analyseDataIndex > 0)
                                 stdout_println(LOG_INFO, String.format("[+] 数据分析完成: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         }

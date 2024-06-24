@@ -68,7 +68,7 @@ public class DBService {
         execCreatTableSql(ReqDataTable.creatTableSQL, ReqDataTable.tableName);
 
         // 用来创建数据库 analyse_path 存储分析后的数据
-        execCreatTableSql(AnalyseInfoTable.creatTableSQL, AnalyseInfoTable.tableName);
+        execCreatTableSql(InfoAnalyseTable.creatTableSQL, InfoAnalyseTable.tableName);
 
         // 创建存储根树的表
         execCreatTableSql(PathTreeTable.creatTableSQL, PathTreeTable.tableName);

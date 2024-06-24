@@ -13,9 +13,9 @@ import java.util.Map;
 
 import static model.InfoAnalyse.*;
 
-public class AnalyseInfoTable {
+public class InfoAnalyseTable {
     //数据表名称
-    static String tableName = "ANALYSE_INFO";
+    static String tableName = "INFO_ANALYSE";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
