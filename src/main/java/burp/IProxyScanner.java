@@ -1,6 +1,5 @@
 package burp;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import dataModel.*;
@@ -8,8 +7,7 @@ import model.HttpMsgInfo;
 import model.RecordHashMap;
 import model.InfoAnalyse;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
@@ -19,6 +17,8 @@ import static dataModel.PathTreeTable.fetchOnePathTree;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
+import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
+import static utils.InfoAnalyseUtils.UrlAddPath;
 import static utils.PathTreeUtils.findNodePathInTree;
 import static utils.PathTreeUtils.genPathsTree;
 import static utils.BurpPrintUtils.*;
@@ -91,12 +91,12 @@ public class IProxyScanner implements IProxyListener {
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0
+            if(urlPathRecordMap.get(msgInfo.getReqBaseDir()) <= 0
                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true)
-                    && msgInfo.getReqPath().trim() != "/"
+                    && !msgInfo.getReqPath().trim().equals("/")
             ){
-                urlPathRecordMap.add(msgInfo.getReqBasePath());
-                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatusCode()));
+                urlPathRecordMap.add(msgInfo.getReqBaseDir());
+                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBaseDir(), msgInfo.getRespStatusCode()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -241,6 +241,8 @@ public class IProxyScanner implements IProxyListener {
                         Map<String, Object> analysePathData = fetchOneAnalysePathData();
                         if (analysePathData != null && !analysePathData.isEmpty()) {
                             int dataId = (int) analysePathData.get(Constants.DATA_ID); //后面用来更新到数据表
+                            String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
+                            String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
 
                             String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
@@ -253,15 +255,24 @@ public class IProxyScanner implements IProxyListener {
                             JSONArray findPathObj = JSONArray.parse(findPath);
                             JSONObject pathTreeObj = JSONObject.parse(pathTree);
                             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-                            if (!findPathObj.isEmpty() && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty()){
-                                JSONArray findNodePaths = new JSONArray();
+                            if (findPathObj !=null && !findPathObj.isEmpty() && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty()){
+                                Set<String> findUrlsSet = new HashSet();
                                 for (Object path: findPathObj){
                                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
                                     stdout_println(String.format("path:%s findNodePath:%s", path, findNodePath));
-                                    if (findNodePath!=null && !findNodePath.isEmpty())
-                                        findNodePaths.add(findNodePath);
+
+                                    if (findNodePath!=null && !findNodePath.isEmpty()){
+                                        for (Object prefixPath:findNodePath){
+                                            //组合URL、findNodePath、path
+                                            String tmpPath = UrlAddPath(reqBaseUrl, (String) prefixPath);
+                                            String findUrl = UrlAddPath(tmpPath, (String) path);
+                                            findUrlsSet.add(findUrl);
+                                        }
+                                    }
                                 }
-                                stdout_println(LOG_DEBUG, String.format("所有找到的数据 %s -> PATH %s", reqHostPort, findNodePaths));
+
+                                JSONArray findUrlsArray = new JSONArray(findUrlsSet);
+                                stdout_println(LOG_DEBUG, String.format("所有找到的数据 %s -> PATH %s", reqHostPort, findUrlsArray));
                             }
                         }
                     }
