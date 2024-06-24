@@ -201,13 +201,18 @@ public class IProxyScanner implements IProxyListener {
 
                         //开始基于已有数据计算
                         //todo 存在需要没有添加到根树中的记录URL生成树
-                        // 更新树
+                        //"SELECT req_host, GROUP_CONCAT(req_path_dir, '<-->') AS req_path_dirs FROM record_paths GROUP BY req_host"
 
+                        // 1、查询 所有 host 的 所有PATH
+                        // 2、作为域名信息列表遍历
+                        // 3、为每个域名计算根数
+                        // 4、存储和合并树信息
 
                         //todo 从数据库获取最终的根树数据
+                        // 5、从数据库中查询树信息表
 
 
-                        //todo 从数据查询一条数据, 获取 id|msg_hash、PATHS列表 限制
+                        //todo 从数据库查询一条path数据, 获取 id|msg_hash、PATHS列表
 //                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
 //                        if (analysePathData != null){
 //                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
