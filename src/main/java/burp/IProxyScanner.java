@@ -11,8 +11,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static dataModel.InfoAnalyseTable.fetchOneAnalysePathData;
-import static dataModel.InfoAnalyseTable.insertAnalyseApiData;
+import static dataModel.InfoAnalyseTable.*;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrlId;
 import static dataModel.PathTreeTable.fetchOnePathTreeData;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
@@ -196,7 +195,7 @@ public class IProxyScanner implements IProxyListener {
 
                         //将分析结果写入数据库
                         if(analyseInfoIsNotEmpty(analyseResult)){
-                            int analyseDataIndex = InfoAnalyseTable.insertAnalyseData(msgInfo, analyseResult);
+                            int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseResult);
                             if (analyseDataIndex > 0)
                                 stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         }
@@ -224,8 +223,8 @@ public class IProxyScanner implements IProxyListener {
                     //任务3、判断是否有树需要更新,没有的话就根据树生成计算新的URL
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
-                        //获取一条需要分析 的数据
-                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
+                        //获取一条需要分析的数据
+                        Map<String, Object> analysePathData = fetchUnhandledSmartApiData();
                         if (analysePathData != null && !analysePathData.isEmpty()) {
                             int dataId = (int) analysePathData.get(Constants.DATA_ID);
                             String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
@@ -267,7 +266,7 @@ public class IProxyScanner implements IProxyListener {
                                     JSONObject analyseApiInfo = new JSONObject();
                                     analyseApiInfo.put(Constants.PATH_NUM, pathNum);
                                     analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
-                                    int apiDataIndex = insertAnalyseApiData(dataId, analyseApiInfo);
+                                    int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
                                     if (apiDataIndex > 0)
                                         stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
                                 }
@@ -280,10 +279,15 @@ public class IProxyScanner implements IProxyListener {
                     // 考虑增加已有URL过滤 /bbs/login
                     // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
+                    //任务4、判断是否还有没有生成树的数据,如果没有的话,定时更新数据
+                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
+                    if (unhandledSmartApiDataId <= 0){
+
+                    }
+
+
                     //todo: 增加自动递归查询功能
-
-                    //todo: 添加URL查询功能
-
+                    //todo: 添加 UI 显示
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();

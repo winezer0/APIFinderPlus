@@ -45,8 +45,8 @@ public class InfoAnalyseTable {
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
             + ");";
 
-    //插入数据库
-    public static synchronized int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
+    //插入分析完整的 基本 敏感信息 和 URI数据
+    public static synchronized int insertBaseAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
                 .replace("tableName", tableName);
@@ -101,12 +101,8 @@ public class InfoAnalyseTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-
-    /**
-     * 获取1条需要分析的Path数据
-     * @return
-     */
-    public static synchronized Map<String, Object> fetchOneAnalysePathData(){
+    //获取一条需要分析的Path数据
+    public static synchronized Map<String, Object> fetchUnhandledSmartApiData(){
         JSONObject pathData = new JSONObject();
 
         // 首先选取一条记录的ID
@@ -115,8 +111,8 @@ public class InfoAnalyseTable {
                 .replace("tableName", tableName);
 
         //更新状态
-        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_END' WHERE id = ?;"
-                .replace("ANALYSE_END", Constants.ANALYSE_END)
+        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id = ?;"
+                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -146,8 +142,8 @@ public class InfoAnalyseTable {
         return pathData;
     }
 
-    //插入数据库
-    public static synchronized int insertAnalyseApiData(int dataId, JSONObject analyseApiInfo){
+    //插入分析完整的smart api 数据
+    public static synchronized int insertAnalyseSmartApiData(int dataId, JSONObject analyseApiInfo){
         int dataIndex = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET smart_api = ?, smart_api_num = ?, basic_path_num = ? WHERE id = ?;"
@@ -174,4 +170,26 @@ public class InfoAnalyseTable {
         return dataIndex; // 返回ID值，无论是更新还是插入
     }
 
+    //获取一条需要分析的数据的ID,判断是否有需要分析的数据
+    public static synchronized int fetchUnhandledSmartApiDataId(){
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+        // 首先选取一条记录的ID
+        String selectSQL = "SELECT id WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
+                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int selectedId = rs.getInt("id");
+                    generatedId = selectedId;
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Smart Api Data: %s", e.getMessage()));
+        }
+
+        return generatedId;
+    }
 }
