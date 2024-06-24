@@ -183,7 +183,7 @@ public class IProxyScanner implements IProxyListener {
                     Integer needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
                         //获取 msgDataIndex 对应的数据
-                        Map<String, Object> needHandledReqData = ReqMsgDataTable.selectMsgDataById(needHandledReqDataId);
+                        Map<String, Object> needHandledReqData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
                         String requestUrl = (String) needHandledReqData.get(ReqMsgDataTable.req_url);
                         byte[] requestBytes = (byte[]) needHandledReqData.get(ReqMsgDataTable.req_bytes);
                         byte[] responseBytes = (byte[]) needHandledReqData.get(ReqMsgDataTable.resp_bytes);
@@ -224,54 +224,8 @@ public class IProxyScanner implements IProxyListener {
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
                         //获取一条需要分析的数据
-                        Map<String, Object> analysePathData = fetchUnhandledSmartApiData();
-                        if (analysePathData != null && !analysePathData.isEmpty()) {
-                            int dataId = (int) analysePathData.get(Constants.DATA_ID);
-                            String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
-                            String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
-                            String findPath = (String) analysePathData.get(Constants.FIND_PATH);
-
-                            String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
-
-                            // 从数据库中查询树信息表
-                            JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
-                            int pathNum = (int) pathTreeData.get(Constants.PATH_NUM);
-                            String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
-
-                            // 基于根树和paths列表计算新的字典
-                            JSONArray findPathObj = JSONArray.parse(findPath);
-                            JSONObject pathTreeObj = JSONObject.parse(pathTree);
-                            //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-                            if (findPathObj != null
-                                    && !findPathObj.isEmpty()
-                                    && pathTreeObj != null
-                                    && !pathTreeObj.isEmpty()
-                                    && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty())
-                            {
-                                Set<String> findUrlsSet = new HashSet();
-                                //遍历路径列表,开始进行查询
-                                for (Object path: findPathObj){
-                                    JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
-                                    //查询到结果就组合成URL,加到查询结果中
-                                    if (findNodePath != null && !findNodePath.isEmpty()){
-                                        for (Object prefix:findNodePath){
-                                            //组合URL、findNodePath、path
-                                            String prefixPath = (String) prefix;
-                                            prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
-                                            String findUrl = UrlAddPath(prefixPath, (String) path);
-                                            findUrlsSet.add(findUrl);
-                                        }
-                                    }
-                                }
-                                //不管找没找到数据 都应该写入数据库进行存储
-                                JSONObject analyseApiInfo = new JSONObject();
-                                analyseApiInfo.put(Constants.PATH_NUM, pathNum);
-                                analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
-                                int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
-                                if (apiDataIndex > 0)
-                                    stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
-                            }
-                        }
+                        Map<String, Object> unhandledSmartApiData = fetchUnhandledSmartApiData();
+                        analysisUpdateSmartApiData(unhandledSmartApiData);
                     }
 
                     //todo: 提取的PATH需要进一步过滤处理
@@ -279,11 +233,12 @@ public class IProxyScanner implements IProxyListener {
                     // 考虑增加已有URL过滤 /bbs/login
                     // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
-                    //任务4、判断是否还有没有生成树的数据,如果没有的话,定时更新数据
-//                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
-//                    if (unhandledSmartApiDataId <= 0){
-//                    }
-
+                    //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
+                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
+                    if (unhandledSmartApiDataId <= 0){
+                        Map<String, Object> needUpdatedSmartApiData = fetchNeedUpdatedSmartApiData();
+                        analysisUpdateSmartApiData(needUpdatedSmartApiData);
+                    }
 
                     //todo: 增加自动递归查询功能
                     //todo: 添加 UI 显示
@@ -293,6 +248,60 @@ public class IProxyScanner implements IProxyListener {
                 }
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 重复使用的独立的Smart API 路径计算+更新函数
+     * @param needAnalysedPathData
+     */
+    private void analysisUpdateSmartApiData(Map<String, Object> needAnalysedPathData) {
+        if (needAnalysedPathData != null && !needAnalysedPathData.isEmpty()) {
+            int dataId = (int) needAnalysedPathData.get(Constants.DATA_ID);
+            String reqUrl = (String) needAnalysedPathData.get(Constants.REQ_URL);
+            String reqHostPort = (String) needAnalysedPathData.get(Constants.REQ_HOST_PORT);
+            String findPath = (String) needAnalysedPathData.get(Constants.FIND_PATH);
+
+            String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
+
+            // 从数据库中查询树信息表
+            JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
+            int pathNum = (int) pathTreeData.get(Constants.PATH_NUM);
+            String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
+
+            // 基于根树和paths列表计算新的字典
+            JSONArray findPathObj = JSONArray.parse(findPath);
+            JSONObject pathTreeObj = JSONObject.parse(pathTree);
+            //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
+            if (findPathObj != null
+                    && !findPathObj.isEmpty()
+                    && pathTreeObj != null
+                    && !pathTreeObj.isEmpty()
+                    && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty())
+            {
+                Set<String> findUrlsSet = new HashSet();
+                //遍历路径列表,开始进行查询
+                for (Object path: findPathObj){
+                    JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
+                    //查询到结果就组合成URL,加到查询结果中
+                    if (findNodePath != null && !findNodePath.isEmpty()){
+                        for (Object prefix:findNodePath){
+                            //组合URL、findNodePath、path
+                            String prefixPath = (String) prefix;
+                            prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
+                            String findUrl = UrlAddPath(prefixPath, (String) path);
+                            findUrlsSet.add(findUrl);
+                        }
+                    }
+                }
+                //不管找没找到数据 都应该写入数据库进行存储
+                JSONObject analyseApiInfo = new JSONObject();
+                analyseApiInfo.put(Constants.PATH_NUM, pathNum);
+                analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
+                int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
+                if (apiDataIndex > 0)
+                    stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
+            }
+        }
     }
 
     /**

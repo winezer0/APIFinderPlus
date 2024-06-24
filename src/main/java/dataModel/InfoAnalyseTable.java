@@ -181,7 +181,7 @@ public class InfoAnalyseTable {
     public static synchronized int fetchUnhandledSmartApiDataId(){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         // 首先选取一条记录的ID
-        String selectSQL = "SELECT id WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
+        String selectSQL = "SELECT id FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
@@ -196,7 +196,41 @@ public class InfoAnalyseTable {
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Smart Api Data: %s", e.getMessage()));
         }
-
         return generatedId;
     }
+
+    //获取一条需要更新的Path数据
+    public static synchronized Map<String, Object> fetchNeedUpdatedSmartApiData(){
+        JSONObject pathData = new JSONObject();
+
+        // 首先选取一条记录的ID
+        String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path,A.basic_path_num, B.path_num " +
+                "From table1 A LEFT JOIN table2 B ON A.req_host_port = B.req_host_port " +
+                "WHERE A.run_status = 'ANALYSE_ING' AND B.path_num > A.basic_path_num Limit 1;")
+                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
+                .replace("table1", tableName)
+                .replace("table2", PathTreeTable.tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int selectedId = rs.getInt("id");
+                    String reqUrl = rs.getString("req_url");
+                    String reqHostPort = rs.getString("req_host_port");
+                    String findPath = rs.getString("find_path");
+
+                    pathData.put(Constants.DATA_ID, selectedId);
+                    pathData.put(Constants.REQ_URL, reqUrl);
+                    pathData.put(Constants.REQ_HOST_PORT, reqHostPort);
+                    pathData.put(Constants.FIND_PATH, findPath);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
+        }
+        return pathData;
+    }
+
+
 }

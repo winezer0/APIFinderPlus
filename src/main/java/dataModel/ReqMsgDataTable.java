@@ -72,7 +72,7 @@ public class ReqMsgDataTable {
     public static String req_bytes = "req_bytes";
     public static String resp_bytes = "resp_bytes";
 
-    public static synchronized Map<String, Object> selectMsgDataById(Integer msgDataIndex){
+    public static synchronized Map<String, Object> fetchMsgDataById(Integer msgDataIndex){
         Map<String, Object> msgData = null;
 
         String selectMsgDataByIdSql = "SELECT * FROM tableName WHERE id = ?"
