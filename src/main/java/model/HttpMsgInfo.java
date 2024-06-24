@@ -26,7 +26,7 @@ public class HttpMsgInfo {
     private String reqPathExt = null;
     private String reqPathDir = null;
     private String reqBaseUrl = "-";
-    private String reqBasePath = "-";
+    private String reqBaseDir = "-";
     private byte[] reqBytes = null;
     private byte[] respBytes = null;
     private String respStatusCode = null;
@@ -110,7 +110,7 @@ public class HttpMsgInfo {
             // 构造基本URL，不包含查询参数
             reqBaseUrl = new URL(reqProto, reqHost, reqPort, reqPath).toString();
             //构造基本URL, 不包含请求文件
-            reqBasePath = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
+            reqBaseDir = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
         } catch (MalformedURLException e) {
             stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
@@ -220,8 +220,8 @@ public class HttpMsgInfo {
         return reqBaseUrl;
     }
 
-    public String getReqBasePath() {
-        return reqBasePath;
+    public String getReqBaseDir() {
+        return reqBaseDir;
     }
 
     public String getReqProto() {
