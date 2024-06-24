@@ -19,6 +19,7 @@ public class HttpMsgInfo {
     private String reqMethod = null;
     private String reqProto = null;
     private String reqHost = null;
+    private String reqHostPort = null;
     private String reqRootDomain = null;
     private int reqPort = -1;
     private String reqPath = null;
@@ -27,7 +28,6 @@ public class HttpMsgInfo {
     private String reqBaseUrl = "-";
     private String reqBasePath = "-";
     private byte[] reqBytes = null;
-
     private byte[] respBytes = null;
     private String respStatusCode = null;
     private int respBodyLen = -1;
@@ -99,6 +99,8 @@ public class HttpMsgInfo {
             reqRootDomain = getRootDomain(reqHost);
             //从URL中获取请求Port
             reqPort = urlObj.getPort();
+            //添加个HostPort对象
+            reqHostPort = String.format("%s:%s", reqHost, reqPort);
             //解析请求文件的后缀
             reqPathExt = parseUrlExt(requestUrl);
             //获取请求路径
@@ -290,12 +292,7 @@ public class HttpMsgInfo {
         this.respBytes = respBytes;
     }
 
-    public void setMsgHash(String msgHash) {
-        this.msgHash = msgHash;
+    public String getReqHostPort() {
+        return reqHostPort;
     }
-
-    public void setReqUrl(String reqUrl) {
-        this.reqUrl = reqUrl;
-    }
-
 }

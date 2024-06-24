@@ -13,9 +13,9 @@ import java.util.Map;
 
 import static model.InfoAnalyse.*;
 
-public class AnalyseDataTable {
+public class AnalyseInfoTable {
     //数据表名称
-    static String tableName = "analyse_data";
+    static String tableName = "ANALYSE_INFO";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
@@ -39,7 +39,7 @@ public class AnalyseDataTable {
             + " smart_api TEXT DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
             + " smart_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
 
-            + " run_basic INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
+            + " basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
             + ");";
@@ -93,7 +93,7 @@ public class AnalyseDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] -> [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl(), e.getMessage()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -121,7 +121,7 @@ public class AnalyseDataTable {
                     pathData.put(Constants.DATA_ID, rs.getInt("id"));
                     pathData.put(Constants.REQ_URL, rs.getString("req_url"));
                     pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
-                    pathData.put(Constants.RUN_BASIC, rs.getInt("run_basic"));
+                    pathData.put(Constants.BASIC_PATH_NUM, rs.getInt("basic_path_num"));
                 }
             }
         } catch (Exception e) {

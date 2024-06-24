@@ -1,6 +1,5 @@
 package dataModel;
 
-import burp.BurpExtender;
 import model.HttpMsgInfo;
 
 import java.sql.Connection;
@@ -12,9 +11,9 @@ import java.util.Map;
 
 import static utils.BurpPrintUtils.*;
 
-public class MsgDataTable {
+public class ReqMsgDataTable {
     //数据表名称
-    static String tableName = "msg_data";
+    static String tableName = "REQ_MSG_DATA";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
@@ -61,7 +60,7 @@ public class MsgDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 

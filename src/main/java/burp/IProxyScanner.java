@@ -5,20 +5,20 @@ import com.alibaba.fastjson2.JSONObject;
 import dataModel.*;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
-import utils.ElementUtils;
 import model.InfoAnalyse;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static dataModel.RecordUrlsTable.fetchUnhandledRecordUrals;
+import static dataModel.PathTreeTable.insertOrUpdatePathTree;
+import static dataModel.PathRecordTable.fetchUnhandledRecordUrals;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
-import static model.PathTreeInfo.createRootTree;
-import static model.PathTreeInfo.genPathTreeBatch;
+import static model.PathTreeInfo.genPathsTree;
 import static utils.BurpPrintUtils.*;
+import static utils.ElementUtils.isContainOneKey;
+import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -79,33 +79,36 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //匹配黑名单域名
-            if(ElementUtils.isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_HOSTS, false)){
+            if(isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_HOSTS, false)){
                 stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && ElementUtils.isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true)){
+            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0
+                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true)
+                    && msgInfo.getReqPath().trim() != "/"
+            ){
                 urlPathRecordMap.add(msgInfo.getReqBasePath());
                 stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatusCode()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        RecordUrlsTable.insertOrUpdateSuccessUrl(msgInfo);
+                        PathRecordTable.insertOrUpdateSuccessUrl(msgInfo);
                     }
                 });
             }
 
             // 排除黑名单后缀
-            if(ElementUtils.isEqualsOneKey(msgInfo.getReqPathExt(), CONF_BLACK_URL_EXT, false)){
+            if(isEqualsOneKey(msgInfo.getReqPathExt(), CONF_BLACK_URL_EXT, false)){
                 stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //排除黑名单路径 这些JS文件是通用的、无价值的、
             //String blackPaths = "jquery.js|xxx.js";
-            if(ElementUtils.isContainOneKey(msgInfo.getReqPath(), CONF_BLACK_URL_PATH, false)){
+            if(isContainOneKey(msgInfo.getReqPath(), CONF_BLACK_URL_PATH, false)){
                 stdout_println(LOG_DEBUG, "[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
@@ -150,7 +153,7 @@ public class IProxyScanner implements IProxyListener {
      */
     private void storeReqData(HttpMsgInfo msgInfo, int msgId, String reqSource) {
         //存储请求体|响应体数据
-        int msgDataIndex = MsgDataTable.insertOrUpdateMsgData(msgInfo);
+        int msgDataIndex = ReqMsgDataTable.insertOrUpdateMsgData(msgInfo);
         if (msgDataIndex > 0){
             // 存储到URL表
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex, reqSource);
@@ -175,11 +178,11 @@ public class IProxyScanner implements IProxyListener {
                     Integer needAnalyseDataIndex = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needAnalyseDataIndex > 0){
                         // 1 获取 msgDataIndex 对应的数据
-                        Map<String, Object> needAnalyseData = MsgDataTable.selectMsgDataById(needAnalyseDataIndex);
-                        String requestUrl = (String) needAnalyseData.get(MsgDataTable.req_url);
-                        byte[] requestBytes = (byte[]) needAnalyseData.get(MsgDataTable.req_bytes);
-                        byte[] responseBytes = (byte[]) needAnalyseData.get(MsgDataTable.resp_bytes);
-                        String msgInfoHash = (String) needAnalyseData.get(MsgDataTable.msg_hash);
+                        Map<String, Object> needAnalyseData = ReqMsgDataTable.selectMsgDataById(needAnalyseDataIndex);
+                        String requestUrl = (String) needAnalyseData.get(ReqMsgDataTable.req_url);
+                        byte[] requestBytes = (byte[]) needAnalyseData.get(ReqMsgDataTable.req_bytes);
+                        byte[] responseBytes = (byte[]) needAnalyseData.get(ReqMsgDataTable.resp_bytes);
+                        String msgInfoHash = (String) needAnalyseData.get(ReqMsgDataTable.msg_hash);
 
                         //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
                         HttpMsgInfo msgInfo =  new HttpMsgInfo(requestUrl, requestBytes, responseBytes,msgInfoHash);
@@ -190,7 +193,7 @@ public class IProxyScanner implements IProxyListener {
 
                         //2.3 将分析结果写入数据库
                         if(analyseInfoIsNotEmpty(analyseResult)){
-                            int analyseDataIndex = AnalyseDataTable.insertAnalyseData(msgInfo, analyseResult);
+                            int analyseDataIndex = AnalyseInfoTable.insertAnalyseData(msgInfo, analyseResult);
                             if (analyseDataIndex > 0)
                                 stdout_println(LOG_INFO, String.format("[+] 数据分析完成: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         }
@@ -204,9 +207,15 @@ public class IProxyScanner implements IProxyListener {
                         JSONArray recordUrls = fetchUnhandledRecordUrals();
                         if (recordUrls.size() > 0){
                             //计算所有需要更新的Tree
-                            JSONArray treeJsonArray = genPathTreeBatch(recordUrls);
-                            // 4、存储和合并树信息
-                            System.out.println(String.format("最新生成的根数信息:%s", treeJsonArray));
+                            for (Object record : recordUrls) {
+                                JSONObject treeObj = genPathsTree((JSONObject) record);
+                                if (treeObj != null && !treeObj.isEmpty()){
+                                    //插入数据库中
+                                    int pathTreeIndex = insertOrUpdatePathTree(treeObj);
+                                    if (pathTreeIndex > 0)
+                                        stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",treeObj.toJSONString()));
+                                }
+                            }
                         }
                         //todo 从数据库获取最终的根树数据
                         // 5、从数据库中查询树信息表

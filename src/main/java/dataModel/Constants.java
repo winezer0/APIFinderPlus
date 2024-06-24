@@ -8,17 +8,16 @@ public class Constants {
 
 
     //AnalyseDataTable 使用
-    public static String DATA_ID = "data_id";
-    public static String REQ_URL = "req_url";
-    public static String FIND_PATH = "find_path";
-    public static String RUN_BASIC = "run_basic";
+    public static String DATA_ID = "DATA_ID";
+    public static String REQ_URL = "REQ_URL";
+    public static String FIND_PATH = "FIND_PATH";
+    public static String BASIC_PATH_NUM = "BASIC_PATH_NUM";
 
     //RecordUrlsTable使用
     public static String SPLIT_SYMBOL = "<->";
-    public static String REQ_HOST = "REQ_HOST";
+    public static String REQ_HOST_PORT = "REQ_HOST";
     public static String REQ_PATH_DIRS = "REQ_PATH_DIRS";
-    public static String ROOT_TREE = "ROOT_TREE";
-
-
+    public static String PATH_TREE = "PATH_TREE";
+    public static String PATH_NUM = "PATH_NUM";
 
 }

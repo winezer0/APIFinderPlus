@@ -59,16 +59,16 @@ public class DBService {
     //创建数据表结构
     private synchronized void initCreateTables() {
         // RecordUrlsTable URL PATH记录表 用于后续路径猜测记录
-        execCreatTableSql(RecordUrlsTable.creatTableSQL, RecordUrlsTable.tableName);
+        execCreatTableSql(PathRecordTable.creatTableSQL, PathRecordTable.tableName);
 
         // MsgDataTable 用于存储 实际的请求体和响应体
-        execCreatTableSql(MsgDataTable.creatTableSQL, MsgDataTable.tableName);
+        execCreatTableSql(ReqMsgDataTable.creatTableSQL, ReqMsgDataTable.tableName);
 
         // reqDataTable 存储需要敏感信息提取的url
         execCreatTableSql(ReqDataTable.creatTableSQL, ReqDataTable.tableName);
 
         // 用来创建数据库 analyse_path 存储分析后的数据
-        execCreatTableSql(AnalyseDataTable.creatTableSQL, AnalyseDataTable.tableName);
+        execCreatTableSql(AnalyseInfoTable.creatTableSQL, AnalyseInfoTable.tableName);
 
         // 创建存储根树的表
         execCreatTableSql(PathTreeTable.creatTableSQL, PathTreeTable.tableName);

@@ -71,32 +71,37 @@ public class PathTreeInfo {
 
     /**
      * 深度合并两个json对象
-     * @param baseJsonobj
-     * @param addedJsonObj
+     * @param baseTree
+     * @param addTree
      * @return
      */
-    public static JSONObject deepMerge(JSONObject baseJsonobj, JSONObject addedJsonObj) {
-        for (Map.Entry<String, Object> entry : addedJsonObj.entrySet()) {
+    public static JSONObject deepMerge(JSONObject baseTree, JSONObject addTree) {
+        if (baseTree.isEmpty())
+            return addTree;
+        if (addTree.isEmpty())
+            return baseTree;
+
+        for (Map.Entry<String, Object> entry : addTree.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            if (baseJsonobj.containsKey(key)) {
-                if (baseJsonobj.get(key) instanceof JSONObject && value instanceof JSONObject) {
-                    baseJsonobj.put(key, deepMerge(baseJsonobj.getJSONObject(key), (JSONObject) value));
-                } else if (baseJsonobj.get(key) instanceof JSONArray && value instanceof JSONArray) {
+            if (baseTree.containsKey(key)) {
+                if (baseTree.get(key) instanceof JSONObject && value instanceof JSONObject) {
+                    baseTree.put(key, deepMerge(baseTree.getJSONObject(key), (JSONObject) value));
+                } else if (baseTree.get(key) instanceof JSONArray && value instanceof JSONArray) {
                     // 这里简单合并数组，实际情况可能需要更复杂的逻辑处理
                     JSONArray array = new JSONArray();
-                    array.addAll(baseJsonobj.getJSONArray(key));
+                    array.addAll(baseTree.getJSONArray(key));
                     array.addAll((JSONArray) value);
-                    baseJsonobj.put(key, array);
+                    baseTree.put(key, array);
                 } else {
                     // 如果类型不同或非容器类型，选择第二个对象的值
-                    baseJsonobj.put(key, value);
+                    baseTree.put(key, value);
                 }
             } else {
-                baseJsonobj.put(key, value);
+                baseTree.put(key, value);
             }
         }
-        return baseJsonobj;
+        return baseTree;
     }
 
     /**
@@ -255,11 +260,8 @@ public class PathTreeInfo {
      * @return
      */
     public static JSONObject createRootTree(List<String> uriPathList) {
-        //格式化列表
-        uriPathList = filterPath(uriPathList);
-
         //存储数据
-        JSONObject baseTree = null;
+        JSONObject baseTree = new JSONObject();
         if (uriPathList != null && uriPathList.size() > 0) {
             //处理其他情况
             baseTree = createRootTree(uriPathList.get(0));
@@ -285,31 +287,31 @@ public class PathTreeInfo {
         return list;
     }
 
-
     /**
-     * 批量生成路径树  输入格式 {host:[path list], }
-     * @param recordUrls
+     * 生成路径树  输入格式 {host:[path list]}
+     * @param record
      * @return
      */
-    public static JSONArray genPathTreeBatch(JSONArray recordUrls) {
-        JSONArray treeArray = new JSONArray();
-        for (Object record : recordUrls) {
-            // 确保map中有期望的键，避免NullPointerException
-            JSONObject recordJsonObj =  (JSONObject) record;
-            String reqHost = (String) recordJsonObj.get(Constants.REQ_HOST);
-            String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
+    public static JSONObject genPathsTree(JSONObject record) {
+        JSONObject jsonObject = new JSONObject();
+        // 确保map中有期望的键，避免NullPointerException
+        JSONObject recordJsonObj = record;
+        String reqHost = (String) recordJsonObj.get(Constants.REQ_HOST_PORT);
+        String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
 
-            // 3、为每个域名计算根数
-            JSONObject rootTree = createRootTree(Arrays.asList(reqPathDirs.split(Constants.SPLIT_SYMBOL)));
-            if (rootTree != null){
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put(Constants.REQ_HOST, reqHost);
-                jsonObject.put(Constants.ROOT_TREE, rootTree);
-                treeArray.add(jsonObject);
-            }
+        // 3、为每个域名计算根数
+        String[] paths = reqPathDirs.split(Constants.SPLIT_SYMBOL);
+        //格式化列表
+        List<String> filterPaths = filterPath(Arrays.asList(paths));
+        JSONObject tree = createRootTree(filterPaths);
+        if (tree != null && !tree.isEmpty()){
+            jsonObject.put(Constants.REQ_HOST_PORT, reqHost);
+            jsonObject.put(Constants.PATH_TREE, tree);
+            jsonObject.put(Constants.PATH_NUM, paths.length);
         }
-        return treeArray;
+        return jsonObject;
     }
+
 
     public static void main(String[] args) {
         String url = "/biz-gateway/walletParam/paramTypeGroup/findListByGroupName";

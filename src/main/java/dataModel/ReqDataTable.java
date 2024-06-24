@@ -9,7 +9,7 @@ import static utils.BurpPrintUtils.*;
 
 public class ReqDataTable {
     //数据表名称
-    static String tableName = "req_data";
+    static String tableName = "REQ_DATA";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName ("
@@ -68,7 +68,7 @@ public class ReqDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 

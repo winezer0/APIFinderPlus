@@ -7,9 +7,9 @@ import java.sql.*;
 
 import static utils.BurpPrintUtils.*;
 
-public class RecordUrlsTable {
+public class PathRecordTable {
     //数据表名称
-    static String tableName = "record_paths";
+    static String tableName = "PATH_RECORD";
 
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
@@ -17,8 +17,7 @@ public class RecordUrlsTable {
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
 
             + " req_proto TEXT NOT NULL,\n"
-            + " req_host TEXT NOT NULL,\n"
-            + " req_port TEXT NOT NULL,\n"
+            + " req_host_port TEXT NOT NULL,\n"
             + " req_path_dir TEXT NOT NULL,\n"
             + " resp_status_code TEXT NOT NULL, \n"
 
@@ -33,8 +32,7 @@ public class RecordUrlsTable {
         String checkSql = "SELECT id FROM tableName "
                 .replace("tableName", tableName)
                 + "WHERE req_proto = ? "
-                + "AND req_host = ? "
-                + "AND req_port = ? "
+                + "AND req_host_port = ? "
                 + "AND req_path_dir = ? "
                 + "AND resp_status_code = ?";
 
@@ -42,10 +40,9 @@ public class RecordUrlsTable {
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
             checkStmt.setString(1, msgInfo.getReqProto());
-            checkStmt.setString(2, msgInfo.getReqHost());
-            checkStmt.setInt(3, msgInfo.getReqPort());
-            checkStmt.setString(4, msgInfo.getReqPathDir());
-            checkStmt.setString(5, msgInfo.getRespStatusCode());
+            checkStmt.setString(2, msgInfo.getReqHostPort());
+            checkStmt.setString(3, msgInfo.getReqPathDir());
+            checkStmt.setString(4, msgInfo.getRespStatusCode());
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
@@ -54,14 +51,13 @@ public class RecordUrlsTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (req_proto, req_host, req_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?, ?)"
+                String insertSql = "INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?)"
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getReqProto());
-                    insertStmt.setString(2, msgInfo.getReqHost());
-                    insertStmt.setInt(3, msgInfo.getReqPort());
-                    insertStmt.setString(4, msgInfo.getReqPathDir());
-                    insertStmt.setString(5, msgInfo.getRespStatusCode());
+                    insertStmt.setString(2, msgInfo.getReqHostPort());
+                    insertStmt.setString(3, msgInfo.getReqPathDir());
+                    insertStmt.setString(4, msgInfo.getRespStatusCode());
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -73,7 +69,7 @@ public class RecordUrlsTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, msgInfo.getReqUrl()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -116,7 +112,7 @@ public class RecordUrlsTable {
                 .replace("tableName", tableName);
 
         //2、获取 解析中 状态的 Host、数据、ID列表
-        String selectSQL = "SELECT req_host, GROUP_CONCAT(req_path_dir, 'SPLIT_SYMBOL') AS req_path_dirs FROM tableName WHERE run_status == 'ANALYSE_ING' GROUP BY req_host;"
+        String selectSQL = "SELECT req_host_port, GROUP_CONCAT(req_path_dir, 'SPLIT_SYMBOL') AS req_path_dirs FROM tableName WHERE run_status == 'ANALYSE_ING' GROUP BY req_host_port;"
                 .replace("SPLIT_SYMBOL", Constants.SPLIT_SYMBOL)
                 .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("tableName", tableName);
@@ -140,7 +136,7 @@ public class RecordUrlsTable {
                     while (rs.next()) {
                         // 从结果集中获取每一列的值 将数据存储到Map中
                         JSONObject jsonObject = new JSONObject();
-                        jsonObject.put(Constants.REQ_HOST, rs.getString("req_host"));
+                        jsonObject.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
                         jsonObject.put(Constants.REQ_PATH_DIRS, rs.getString("req_path_dirs"));
                         resultsList.add(jsonObject);
                     }
