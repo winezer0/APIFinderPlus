@@ -71,8 +71,7 @@ public class HttpMsgInfo {
         reqMethod = requestInfo.getMethod();
 
         //从请求URL解析部分信息
-        HttpUrlInfo httpUrlInfo = new HttpUrlInfo(requestUrl);
-
+        parseReqUrlInfo(requestUrl);
 
         //从响应结果解析部分信息
         parseRespBytes(responseBytes);
