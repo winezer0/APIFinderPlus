@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Map;
 
 import static model.InfoAnalyse.*;
@@ -70,7 +69,7 @@ public class InfoAnalyseTable {
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getReqUrl());
-                    insertStmt.setString(3, msgInfo.getReqHostPort());
+                    insertStmt.setString(3, msgInfo.getUrlInfo().getReqHostPort());
 
                     insertStmt.setString(4, analyseInfo.getJSONArray(URL_KEY).toJSONString());
                     insertStmt.setInt(5, analyseInfo.getJSONArray(URL_KEY).size());

@@ -39,24 +39,24 @@ public class PathRecordTable {
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
-            checkStmt.setString(1, msgInfo.getReqProto());
-            checkStmt.setString(2, msgInfo.getReqHostPort());
-            checkStmt.setString(3, msgInfo.getReqPathDir());
+            checkStmt.setString(1, msgInfo.getUrlInfo().getReqProto());
+            checkStmt.setString(2, msgInfo.getUrlInfo().getReqHostPort());
+            checkStmt.setString(3, msgInfo.getUrlInfo().getReqPathDir());
             checkStmt.setString(4, msgInfo.getRespStatusCode());
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqBaseDir(), msgInfo.getMsgHash()));
+                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?)"
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, msgInfo.getReqProto());
-                    insertStmt.setString(2, msgInfo.getReqHostPort());
-                    insertStmt.setString(3, msgInfo.getReqPathDir());
+                    insertStmt.setString(1, msgInfo.getUrlInfo().getReqProto());
+                    insertStmt.setString(2, msgInfo.getUrlInfo().getReqHostPort());
+                    insertStmt.setString(3, msgInfo.getUrlInfo().getReqPathDir());
                     insertStmt.setString(4, msgInfo.getRespStatusCode());
                     insertStmt.executeUpdate();
 

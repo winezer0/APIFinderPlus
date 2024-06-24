@@ -71,13 +71,13 @@ public class InfoAnalyseUtils {
     private static boolean isUsefulValue(String group) {
         String BlackValues = "admin@admin.com";
         if (isEqualsOneKey(group, BlackValues, false)){
-            stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 禁止保存", group));
+            //stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 忽略保存", group));
             return false;
         }
 
         if (group.contains(":")){
             if (group.split(":", 2)[1].trim()==""){
-                stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 没有价值", group));
+                //stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 没有价值", group));
                 return false;
             }
         }

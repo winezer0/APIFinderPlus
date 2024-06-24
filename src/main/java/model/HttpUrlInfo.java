@@ -25,17 +25,9 @@ public class HttpUrlInfo {
 
     public HttpUrlInfo(String requestUrl){
         reqUrl = requestUrl;
-        parseReqUrlInfo(reqUrl);
-    }
-
-    /**
-     * 从请求URL解析部分信息
-     * @param requestUrl
-     */
-    private void parseReqUrlInfo(String requestUrl) {
         //基于URL获取其他请求信息
         try {
-            URL urlObj = new URL(requestUrl);
+            URL urlObj = new URL(reqUrl);
             //获取请求协议
             reqProto = urlObj.getProtocol();
             //从URL中获取请求host
@@ -48,7 +40,7 @@ public class HttpUrlInfo {
             reqPath = urlObj.getPath();
 
             //解析请求文件的后缀
-            reqPathExt = parseUrlExt(requestUrl);
+            reqPathExt = parseUrlExt(reqUrl);
             //获取主域名
             reqRootDomain = DomainUtils.getRootDomain(reqHost);
             //获取请求路径的目录部分
@@ -59,7 +51,7 @@ public class HttpUrlInfo {
             //构造基本URL, 不包含请求文件
             reqBaseDir = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
         } catch (MalformedURLException e) {
-            stderr_println(String.format("Invalid URL: %s -> Error: %s", requestUrl, e.getMessage()));
+            stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
         }
     }

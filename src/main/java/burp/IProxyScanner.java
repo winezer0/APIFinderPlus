@@ -78,25 +78,25 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //看URL识别是否报错
-            if (msgInfo.getReqBaseUrl() == null ||msgInfo.getReqBaseUrl().equals("-")){
+            if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||msgInfo.getUrlInfo().getReqBaseUrl().equals("-")){
                 stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //匹配黑名单域名
-            if(isContainOneKey(msgInfo.getReqHost(), CONF_BLACK_URL_HOSTS, false)){
+            if(isContainOneKey(msgInfo.getUrlInfo().getReqHost(), CONF_BLACK_URL_HOSTS, false)){
                 stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathRecordMap.get(msgInfo.getReqBaseDir()) <= 0
+            if(urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true)
-                    && !msgInfo.getReqPath().trim().equals("/")
+                    && !msgInfo.getUrlInfo().getReqPath().trim().equals("/")
             ){
-                urlPathRecordMap.add(msgInfo.getReqBaseDir());
-                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBaseDir(), msgInfo.getRespStatusCode()));
+                urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
+                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getRespStatusCode()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -106,14 +106,14 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 排除黑名单后缀
-            if(isEqualsOneKey(msgInfo.getReqPathExt(), CONF_BLACK_URL_EXT, false)){
+            if(isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
                 stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             //排除黑名单路径 这些JS文件是通用的、无价值的、
             //String blackPaths = "jquery.js|xxx.js";
-            if(isContainOneKey(msgInfo.getReqPath(), CONF_BLACK_URL_PATH, false)){
+            if(isContainOneKey(msgInfo.getUrlInfo().getReqPath(), CONF_BLACK_URL_PATH, false)){
                 stdout_println(LOG_DEBUG, "[-] 匹配黑名单路径 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }

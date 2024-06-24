@@ -52,7 +52,7 @@ public class InfoAnalyse {
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", analysedUrlList.size()));
 
             //仅保留主域名相关URL
-            analysedUrlList = filterUrlByMainHost(msgInfo.getReqRootDomain(), analysedUrlList);
+            analysedUrlList = filterUrlByMainHost(msgInfo.getUrlInfo().getReqRootDomain(), analysedUrlList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s", analysedUrlList.size()));
 
             //过滤自身包含的URL (包含说明相同) //功能测试通过
@@ -83,7 +83,7 @@ public class InfoAnalyse {
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", analysedPathList.size()));
 
             //过滤自身包含的Path (包含说明相同)
-            analysedPathList = filterUriBySelfContain(msgInfo.getReqPath(), analysedPathList);
+            analysedPathList = filterUriBySelfContain(msgInfo.getUrlInfo().getReqPath(), analysedPathList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s", analysedPathList.size()));
 
             //过滤包含禁止关键字的PATH
@@ -139,7 +139,7 @@ public class InfoAnalyse {
             // 定位查找范围
             String willFindText;
             if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
-                willFindText = msgInfo.getReqPath();
+                willFindText = msgInfo.getUrlInfo().getReqPath();
             }
 //            else if ("body".equalsIgnoreCase(rule.getLocation())) {
 //                willFindText = new String(HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),  StandardCharsets.UTF_8);
@@ -203,7 +203,7 @@ public class InfoAnalyse {
 
         //转换响应体,后续可能需要解决编码问题
         String respBody = new String(
-                HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),
+                HttpRespInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespInfo().getBodyOffset()),
                 StandardCharsets.UTF_8);
 
         //截取最大响应体长度
@@ -215,7 +215,8 @@ public class InfoAnalyse {
         stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrlsFromHtml.size()));
 
         // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
-        if (isEqualsOneKey(msgInfo.getReqPathExt(), CONF_EXTRACT_SUFFIX, true) || msgInfo.getInferredMimeType().contains("script")) {
+        if (isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
+                || msgInfo.getRespInfo().getInferredMimeType().contains("script")) {
             Set<String> extractUriFromJs = extractUriFromJs(respBody);
             stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUriFromJs.size()));
             uriSet.addAll(extractUriFromJs);
