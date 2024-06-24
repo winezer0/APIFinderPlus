@@ -181,40 +181,38 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    Integer needAnalyseDataIndex = ReqDataTable.fetchUnhandledReqDataId(true);
-                    if (needAnalyseDataIndex > 0){
-                        // 1 获取 msgDataIndex 对应的数据
-                        Map<String, Object> needAnalyseData = ReqMsgDataTable.selectMsgDataById(needAnalyseDataIndex);
-                        String requestUrl = (String) needAnalyseData.get(ReqMsgDataTable.req_url);
-                        byte[] requestBytes = (byte[]) needAnalyseData.get(ReqMsgDataTable.req_bytes);
-                        byte[] responseBytes = (byte[]) needAnalyseData.get(ReqMsgDataTable.resp_bytes);
-                        String msgInfoHash = (String) needAnalyseData.get(ReqMsgDataTable.msg_hash);
+                    Integer needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
+                    if (needHandledReqDataId > 0){
+                        //获取 msgDataIndex 对应的数据
+                        Map<String, Object> needHandledReqData = ReqMsgDataTable.selectMsgDataById(needHandledReqDataId);
+                        String requestUrl = (String) needHandledReqData.get(ReqMsgDataTable.req_url);
+                        byte[] requestBytes = (byte[]) needHandledReqData.get(ReqMsgDataTable.req_bytes);
+                        byte[] responseBytes = (byte[]) needHandledReqData.get(ReqMsgDataTable.resp_bytes);
+                        String msgInfoHash = (String) needHandledReqData.get(ReqMsgDataTable.msg_hash);
 
-                        //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
+                        //进行数据分析
                         HttpMsgInfo msgInfo =  new HttpMsgInfo(requestUrl, requestBytes, responseBytes,msgInfoHash);
-
-                        //2.3 进行数据分析
-                        stdout_println(LOG_INFO, String.format("[+] 数据分析开始: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         JSONObject analyseResult = InfoAnalyse.analysisMsgInfo(msgInfo);
 
-                        //2.3 将分析结果写入数据库
+                        //将分析结果写入数据库
                         if(analyseInfoIsNotEmpty(analyseResult)){
                             int analyseDataIndex = InfoAnalyseTable.insertAnalyseData(msgInfo, analyseResult);
                             if (analyseDataIndex > 0)
-                                stdout_println(LOG_INFO, String.format("[+] 数据分析完成: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                                stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         }
                     }
 
-                    //判断是否还有需要分析的数据,如果没有的话，就可以考虑更新树信息
+                    //任务2、判断是否还有需要分析的数据,如果没有的话，就可以考虑更新树信息
                     int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (unhandledReqDataId <= 0){
-                        //1、更新|生成路径树
+                        //获取需要更新的所有URL记录
                         JSONArray recordUrls = fetchUnhandledRecordUrls();
                         if (!recordUrls.isEmpty()){
-                            //计算所有需要更新的Tree
                             for (Object record : recordUrls) {
+                                //生成新的路径树
                                 JSONObject treeObj = genPathsTree((JSONObject) record);
                                 if (treeObj != null && !treeObj.isEmpty()){
+                                    //合并|插入新的路径树
                                     int pathTreeIndex = insertOrUpdatePathTree(treeObj);
                                     if (pathTreeIndex > 0)
                                         stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",treeObj.toJSONString()));
@@ -223,7 +221,7 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //判断是否有树需要更新,没有的话就根据树生成计算
+                    //任务3、判断是否有树需要更新,没有的话就根据树生成计算新的URL
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
                         //获取一条需要分析 的数据
@@ -231,15 +229,15 @@ public class IProxyScanner implements IProxyListener {
                         if (analysePathData != null && !analysePathData.isEmpty()) {
                             int dataId = (int) analysePathData.get(Constants.DATA_ID);
                             String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
-                            String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
                             String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
+
+                            String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
 
                             // 从数据库中查询树信息表
                             JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
                             int pathNum = (int) pathTreeData.get(Constants.PATH_NUM);
                             String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
-
 
                             // 基于根树和paths列表计算新的字典
                             JSONArray findPathObj = JSONArray.parse(findPath);
@@ -255,12 +253,11 @@ public class IProxyScanner implements IProxyListener {
                                 for (Object path: findPathObj){
                                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
                                     if (findNodePath!=null && !findNodePath.isEmpty()){
-                                        for (Object prefixPath:findNodePath){
+                                        for (Object prefix:findNodePath){
                                             //组合URL、findNodePath、path
-                                            String tmpPath = (String) prefixPath;
-                                            tmpPath = tmpPath.replace("ROOT", reqBaseUrl);
-                                            String findUrl = UrlAddPath(tmpPath, (String) path);
-                                            System.out.println(String.format("计算出URL:%s", findUrl));
+                                            String prefixPath = (String) prefix;
+                                            prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
+                                            String findUrl = UrlAddPath(prefixPath, (String) path);
                                             findUrlsSet.add(findUrl);
                                         }
                                     }
@@ -285,15 +282,15 @@ public class IProxyScanner implements IProxyListener {
 
                     //todo: 增加自动递归查询功能
 
-                }catch (Exception e) {
+                    //todo: 添加URL查询功能
+
+                } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();
                 }
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
     }
-
-
 
     /**
      * 监听线程关闭函数
