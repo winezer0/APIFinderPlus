@@ -17,8 +17,10 @@ public class RecordUrlsTable {
             + " req_host TEXT NOT NULL,\n"
             + " req_port TEXT NOT NULL,\n"
             + " req_path_dir TEXT NOT NULL,\n"
-            + " resp_status TEXT NOT NULL\n"
+            + " resp_status TEXT NOT NULL, \n"
+            + " run_status TEXT NOT NULL\n"
             + ");";
+
 
     //插入数据库
     public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
@@ -35,7 +37,11 @@ public class RecordUrlsTable {
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
-            setStmt(checkStmt, msgInfo);
+            checkStmt.setString(1, msgInfo.getReqProto());
+            checkStmt.setString(2, msgInfo.getReqHost());
+            checkStmt.setInt(3, msgInfo.getReqPort());
+            checkStmt.setString(4, msgInfo.getReqPathDir());
+            checkStmt.setString(5, msgInfo.getRespStatus());
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
@@ -44,10 +50,15 @@ public class RecordUrlsTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (req_proto, req_host, req_port, req_path_dir, resp_status) VALUES (?, ?, ?, ?, ?)"
+                String insertSql = "INSERT INTO tableName (req_proto, req_host, req_port, req_path_dir, resp_status, run_status) VALUES (?, ?, ?, ?, ?, ?)"
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    setStmt(insertStmt, msgInfo);
+                    insertStmt.setString(1, msgInfo.getReqProto());
+                    insertStmt.setString(2, msgInfo.getReqHost());
+                    insertStmt.setInt(3, msgInfo.getReqPort());
+                    insertStmt.setString(4, msgInfo.getReqPathDir());
+                    insertStmt.setString(5, msgInfo.getRespStatus());
+                    insertStmt.setString(6, Constants.ANALYSE_WAIT);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -64,13 +75,5 @@ public class RecordUrlsTable {
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
-    }
-
-    private static void setStmt(PreparedStatement stmt, HttpMsgInfo msgInfo) throws SQLException {
-        stmt.setString(1, msgInfo.getReqProto());
-        stmt.setString(2, msgInfo.getReqHost());
-        stmt.setInt(3, msgInfo.getReqPort());
-        stmt.setString(4, msgInfo.getReqPathDir());
-        stmt.setString(5, msgInfo.getRespStatus());
     }
 }

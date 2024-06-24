@@ -20,7 +20,7 @@ public class AnalyseDataTable {
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
-            + " data_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + " msg_hash TEXT,\n"  //请求Hash信息
             + " req_url TEXT NOT NULL,\n"  //请求URL
             + " req_path TEXT NOT NULL,\n" //请求Path 便于补充根目录
@@ -46,7 +46,7 @@ public class AnalyseDataTable {
     public static synchronized int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT data_id FROM tableName WHERE msg_hash = ?"
+        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
                 .replace("tableName", tableName);
 
         try (Connection conn = dbService.getNewConnection();
@@ -104,12 +104,6 @@ public class AnalyseDataTable {
      * 获取1条需要分析的Path数据
      * @return
      */
-
-    public static String DATA_ID = "data_id";
-    public static String REQ_URL = "req_url";
-    public static String FIND_PATH = "find_path";
-    public static String SMART_API_BASIC = "smart_api_basic";
-
     public static synchronized Map<String, Object> fetchOneAnalysePathData(){
         Map<String, Object> pathData = null;
 
@@ -122,10 +116,10 @@ public class AnalyseDataTable {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     pathData = new HashMap<>();
-                    pathData.put(DATA_ID, rs.getInt("data_id"));
-                    pathData.put(REQ_URL, rs.getString("req_url"));
-                    pathData.put(FIND_PATH, rs.getString("find_path"));
-                    pathData.put(SMART_API_BASIC, rs.getInt("smart_api_basic"));
+                    pathData.put(Constants.DATA_ID, rs.getInt("id"));
+                    pathData.put(Constants.REQ_URL, rs.getString("req_url"));
+                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
+                    pathData.put(Constants.SMART_API_BASIC, rs.getInt("smart_api_basic"));
                 }
             }
         } catch (Exception e) {
