@@ -29,10 +29,6 @@ public class ReqDataTable {
             + ");";
 
 
-    public static final String ANALYSE_WAIT = "等待解析";
-    public static final String ANALYSE_ING = "解析中";
-    public static final String ANALYSE_END = "解析完成";
-
     //插入数据库
     public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex, String reqSource) {
         DBService dbService = DBService.getInstance();
@@ -64,7 +60,7 @@ public class ReqDataTable {
                     insertStmt.setString(7, msgInfo.getReqMethod());
                     insertStmt.setString(8, msgInfo.getRespStatus());
                     insertStmt.setInt(9, msgDataIndex);
-                    insertStmt.setString(10, ANALYSE_WAIT);
+                    insertStmt.setString(10, Constants.ANALYSE_WAIT);
                     insertStmt.setString(11, reqSource);
                     insertStmt.executeUpdate();
 
@@ -92,11 +88,11 @@ public class ReqDataTable {
 
         // 首先选取一条记录的 msg_data_index
         String selectSQL = "SELECT msg_data_index FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
-                .replace("ANALYSE_WAIT", ANALYSE_WAIT)
+                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
         String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE msg_data_index = ?;"
-                .replace("ANALYSE_ING", ANALYSE_ING)
+                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("tableName", tableName);
 
         DBService dbService = DBService.getInstance();
