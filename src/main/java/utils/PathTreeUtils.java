@@ -296,7 +296,7 @@ public class PathTreeUtils {
         JSONObject jsonObject = new JSONObject();
         // 确保map中有期望的键，避免NullPointerException
         JSONObject recordJsonObj = record;
-        String reqHost = (String) recordJsonObj.get(Constants.REQ_HOST_PORT);
+        String reqHostPort = (String) recordJsonObj.get(Constants.REQ_HOST_PORT);
         String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
 
         // 3、为每个域名计算根数
@@ -305,7 +305,7 @@ public class PathTreeUtils {
         List<String> filterPaths = filterPath(Arrays.asList(paths));
         JSONObject tree = createRootTree(filterPaths);
         if (tree != null && !tree.isEmpty()){
-            jsonObject.put(Constants.REQ_HOST_PORT, reqHost);
+            jsonObject.put(Constants.REQ_HOST_PORT, reqHostPort);
             jsonObject.put(Constants.PATH_TREE, tree);
             jsonObject.put(Constants.PATH_NUM, paths.length);
         }
