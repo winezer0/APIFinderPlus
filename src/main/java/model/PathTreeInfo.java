@@ -2,10 +2,12 @@ package model;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import dataModel.Constants;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -248,18 +250,65 @@ public class PathTreeInfo {
     }
 
     /**
-     * 输入任意的字符串列表,生成根树
+     * 输入一个路径列表,自动合并|生成树
+     * @param uriPathList
+     * @return
      */
     public static JSONObject createRootTree(List<String> uriPathList) {
-        JSONObject tree = createRootTree(uriPathList.get(0));
+        //格式化列表
+        uriPathList = filterPath(uriPathList);
 
-        for (int i=1;i<uriPathList.size();i++){
-            String addUriPath = uriPathList.get(i);
-            if (addUriPath != null && addUriPath.trim() != "" && addUriPath.trim() != "/")
-                tree = deepMerge(tree, createRootTree(addUriPath));
+        //存储数据
+        JSONObject baseTree = null;
+        if (uriPathList != null && uriPathList.size() > 0) {
+            //处理其他情况
+            baseTree = createRootTree(uriPathList.get(0));
+            for (int i = 1; i < uriPathList.size(); i++) {
+                baseTree = deepMerge(baseTree, createRootTree(uriPathList.get(i)));
+            }
         }
 
-        return tree;
+        return baseTree;
+    }
+
+    /**
+     * 过滤路径列表中的空和/
+     * @param uriPathList
+     * @return
+     */
+    public static List<String> filterPath(List<String> uriPathList) {
+        List list = new ArrayList<String>();
+        for (String path: uriPathList){
+            if (path != null && path.trim() != "" && path.trim() != "/")
+                list.add(path);
+        }
+        return list;
+    }
+
+
+    /**
+     * 批量生成路径树  输入格式 {host:[path list], }
+     * @param recordUrls
+     * @return
+     */
+    public static JSONArray genPathTreeBatch(JSONArray recordUrls) {
+        JSONArray treeArray = new JSONArray();
+        for (Object record : recordUrls) {
+            // 确保map中有期望的键，避免NullPointerException
+            JSONObject recordJsonObj =  (JSONObject) record;
+            String reqHost = (String) recordJsonObj.get(Constants.REQ_HOST);
+            String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
+
+            // 3、为每个域名计算根数
+            JSONObject rootTree = createRootTree(Arrays.asList(reqPathDirs.split(Constants.SPLIT_SYMBOL)));
+            if (rootTree != null){
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(Constants.REQ_HOST, reqHost);
+                jsonObject.put(Constants.ROOT_TREE, rootTree);
+                treeArray.add(jsonObject);
+            }
+        }
+        return treeArray;
     }
 
     public static void main(String[] args) {

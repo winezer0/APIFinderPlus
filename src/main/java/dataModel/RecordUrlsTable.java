@@ -116,7 +116,8 @@ public class RecordUrlsTable {
                 .replace("tableName", tableName);
 
         //2、获取 解析中 状态的 Host、数据、ID列表
-        String selectSQL = "SELECT req_host, GROUP_CONCAT(req_path_dir, '<->') AS req_path_dirs FROM tableName WHERE run_status == 'ANALYSE_ING' GROUP BY req_host;"
+        String selectSQL = "SELECT req_host, GROUP_CONCAT(req_path_dir, 'SPLIT_SYMBOL') AS req_path_dirs FROM tableName WHERE run_status == 'ANALYSE_ING' GROUP BY req_host;"
+                .replace("SPLIT_SYMBOL", Constants.SPLIT_SYMBOL)
                 .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("tableName", tableName);
 

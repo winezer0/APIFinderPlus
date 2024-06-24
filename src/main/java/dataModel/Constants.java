@@ -14,7 +14,11 @@ public class Constants {
     public static String RUN_BASIC = "run_basic";
 
     //RecordUrlsTable使用
+    public static String SPLIT_SYMBOL = "<->";
     public static String REQ_HOST = "REQ_HOST";
-    public static String REQ_PATH_DIRS = "req_path_dirs";
+    public static String REQ_PATH_DIRS = "REQ_PATH_DIRS";
+    public static String ROOT_TREE = "ROOT_TREE";
+
+
 
 }

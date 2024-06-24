@@ -10,12 +10,14 @@ import model.InfoAnalyse;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static dataModel.RecordUrlsTable.fetchUnhandledRecordUrals;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
 import static model.PathTreeInfo.createRootTree;
+import static model.PathTreeInfo.genPathTreeBatch;
 import static utils.BurpPrintUtils.*;
 
 
@@ -197,27 +199,20 @@ public class IProxyScanner implements IProxyListener {
                     //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
                     needAnalyseDataIndex = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (needAnalyseDataIndex <= 0){
-                        //1、更新|生成路径数
+                        //1、更新|生成路径树
                         //"SELECT req_host, GROUP_CONCAT(req_path_dir, '<-->') AS req_path_dirs FROM record_paths GROUP BY req_host"
                         JSONArray recordUrls = fetchUnhandledRecordUrals();
                         if (recordUrls.size() > 0){
-                            for (Object record : recordUrls) {
-                                // 确保map中有期望的键，避免NullPointerException
-                                JSONObject recordJsonObj =  (JSONObject) record;
-                                String reqHost = (String) recordJsonObj.get(Constants.REQ_HOST);
-                                String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
-                                System.out.println("req_host: " + reqHost + ", reqPathDirs: " + reqPathDirs);
-
-                                // 3、为每个域名计算根数
-                                JSONObject rootTree = createRootTree(Arrays.asList(reqPathDirs.split("<->")));
-                                System.out.println(String.format("最新生成的根数信息:%s", rootTree));
-
-                                // 4、存储和合并树信息
-                                //todo 从数据库获取最终的根树数据
-                                // 5、从数据库中查询树信息表
+                            //计算所有需要更新的Tree
+                            JSONArray treeJsonArray = genPathTreeBatch(recordUrls);
+                            // 4、存储和合并树信息
+                            System.out.println(String.format("最新生成的根数信息:%s", treeJsonArray));
+                        }
+                        //todo 从数据库获取最终的根树数据
+                        // 5、从数据库中查询树信息表
 
 
-                                //todo 从数据库查询一条path数据, 获取 id|msg_hash、PATHS列表
+                        //todo 从数据库查询一条path数据, 获取 id|msg_hash、PATHS列表
 //                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
 //                        if (analysePathData != null){
 //                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
@@ -229,9 +224,7 @@ public class IProxyScanner implements IProxyListener {
 
                                 //todo 基于根树和paths列表计算新的字典
                                 //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
-                                //已完成 实现基于根数的路径计算函数
-                            }
-                        }
+
 
 
                     //todo: 提取的PATH需要进一步过滤处理
@@ -249,6 +242,7 @@ public class IProxyScanner implements IProxyListener {
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
     }
+
 
 
     /**
