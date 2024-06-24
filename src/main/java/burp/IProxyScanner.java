@@ -18,6 +18,7 @@ import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
+import static utilbox.UrlUtils.getBaseUrlWithDefaultPort;
 import static utils.InfoAnalyseUtils.UrlAddPath;
 import static utils.PathTreeUtils.findNodePathInTree;
 import static utils.PathTreeUtils.genPathsTree;
@@ -240,10 +241,11 @@ public class IProxyScanner implements IProxyListener {
                         //todo 从数据库查询一条 path数据, 获取 id|msg_hash、PATHS列表
                         Map<String, Object> analysePathData = fetchOneAnalysePathData();
                         if (analysePathData != null && !analysePathData.isEmpty()) {
+                            System.out.println(String.format("待计算数据:%s", analysePathData));
+
                             int dataId = (int) analysePathData.get(Constants.DATA_ID); //后面用来更新到数据表
                             String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
-                            String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
-
+                            String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
                             String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
 
@@ -259,20 +261,23 @@ public class IProxyScanner implements IProxyListener {
                                 Set<String> findUrlsSet = new HashSet();
                                 for (Object path: findPathObj){
                                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
-                                    stdout_println(String.format("path:%s findNodePath:%s", path, findNodePath));
-
                                     if (findNodePath!=null && !findNodePath.isEmpty()){
                                         for (Object prefixPath:findNodePath){
                                             //组合URL、findNodePath、path
-                                            String tmpPath = UrlAddPath(reqBaseUrl, (String) prefixPath);
+                                            String tmpPath = (String) prefixPath;
+                                            tmpPath = tmpPath.replace("ROOT", reqBaseUrl);
                                             String findUrl = UrlAddPath(tmpPath, (String) path);
+                                            System.out.println(String.format("计算出URL:%s", findUrl));
                                             findUrlsSet.add(findUrl);
                                         }
                                     }
                                 }
 
-                                JSONArray findUrlsArray = new JSONArray(findUrlsSet);
-                                stdout_println(LOG_DEBUG, String.format("所有找到的数据 %s -> PATH %s", reqHostPort, findUrlsArray));
+                                //找到路径数据,写入数据库进行存储
+                                if (!findUrlsSet.isEmpty()){
+                                    JSONArray findUrlsArray = new JSONArray(findUrlsSet);
+                                    stdout_println(LOG_DEBUG, String.format("所有找到的数据 %s -> PATH %s", reqUrl, findUrlsArray));
+                                }
                             }
                         }
                     }

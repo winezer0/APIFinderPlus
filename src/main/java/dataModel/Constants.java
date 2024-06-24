@@ -15,7 +15,7 @@ public class Constants {
 
     //RecordUrlsTable使用
     public static String SPLIT_SYMBOL = "<->";
-    public static String REQ_HOST_PORT = "REQ_HOST";
+    public static String REQ_HOST_PORT = "REQ_HOST_PORT";
     public static String REQ_PATH_DIRS = "REQ_PATH_DIRS";
     public static String PATH_TREE = "PATH_TREE";
     public static String PATH_NUM = "PATH_NUM";

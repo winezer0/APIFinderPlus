@@ -111,7 +111,7 @@ public class InfoAnalyseTable {
         JSONObject pathData = new JSONObject();
 
         // 首先选取一条记录的ID
-        String selectSQL = "SELECT id,req_host_port,find_path FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
+        String selectSQL = "SELECT id,req_url,req_host_port,find_path FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
@@ -125,10 +125,14 @@ public class InfoAnalyseTable {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     int selectedId = rs.getInt("id");
+                    String reqUrl = rs.getString("req_url");
+                    String reqHostPort = rs.getString("req_host_port");
+                    String findPath = rs.getString("find_path");
 
                     pathData.put(Constants.DATA_ID, selectedId);
-                    pathData.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
-                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
+                    pathData.put(Constants.REQ_URL, reqUrl);
+                    pathData.put(Constants.REQ_HOST_PORT, reqHostPort);
+                    pathData.put(Constants.FIND_PATH, findPath);
                     
                     //更新索引对应的数据
                     try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
