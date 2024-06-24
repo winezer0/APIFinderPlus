@@ -239,7 +239,7 @@ public class PathTreeUtils {
         // 返回最终的列表
         JSONArray findPaths = new JSONArray();
         
-        if (endNodePaths != null && endNodePaths.size() > 0){
+        if (endNodePaths != null && !endNodePaths.isEmpty()){
             for (JSONArray endNodePath : endNodePaths) {
                 // 确保每个元素都是字符串，因为String.join需要处理字符串数组
                 List<String> stringPath = new ArrayList<>();
@@ -262,7 +262,7 @@ public class PathTreeUtils {
     public static JSONObject createRootTree(List<String> uriPathList) {
         //存储数据
         JSONObject baseTree = new JSONObject();
-        if (uriPathList != null && uriPathList.size() > 0) {
+        if (uriPathList != null && !uriPathList.isEmpty()) {
             //处理其他情况
             baseTree = createRootTree(uriPathList.get(0));
             for (int i = 1; i < uriPathList.size(); i++) {
@@ -313,6 +313,19 @@ public class PathTreeUtils {
     }
 
 
+    public static JSONArray findNodePathInTree(JSONObject tree, String sub_url) {
+        JSONArray findPaths = new JSONArray();
+
+        List<String> sub_parts = getUrlPart(sub_url);
+        if (!sub_parts.isEmpty()) {
+            //从树中寻找可能的节点路径
+            List<JSONArray> endNodePaths = findNodePathInTree(tree, sub_parts);
+            if (!endNodePaths.isEmpty())
+                findPaths = concatNodePaths(endNodePaths);
+        }
+        return findPaths;
+    }
+
     public static void main(String[] args) {
         String url = "/biz-gateway/walletParam/paramTypeGroup/findListByGroupName";
         JSONObject tree = createRootTree(url);
@@ -330,14 +343,8 @@ public class PathTreeUtils {
 //        System.out.println(tree.toJSONString());
 
         String sub_url = "/walletParam/paramTypeGroup/findListByGroupName";
-        List<String> sub_parts = getUrlPart(sub_url);
-        System.out.println(sub_parts);
-
-        //从树中寻找可能的节点路径
-        List<JSONArray> endNodePaths = findNodePathInTree(tree, sub_parts);
-        System.out.println(endNodePaths);
-
-        JSONArray findPaths = concatNodePaths(endNodePaths);
-        System.out.println(findPaths);
+        findNodePathInTree(tree, sub_url);
     }
+
+
 }

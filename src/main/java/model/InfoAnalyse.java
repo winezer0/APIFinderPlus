@@ -46,7 +46,7 @@ public class InfoAnalyse {
         stdout_println(LOG_DEBUG, String.format("[*] 初步采集URL数量:%s", analysedUrlList.size()));
 
         //实现响应url过滤
-        if (analysedUrlList.size() > 0){
+        if (!analysedUrlList.isEmpty()){
             //过滤重复内容
             analysedUrlList = removeDuplicates(analysedUrlList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", analysedUrlList.size()));
@@ -77,7 +77,7 @@ public class InfoAnalyse {
         stdout_println(LOG_DEBUG, String.format("[*] 初步采集PATH数量:%s -> %s", analysedUrlList.size(), analysedUrlList));
 
         //实现响应Path过滤
-        if (analysedPathList.size()>0){
+        if (!analysedPathList.isEmpty()){
             //过滤重复内容
             analysedPathList = removeDuplicates(analysedPathList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", analysedPathList.size()));
@@ -105,7 +105,7 @@ public class InfoAnalyse {
         stdout_println(LOG_DEBUG, String.format("[+] 简单计算API数量: %s -> %s", msgInfo.getReqUrl(), analysedApiList.size()));
 
         //实现 初步计算API的过滤
-        if (analysedApiList.size()>0){
+        if (!analysedApiList.isEmpty()){
             analysedApiList = removeDuplicates(analysedApiList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s", analysedApiList.size()));
         }
@@ -164,7 +164,7 @@ public class InfoAnalyse {
             if (rule.getMatch().equals("regular")){
                 for (String patter : rule.getKeyword()){
                     Set<String> groups = regularMatchInfo(willFindText, patter);
-                    if (groups.size() > 0){
+                    if (!groups.isEmpty()){
                         JSONObject findInfo = generateInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
                         stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                         findInfosSet.add(findInfo);
@@ -252,8 +252,8 @@ public class InfoAnalyse {
      * @param analyseInfo
      */
     public static boolean analyseInfoIsNotEmpty(JSONObject analyseInfo) {
-        return analyseInfo.getJSONArray(URL_KEY).size()>0 ||
-                analyseInfo.getJSONArray(PATH_KEY).size()>0  ||
-                analyseInfo.getJSONArray(InfoAnalyse.INFO_KEY).size()>0;
+        return !analyseInfo.getJSONArray(URL_KEY).isEmpty()
+                || !analyseInfo.getJSONArray(PATH_KEY).isEmpty()
+                || !analyseInfo.getJSONArray(INFO_KEY).isEmpty();
     }
 }

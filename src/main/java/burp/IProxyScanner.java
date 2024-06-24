@@ -1,5 +1,6 @@
 package burp;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import dataModel.*;
@@ -18,6 +19,7 @@ import static dataModel.PathTreeTable.fetchOnePathTree;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
+import static utils.PathTreeUtils.findNodePathInTree;
 import static utils.PathTreeUtils.genPathsTree;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isContainOneKey;
@@ -129,7 +131,7 @@ public class IProxyScanner implements IProxyListener {
 
             //判断URL是否已经扫描过
             if (urlScanRecordMap.get(msgInfo.getMsgHash()) > 0) {
-                stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                //stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
 
@@ -208,7 +210,7 @@ public class IProxyScanner implements IProxyListener {
                         //1、更新|生成路径树
                         //"SELECT req_host, GROUP_CONCAT(req_path_dir, '<-->') AS req_path_dirs FROM record_paths GROUP BY req_host"
                         JSONArray recordUrls = fetchUnhandledRecordUrls();
-                        if (recordUrls.size() > 0){
+                        if (!recordUrls.isEmpty()){
                             //计算所有需要更新的Tree
                             for (Object record : recordUrls) {
                                 JSONObject treeObj = genPathsTree((JSONObject) record);
@@ -237,19 +239,30 @@ public class IProxyScanner implements IProxyListener {
                     if (unhandledRecordUrlId <= 0) {
                         //todo 从数据库查询一条 path数据, 获取 id|msg_hash、PATHS列表
                         Map<String, Object> analysePathData = fetchOneAnalysePathData();
-                        if (analysePathData != null) {
+                        if (analysePathData != null && !analysePathData.isEmpty()) {
                             int dataId = (int) analysePathData.get(Constants.DATA_ID); //后面用来更新到数据表
 
                             String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
-                            System.out.println(String.format("获取到域名%s对应的数据%s", reqHostPort, findPath));
 
                             // 5、从数据库中查询树信息表
                             String pathTree = fetchOnePathTree(reqHostPort);
-                            System.out.println(String.format("获取到域名%s对应的数据%s", reqHostPort, pathTree));
 
                             //todo 基于根树和paths列表计算新的字典
                             //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
+                            JSONArray findPathObj = JSONArray.parse(findPath);
+                            JSONObject pathTreeObj = JSONObject.parse(pathTree);
+                            //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
+                            if (!findPathObj.isEmpty() && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty()){
+                                JSONArray findNodePaths = new JSONArray();
+                                for (Object path: findPathObj){
+                                    JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
+                                    stdout_println(String.format("path:%s findNodePath:%s", path, findNodePath));
+                                    if (findNodePath!=null && !findNodePath.isEmpty())
+                                        findNodePaths.add(findNodePath);
+                                }
+                                stdout_println(LOG_DEBUG, String.format("所有找到的数据 %s -> PATH %s", reqHostPort, findNodePaths));
+                            }
                         }
                     }
                 }catch (Exception e) {
