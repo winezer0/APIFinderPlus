@@ -210,7 +210,6 @@ public class IProxyScanner implements IProxyListener {
                             for (Object record : recordUrls) {
                                 JSONObject treeObj = genPathsTree((JSONObject) record);
                                 if (treeObj != null && !treeObj.isEmpty()){
-                                    //插入数据库中
                                     int pathTreeIndex = insertOrUpdatePathTree(treeObj);
                                     if (pathTreeIndex > 0)
                                         stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",treeObj.toJSONString()));
