@@ -247,6 +247,21 @@ public class PathTreeInfo {
         return findPaths;
     }
 
+    /**
+     * 输入任意的字符串列表,生成根树
+     */
+    public static JSONObject createRootTree(List<String> uriPathList) {
+        JSONObject tree = createRootTree(uriPathList.get(0));
+
+        for (int i=1;i<uriPathList.size();i++){
+            String addUriPath = uriPathList.get(i);
+            if (addUriPath != null && addUriPath.trim() != "" && addUriPath.trim() != "/")
+                tree = deepMerge(tree, createRootTree(addUriPath));
+        }
+
+        return tree;
+    }
+
     public static void main(String[] args) {
         String url = "/biz-gateway/walletParam/paramTypeGroup/findListByGroupName";
         JSONObject tree = createRootTree(url);

@@ -77,7 +77,7 @@ public class ReqDataTable {
 
 
     //获取一条需要处理的数据，并且标记为处理中
-    public static synchronized int fetchAndMarkReqData(boolean updateStatus) {
+    public static synchronized int fetchUnhandledReqDataId(boolean updateStatus) {
         // 考虑开启事务
         int msgDataIndex = -1;
 

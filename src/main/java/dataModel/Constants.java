@@ -12,4 +12,9 @@ public class Constants {
     public static String REQ_URL = "req_url";
     public static String FIND_PATH = "find_path";
     public static String RUN_BASIC = "run_basic";
+
+    //RecordUrlsTable使用
+    public static String REQ_HOST = "REQ_HOST";
+    public static String REQ_PATH_DIRS = "req_path_dirs";
+
 }

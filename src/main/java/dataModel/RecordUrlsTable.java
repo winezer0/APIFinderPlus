@@ -1,5 +1,7 @@
 package dataModel;
 
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
 import java.sql.*;
 
@@ -76,5 +78,84 @@ public class RecordUrlsTable {
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
+
+    //判断是否存在需要更新树的URL
+    public static synchronized int CheckRecordUrlsStatusIsWait(){
+        // 考虑开启事务
+        int dataIndex = -1;
+
+        String selectSQL = "SELECT id FROM tableName WHERE run_status == 'ANALYSE_WAIT' LIMIT 1;"
+                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+                .replace("tableName", tableName);
+
+        DBService dbService = DBService.getInstance();
+        try (Connection conn = dbService.getNewConnection(); PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
+            ResultSet rs = selectStatement.executeQuery();
+            if (rs.next()) {
+                dataIndex = rs.getInt("id");
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error Check Record Urls Status Is Wait: %s", e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return dataIndex;
+    }
+
+    //获取所有需要处理的URl数据，并且标记
+    public static synchronized JSONArray fetchUnhandledRecordUrals() {
+        // 创建一个列表或集合来存储查询结果
+        JSONArray resultsList = new JSONArray();
+
+        //1、标记需要处理的数据 更新状态为解析中
+        String updateMarkSQL1 = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id in (SELECT id FROM tableName WHERE run_status = 'ANALYSE_WAIT');"
+                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
+                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+                .replace("tableName", tableName);
+
+        //2、获取 解析中 状态的 Host、数据、ID列表
+        String selectSQL = "SELECT req_host, GROUP_CONCAT(req_path_dir, '<->') AS req_path_dirs FROM tableName WHERE run_status == 'ANALYSE_ING' GROUP BY req_host;"
+                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
+                .replace("tableName", tableName);
+
+        //3、更新 解析中 对应的状态为解析完成
+        String updateMarkSQL2 = "UPDATE tableName SET run_status = 'ANALYSE_END' WHERE id in (SELECT id FROM tableName WHERE run_status = 'ANALYSE_ING');"
+                .replace("ANALYSE_END", Constants.ANALYSE_END)
+                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
+                .replace("tableName", tableName);
+
+        DBService dbService = DBService.getInstance();
+        try (Connection conn = dbService.getNewConnection();
+             PreparedStatement updateMarkSQL1Stmt = conn.prepareStatement(updateMarkSQL1);){
+            int affectedRows = updateMarkSQL1Stmt.executeUpdate();
+            if (affectedRows > 0) {
+                //存在需要更新的数据
+                try (PreparedStatement selectStatement = conn.prepareStatement(selectSQL)){
+                    //获取查询数据
+                    ResultSet rs = selectStatement.executeQuery();
+
+                    while (rs.next()) {
+                        // 从结果集中获取每一列的值 将数据存储到Map中
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put(Constants.REQ_HOST, rs.getString("req_host"));
+                        jsonObject.put(Constants.REQ_PATH_DIRS, rs.getString("req_path_dirs"));
+                        resultsList.add(jsonObject);
+                    }
+
+                    //更新查询状态
+                    try (PreparedStatement updateMarkSQL2Stmt = conn.prepareStatement(updateMarkSQL2)){
+                        updateMarkSQL2Stmt.executeUpdate();
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error fetch And Mark Url Record Data To Analysis: %s", e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return resultsList;
     }
 }
