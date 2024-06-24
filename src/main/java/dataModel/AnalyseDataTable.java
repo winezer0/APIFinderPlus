@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import static model.InfoAnalyse.*;
 
@@ -18,7 +20,7 @@ public class AnalyseDataTable {
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
-            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+            + " data_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + " msg_hash TEXT,\n"  //请求Hash信息
             + " req_url TEXT NOT NULL,\n"  //请求URL
             + " req_path TEXT NOT NULL,\n" //请求Path 便于补充根目录
@@ -36,14 +38,15 @@ public class AnalyseDataTable {
             + " find_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
 
             + " smart_api DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
-            + " smart_api_num INTEGER DEFAULT -1\n"     //发现API的数量
+            + " smart_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
+            + " smart_api_basic INTEGER DEFAULT -1\n"     //是基于多少个路径算出来的结果?
             + ");";
 
     //插入数据库
     public static synchronized int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
         DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
+        String checkSql = "SELECT data_id FROM tableName WHERE msg_hash = ?"
                 .replace("tableName", tableName);
 
         try (Connection conn = dbService.getNewConnection();
@@ -58,9 +61,8 @@ public class AnalyseDataTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, req_path, find_url, find_url_num, find_path, find_path_num, " +
-                        "find_info, find_info_num, find_api, find_api_num, smart_api, smart_api_num) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        "msg_hash, req_url, req_path, find_url, find_url_num, find_path, find_path_num, find_info, find_info_num, find_api, find_api_num) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName) ;
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
@@ -97,4 +99,38 @@ public class AnalyseDataTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
+
+    /**
+     * 获取1条需要分析的Path数据
+     * @return
+     */
+
+    public static String DATA_ID = "data_id";
+    public static String REQ_URL = "req_url";
+    public static String FIND_PATH = "find_path";
+    public static String SMART_API_BASIC = "smart_api_basic";
+
+    public static synchronized Map<String, Object> fetchOneAnalysePathData(){
+        Map<String, Object> pathData = null;
+
+        // 首先选取一条记录的ID
+        String selectSQL = "SELECT data_id,req_url,find_path,smart_api_basic FROM tableName WHERE find_path_num > 0 and smart_api_basic <= 0 LIMIT 1;"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    pathData = new HashMap<>();
+                    pathData.put(DATA_ID, rs.getInt("data_id"));
+                    pathData.put(REQ_URL, rs.getString("req_url"));
+                    pathData.put(FIND_PATH, rs.getString("find_path"));
+                    pathData.put(SMART_API_BASIC, rs.getInt("smart_api_basic"));
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
+        }
+        return pathData;
+    }
 }
