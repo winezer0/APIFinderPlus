@@ -198,23 +198,27 @@ public class IProxyScanner implements IProxyListener {
                     //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
                     needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(false);
                     if (needAnalyseDataIndex <= 0){
-                        //开始基于已有数据计算
-//                      stdout_println(LOG_INFO, "[*] 暂无需要分析数据, 开始进行动态API计算...");
+                        //stdout_println(LOG_INFO, "[*] 暂无需要分析数据, 开始进行动态API计算...");
 
-                        //todo 从数据查询一条数据, 获取 id|msg_hash、PATHS列表 限制
-                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
-                        if (analysePathData != null){
-                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
-                            String reqUrl = (String) analysePathData.get(AnalyseDataTable.REQ_URL);
-                            String findPath = (String) analysePathData.get(AnalyseDataTable.FIND_PATH);
-                            int smartApiBasic = (int) analysePathData.get(AnalyseDataTable.SMART_API_BASIC);
-                        }
-                        //todo 如果根树不存在,就开始计算根树 || 或者存在需要没有添加到根树中的记录URL
+                        //开始基于已有数据计算
+                        //todo 存在需要没有添加到根树中的记录URL生成树
+                        // 更新树
+
 
                         //todo 从数据库获取最终的根树数据
 
-                        //todo 基于根树和paths列表计算新的字典
 
+                        //todo 从数据查询一条数据, 获取 id|msg_hash、PATHS列表 限制
+//                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
+//                        if (analysePathData != null){
+//                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
+//                            String reqUrl = (String) analysePathData.get(AnalyseDataTable.REQ_URL);
+//                            String findPath = (String) analysePathData.get(AnalyseDataTable.FIND_PATH);
+//                            int smartApiBasic = (int) analysePathData.get(AnalyseDataTable.SMART_API_BASIC);
+//                        }
+
+
+                        //todo 基于根树和paths列表计算新的字典
                         //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
                         //已完成 实现基于根数的路径计算函数
                     }
