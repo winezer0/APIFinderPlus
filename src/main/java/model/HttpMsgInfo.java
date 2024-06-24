@@ -79,7 +79,8 @@ public class HttpMsgInfo {
 
         //请求响应信息的简单hash值 因为中间可能截断了超大的响应体 , 因此最好手动传入 msgHash
         msgHash = msgInfoHash;
-        if (msgHash == null || "".equals(msgHash)) msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
+        if (msgHash == null || "".equals(msgHash))
+            msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
     }
 
     /**
@@ -110,7 +111,7 @@ public class HttpMsgInfo {
             //构造基本URL, 不包含请求文件
             reqBasePath = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
         } catch (MalformedURLException e) {
-            stderr_println(String.format("Invalid URL: %s -> Error: %s", requestUrl, e.getMessage()));
+            stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
         }
     }
