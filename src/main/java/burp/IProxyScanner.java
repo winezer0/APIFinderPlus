@@ -249,9 +249,11 @@ public class IProxyScanner implements IProxyListener {
                                     && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty())
                             {
                                 Set<String> findUrlsSet = new HashSet();
+                                //遍历路径列表,开始进行查询
                                 for (Object path: findPathObj){
                                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
-                                    if (findNodePath!=null && !findNodePath.isEmpty()){
+                                    //查询到结果就组合成URL,加到查询结果中
+                                    if (findNodePath != null && !findNodePath.isEmpty()){
                                         for (Object prefix:findNodePath){
                                             //组合URL、findNodePath、path
                                             String prefixPath = (String) prefix;
@@ -261,15 +263,13 @@ public class IProxyScanner implements IProxyListener {
                                         }
                                     }
                                 }
-                                //找到路径数据,写入数据库进行存储
-                                if (!findUrlsSet.isEmpty()){
-                                    JSONObject analyseApiInfo = new JSONObject();
-                                    analyseApiInfo.put(Constants.PATH_NUM, pathNum);
-                                    analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
-                                    int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
-                                    if (apiDataIndex > 0)
-                                        stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
-                                }
+                                //不管找没找到数据 都应该写入数据库进行存储
+                                JSONObject analyseApiInfo = new JSONObject();
+                                analyseApiInfo.put(Constants.PATH_NUM, pathNum);
+                                analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
+                                int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
+                                if (apiDataIndex > 0)
+                                    stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
                             }
                         }
                     }
@@ -280,10 +280,9 @@ public class IProxyScanner implements IProxyListener {
                     // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
                     //任务4、判断是否还有没有生成树的数据,如果没有的话,定时更新数据
-                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
-                    if (unhandledSmartApiDataId <= 0){
-
-                    }
+//                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
+//                    if (unhandledSmartApiDataId <= 0){
+//                    }
 
 
                     //todo: 增加自动递归查询功能
