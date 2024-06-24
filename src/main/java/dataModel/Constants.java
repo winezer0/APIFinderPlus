@@ -11,5 +11,5 @@ public class Constants {
     public static String DATA_ID = "data_id";
     public static String REQ_URL = "req_url";
     public static String FIND_PATH = "find_path";
-    public static String SMART_API_BASIC = "smart_api_basic";
+    public static String RUN_BASIC = "run_basic";
 }

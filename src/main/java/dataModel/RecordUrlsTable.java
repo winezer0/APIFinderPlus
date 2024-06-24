@@ -13,12 +13,14 @@ public class RecordUrlsTable {
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
+
             + " req_proto TEXT NOT NULL,\n"
             + " req_host TEXT NOT NULL,\n"
             + " req_port TEXT NOT NULL,\n"
             + " req_path_dir TEXT NOT NULL,\n"
-            + " resp_status TEXT NOT NULL, \n"
-            + " run_status TEXT NOT NULL\n"
+            + " resp_status_code TEXT NOT NULL, \n"
+
+            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
             + ");";
 
 
@@ -32,7 +34,7 @@ public class RecordUrlsTable {
                 + "AND req_host = ? "
                 + "AND req_port = ? "
                 + "AND req_path_dir = ? "
-                + "AND resp_status = ?";
+                + "AND resp_status_code = ?";
 
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -41,7 +43,7 @@ public class RecordUrlsTable {
             checkStmt.setString(2, msgInfo.getReqHost());
             checkStmt.setInt(3, msgInfo.getReqPort());
             checkStmt.setString(4, msgInfo.getReqPathDir());
-            checkStmt.setString(5, msgInfo.getRespStatus());
+            checkStmt.setString(5, msgInfo.getRespStatusCode());
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
@@ -50,15 +52,14 @@ public class RecordUrlsTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (req_proto, req_host, req_port, req_path_dir, resp_status, run_status) VALUES (?, ?, ?, ?, ?, ?)"
+                String insertSql = "INSERT INTO tableName (req_proto, req_host, req_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?, ?)"
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getReqProto());
                     insertStmt.setString(2, msgInfo.getReqHost());
                     insertStmt.setInt(3, msgInfo.getReqPort());
                     insertStmt.setString(4, msgInfo.getReqPathDir());
-                    insertStmt.setString(5, msgInfo.getRespStatus());
-                    insertStmt.setString(6, Constants.ANALYSE_WAIT);
+                    insertStmt.setString(5, msgInfo.getRespStatusCode());
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值

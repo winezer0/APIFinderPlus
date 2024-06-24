@@ -12,20 +12,20 @@ public class ReqDataTable {
     static String tableName = "req_data";
 
     //创建用于存储 需要处理的URL的原始请求响应
-    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
+    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName ("
             .replace("tableName", tableName)
-            + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + "msg_id TEXT NOT NULL,\n"
-            + "msg_hash TEXT NOT NULL,\n"
-            + "req_url TEXT NOT NULL,\n"
-            + "req_proto TEXT NOT NULL,\n"
-            + "req_host TEXT NOT NULL, \n"
-            + "req_port INTEGER NOT NULL,\n"
-            + "req_method TEXT NOT NULL,\n"
-            + "resp_status TEXT NOT NULL,\n"
-            + "msg_data_index INTEGER NOT NULL,\n"
-            + "run_status TEXT NOT NULL,\n"
-            + "req_source TEXT NOT NULL\n" //请求来源
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+
+            + "msg_id TEXT NOT NULL,"
+            + "msg_hash TEXT NOT NULL,"
+            + "req_url TEXT NOT NULL,"
+            + "req_method TEXT NOT NULL,"
+            + "resp_status_code TEXT NOT NULL,"
+            + "msg_data_index INTEGER NOT NULL,"
+            + "req_source TEXT NOT NULL,"   //请求来源
+
+            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+
             + ");";
 
 
@@ -46,22 +46,17 @@ public class ReqDataTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_id, msg_hash, req_url, req_proto, req_host, req_port, " +
-                        "req_method, resp_status, msg_data_index, run_status, req_source) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        "msg_id, msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setInt(1, msgId);
                     insertStmt.setString(2, msgInfo.getMsgHash());
                     insertStmt.setString(3, msgInfo.getReqUrl());
-                    insertStmt.setString(4, msgInfo.getReqProto());
-                    insertStmt.setString(5, msgInfo.getReqHost());
-                    insertStmt.setInt(6, msgInfo.getReqPort());
-                    insertStmt.setString(7, msgInfo.getReqMethod());
-                    insertStmt.setString(8, msgInfo.getRespStatus());
-                    insertStmt.setInt(9, msgDataIndex);
-                    insertStmt.setString(10, Constants.ANALYSE_WAIT);
-                    insertStmt.setString(11, reqSource);
+                    insertStmt.setString(4, msgInfo.getReqMethod());
+                    insertStmt.setString(5, msgInfo.getRespStatusCode());
+                    insertStmt.setInt(6, msgDataIndex);
+                    insertStmt.setString(7, reqSource);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值

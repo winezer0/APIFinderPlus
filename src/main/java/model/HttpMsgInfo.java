@@ -2,7 +2,6 @@ package model;
 
 import burp.*;
 
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +29,7 @@ public class HttpMsgInfo {
     private byte[] reqBytes = null;
 
     private byte[] respBytes = null;
-    private String respStatus = null;
+    private String respStatusCode = null;
     private int respBodyLen = -1;
     private int respBodyLenVague = -1;
 
@@ -58,7 +57,7 @@ public class HttpMsgInfo {
         parseRespBytes(messageInfo.getResponse());
 
         //请求响应信息的简单hash值
-        msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
+        msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatusCode, reqMethod, respBodyLenVague));
     }
 
     // 构造函数
@@ -80,7 +79,7 @@ public class HttpMsgInfo {
         //请求响应信息的简单hash值 因为中间可能截断了超大的响应体 , 因此最好手动传入 msgHash
         msgHash = msgInfoHash;
         if (msgHash == null || "".equals(msgHash))
-            msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatus, reqMethod, respBodyLenVague));
+            msgHash = calcCRC32(String.format("%s|%s|%s|%s", reqBaseUrl, respStatusCode, reqMethod, respBodyLenVague));
     }
 
     /**
@@ -128,7 +127,7 @@ public class HttpMsgInfo {
         //响应信息
         IResponseInfo responseInfo = helpers.analyzeResponse(responseBytes);
         //响应状态码
-        respStatus = String.valueOf(responseInfo.getStatusCode());
+        respStatusCode = String.valueOf(responseInfo.getStatusCode());
         //respBodyLenVague
         respBodyOffset = responseInfo.getBodyOffset();
         //大致的响应长度
@@ -251,8 +250,8 @@ public class HttpMsgInfo {
         return reqBytes;
     }
     
-    public String getRespStatus() {
-        return respStatus;
+    public String getRespStatusCode() {
+        return respStatusCode;
     }
 
     public int getRespBodyLen() {

@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static dataModel.AnalyseDataTable.fetchOneAnalysePathData;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utils.BurpPrintUtils.*;
 
@@ -85,9 +84,9 @@ public class IProxyScanner implements IProxyListener {
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
-            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && ElementUtils.isEqualsOneKey(msgInfo.getRespStatus(), CONF_NEED_RECORD_STATUS, true)){
+            if(urlPathRecordMap.get(msgInfo.getReqBasePath()) <= 0 && ElementUtils.isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true)){
                 urlPathRecordMap.add(msgInfo.getReqBasePath());
-                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatus()));
+                stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getReqBasePath(), msgInfo.getRespStatusCode()));
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -110,12 +109,12 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 看status是否为30开头
-            if (msgInfo.getRespStatus().startsWith("3")){
+            if (msgInfo.getRespStatusCode().startsWith("3")){
                 stdout_println(LOG_DEBUG,"[-] URL的响应包状态码3XX 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
-            if (msgInfo.getRespStatus().equals("404")){
+            if (msgInfo.getRespStatusCode().equals("404")){
                 stdout_println(LOG_DEBUG, "[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
@@ -214,7 +213,7 @@ public class IProxyScanner implements IProxyListener {
 //                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
 //                            String reqUrl = (String) analysePathData.get(AnalyseDataTable.REQ_URL);
 //                            String findPath = (String) analysePathData.get(AnalyseDataTable.FIND_PATH);
-//                            int smartApiBasic = (int) analysePathData.get(AnalyseDataTable.SMART_API_BASIC);
+//                            int runBasic = (int) analysePathData.get(AnalyseDataTable.RUN_BASIC);
 //                        }
 
 

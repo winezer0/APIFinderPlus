@@ -102,11 +102,8 @@ public class InfoUriFilterUtils {
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {
             String suffix = HttpMsgInfo.parseUrlExt(urlStr);
-            if (!isEqualsOneKey(suffix, blackSuffixes, false)) {
+            if (!isEqualsOneKey(suffix, blackSuffixes, false))
                 list.add(urlStr);
-            }else {
-                stdout_println(LOG_DEBUG, String.format("[*] Black Suffix Filter %s", urlStr));
-            }
         }
         return list;
     }
