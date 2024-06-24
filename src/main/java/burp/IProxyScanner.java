@@ -17,7 +17,7 @@ import static dataModel.PathTreeTable.fetchOnePathTreeData;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
-import static utilbox.UrlUtils.getBaseUrlWithDefaultPort;
+import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.InfoAnalyseUtils.UrlAddPath;
 import static utils.PathTreeUtils.findNodePathInTree;
 import static utils.PathTreeUtils.genPathsTree;
@@ -261,7 +261,7 @@ public class IProxyScanner implements IProxyListener {
             String reqHostPort = (String) needAnalysedPathData.get(Constants.REQ_HOST_PORT);
             String findPath = (String) needAnalysedPathData.get(Constants.FIND_PATH);
 
-            String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
+            String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
 
             // 从数据库中查询树信息表
             JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
