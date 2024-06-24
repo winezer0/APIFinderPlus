@@ -148,7 +148,7 @@ public class InfoAnalyseTable {
 
     //插入数据库
     public static synchronized int insertAnalyseApiData(int dataId, JSONObject analyseApiInfo){
-        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+        int dataIndex = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET smart_api = ?, smart_api_num = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
@@ -162,12 +162,16 @@ public class InfoAnalyseTable {
             updateStatement.setInt(2, findUrls.size());
             updateStatement.setInt(3, pathNum);
             updateStatement.setInt(4, dataId);
-            updateStatement.executeUpdate();
+            int affectedRows = updateStatement.executeUpdate();
+            if (affectedRows > 0) {
+                dataIndex = dataId;
+            }
+
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update Path Data: %s", e.getMessage()));
         }
 
-        return generatedId; // 返回ID值，无论是更新还是插入
+        return dataIndex; // 返回ID值，无论是更新还是插入
     }
 
 }

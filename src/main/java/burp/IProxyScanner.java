@@ -241,7 +241,7 @@ public class IProxyScanner implements IProxyListener {
                             String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
 
 
-                            //todo 基于根树和paths列表计算新的字典
+                            // 基于根树和paths列表计算新的字典
                             JSONArray findPathObj = JSONArray.parse(findPath);
                             JSONObject pathTreeObj = JSONObject.parse(pathTree);
                             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
