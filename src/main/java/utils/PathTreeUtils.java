@@ -204,11 +204,9 @@ public class PathTreeUtils {
         String targetKey = parts.get(0);
         int maxKeyCounts = counts(rootTree.toJSONString(), String.format("\"%s\"", targetKey));
         List<JSONArray> findNodePaths = findNodePathsRecursive(rootTree, targetKey, new JSONArray(), maxKeyCounts, new AtomicInteger(0));
-//        System.out.println(String.format("初步寻找到如下数据:%s", findNodePaths));
 
         //找到一个节点信息
         if (findNodePaths.size() == 1 || parts.size() <= 1) {
-            System.out.println("找到节点唯一的信息, 不进行操作了");
             endPaths.addAll(findNodePaths);
         }
 

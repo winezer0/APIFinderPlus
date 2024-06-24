@@ -13,11 +13,10 @@ import java.util.concurrent.*;
 import static burp.BurpExtender.*;
 import static dataModel.InfoAnalyseTable.fetchOneAnalysePathData;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrlId;
-import static dataModel.PathTreeTable.fetchOnePathTree;
+import static dataModel.PathTreeTable.fetchOnePathTreeData;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
-import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utilbox.UrlUtils.getBaseUrlWithDefaultPort;
 import static utils.InfoAnalyseUtils.UrlAddPath;
 import static utils.PathTreeUtils.findNodePathInTree;
@@ -249,15 +248,20 @@ public class IProxyScanner implements IProxyListener {
                             String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
 
+                            JSONArray findPathObj = JSONArray.parse(findPath);
+
                             // 5、从数据库中查询树信息表
-                            String pathTree = fetchOnePathTree(reqHostPort);
+                            JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
+                            int pathNum = (int) pathTreeData.get(Constants.PATH_NUM);
+                            String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
+                            JSONObject pathTreeObj = JSONObject.parse(pathTree);
 
                             //todo 基于根树和paths列表计算新的字典
                             //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
-                            JSONArray findPathObj = JSONArray.parse(findPath);
-                            JSONObject pathTreeObj = JSONObject.parse(pathTree);
                             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-                            if (findPathObj !=null && !findPathObj.isEmpty() && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty()){
+                            if (findPathObj != null && !findPathObj.isEmpty()
+                                    && pathTreeObj != null  && !pathTreeObj.isEmpty()
+                                    && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty()){
                                 Set<String> findUrlsSet = new HashSet();
                                 for (Object path: findPathObj){
                                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);

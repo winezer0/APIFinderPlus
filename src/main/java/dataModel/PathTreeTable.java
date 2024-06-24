@@ -100,29 +100,31 @@ public class PathTreeTable {
 
 
     //根据域名查询对应的Host
-    public static synchronized String fetchOnePathTree(String reqHost) {
+    public static synchronized JSONObject fetchOnePathTreeData(String reqHost) {
         DBService dbService = DBService.getInstance();
 
         //查询
         String checkSql = "SELECT * FROM tableName WHERE req_host_port = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
-        String pathTree = null;
+        JSONObject pathTreeData = new JSONObject();
         try (Connection conn = dbService.getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setString(1, reqHost);
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
-                //记录存在,需要更新
-                pathTree = rs.getString("path_tree");
+                String pathTree = rs.getString("path_tree");
+                int pathNum = rs.getInt("path_num");
+                pathTreeData.put(Constants.PATH_TREE, pathTree);
+                pathTreeData.put(Constants.PATH_NUM, pathNum);
             }
         } catch (Exception e) {
             stderr_println(String.format("[-] Error Fetch One table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
-        return pathTree;
+        return pathTreeData;
     }
 
 }
