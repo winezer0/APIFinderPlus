@@ -196,9 +196,14 @@ public class IProxyScanner implements IProxyListener {
                         //将分析结果写入数据库
                         if(analyseInfoIsNotEmpty(analyseResult)){
                             int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseResult);
-                            if (analyseDataIndex > 0)
+                            if (analyseDataIndex > 0){
                                 stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                            }
+
                         }
+
+                        //更新数据后先返回,优先进行之前的操作
+                        return;
                     }
 
                     //任务2、判断是否还有需要分析的数据,如果没有的话，就可以考虑更新树信息
@@ -213,10 +218,13 @@ public class IProxyScanner implements IProxyListener {
                                 if (treeObj != null && !treeObj.isEmpty()){
                                     //合并|插入新的路径树
                                     int pathTreeIndex = insertOrUpdatePathTree(treeObj);
-                                    if (pathTreeIndex > 0)
+                                    if (pathTreeIndex > 0) {
                                         stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",treeObj.toJSONString()));
+                                    }
                                 }
                             }
+                            //更新数据后先返回,优先进行之前的操作
+                            return;
                         }
                     }
 
@@ -225,20 +233,28 @@ public class IProxyScanner implements IProxyListener {
                     if (unhandledRecordUrlId <= 0) {
                         //获取一条需要分析的数据
                         Map<String, Object> unhandledSmartApiData = fetchUnhandledSmartApiData();
-                        analysisUpdateSmartApiData(unhandledSmartApiData);
+                        if (unhandledSmartApiData != null && !unhandledSmartApiData.isEmpty()) {
+                            analysisUpdateSmartApiData(unhandledSmartApiData);
+                            //更新数据后先返回,优先进行之前的操作
+                            return;
+                        }
+                    }
+
+                    //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
+                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
+                    if (unhandledSmartApiDataId <= 0){
+                        Map<String, Object> needUpdatedSmartApiData = fetchNeedUpdatedSmartApiData();
+                        if (needUpdatedSmartApiData != null && !needUpdatedSmartApiData.isEmpty()) {
+                            analysisUpdateSmartApiData(needUpdatedSmartApiData);
+                            //更新数据后先返回,优先进行之前的操作
+                            return;
+                        }
                     }
 
                     //todo: 提取的PATH需要进一步过滤处理
                     // 考虑增加后缀过滤功能 static/image/k8-2.png
                     // 考虑增加已有URL过滤 /bbs/login
                     // 考虑增加 参数处理 plugin.php?id=qidou_assign
-
-                    //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
-                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
-                    if (unhandledSmartApiDataId <= 0){
-                        Map<String, Object> needUpdatedSmartApiData = fetchNeedUpdatedSmartApiData();
-                        analysisUpdateSmartApiData(needUpdatedSmartApiData);
-                    }
 
                     //todo: 增加自动递归查询功能
                     //todo: 添加 UI 显示
