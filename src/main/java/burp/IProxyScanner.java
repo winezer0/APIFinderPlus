@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
+import static dataModel.InfoAnalyseTable.fetchOneAnalysePathData;
+import static dataModel.PathRecordTable.fetchUnhandledRecordUrlId;
+import static dataModel.PathTreeTable.fetchOnePathTree;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
-import static dataModel.PathRecordTable.fetchUnhandledRecordUrals;
+import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utils.PathTreeUtils.genPathsTree;
 import static utils.BurpPrintUtils.*;
@@ -200,11 +203,11 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
-                    needAnalyseDataIndex = ReqDataTable.fetchUnhandledReqDataId(false);
-                    if (needAnalyseDataIndex <= 0){
+                    int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
+                    if (unhandledReqDataId <= 0){
                         //1、更新|生成路径树
                         //"SELECT req_host, GROUP_CONCAT(req_path_dir, '<-->') AS req_path_dirs FROM record_paths GROUP BY req_host"
-                        JSONArray recordUrls = fetchUnhandledRecordUrals();
+                        JSONArray recordUrls = fetchUnhandledRecordUrls();
                         if (recordUrls.size() > 0){
                             //计算所有需要更新的Tree
                             for (Object record : recordUrls) {
@@ -216,22 +219,6 @@ public class IProxyScanner implements IProxyListener {
                                 }
                             }
                         }
-                        //todo 从数据库获取最终的根树数据
-                        // 5、从数据库中查询树信息表
-
-
-                        //todo 从数据库查询一条path数据, 获取 id|msg_hash、PATHS列表
-//                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
-//                        if (analysePathData != null){
-//                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
-//                            String reqUrl = (String) analysePathData.get(AnalyseDataTable.REQ_URL);
-//                            String findPath = (String) analysePathData.get(AnalyseDataTable.FIND_PATH);
-//                            int runBasic = (int) analysePathData.get(AnalyseDataTable.RUN_BASIC);
-//                        }
-
-
-                        //todo 基于根树和paths列表计算新的字典
-                        //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
 
 
 
@@ -242,6 +229,26 @@ public class IProxyScanner implements IProxyListener {
 
 
                     //todo: 增加自动递归查询功能
+                    }
+
+
+                    //判断是否有树需要更新,没有的话就可以计算了
+                    int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
+                    if (unhandledRecordUrlId <= 0) {
+                        //todo 从数据库查询一条 path数据, 获取 id|msg_hash、PATHS列表
+                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
+                        if (analysePathData != null) {
+                            int dataId = (int) analysePathData.get(Constants.DATA_ID);
+                            String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
+                            String findPath = (String) analysePathData.get(Constants.FIND_PATH);
+                            int runBasic = (int) analysePathData.get(Constants.BASIC_PATH_NUM);
+
+                            // 5、从数据库中查询树信息表
+                            String pathTree = fetchOnePathTree(reqUrl);
+
+                            //todo 基于根树和paths列表计算新的字典
+                            //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
+                        }
                     }
                 }catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));

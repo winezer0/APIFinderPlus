@@ -98,4 +98,31 @@ public class PathTreeTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
+
+    //根据域名查询对应的Host
+    public static synchronized String fetchOnePathTree(String reqHost) {
+        DBService dbService = DBService.getInstance();
+
+        //查询
+        String checkSql = "SELECT * FROM tableName WHERE req_host_port = ? LIMIT 1;"
+                .replace("tableName", tableName);
+
+        String pathTree = null;
+        try (Connection conn = dbService.getNewConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+            checkStmt.setString(1, reqHost);
+
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next()) {
+                //记录存在,需要更新
+                pathTree = rs.getString("path_tree");
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error Fetch One table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return pathTree;
+    }
+
 }

@@ -77,8 +77,8 @@ public class PathRecordTable {
     }
 
 
-    //判断是否存在需要更新树的URL
-    public static synchronized int CheckRecordUrlsStatusIsWait(){
+    //判断是否存在需要处理的URL
+    public static synchronized int fetchUnhandledRecordUrlId(){
         // 考虑开启事务
         int dataIndex = -1;
 
@@ -101,7 +101,7 @@ public class PathRecordTable {
     }
 
     //获取所有需要处理的URl数据，并且标记
-    public static synchronized JSONArray fetchUnhandledRecordUrals() {
+    public static synchronized JSONArray fetchUnhandledRecordUrls() {
         // 创建一个列表或集合来存储查询结果
         JSONArray resultsList = new JSONArray();
 
