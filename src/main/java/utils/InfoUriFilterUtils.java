@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static model.HttpUrlInfo.parseUrlExt;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isEqualsOneKey;
 
@@ -101,7 +102,7 @@ public class InfoUriFilterUtils {
 
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {
-            String suffix = HttpMsgInfo.parseUrlExt(urlStr);
+            String suffix = parseUrlExt(urlStr);
             if (!isEqualsOneKey(suffix, blackSuffixes, false))
                 list.add(urlStr);
         }

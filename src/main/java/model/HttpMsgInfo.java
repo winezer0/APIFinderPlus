@@ -87,34 +87,29 @@ public class HttpMsgInfo {
      * @param requestUrl
      */
     private void parseReqUrlInfo(String requestUrl) {
-        //基于URL获取其他请求信息
-        try {
-            reqUrl = requestUrl;
-            URL urlObj = new URL(requestUrl);
-            //获取请求协议
-            reqProto = urlObj.getProtocol();
-            //从URL中获取请求host
-            reqHost = urlObj.getHost();
-            //获取主域名
-            reqRootDomain = getRootDomain(reqHost);
-            //从URL中获取请求Port
-            reqPort = urlObj.getPort();
-            //添加个HostPort对象
-            reqHostPort = String.format("%s:%s", reqHost, reqPort);
-            //解析请求文件的后缀
-            reqPathExt = parseUrlExt(requestUrl);
-            //获取请求路径
-            reqPath = urlObj.getPath();
-            //获取请求路径的目录部分
-            reqPathDir = parseReqPathDir(reqPath);
-            // 构造基本URL，不包含查询参数
-            reqBaseUrl = new URL(reqProto, reqHost, reqPort, reqPath).toString();
-            //构造基本URL, 不包含请求文件
-            reqBaseDir = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
-        } catch (MalformedURLException e) {
-            stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
-            e.printStackTrace();
-        }
+        HttpUrlInfo urlInfo = new HttpUrlInfo(requestUrl);
+        //获取请求URL
+        reqUrl = urlInfo.getReqUrl();
+        //获取请求协议
+        reqProto = urlInfo.getReqProto();
+        //从URL中获取请求host
+        reqHost = urlInfo.getReqHost();
+        //获取主域名
+        reqRootDomain = urlInfo.getReqRootDomain();
+        //从URL中获取请求Port
+        reqPort = urlInfo.getReqPort();
+        //添加个HostPort对象
+        reqHostPort = urlInfo.getReqHostPort();
+        //解析请求文件的后缀
+        reqPathExt = urlInfo.getReqPathExt();
+        //获取请求路径
+        reqPath = urlInfo.getReqPath();
+        //获取请求路径的目录部分
+        reqPathDir = urlInfo.getReqPathDir();
+        // 构造基本URL，不包含查询参数
+        reqBaseUrl = urlInfo.getReqBaseUrl();
+        //构造基本URL, 不包含请求文件
+        reqBaseDir = urlInfo.getReqBaseDir();
     }
 
     /**
@@ -137,16 +132,6 @@ public class HttpMsgInfo {
         //获取响应类型
         inferredMimeType = responseInfo.getInferredMimeType();
         statedMimeType = responseInfo.getStatedMimeType();
-    }
-
-    /**
-     * 从URL解析请求后缀
-     * @param url
-     * @return
-     */
-    public static String parseUrlExt(String url) {
-        String pureUrl = url.substring(0, url.contains("?") ? url.indexOf("?") : url.length());
-        return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
     }
 
     /**
@@ -190,22 +175,6 @@ public class HttpMsgInfo {
         crc32.update(inputBytes, 0, inputBytes.length);
         // 将计算后的CRC32值转换为十六进制字符串并返回
         return Long.toHexString(crc32.getValue()).toLowerCase();
-    }
-
-    /**
-     * 从给定的URL字符串中提取请求的目录部分。
-     * @param reqPath 完整的URL字符串。
-     * @return 请求的目录路径，不包含最后一个路径分隔符。
-     */
-    public static String parseReqPathDir(String reqPath) {
-        // 去除最后一个路径分隔符后面的文件名部分，如果有的话
-        int lastPathSepIndex = reqPath.lastIndexOf('/');
-        // 如果找到了路径分隔符（lastPathSepIndex 不等于 -1）
-        if (lastPathSepIndex != -1) {
-            // 从原始路径中截取出从开头到最后一个路径分隔符（包括该分隔符）的部分  +1是为了保留最后一个路径分隔符
-            return reqPath.substring(0, lastPathSepIndex + 1);
-        }
-        return "/";
     }
 
     public String getReqUrl() {
