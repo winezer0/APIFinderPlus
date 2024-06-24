@@ -63,8 +63,8 @@ public class InfoAnalyseTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num, find_info, find_info_num, find_api, find_api_num) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        "msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num, find_info, find_info_num, find_api, find_api_num, run_status) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName) ;
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
@@ -82,6 +82,13 @@ public class InfoAnalyseTable {
 
                     insertStmt.setString(10, analyseInfo.getJSONArray(API_KEY).toJSONString());
                     insertStmt.setInt(11, analyseInfo.getJSONArray(API_KEY).size());
+
+                    //在这个响应中没有找到API数据,就修改状态为无需解析
+                    if (analyseInfo.getJSONArray(API_KEY).size() > 0){
+                        insertStmt.setString(12, Constants.ANALYSE_WAIT);
+                    } else {
+                        insertStmt.setString(12, Constants.ANALYSE_SKIP);
+                    }
 
                     insertStmt.executeUpdate();
 
