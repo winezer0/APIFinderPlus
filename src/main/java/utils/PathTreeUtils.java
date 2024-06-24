@@ -1,4 +1,4 @@
-package model;
+package utils;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PathTreeInfo {
+public class PathTreeUtils {
     public static String getUrlPath(String uriPath) {
         URL url = null;
         try {

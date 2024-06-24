@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 
 import java.sql.*;
 
-import static model.PathTreeInfo.deepMerge;
+import static utils.PathTreeUtils.deepMerge;
 import static utils.BurpPrintUtils.*;
 
 public class PathTreeTable {

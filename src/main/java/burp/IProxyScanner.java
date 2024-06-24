@@ -15,7 +15,7 @@ import static burp.BurpExtender.*;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrals;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
-import static model.PathTreeInfo.genPathsTree;
+import static utils.PathTreeUtils.genPathsTree;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
@@ -230,8 +230,8 @@ public class IProxyScanner implements IProxyListener {
 //                        }
 
 
-                                //todo 基于根树和paths列表计算新的字典
-                                //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
+                        //todo 基于根树和paths列表计算新的字典
+                        //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
 
 
 
