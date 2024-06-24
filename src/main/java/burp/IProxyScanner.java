@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
+import static dataModel.AnalyseDataTable.fetchOneAnalysePathData;
 import static model.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utils.BurpPrintUtils.*;
 
@@ -174,13 +175,13 @@ public class IProxyScanner implements IProxyListener {
                     if (needAnalyseDataIndex > 0){
                         // 1 获取 msgDataIndex 对应的数据
                         Map<String, Object> needAnalyseData = MsgDataTable.selectMsgDataById(needAnalyseDataIndex);
+                        String requestUrl = (String) needAnalyseData.get(MsgDataTable.req_url);
+                        byte[] requestBytes = (byte[]) needAnalyseData.get(MsgDataTable.req_bytes);
+                        byte[] responseBytes = (byte[]) needAnalyseData.get(MsgDataTable.resp_bytes);
+                        String msgInfoHash = (String) needAnalyseData.get(MsgDataTable.msg_hash);
 
                         //2.2 将请求响应数据整理出新的 MsgInfo 数据 并 分析
-                        HttpMsgInfo msgInfo =  new HttpMsgInfo(
-                                (String) needAnalyseData.get(MsgDataTable.msg_hash),
-                                (byte[]) needAnalyseData.get(MsgDataTable.req_bytes),
-                                (byte[]) needAnalyseData.get(MsgDataTable.resp_bytes),
-                                (String) needAnalyseData.get(MsgDataTable.req_url));
+                        HttpMsgInfo msgInfo =  new HttpMsgInfo(requestUrl, requestBytes, responseBytes,msgInfoHash);
 
                         //2.3 进行数据分析
                         stdout_println(LOG_INFO, String.format("[+] 数据分析开始: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
@@ -198,10 +199,16 @@ public class IProxyScanner implements IProxyListener {
                     needAnalyseDataIndex = ReqDataTable.fetchAndMarkReqData(false);
                     if (needAnalyseDataIndex <= 0){
                         //开始基于已有数据计算
-                        stdout_println(LOG_INFO, "[*] 暂无需要分析数据, 开始进行动态API计算...");
+//                      stdout_println(LOG_INFO, "[*] 暂无需要分析数据, 开始进行动态API计算...");
 
                         //todo 从数据查询一条数据, 获取 id|msg_hash、PATHS列表 限制
-
+                        Map<String, Object> analysePathData = fetchOneAnalysePathData();
+                        if (analysePathData != null){
+                            int dataId = (int) analysePathData.get(AnalyseDataTable.DATA_ID);
+                            String reqUrl = (String) analysePathData.get(AnalyseDataTable.REQ_URL);
+                            String findPath = (String) analysePathData.get(AnalyseDataTable.FIND_PATH);
+                            int smartApiBasic = (int) analysePathData.get(AnalyseDataTable.SMART_API_BASIC);
+                        }
                         //todo 如果根树不存在,就开始计算根树 || 或者存在需要没有添加到根树中的记录URL
 
                         //todo 从数据库获取最终的根树数据
