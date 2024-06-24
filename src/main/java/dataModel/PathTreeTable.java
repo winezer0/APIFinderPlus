@@ -22,7 +22,6 @@ public class PathTreeTable {
 
     //插入数据库
     public static synchronized int insertOrUpdatePathTree(JSONObject treeObj) {
-        DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String reqHost = (String) treeObj.get(Constants.REQ_HOST_PORT);
@@ -41,7 +40,7 @@ public class PathTreeTable {
         String updateSQL = "UPDATE tableName SET path_tree = ?, path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = dbService.getNewConnection();
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setString(1, reqHost);
 
@@ -101,14 +100,12 @@ public class PathTreeTable {
 
     //根据域名查询对应的Host
     public static synchronized JSONObject fetchOnePathTreeData(String reqHost) {
-        DBService dbService = DBService.getInstance();
-
         //查询
         String checkSql = "SELECT * FROM tableName WHERE req_host_port = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
         JSONObject pathTreeData = new JSONObject();
-        try (Connection conn = dbService.getNewConnection();
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setString(1, reqHost);
 

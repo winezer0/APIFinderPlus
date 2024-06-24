@@ -31,10 +31,9 @@ public class ReqDataTable {
 
     //插入数据库
     public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex, String reqSource) {
-        DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?".replace("tableName", tableName);
-        try (Connection conn = dbService.getNewConnection();
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
             checkStmt.setString(1, msgInfo.getMsgHash());
@@ -90,8 +89,8 @@ public class ReqDataTable {
                 .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("tableName", tableName);
 
-        DBService dbService = DBService.getInstance();
-        try (Connection conn = dbService.getNewConnection(); PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
             ResultSet rs = selectStatement.executeQuery();
             if (rs.next()) {
                 int selectedMsgDataIndex = rs.getInt("msg_data_index");

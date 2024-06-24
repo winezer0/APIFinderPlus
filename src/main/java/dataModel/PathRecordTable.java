@@ -27,7 +27,6 @@ public class PathRecordTable {
 
     //插入数据库
     public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
-        DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName "
                 .replace("tableName", tableName)
@@ -36,7 +35,7 @@ public class PathRecordTable {
                 + "AND req_path_dir = ? "
                 + "AND resp_status_code = ?";
 
-        try (Connection conn = dbService.getNewConnection();
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
             checkStmt.setString(1, msgInfo.getUrlInfo().getReqProto());
@@ -86,8 +85,8 @@ public class PathRecordTable {
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
-        DBService dbService = DBService.getInstance();
-        try (Connection conn = dbService.getNewConnection(); PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
             ResultSet rs = selectStatement.executeQuery();
             if (rs.next()) {
                 dataIndex = rs.getInt("id");
@@ -123,8 +122,7 @@ public class PathRecordTable {
                 .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("tableName", tableName);
 
-        DBService dbService = DBService.getInstance();
-        try (Connection conn = dbService.getNewConnection();
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement updateMarkSQL1Stmt = conn.prepareStatement(updateMarkSQL1);){
             int affectedRows = updateMarkSQL1Stmt.executeUpdate();
             if (affectedRows > 0) {

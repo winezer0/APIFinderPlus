@@ -12,6 +12,7 @@ import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static dataModel.InfoAnalyseTable.fetchOneAnalysePathData;
+import static dataModel.InfoAnalyseTable.insertAnalyseApiData;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrlId;
 import static dataModel.PathTreeTable.fetchOnePathTreeData;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
@@ -204,11 +205,10 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //判断是否还有需要分析的数据,如果没有的话，就可以考虑计算结果
+                    //判断是否还有需要分析的数据,如果没有的话，就可以考虑更新树信息
                     int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (unhandledReqDataId <= 0){
                         //1、更新|生成路径树
-                        //"SELECT req_host, GROUP_CONCAT(req_path_dir, '<-->') AS req_path_dirs FROM record_paths GROUP BY req_host"
                         JSONArray recordUrls = fetchUnhandledRecordUrls();
                         if (!recordUrls.isEmpty()){
                             //计算所有需要更新的Tree
@@ -221,47 +221,36 @@ public class IProxyScanner implements IProxyListener {
                                 }
                             }
                         }
-
-
-
-                    //todo: 提取的PATH需要进一步过滤处理
-                    // 考虑增加后缀过滤功能 static/image/k8-2.png
-                    // 考虑增加已有URL过滤 /bbs/login
-                    // 考虑增加 参数处理 plugin.php?id=qidou_assign
-
-
-                    //todo: 增加自动递归查询功能
                     }
 
-
-                    //判断是否有树需要更新,没有的话就可以计算了
+                    //判断是否有树需要更新,没有的话就根据树生成计算
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
-                        //todo 从数据库查询一条 path数据, 获取 id|msg_hash、PATHS列表
+                        //获取一条需要分析 的数据
                         Map<String, Object> analysePathData = fetchOneAnalysePathData();
                         if (analysePathData != null && !analysePathData.isEmpty()) {
-                            System.out.println(String.format("待计算数据:%s", analysePathData));
-
-                            int dataId = (int) analysePathData.get(Constants.DATA_ID); //后面用来更新到数据表
+                            int dataId = (int) analysePathData.get(Constants.DATA_ID);
                             String reqUrl = (String) analysePathData.get(Constants.REQ_URL);
                             String reqBaseUrl = getBaseUrlWithDefaultPort(reqUrl);
                             String reqHostPort = (String) analysePathData.get(Constants.REQ_HOST_PORT);
                             String findPath = (String) analysePathData.get(Constants.FIND_PATH);
 
-                            JSONArray findPathObj = JSONArray.parse(findPath);
-
-                            // 5、从数据库中查询树信息表
+                            // 从数据库中查询树信息表
                             JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
                             int pathNum = (int) pathTreeData.get(Constants.PATH_NUM);
                             String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
-                            JSONObject pathTreeObj = JSONObject.parse(pathTree);
+
 
                             //todo 基于根树和paths列表计算新的字典
-                            //基于 根树 和 pathList 计算 URLs, 如果计算过的，先判断根数是否更新过
+                            JSONArray findPathObj = JSONArray.parse(findPath);
+                            JSONObject pathTreeObj = JSONObject.parse(pathTree);
                             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-                            if (findPathObj != null && !findPathObj.isEmpty()
-                                    && pathTreeObj != null  && !pathTreeObj.isEmpty()
-                                    && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty()){
+                            if (findPathObj != null
+                                    && !findPathObj.isEmpty()
+                                    && pathTreeObj != null
+                                    && !pathTreeObj.isEmpty()
+                                    && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty())
+                            {
                                 Set<String> findUrlsSet = new HashSet();
                                 for (Object path: findPathObj){
                                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
@@ -276,15 +265,26 @@ public class IProxyScanner implements IProxyListener {
                                         }
                                     }
                                 }
-
                                 //找到路径数据,写入数据库进行存储
                                 if (!findUrlsSet.isEmpty()){
-                                    JSONArray findUrlsArray = new JSONArray(findUrlsSet);
-                                    stdout_println(LOG_DEBUG, String.format("[+] 动态URL分析结果 %s -> PATH %s", reqUrl, findUrlsArray.size()));
+                                    JSONObject analyseApiInfo = new JSONObject();
+                                    analyseApiInfo.put(Constants.PATH_NUM, pathNum);
+                                    analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
+                                    int apiDataIndex = insertAnalyseApiData(dataId, analyseApiInfo);
+                                    if (apiDataIndex > 0)
+                                        stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
                                 }
                             }
                         }
                     }
+
+                    //todo: 提取的PATH需要进一步过滤处理
+                    // 考虑增加后缀过滤功能 static/image/k8-2.png
+                    // 考虑增加已有URL过滤 /bbs/login
+                    // 考虑增加 参数处理 plugin.php?id=qidou_assign
+
+                    //todo: 增加自动递归查询功能
+
                 }catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();

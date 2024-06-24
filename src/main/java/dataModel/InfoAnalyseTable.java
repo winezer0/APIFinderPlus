@@ -1,5 +1,6 @@
 package dataModel;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
 
@@ -46,12 +47,11 @@ public class InfoAnalyseTable {
 
     //插入数据库
     public static synchronized int insertAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
-        DBService dbService = DBService.getInstance();
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
                 .replace("tableName", tableName);
 
-        try (Connection conn = dbService.getNewConnection();
+        try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
             checkStmt.setString(1, msgInfo.getMsgHash());
@@ -145,4 +145,29 @@ public class InfoAnalyseTable {
         }
         return pathData;
     }
+
+    //插入数据库
+    public static synchronized int insertAnalyseApiData(int dataId, JSONObject analyseApiInfo){
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE tableName SET smart_api = ?, smart_api_num = ?, basic_path_num = ? WHERE id = ?;"
+                .replace("tableName", tableName);
+
+        int pathNum = (int) analyseApiInfo.get(Constants.PATH_NUM);
+        JSONArray findUrls = (JSONArray) analyseApiInfo.get(Constants.FIND_PATH);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+            updateStatement.setString(1, findUrls.toJSONString());
+            updateStatement.setInt(2, findUrls.size());
+            updateStatement.setInt(3, pathNum);
+            updateStatement.setInt(4, dataId);
+            updateStatement.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update Path Data: %s", e.getMessage()));
+        }
+
+        return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
 }
