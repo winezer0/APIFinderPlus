@@ -125,4 +125,14 @@ public class BurpFileUtils {
         Path path = Paths.get(getPluginPath(callbacks), fileName);
         return path.toAbsolutePath();
     }
+
+    /**
+     * 获取插件同级目录下的指定文件
+     * @param fileName
+     * @return
+     */
+    public static String getPluginDirFilePath(String fileName) {
+        Path path = Paths.get(getPluginPath(BurpExtender.getCallbacks()), fileName);
+        return path.toString();
+    }
 }

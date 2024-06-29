@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import dataModel.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
+import ui.Tags;
 import utils.BurpPrintUtils;
 
 import javax.swing.*;
@@ -23,6 +24,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     private static IExtensionHelpers helpers;
 
     private static IProxyScanner iProxyScanner;
+
+    private static Tags tags;
 
     public static PrintWriter getStdout() {
         return stdout;
@@ -64,6 +67,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static int SHOW_MSG_LEVEL = LOG_DEBUG;  //显示消息级别
 
+    public static  String configName = "finger-important.json";
+
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
         this.callbacks = callbacks;
@@ -74,7 +79,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
         SwingUtilities.invokeLater(new Runnable() { public void run() {
             // 读取配置文件参数
-            String configName = "finger-important.json";
             String configJson = ReadPluginConfFile(callbacks, configName);
             // 加载配置规则
             if(configJson != null && configJson != ""){
@@ -85,41 +89,17 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                 if (fingerprintRules != null && !fingerprintRules.isEmpty()){
                     for (int i = 0 ; i < fingerprintRules.size(); i ++){
                         FingerPrintRule rule = fingerprintRules.get(i);
-
-                        if (rule.getIsOpen())
-                            switch (rule.getType()) {
-                                case "CONF_NEED_RECORD_STATUS":
-                                    CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
-                                    break;
-
-                                case "CONF_BLACK_URL_HOSTS":
-                                    CONF_BLACK_URL_HOSTS.addAll(rule.getKeyword());
-                                    break;
-                                case "CONF_BLACK_URL_PATH":
-                                    CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
-                                    break;
-                                case "CONF_BLACK_URL_EXT":
-                                    CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
-                                    break;
-
-                                case "CONF_EXTRACT_SUFFIX":
-                                    CONF_EXTRACT_SUFFIX.addAll(rule.getKeyword());
-                                    break;
-
-                                case "CONF_BLACK_PATH_KEYS":
-                                    CONF_BLACK_PATH_KEYS.addAll(rule.getKeyword());
-                                    break;
-                                case "CONF_BLACK_PATH_EQUALS":
-                                    CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
-                                    break;
-                                default:
-                                    break;
-                            }
+                        if (rule.getIsOpen()) {
+                            setActionByRuleInfo(rule);
+                        }
                     }
 
                     stdout_println(LOG_INFO, String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
                 }
             }
+
+            //加载UI
+            tags = new Tags(callbacks, extensionName);
 
             //初始化数据配置
             dbService = DBService.getInstance();
@@ -137,6 +117,37 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
         //表示打印成功
         stdout_println(LOG_INFO, String.format("[+] %s Load success ...", this.extensionName));
+    }
+
+    public static void setActionByRuleInfo(FingerPrintRule rule) {
+        switch (rule.getType()) {
+            case "CONF_NEED_RECORD_STATUS":
+                CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
+                break;
+
+            case "CONF_BLACK_URL_HOSTS":
+                CONF_BLACK_URL_HOSTS.addAll(rule.getKeyword());
+                break;
+            case "CONF_BLACK_URL_PATH":
+                CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
+                break;
+            case "CONF_BLACK_URL_EXT":
+                CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
+                break;
+
+            case "CONF_EXTRACT_SUFFIX":
+                CONF_EXTRACT_SUFFIX.addAll(rule.getKeyword());
+                break;
+
+            case "CONF_BLACK_PATH_KEYS":
+                CONF_BLACK_PATH_KEYS.addAll(rule.getKeyword());
+                break;
+            case "CONF_BLACK_PATH_EQUALS":
+                CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
