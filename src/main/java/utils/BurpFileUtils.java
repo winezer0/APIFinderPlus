@@ -2,9 +2,10 @@ package utils;
 
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
-import burp.IExtensionHelpers;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,9 +39,10 @@ public class BurpFileUtils {
      * @param filePath 文本文件的路径
      * @return 文件内容字符串，如果发生错误则返回null
      */
-    public static String readFileToString(String filePath) {
+    public static String readFileToString(String filePath, Charset charsetName) {
         StringBuilder content = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(filePath), charsetName))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line).append("\n");
@@ -53,11 +55,15 @@ public class BurpFileUtils {
         return content.toString();
     }
 
+    public static String readFileToString(String filePath) {
+        return readFileToString(filePath, StandardCharsets.UTF_8);
+    }
+
     /**
-     * 从jar包中读取资源文件内容到字符串
-     * @param resourceName 资源的路径（例如："com/example/myfile.txt"）
-     * @return 文件内容字符串，如果发生错误则返回null
-     */
+         * 从jar包中读取资源文件内容到字符串
+         * @param resourceName 资源的路径（例如："com/example/myfile.txt"）
+         * @return 文件内容字符串，如果发生错误则返回null
+         */
     public static String readResourceToString(String resourceName) {
         StringBuilder content = new StringBuilder();
         try (InputStream inputStream = BurpFileUtils.class.getClassLoader().getResourceAsStream(resourceName);
@@ -134,5 +140,25 @@ public class BurpFileUtils {
     public static String getPluginDirFilePath(String fileName) {
         Path path = Paths.get(getPluginPath(BurpExtender.getCallbacks()), fileName);
         return path.toString();
+    }
+
+    /**
+     * 简单的保存字符串到文件,不处理报错信息
+     * @param file
+     * @param content
+     * @throws IOException
+     */
+    public static void writeToFile(File file, String content) throws IOException {
+        // 使用UTF-8编码写入文件
+        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+        writer.write(content);
+        writer.close();
+    }
+
+    public static void writeToPluginPathFile(String configName, String content) throws IOException  {
+        // 使用UTF-8编码写入文件
+        String pluginDirFilePath = getPluginDirFilePath(configName);
+        File fileToSave = new File(pluginDirFilePath);
+        writeToFile(fileToSave, content);
     }
 }

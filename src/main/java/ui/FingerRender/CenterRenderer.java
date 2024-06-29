@@ -1,4 +1,4 @@
-package ui.renderer;
+package ui.FingerRender;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

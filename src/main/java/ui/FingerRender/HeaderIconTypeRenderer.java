@@ -1,4 +1,4 @@
-package ui.renderer;
+package ui.FingerRender;
 
 
 import utils.UiUtils;
@@ -14,9 +14,9 @@ public class HeaderIconTypeRenderer extends DefaultTableCellRenderer {
 
     public HeaderIconTypeRenderer() {
         super();
-        setHorizontalAlignment(JLabel.CENTER); // 仅需设置一次
-        setHorizontalTextPosition(JLabel.LEFT);
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setHorizontalAlignment(JLabel.CENTER); //仅需设置一次 设置水平对齐方式
+        setHorizontalTextPosition(JLabel.LEFT);  //设置文本相对于图标的水平位置
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); //更改鼠标光标形状 设置为手形
     }
 
     @Override

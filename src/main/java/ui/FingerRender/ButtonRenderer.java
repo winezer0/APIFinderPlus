@@ -1,4 +1,4 @@
-package ui.renderer;
+package ui.FingerRender;
 
 import burp.BurpExtender;
 import model.FingerPrintRule;
