@@ -93,7 +93,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                             setActionByRuleInfo(rule);
                         }
                     }
-
                     stdout_println(LOG_INFO, String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
                 }
             }

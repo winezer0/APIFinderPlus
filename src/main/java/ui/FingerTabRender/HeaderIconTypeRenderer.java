@@ -1,4 +1,4 @@
-package ui.FingerRender;
+package ui.FingerTabRender;
 
 
 import utils.UiUtils;

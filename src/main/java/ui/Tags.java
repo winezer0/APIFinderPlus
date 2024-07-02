@@ -8,23 +8,22 @@ import java.awt.*;
 
 
 public class Tags implements ITab {
-
     private final JTabbedPane tabs;
     private final String tagName;
-    private FingerConfigTab fingerConfigTab;
-//    private final MainPanel mailPanel;
+    private final FingerConfigTab fingerConfigTab;
+    private final MainPanel mainPanel;
 
     public Tags(IBurpExtenderCallbacks callbacks, String name){
         this.tagName = name;
 
         // 定义tab标签页
-        tabs = new JTabbedPane();
+        this.tabs = new JTabbedPane();
 
-        this.fingerConfigTab = new FingerConfigTab();
-        tabs.add("配置", this.fingerConfigTab);
+        this.fingerConfigTab = FingerConfigTab.getInstance();
+        this.tabs.add("配置", this.fingerConfigTab);
 
-        //this.mailPanel = new MainPanel(callbacks, name);
-        //tabs.add("主页", MainPanel.getContentPane());
+        this.mainPanel = MainPanel.getInstance(callbacks);
+        this.tabs.add("主页", this.mainPanel.getContentPane(callbacks));
 
         // 将整个tab加载到平台即可
         callbacks.customizeUiComponent(tabs);

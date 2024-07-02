@@ -1,5 +1,7 @@
 package utils;
 
+import burp.IHttpService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
@@ -28,4 +30,34 @@ public class UiUtils {
         return new ImageIcon(newImg);
     }
 
+    public static String encodeForHTML(String input) {
+        if(input == null) {
+            return "";
+        }
+        return input.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#x27;")
+                .replace("/", "&#x2F;");
+    }
+
+    public static IHttpService iHttpService(String host, int port, String protocol){
+        return new IHttpService() {
+            @Override
+            public String getHost() {
+                return host;
+            }
+
+            @Override
+            public int getPort() {
+                return port;
+            }
+
+            @Override
+            public String getProtocol() {
+                return protocol;
+            }
+        };
+    }
 }

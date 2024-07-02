@@ -1,13 +1,14 @@
 package ui;
 
 import burp.BurpExtender;
+import burp.IBurpExtenderCallbacks;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
-import ui.FingerRender.ButtonRenderer;
-import ui.FingerRender.CenterRenderer;
-import ui.FingerRender.HeaderIconTypeRenderer;
+import ui.FingerTabRender.ButtonRenderer;
+import ui.FingerTabRender.CenterRenderer;
+import ui.FingerTabRender.HeaderIconTypeRenderer;
 import utils.BurpFileUtils;
 import utils.UiUtils;
 
@@ -44,6 +45,19 @@ public class FingerConfigTab extends JPanel {
     public Set<String> uniqueTypes = new HashSet<>();
 
     public static final String String_All_Type = "全部类型";
+
+
+    private static volatile FingerConfigTab instance; //实现单例模式
+    public static FingerConfigTab getInstance() {
+        if (instance == null) {
+            synchronized (FingerConfigTab.class) {
+                if (instance == null) {
+                    instance = new FingerConfigTab();
+                }
+            }
+        }
+        return instance;
+    }
 
     public FingerConfigTab() {
         //在FingerConfigTab类中设置该容器的默认布局为BorderLayout，为后续向容器中添加组件并控制这些组件的布局奠定了基础。这一步是构建用户界面时组织和排列组件的关键步骤之一。
