@@ -1,7 +1,6 @@
 package ui;
 
 import burp.BurpExtender;
-import burp.IBurpExtenderCallbacks;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
 import model.FingerPrintRule;
@@ -15,7 +14,10 @@ import utils.UiUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
-import static burp.BurpExtender.*;
+import static burp.BurpExtender.setActionByRuleInfo;
 import static utils.BurpPrintUtils.stderr_println;
 import static utils.BurpPrintUtils.stdout_println;
 

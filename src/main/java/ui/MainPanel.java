@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class MainPanel implements IMessageEditorController {
-    private static JPanel contentPane = new JPanel(); //整个面板
+public class MainPanel extends JPanel implements IMessageEditorController {
+    //JPanelprivate static JPanel contentPane = new JPanel(); //整个面板
     private static volatile MainPanel instance; //实现单例模式
 
     private static JTable table; //表格UI
@@ -54,19 +54,22 @@ public class MainPanel implements IMessageEditorController {
         }
         return instance;
     }
-
-    public JPanel getContentPane(IBurpExtenderCallbacks callbacks){
-        if (contentPane == null) {
-            MainPanel.getInstance(callbacks);
-        }
-        return contentPane;
-    }
+//
+//    public JPanel getContentPane(IBurpExtenderCallbacks callbacks){
+//        if (contentPane == null) {
+//            MainPanel.getInstance(callbacks);
+//        }
+//        return contentPane;
+//    }
 
     public MainPanel(IBurpExtenderCallbacks callbacks) {
-        contentPane = new JPanel();  //JPanel是Swing库中的一个容器类，通常用于组织和布置其他GUI组件（如按钮、文本框等）。
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5)); //使contentPane四周各有了5像素的空白边距
-        contentPane.setLayout(new BorderLayout(0, 0)); //设置了contentPane的布局管理器为BorderLayout。
-        // BorderLayout 将容器分为五个区域：北(North)、南(South)、东(East)、西(West)和中(Center)。每个区域可以放置一个组件，
+//        contentPane = new JPanel();  //JPanel是Swing库中的一个容器类，通常用于组织和布置其他GUI组件（如按钮、文本框等）。
+//        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5)); // 四周各有了5像素的空白边距
+//        contentPane.setLayout(new BorderLayout(0, 0)); //设置 布局管理器为BorderLayout。
+//        // BorderLayout 将容器分为五个区域：北(North)、南(South)、东(East)、西(West)和中(Center)。每个区域可以放置一个组件，
+
+        setBorder(new EmptyBorder(5, 5, 5, 5));
+        setLayout(new BorderLayout(0, 0));
 
         // 主分隔面板
         // JSplitPane可以包含两个（或更多）子组件，允许用户通过拖动分隔条来改变两个子组件的相对大小。
@@ -90,8 +93,10 @@ public class MainPanel implements IMessageEditorController {
         mainSplitPane.setBottomComponent(tabs);
 
         //组合最终的内容面板
-        contentPane.add(configPanel, BorderLayout.NORTH);
-        contentPane.add(mainSplitPane, BorderLayout.CENTER);
+//        contentPane.add(configPanel, BorderLayout.NORTH);
+//        contentPane.add(mainSplitPane, BorderLayout.CENTER);
+        add(configPanel, BorderLayout.NORTH);
+        add(mainSplitPane, BorderLayout.CENTER);
 
         // 初始化定时刷新页面函数
         initTimer(10000);
