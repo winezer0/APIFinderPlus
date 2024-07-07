@@ -17,7 +17,7 @@ public class PathTreeTable {
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
             + " req_host_port TEXT NOT NULL,\n"    //请求域名:端口
             + " path_tree TEXT NOT NULL,\n"   //根树的序列化Json数据
-            + " path_num INTEGER NOT NULL DEFAULT 0\n"  //基于多少个路径计算出来的根树,最好使用根树的稳定 hash
+            + " basic_path_num INTEGER NOT NULL DEFAULT 0\n"  //基于多少个路径计算出来的根树,最好使用根树的稳定 hash
             + ");";
 
     //插入数据库
@@ -25,19 +25,19 @@ public class PathTreeTable {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String reqHost = (String) treeObj.get(Constants.REQ_HOST_PORT);
-        Integer pathNum = (Integer) treeObj.get(Constants.PATH_NUM);
+        Integer basicPathNum = (Integer) treeObj.get(Constants.BASIC_PATH_NUM);
         JSONObject pathTree = (JSONObject) treeObj.get(Constants.PATH_TREE);
 
         //查询
-        String checkSql = "SELECT * FROM tableName WHERE req_host_port = ?"
+        String checkSql = "SELECT * FROM tableName WHERE req_host_port = ?;"
                 .replace("tableName", tableName);
 
         //插入
-        String insertSql = "INSERT INTO tableName (req_host_port, path_tree, path_num) VALUES (?, ?, ?)"
+        String insertSql = "INSERT INTO tableName (req_host_port, path_tree, basic_path_num) VALUES (?, ?, ?);"
                 .replace("tableName", tableName);
 
         //更新
-        String updateSQL = "UPDATE tableName SET path_tree = ?, path_num = ? WHERE id = ?;"
+        String updateSQL = "UPDATE tableName SET path_tree = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -49,7 +49,7 @@ public class PathTreeTable {
                 //记录存在,需要更新
                 int selectedId = rs.getInt("id");
                 String oldPathTree = rs.getString("path_tree");
-                int oldPathNum = rs.getInt("path_num");
+                int oldBasicPathNum = rs.getInt("basic_path_num");
 
                 //合并新旧Json树
                 JSONObject newTree = pathTree;
@@ -59,14 +59,14 @@ public class PathTreeTable {
                 }
 
                 //合并新旧path num
-                int newPathNum = pathNum;
-                if (newPathNum > 0)
-                    newPathNum = oldPathNum + pathNum;
+                int newBasicPathNum = basicPathNum;
+                if (newBasicPathNum > 0)
+                    newBasicPathNum = oldBasicPathNum + basicPathNum;
 
                 //更新索引对应的数据
                 try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                     updateStatement.setString(1, newTree.toJSONString());
-                    updateStatement.setInt(2, newPathNum);
+                    updateStatement.setInt(2, newBasicPathNum);
                     updateStatement.setInt(3, selectedId);
                     int affectedRows = updateStatement.executeUpdate();
                     if (affectedRows > 0) {
@@ -78,7 +78,7 @@ public class PathTreeTable {
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, reqHost);
                     insertStmt.setString(2, pathTree.toJSONString());
-                    insertStmt.setInt(3, pathNum);
+                    insertStmt.setInt(3, basicPathNum);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -111,10 +111,8 @@ public class PathTreeTable {
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
-                String pathTree = rs.getString("path_tree");
-                int pathNum = rs.getInt("path_num");
-                pathTreeData.put(Constants.PATH_TREE, pathTree);
-                pathTreeData.put(Constants.PATH_NUM, pathNum);
+                pathTreeData.put(Constants.PATH_TREE, rs.getString("path_tree"));
+                pathTreeData.put(Constants.BASIC_PATH_NUM, rs.getInt("basic_path_num"));
             }
         } catch (Exception e) {
             stderr_println(String.format("[-] Error Fetch One table [%s] -> Error:[%s]", tableName, e.getMessage()));

@@ -1,136 +1,107 @@
 package model;
 
-import burp.IHttpService;
-
-/**
- * @author： shaun
- * @create： 2024/4/9 22:12
- * @description：TODO
- */
 
 public class ApiDataModel {
-    final String id;
-    final String url;
-    IHttpService iHttpService;
-    String status;
-    final String isJsFindUrl;
-    final String method;
-    String pathNumber;
-    Boolean havingImportant;
-    String result ;
-    String time;
-    String listStatus;
-    String describe;
-    String resultInfo;
-    int requestsResponseIndex;
+    private int msgId;
+    private String msgHash;
+    private String reqUrl;
+    private String reqMethod;
+    private int respStatusCode;
+    private String reqSource;
+    private int findUrlNum;
+    private int findPathNum;
+    private int findInfoNum;
+    private int findApiNum;
+    private int smartApiNum;
+    private String runStatus;
+    private int basicPathNum;
 
-
-
-    public ApiDataModel(String listStatus, String id, String url, String pathNumber, Boolean havingImportant, String result, int requestsResponseIndex, IHttpService iHttpService, String time, String status, String isJsFindUrl, String method, String describe, String resultInfo) {
-        this.listStatus = listStatus;
-        this.id = id;
-        this.url = url;
-        this.pathNumber = pathNumber;
-        this.havingImportant = havingImportant;
-        this.result = result;
-        this.requestsResponseIndex = requestsResponseIndex;
-        this.iHttpService = iHttpService;
-        this.time = time;
-        this.status = status;
-        this.isJsFindUrl = isJsFindUrl;
-        this.method = method;
-        this.describe = describe;
-        this.resultInfo = resultInfo;
+    // 构造函数
+    public ApiDataModel(int msgId, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
+                        String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
+                        int findApiNum, int smartApiNum, String runStatus, int basicPathNum) {
+        this.msgId = msgId;
+        this.msgHash = msgHash;
+        this.reqUrl = reqUrl;
+        this.reqMethod = reqMethod;
+        this.respStatusCode = respStatusCode;
+        this.reqSource = reqSource;
+        this.findUrlNum = findUrlNum;
+        this.findPathNum = findPathNum;
+        this.findInfoNum = findInfoNum;
+        this.findApiNum = findApiNum;
+        this.smartApiNum = smartApiNum;
+        this.runStatus = runStatus;
+        this.basicPathNum = basicPathNum;
     }
 
-
-    public String getDescribe() {
-        return describe;
+    public Object[] toRowDataArray() {
+        return new Object[]{
+                this.getMsgId(),
+                this.getMsgHash(),
+                this.getReqUrl(),
+                this.getReqMethod(),
+                this.getRespStatusCode(),
+                this.getReqSource(),
+                this.getFindUrlNum(),
+                this.getFindPathNum(),
+                this.getFindInfoNum(),
+                this.getFindApiNum(),
+                this.getSmartApiNum(),
+                this.getRunStatus(),
+                this.getBasicPathNum()
+        };
     }
 
-    public void setDescribe(String describe) {
-        this.describe = describe;
+    public int getMsgId() {
+        return msgId;
     }
 
-    public void setResultInfo(String resultInfo) {
-        this.resultInfo = resultInfo;
+    public String getMsgHash() {
+        return msgHash;
     }
 
-    public String getResultInfo() {
-        return resultInfo;
+    public String getReqUrl() {
+        return reqUrl;
     }
 
-    public int getRequestsResponseIndex(){
-        return this.requestsResponseIndex;
+    public String getReqMethod() {
+        return reqMethod;
     }
 
-    public IHttpService getiHttpService(){
-        return this.iHttpService;
+    public int getRespStatusCode() {
+        return respStatusCode;
     }
 
-    public String getListStatus(){
-        return this.listStatus;
+    public String getReqSource() {
+        return reqSource;
     }
 
-    public void setListStatus(String listStatus){
-        this.listStatus = listStatus;
+    public int getFindUrlNum() {
+        return findUrlNum;
     }
 
-
-    public String getId(){
-        return this.id;
+    public int getFindPathNum() {
+        return findPathNum;
     }
 
-    public String getUrl(){
-        return this.url;
+    public int getFindInfoNum() {
+        return findInfoNum;
     }
 
-    public String getPATHNumber(){
-        return this.pathNumber;
+    public int getFindApiNum() {
+        return findApiNum;
     }
 
-    public void setPathNumber(String pathNumber){
-        this.pathNumber = pathNumber;
+    public int getSmartApiNum() {
+        return smartApiNum;
     }
 
-    public String getMethod(){
-        return this.method;
+    public String getRunStatus() {
+        return runStatus;
     }
 
-    public String getStatus(){
-        return this.status;
+    public int getBasicPathNum() {
+        return basicPathNum;
     }
-
-    public void setStatus(String status){
-        this.status = status;
-    }
-
-    public String getIsJsFindUrl(){
-        return this.isJsFindUrl;
-    }
-
-    public Boolean getHavingImportant(){
-        return this.havingImportant;
-    }
-
-    public void setHavingImportant(Boolean havingImportant){
-        this.havingImportant = havingImportant;
-    }
-
-    public String getResult(){
-        return this.result;
-    }
-
-    public void setResult(String result){
-        this.result = result;
-    }
-
-    public String getTime(){
-        return this.time;
-    }
-
-    public void setTime(String time){
-        this.time = time;
-    }
-
 }

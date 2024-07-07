@@ -1,13 +1,12 @@
 package dataModel;
 
+import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 
 import static utils.BurpPrintUtils.*;
 
@@ -67,31 +66,55 @@ public class ReqMsgDataTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-    public static String msg_hash = "msg_hash";
-    public static String req_url = "req_url";
-    public static String req_bytes = "req_bytes";
-    public static String resp_bytes = "resp_bytes";
+    /**
+     * 基于id获取对应的数据 考虑更换为msg_hash
+     */
+    public static synchronized JSONObject fetchMsgDataById(Integer msgDataIndex){
+        JSONObject msgData = new JSONObject();
 
-    public static synchronized Map<String, Object> fetchMsgDataById(Integer msgDataIndex){
-        Map<String, Object> msgData = null;
-
-        String selectMsgDataByIdSql = "SELECT * FROM tableName WHERE id = ?"
+        String sql = "SELECT * FROM tableName WHERE id = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectMsgDataByIdSql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, msgDataIndex);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    msgData = new HashMap<>();
-                    msgData.put(msg_hash, rs.getString("msg_hash"));
-                    msgData.put(req_url, rs.getString("req_url"));
-                    msgData.put(req_bytes, rs.getBytes("req_bytes"));
-                    msgData.put(resp_bytes, rs.getBytes("resp_bytes"));
+                    msgData.put(Constants.MSG_HASH, rs.getString("msg_hash"));
+                    msgData.put(Constants.REQ_URL, rs.getString("req_url"));
+                    msgData.put(Constants.REQ_BYTES, rs.getBytes("req_bytes"));
+                    msgData.put(Constants.RESP_BYTES, rs.getBytes("resp_bytes"));
                 }
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By Id: %s -> %s", msgDataIndex, e.getMessage()));
+        }
+        return msgData;
+    }
+
+
+    /**
+     * 根据消息ID查询请求内容
+     */
+    public static synchronized JSONObject fetchMsgDataByMsgHash(String msgHash){
+        JSONObject msgData = new JSONObject();
+
+        String sql = "SELECT * FROM tableName WHERE msg_hash = ?;"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, msgHash);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    msgData.put(Constants.MSG_HASH, rs.getString("msg_hash"));
+                    msgData.put(Constants.REQ_URL, rs.getString("req_url"));
+                    msgData.put(Constants.REQ_BYTES, rs.getBytes("req_bytes"));
+                    msgData.put(Constants.RESP_BYTES, rs.getBytes("resp_bytes"));
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By Msg Hash: %s -> %s", Constants.MSG_HASH, e.getMessage()));
         }
         return msgData;
     }

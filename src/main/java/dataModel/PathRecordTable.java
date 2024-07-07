@@ -102,7 +102,7 @@ public class PathRecordTable {
     //获取所有需要处理的URl数据，并且标记
     public static synchronized JSONArray fetchUnhandledRecordUrls() {
         // 创建一个列表或集合来存储查询结果
-        JSONArray resultsList = new JSONArray();
+        JSONArray jsonArray = new JSONArray();
 
         //1、标记需要处理的数据 更新状态为解析中
         String updateMarkSQL1 = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id in (SELECT id FROM tableName WHERE run_status = 'ANALYSE_WAIT');"
@@ -136,7 +136,7 @@ public class PathRecordTable {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
                         jsonObject.put(Constants.REQ_PATH_DIRS, rs.getString("req_path_dirs"));
-                        resultsList.add(jsonObject);
+                        jsonArray.add(jsonObject);
                     }
 
                     //更新查询状态
@@ -151,6 +151,6 @@ public class PathRecordTable {
             e.printStackTrace();
         }
 
-        return resultsList;
+        return jsonArray;
     }
 }

@@ -1,10 +1,12 @@
 package dataModel;
 
 import model.HttpMsgInfo;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+
 import static utils.BurpPrintUtils.*;
 
 public class ReqDataTable {
@@ -15,9 +17,8 @@ public class ReqDataTable {
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName ("
             .replace("tableName", tableName)
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-
-            + "msg_id TEXT NOT NULL,"
-            + "msg_hash TEXT NOT NULL,"
+            + "msg_id TEXT NOT NULL,"   //暂时没有什么用处
+            + "msg_hash TEXT NOT NULL,"  //作为实际的消息独立标记
             + "req_url TEXT NOT NULL,"
             + "req_method TEXT NOT NULL,"
             + "resp_status_code TEXT NOT NULL,"
@@ -114,5 +115,26 @@ public class ReqDataTable {
         }
 
         return msgDataIndex;
+    }
+
+
+    public static synchronized int getReqDataCount() {
+        int count = 0;
+
+        String selectSQL = "SELECT COUNT(*) FROM table WHERE run_status != 'ANALYSE_WAIT'"
+                .replace("table",tableName)
+                .replace("ANALYSE_WAIT",Constants.ANALYSE_WAIT);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement selectStatement = conn.prepareStatement(selectSQL);
+             ResultSet rs = selectStatement.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("Counts Table [%s] Error: %s",tableName, e.getMessage() ));
+        }
+        return count;
     }
 }

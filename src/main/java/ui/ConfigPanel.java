@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDateTime;
 
 public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;
@@ -266,28 +267,28 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-//        // 为菜单项添加 Action Listener
-//        resetItem.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // 清空表格模型中的所有行数据
-//                MainPanel.clearAllData();
-//                setFlashButtonTrue();
-//            }
-//        });
+        // 为菜单项添加 Action Listener
+        resetItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 清空表格模型中的所有行数据
+                MainPanel.clearAllData();
+                setFlashButtonTrue();
+            }
+        });
 
-//        // 检索按钮事件监听器
-//        searchButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                String searchText = searchField.getText();
-//                String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-//                MainPanel.showFilter(selectedOption, searchText);
-//                setFlashButtonFalse();
-//                MainPanel.operationStartTime = LocalDateTime.now();
-//            }
-//        });
-//
+        // 检索按钮事件监听器
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchText = searchField.getText();
+                String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
+                MainPanel.showFilter(selectedOption, searchText);
+                setFlashButtonFalse();
+                MainPanel.operationStartTime = LocalDateTime.now();
+            }
+        });
+
 
 //        searchField.addActionListener(new ActionListener() {
 //            @Override
@@ -330,24 +331,25 @@ public class ConfigPanel extends JPanel {
 
 
 
-//    public static void setFlashButtonTrue(){
-//        flashButton.setSelected(false);
-//        flashText.setText("自动每10秒刷新表格中");
-//    }
-//
-//    public static void setFlashButtonFalse(){
-//        flashButton.setSelected(true);
-//        flashText.setText("暂停定时刷新表格");
-//    }
-//
-//    public static boolean getFlushButtonStatus(){
-//        // 检查按钮的选中状态
-//        if (flashButton.isSelected()) {
-//            // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
-//            return true;
-//        } else {
-//            // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
-//            return false;
-//        }
-//    }
+    public static void setFlashButtonTrue(){
+        flashButton.setSelected(false);
+        flashText.setText("自动每10秒刷新表格中");
+    }
+
+
+    public static void setFlashButtonFalse(){
+        flashButton.setSelected(true);
+        flashText.setText("暂停定时刷新表格");
+    }
+
+    public static boolean getFlushButtonStatus(){
+        // 检查按钮的选中状态
+        if (flashButton.isSelected()) {
+            // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
+            return true;
+        } else {
+            // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
+            return false;
+        }
+    }
 }

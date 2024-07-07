@@ -9,9 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Map;
 
-import static model.InfoAnalyse.*;
+import static burp.InfoAnalyse.*;
 
 public class InfoAnalyseTable {
     //数据表名称
@@ -109,7 +108,7 @@ public class InfoAnalyseTable {
     }
 
     //获取一条需要分析的Path数据
-    public static synchronized Map<String, Object> fetchUnhandledSmartApiData(){
+    public static synchronized JSONObject fetchUnhandledSmartApiData(){
         JSONObject pathData = new JSONObject();
 
         // 首先选取一条记录的ID
@@ -126,19 +125,14 @@ public class InfoAnalyseTable {
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int selectedId = rs.getInt("id");
-                    String reqUrl = rs.getString("req_url");
-                    String reqHostPort = rs.getString("req_host_port");
-                    String findPath = rs.getString("find_path");
-
-                    pathData.put(Constants.DATA_ID, selectedId);
-                    pathData.put(Constants.REQ_URL, reqUrl);
-                    pathData.put(Constants.REQ_HOST_PORT, reqHostPort);
-                    pathData.put(Constants.FIND_PATH, findPath);
+                    pathData.put(Constants.DATA_ID, rs.getInt("id"));
+                    pathData.put(Constants.REQ_URL, rs.getString("req_url"));
+                    pathData.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
+                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
                     
                     //更新索引对应的数据
                     try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-                        updateStatement.setInt(1, selectedId);
+                        updateStatement.setInt(1, rs.getInt("id"));
                         updateStatement.executeUpdate();
                     }
                 }
@@ -156,14 +150,14 @@ public class InfoAnalyseTable {
         String updateSQL = "UPDATE tableName SET smart_api = ?, smart_api_num = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        int pathNum = (int) analyseApiInfo.get(Constants.PATH_NUM);
+        int basicPathNum = (int) analyseApiInfo.get(Constants.BASIC_PATH_NUM);
         JSONArray findUrls = (JSONArray) analyseApiInfo.get(Constants.FIND_PATH);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
             updateStatement.setString(1, findUrls.toJSONString());
             updateStatement.setInt(2, findUrls.size());
-            updateStatement.setInt(3, pathNum);
+            updateStatement.setInt(3, basicPathNum);
             updateStatement.setInt(4, dataId);
             int affectedRows = updateStatement.executeUpdate();
             if (affectedRows > 0) {
@@ -189,8 +183,7 @@ public class InfoAnalyseTable {
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int selectedId = rs.getInt("id");
-                    generatedId = selectedId;
+                    generatedId = rs.getInt("id");
                 }
             }
         } catch (Exception e) {
@@ -199,38 +192,30 @@ public class InfoAnalyseTable {
         return generatedId;
     }
 
-    //获取一条需要更新的Path数据
-    public static synchronized Map<String, Object> fetchNeedUpdatedSmartApiData(){
+
+    //获取指定msgHash的数据
+    public static synchronized JSONObject fetchAnalyseResultByMsgHash(String msgHash){
         JSONObject pathData = new JSONObject();
 
-        // 首先选取一条记录的ID
-        String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path,A.basic_path_num, B.path_num " +
-                "From table1 A LEFT JOIN table2 B ON A.req_host_port = B.req_host_port " +
-                "WHERE A.run_status = 'ANALYSE_ING' AND B.path_num > A.basic_path_num Limit 1;")
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("table1", tableName)
-                .replace("table2", PathTreeTable.tableName);
+        String selectSQL = "SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api FROM tableName WHERE msg_hash = ?;"
+                .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int selectedId = rs.getInt("id");
-                    String reqUrl = rs.getString("req_url");
-                    String reqHostPort = rs.getString("req_host_port");
-                    String findPath = rs.getString("find_path");
-
-                    pathData.put(Constants.DATA_ID, selectedId);
-                    pathData.put(Constants.REQ_URL, reqUrl);
-                    pathData.put(Constants.REQ_HOST_PORT, reqHostPort);
-                    pathData.put(Constants.FIND_PATH, findPath);
+                    pathData.put(Constants.MSG_HASH, rs.getString("msg_hash"));
+                    pathData.put(Constants.FIND_URL, rs.getString("find_url"));
+                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
+                    pathData.put(Constants.FIND_INFO, rs.getString("find_info"));
+                    pathData.put(Constants.FIND_API, rs.getString("find_api"));
+                    pathData.put(Constants.SMART_API, rs.getString("smart_api"));
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Analyse Result Data By MsgHash: %s", e.getMessage()));
         }
         return pathData;
     }
-
-
 }

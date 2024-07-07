@@ -1,10 +1,9 @@
 package ui;
 
 import burp.*;
-import dataModel.Constants;
+import com.alibaba.fastjson2.JSONObject;
+import dataModel.*;
 import model.ApiDataModel;
-import ui.MainTabRender.IconTableCellRenderer;
-import ui.MainTabRender.IsJsFindUrlRenderer;
 import utils.UiUtils;
 
 import javax.swing.Timer;
@@ -16,12 +15,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class MainPanel extends JPanel implements IMessageEditorController {
-    //JPanelprivate static JPanel contentPane = new JPanel(); //整个面板
     private static volatile MainPanel instance; //实现单例模式
 
     private static JTable table; //表格UI
@@ -29,20 +26,20 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
     private static IMessageEditor requestTextEditor;  //请求消息面板
     private static IMessageEditor responseTextEditor; //响应消息面板
-    private static byte[] requestsData; //请求数据
-    private static byte[] responseData; //响应数据
-    private static IHttpService iHttpService;
+
+    private static JEditorPane findInfoTextPane;  //敏感信息文本面板
+
     private static ITextEditor findUrlTEditor; //显示找到的URL
+    private static ITextEditor findPathTEditor; //显示找到的PATH
+    private static ITextEditor findApiTEditor; //基于PATH计算出的URL
+    private static ITextEditor smartApiTEditor; //基于树算法计算出的URL
 
-    private static JEditorPane resultTextPane = new JEditorPane("text/html", "");  //结果文本面板
-    private static JScrollPane scrollPane = new JScrollPane(resultTextPane);  //可以滚动的结果面板
+    private static byte[] requestsData; //请求数据,设置为全局变量,便于IMessageEditorController函数调用
+    private static byte[] responseData; //响应数据,设置为全局变量,便于IMessageEditorController函数调用
+    private static IHttpService iHttpService; //请求服务信息,设置为全局变量,便于IMessageEditorController函数调用
 
-    private static String historySearchText = ""; //历史搜索文本
-
-    private static int selectRow = 0;
     private static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
-    private static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
-
+    public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
 
     public static MainPanel getInstance(IBurpExtenderCallbacks callbacks) {
         if (instance == null) {
@@ -54,22 +51,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
         return instance;
     }
-//
-//    public JPanel getContentPane(IBurpExtenderCallbacks callbacks){
-//        if (contentPane == null) {
-//            MainPanel.getInstance(callbacks);
-//        }
-//        return contentPane;
-//    }
+
 
     public MainPanel(IBurpExtenderCallbacks callbacks) {
-//        contentPane = new JPanel();  //JPanel是Swing库中的一个容器类，通常用于组织和布置其他GUI组件（如按钮、文本框等）。
-//        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5)); // 四周各有了5像素的空白边距
-//        contentPane.setLayout(new BorderLayout(0, 0)); //设置 布局管理器为BorderLayout。
-//        // BorderLayout 将容器分为五个区域：北(North)、南(South)、东(East)、西(West)和中(Center)。每个区域可以放置一个组件，
+        //contentPane = new JPanel();
+        //contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        //contentPane.setLayout(new BorderLayout(0, 0));
 
+        // EmptyBorder 四周各有了5像素的空白边距
         setBorder(new EmptyBorder(5, 5, 5, 5));
+        ////BorderLayout 将容器分为五个区域：北 南 东 西 中 每个区域可以放置一个组件，
         setLayout(new BorderLayout(0, 0));
+
 
         // 主分隔面板
         // JSplitPane可以包含两个（或更多）子组件，允许用户通过拖动分隔条来改变两个子组件的相对大小。
@@ -93,13 +86,28 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         mainSplitPane.setBottomComponent(tabs);
 
         //组合最终的内容面板
-//        contentPane.add(configPanel, BorderLayout.NORTH);
-//        contentPane.add(mainSplitPane, BorderLayout.CENTER);
         add(configPanel, BorderLayout.NORTH);
         add(mainSplitPane, BorderLayout.CENTER);
 
         // 初始化定时刷新页面函数
         initTimer(10000);
+
+        //初始化表格数据
+        initDataTableUIData();
+    }
+
+    /**
+     * 初始化表格数据
+     */
+    private void initDataTableUIData() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                //获取所有数据
+                ArrayList<ApiDataModel> allReqAnalyseData  = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
+                //将数据赋值给表模型
+                populateModelFromJsonArray(model, allReqAnalyseData);
+            }
+        });
     }
 
     /**
@@ -107,7 +115,21 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      */
     private void initDataTableUI() {
         // 数据展示面板
-        model = new DefaultTableModel(new Object[]{"#", "ID", "URl", "PATH Number", "Method", "status", "isJsFindUrl", "HavingImportant", "Result", "describe", "Time"}, 0) {
+        model = new DefaultTableModel(new Object[]{
+                "msg_id",
+                "msg_hash",
+                "req_url",
+                "req_method",
+                "resp_status_code",
+                "req_source",
+                "find_url_num",
+                "find_path_num",
+                "find_info_num",
+                "find_api_num",
+                "smart_api_num",
+                "run_status",
+                "basic_path_num",
+        }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 // This will make all cells of the table non-editable
@@ -136,14 +158,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         //设置数据表的宽度 //前两列设置宽度 30px、60px
-        table.getColumnModel().getColumn(0).setMaxWidth(30);
-        table.getColumnModel().getColumn(1).setMaxWidth(60);
-        table.getColumnModel().getColumn(2).setMinWidth(300);
-        table.getColumnModel().getColumn(7).setMinWidth(60);
-        table.getColumnModel().getColumn(8).setMinWidth(150);
-        table.getColumnModel().getColumn(9).setMinWidth(200);
-        table.getColumnModel().getColumn(10).setMinWidth(140);
-
+        tableSetColumnMaxWidth(0, 50);
+        tableSetColumnMaxWidth(1, 100);
+        tableSetColumnMinWidth(2, 300);
+        tableSetColumnMinWidth(11, 50);
+        tableSetColumnMinWidth(12, 50);
 
         //设置表格每列的对齐设置
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer(); //居中对齐的单元格渲染器
@@ -152,22 +171,24 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
         leftRenderer.setHorizontalAlignment(JLabel.LEFT);
 
-        table.getColumnModel().getColumn(0).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(7).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(8).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(9).setCellRenderer(leftRenderer);
-        table.getColumnModel().getColumn(10).setCellRenderer(leftRenderer);
+        tableSetColumnRender(0, leftRenderer);
+        tableSetColumnRender(1, leftRenderer);
+        tableSetColumnRender(2, leftRenderer);
+        tableSetColumnRender(3, centerRenderer);
+        tableSetColumnRender(4, centerRenderer);
+        tableSetColumnRender(5, centerRenderer);
+        tableSetColumnRender(6, centerRenderer);
+        tableSetColumnRender(7, leftRenderer);
+        tableSetColumnRender(8, leftRenderer);
+        tableSetColumnRender(9, leftRenderer);
+        tableSetColumnRender(10, leftRenderer);
+        tableSetColumnRender(11, leftRenderer);
+        tableSetColumnRender(12, leftRenderer);
 
-        IsJsFindUrlRenderer isJsFindUrlRenderer = new IsJsFindUrlRenderer(); //创建 IsJsFindUrl的独特渲染器
-        table.getColumnModel().getColumn(6).setCellRenderer(isJsFindUrlRenderer);
-        IconTableCellRenderer havingImportantRenderer = new IconTableCellRenderer(); //创建 havingImportantRenderer的独特渲染器
-        table.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
+//        IsJsFindUrlRenderer isJsFindUrlRenderer = new IsJsFindUrlRenderer(); //创建 IsJsFindUrl的独特渲染器
+//        table.getColumnModel().getColumn(6).setCellRenderer(isJsFindUrlRenderer);
+//        IconTableCellRenderer havingImportantRenderer = new IconTableCellRenderer(); //创建 havingImportantRenderer的独特渲染器
+//        table.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
 
         //为表格添加点击事件
         //为表格 添加 鼠标监听器
@@ -180,7 +201,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         try {
                             int row = table.rowAtPoint(e.getPoint());
                             if (row >= 0) {
-                                //Todo 暂时注释 updateComponentsBasedOnSelectedRow(row);
+                                updateComponentsBasedOnSelectedRow(row);
                             }
                         }catch (Exception ef) {
                             BurpExtender.getStderr().println("[-] Error click table: " + table.rowAtPoint(e.getPoint()));
@@ -204,7 +225,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             try {
                                 int row = table.getSelectedRow();
                                 if (row >= 0) {
-                                    //暂时注释 updateComponentsBasedOnSelectedRow(row);
+                                    updateComponentsBasedOnSelectedRow(row);
                                 }
                             }catch (Exception ef) {
                                 BurpExtender.getStderr().println("[-] Error KeyEvent.VK_UP OR  KeyEvent.VK_DOWN: ");
@@ -906,6 +927,51 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
     /**
+     * 设置 table 的指定列的最小宽度
+     * @param columnIndex
+     * @param minWidth
+     */
+    private void tableSetColumnMinWidth(int columnIndex, int minWidth) {
+        table.getColumnModel().getColumn(columnIndex).setMinWidth(minWidth);
+    }
+
+    /**
+     *  设置 table 的指定列的最大宽度
+     * @param columnIndex
+     * @param maxWidth
+     */
+    private void tableSetColumnMaxWidth(int columnIndex, int maxWidth) {
+        table.getColumnModel().getColumn(columnIndex).setMaxWidth(maxWidth);
+    }
+
+    /**
+     * 设置 table 指定列的样式
+     * @param columnIndex
+     * @param renderer
+     */
+    private void tableSetColumnRender(int columnIndex, DefaultTableCellRenderer renderer) {
+        table.getColumnModel().getColumn(columnIndex).setCellRenderer(renderer);
+    }
+
+    /**
+     * 把 jsonArray 赋值到 model 中
+     * @param model
+     * @param jsonArray
+     */
+    private void populateModelFromJsonArray(DefaultTableModel model, ArrayList<ApiDataModel> jsonArray) {
+        if (jsonArray.isEmpty()) return;
+
+        Iterator<ApiDataModel> iterator = jsonArray.iterator();
+        while (iterator.hasNext()) {
+            ApiDataModel apiDataModel = iterator.next();
+            Object[] rowData = apiDataModel.toRowDataArray();
+            model.addRow(rowData);
+        }
+        //刷新表数据模型
+        model.fireTableDataChanged();
+    }
+
+    /**
      * 初始化任务定时器
      * @param delay
      */
@@ -917,7 +983,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 // 调用刷新表格的方法
                 try{
-                    //Todo 暂时注释 refreshTableModel();
+                    refreshTableModel();
                 } catch (Exception ep){
                     BurpExtender.getStderr().println("[!] 刷新表格报错， 报错如下：");
                     ep.printStackTrace(BurpExtender.getStderr());
@@ -941,114 +1007,119 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         requestTextEditor = callbacks.createMessageEditor(this, false);
         // 响应的面板
         responseTextEditor = callbacks.createMessageEditor(this, false);
+
+        //可以滚动的结果面板
+        findInfoTextPane = new JEditorPane("text/html", "");
+        JScrollPane findInfoTextScrollPane = new JScrollPane(findInfoTextPane);
+
         // 提取到URL的面板
-        findUrlTEditor = BurpExtender.getCallbacks().createTextEditor();
+        findUrlTEditor = callbacks.createTextEditor();
+        findPathTEditor = callbacks.createTextEditor();
+        findApiTEditor = callbacks.createTextEditor();
+        smartApiTEditor = callbacks.createTextEditor();
 
         tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
         tabs.addTab("Response", responseTextEditor.getComponent()); //显示原始响应
-        tabs.addTab("ExtractInfo", scrollPane); //显示提取的信息
-        tabs.addTab("FindUrlByThisPath", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
+
+        tabs.addTab("findInfo", findInfoTextScrollPane); //显示提取的信息
+
+        tabs.addTab("findUrl", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("findPath", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("findApi", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("smartApi", smartApiTEditor.getComponent()); //显示在这个URL中找到的PATH
         return tabs;
     }
 
-//    private void updateComponentsBasedOnSelectedRow(int row) {
-//        selectRow = row;
-//        String listStatus = (String) table.getModel().getValueAt(row, 0);
-//        String url;
-//        if (listStatus.equals(Constants.TREE_STATUS_COLLAPSE) || listStatus.equals(Constants.TREE_STATUS_EXPAND)) {
-//            url = (String) table.getModel().getValueAt(row, 2);
-//            ApiDataModel apiDataModel = BurpExtender.getDataBaseService().selectApiDataModelByUri(url);
-//            requestsData = BurpExtender.getDataBaseService().selectRequestResponseById(apiDataModel.getRequestsResponseIndex()).get("request");
-//            responseData = BurpExtender.getDataBaseService().selectRequestResponseById(apiDataModel.getRequestsResponseIndex()).get("response");
-//            iHttpService = apiDataModel.getiHttpService();
-//            requestTextEditor.setMessage(requestsData, true);
-//            responseTextEditor.setMessage(responseData, false);
-//            resultTextPane.setText((apiDataModel.getResultInfo()));
-//            findUrlTEditor.setText("-".getBytes());
-//            if (apiDataModel.getListStatus().equals(Constants.TREE_STATUS_COLLAPSE)) {
-//                BurpExtender.getDataBaseService().updateListStatusByUrl(url, Constants.TREE_STATUS_EXPAND);
-//                modelExpand(apiDataModel, row);
-//            } else if (apiDataModel.getListStatus().equals(Constants.TREE_STATUS_EXPAND)) {
-//                BurpExtender.getDataBaseService().updateListStatusByUrl(url, Constants.TREE_STATUS_COLLAPSE);
-//                modeCollapse(apiDataModel, row);
-//            }
-//        } else {
-//            try {
-//                String path = (String) table.getModel().getValueAt(row, 2);
-//                url = findUrlFromPath(row);
-//                ApiDataModel apiDataModel = BurpExtender.getDataBaseService().selectApiDataModelByUri(url);
-//                Map<String, Object> matchPathData = BurpExtender.getDataBaseService().selectPathDataByUrlAndPath(apiDataModel.getUrl(), path);
-//                if (((String)matchPathData.get("status")).equals("等待爬取")){
-//                    resultTextPane.setText(("IS Find From JS: " + matchPathData.get("isJsFindUrl") + "<br>" + "Find js From Url: " + UiUtils.encodeForHTML((String) matchPathData.get("jsFindUrl")) + "<br>等待爬取，爬取后再进行铭感信息探测..."));
-//                    requestTextEditor.setMessage("等待爬取，爬取后再进行铭感信息探测...".getBytes(), false);
-//                    responseTextEditor.setMessage("等待爬取，爬取后再进行铭感信息探测...".getBytes(), false);
-//                    findUrlTEditor.setText("-".getBytes());
-//                }else{
-//
-//                    requestsData = Base64.getDecoder().decode((String) matchPathData.get("requests"));
-//                    responseData = Base64.getDecoder().decode((String) matchPathData.get("response"));
-//                    iHttpService = UiUtils.iHttpService((String) matchPathData.get("host"),
-//                            ((Double) matchPathData.get("port")).intValue(),
-//                            (String) matchPathData.get("protocol"));
-//                    requestTextEditor.setMessage(requestsData, true);
-//                    responseTextEditor.setMessage(responseData, false);
-//                    if (matchPathData.get("isJsFindUrl").equals("N")){
-//                        List<String> resultList = BurpExtender.getDataBaseService().selectPathDataByJsFindUrl((String) matchPathData.get("original_url"));
-//                        if (!resultList.isEmpty()){
-//                            findUrlTEditor.setText((String.join("\r\n", resultList)).getBytes());
-//                        }else{
-//                            findUrlTEditor.setText("-".getBytes());
-//                        }
-//                    }else {
-//                        findUrlTEditor.setText("-".getBytes());
-//                    }
-//
-//                    resultTextPane.setText(("IS Find From JS: " + matchPathData.get("isJsFindUrl") + "<br>" + "Find js From Url: " + UiUtils.encodeForHTML((String) matchPathData.get("jsFindUrl")) + "<br>" +  (String) matchPathData.get("result info")));
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace(BurpExtender.getStderr());
-//            }
-//
-//        }
-//    }
-//
-//    public void refreshTableModel() {
-//        // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-//        int successCount = BurpExtender.getDataBaseService().getApiDataCount();
-//        ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
-//
-//        if (ConfigPanel.getFlushButtonStatus()) {
-//            if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-//                ConfigPanel.setFlashButtonTrue();
-//            }
-//            return;
-//        }
-//
-//        // 在EDT上获取值
-//        final String searchText = ConfigPanel.searchField.getText();
-//        final String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-//
-//        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-//        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-//            @Override
-//            protected Void doInBackground() throws Exception {
-//                // 执行耗时的数据操作
-//                MainPanel.showFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
-//                return null;
-//            }
-//
-//            @Override
-//            protected void done() {
-//                // 更新UI组件
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    public void run() {
-//                        model.fireTableDataChanged(); // 通知模型数据发生了变化，而不是连续插入或删除行
-//                    }
-//                });
-//            }
-//        };
-//        worker.execute();
-//    }
+    /**
+     * 更新表格行对应的下方数据信息
+     * @param row
+     */
+    private void updateComponentsBasedOnSelectedRow(int row) {
+        //1、获取当前行的msgHash
+        String msgHash = (String) table.getModel().getValueAt(row, 1);
+
+        //根据 msgHash值 查询对应的请求体响应体数据
+        JSONObject msgData = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+        //String msgInfoHash = (String) msgData.get(Constants.MSG_HASH);
+        String requestUrl = (String) msgData.get(Constants.REQ_URL);
+        requestsData = (byte[]) msgData.get(Constants.REQ_BYTES);
+        responseData = (byte[]) msgData.get(Constants.RESP_BYTES);
+
+        //显示在UI中
+        iHttpService = UiUtils.getIHttpService(requestUrl);
+        requestTextEditor.setMessage(requestsData, true);
+        responseTextEditor.setMessage(responseData, false);
+
+        //根据 msgHash值 查询api分析结果数据
+        JSONObject analyseResult =  InfoAnalyseTable.fetchAnalyseResultByMsgHash(msgHash);
+        if(!analyseResult.isEmpty()){
+            //analyseResult.get(Constants.MSG_HASH);
+            String findInfo = (String) analyseResult.get(Constants.FIND_INFO);
+
+            String findUrl = (String) analyseResult.get(Constants.FIND_URL);
+            String findPath = (String) analyseResult.get(Constants.FIND_PATH);
+            String findApi = (String) analyseResult.get(Constants.FIND_API);
+            String smartApi = (String) analyseResult.get(Constants.SMART_API);
+
+            //格式化为可输出的类型
+            findInfo = UiUtils.infoJsonArrayFormatHtml(findInfo);
+            findUrl = UiUtils.stringJsonArrayFormat(findUrl);
+            findPath = UiUtils.stringJsonArrayFormat(findPath);
+            findApi = UiUtils.stringJsonArrayFormat(findApi);
+            smartApi = UiUtils.stringJsonArrayFormat(smartApi);
+
+            findInfoTextPane.setText(findInfo);
+            findUrlTEditor.setText(findUrl.getBytes());
+            findPathTEditor.setText(findPath.getBytes());
+            findApiTEditor.setText(findApi.getBytes());
+            smartApiTEditor.setText(smartApi.getBytes());
+        } else {
+            findInfoTextPane.setText("");
+            findUrlTEditor.setText("".getBytes());
+            findPathTEditor.setText("".getBytes());
+            findApiTEditor.setText("".getBytes());
+            smartApiTEditor.setText("".getBytes());
+        }
+    }
+
+    public void refreshTableModel() {
+        //设置成功数量
+        int successCount = ReqDataTable.getReqDataCount();
+        ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
+
+        // 刷新页面, 如果自动更新关闭，则不刷新页面内容
+        if (ConfigPanel.getFlushButtonStatus()) {
+            if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
+                ConfigPanel.setFlashButtonTrue();
+            }
+            return;
+        }
+
+        // 获取搜索框和搜索选项
+        final String searchText = ConfigPanel.searchField.getText();
+        final String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
+
+        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                // 执行耗时的数据操作
+                MainPanel.showFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // 更新UI组件
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        model.fireTableDataChanged(); // 通知模型数据发生了变化，而不是连续插入或删除行
+                    }
+                });
+            }
+        };
+        worker.execute();
+    }
 
 
     @Override
@@ -1066,59 +1137,52 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         return iHttpService;
     }
 
-//    public static void showFilter(String selectOption, String searchText) {
-//        // 在后台线程获取数据，避免冻结UI
-//        new SwingWorker<DefaultTableModel, Void>() {
-//            @Override
-//            protected DefaultTableModel doInBackground() throws Exception {
-//                // 构建一个新的表格模型
-//                model.setRowCount(0);
-//
-//                // 获取数据库中的所有ApiDataModels
-//                List<ApiDataModel> allApiDataModels = BurpExtender.getDataBaseService().getAllApiDataModels();
-//
-//                // 遍历apiDataModelMap
-//                for (ApiDataModel apiDataModel : allApiDataModels) {
-//                    String url = apiDataModel.getUrl();
-//                    if (selectOption.equals("只看status为200") && !apiDataModel.getStatus().contains("200")){
-//                        continue;
+    public static void showFilter(String selectOption, String searchText) {
+        // 在后台线程获取数据，避免冻结UI
+        new SwingWorker<DefaultTableModel, Void>() {
+            @Override
+            protected DefaultTableModel doInBackground() throws Exception {
+                // 构建一个新的表格模型
+                model.setRowCount(0);
+
+                // 获取数据库中的所有ApiDataModels
+                ArrayList<ApiDataModel> apiDataModels = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
+
+                // 遍历apiDataModelMap
+                for (ApiDataModel apiDataModel : apiDataModels) {
+                    String url = apiDataModel.getReqUrl();
+                    if (selectOption.equals("只看status为200") && !(apiDataModel.getRespStatusCode() == 200)){
+                        continue;
 //                    } else if (selectOption.equals("只看重点") &&  !apiDataModel.getHavingImportant()) {
 //                        continue;
 //                    } else if (selectOption.equals("只看敏感内容") && !apiDataModel.getResult().contains("敏感内容")){
 //                        continue;
 //                    } else if (selectOption.equals("只看敏感路径") && !apiDataModel.getResult().contains("敏感路径")) {
 //                        continue;
-//                    }
-//                    if (url.toLowerCase().contains(searchText.toLowerCase())) {
-//                        model.insertRow(0, new Object[]{
-//                                Constants.TREE_STATUS_COLLAPSE,
-//                                apiDataModel.getId(),
-//                                apiDataModel.getUrl(),
-//                                apiDataModel.getPATHNumber(),
-//                                apiDataModel.getMethod(),
-//                                apiDataModel.getStatus(),
-//                                apiDataModel.getIsJsFindUrl(),
-//                                apiDataModel.getHavingImportant(),
-//                                apiDataModel.getResult(),
-//                                apiDataModel.getDescribe(),
-//                                apiDataModel.getTime()
-//                        });
-//                    }
-//                }
-//                return null;
-//            }
-//
-//            @Override
-//            protected void done() {
-//                try {
-//                    get();
-//                } catch (InterruptedException | ExecutionException e) {
-//                    BurpExtender.getStderr().println("[!] showFilter error:");
-//                    e.printStackTrace(BurpExtender.getStderr());
-//                }
-//            }
-//        }.execute();
-//    }
+                    }
+                    if (url.toLowerCase().contains(searchText.toLowerCase())) {
+                        Object[] rowData = apiDataModel.toRowDataArray();
+                        //插入到首行
+                        //model.insertRow(0, rowData);
+                        //插入到最后一行
+                        int rowCount = model.getRowCount();
+                        model.insertRow(rowCount, rowData);
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    get();
+                } catch (InterruptedException | ExecutionException e) {
+                    BurpExtender.getStderr().println("[!] showFilter error:");
+                    e.printStackTrace(BurpExtender.getStderr());
+                }
+            }
+        }.execute();
+    }
 
 
     //清理所有数据
@@ -1129,7 +1193,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             // 清空表格
             //IProxyScanner.setHaveScanUrlNew(); //该代码暂未完善
             // 清空检索
-            historySearchText = "";
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ConfigPanel.searchField.setText("");
@@ -1139,157 +1202,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             // 还可以清空编辑器中的数据
             MainPanel.requestTextEditor.setMessage(new byte[0], true); // 清空请求编辑器
             MainPanel.responseTextEditor.setMessage(new byte[0], false); // 清空响应编辑器
-            MainPanel.resultTextPane.setText("");
+            MainPanel.findInfoTextPane.setText("");
+            
             MainPanel.findUrlTEditor.setText(new byte[0]);
+            MainPanel.findPathTEditor.setText(new byte[0]);
+            MainPanel.findApiTEditor.setText(new byte[0]);
+            MainPanel.smartApiTEditor.setText(new byte[0]);
+
             MainPanel.iHttpService = null; // 清空当前显示的项
             MainPanel.requestsData = null;
             MainPanel.responseData = null;
         }
     }
-
-
-//    //Model展开
-//    public void modelExpand(ApiDataModel apiDataModel, int index) {
-//        // Disable auto-refresh
-//        ConfigPanel.setFlashButtonFalse();
-//        MainPanel.operationStartTime = LocalDateTime.now();
-//
-//        // SwingWorker to fetch data in the background
-//        SwingWorker<List<Object[]>, Void> worker = new SwingWorker<List<Object[]>, Void>() {
-//            @Override
-//            protected List<Object[]> doInBackground() throws Exception {
-//                // Fetch data in the background thread
-//                String selectedOption = (String) ConfigPanel.choicesComboBox.getSelectedItem();
-//                Map<String, Object> filteredPathData = fetchData(selectedOption, apiDataModel.getUrl());
-//
-//                // Prepare table rows
-//                List<Object[]> rows = new ArrayList<>();
-//                int tmpIndex = 0;
-//                for (Map.Entry<String, Object> entry : filteredPathData.entrySet()) {
-//                    tmpIndex++;
-//                    String listStatus = (tmpIndex == 1) ? "┗" : "┠";
-//                    String path = entry.getKey();
-//                    Map<String, Object> subPathValue = (Map<String, Object>) entry.getValue();
-//
-//                    rows.add(new Object[]{
-//                            listStatus,
-//                            "-",
-//                            path,
-//                            "-",
-//                            subPathValue.get("method"),
-//                            subPathValue.get("status"),
-//                            subPathValue.get("isJsFindUrl"),
-//                            subPathValue.get("isImportant"),
-//                            subPathValue.get("result"),
-//                            subPathValue.get("describe"),
-//                            subPathValue.get("time")
-//                    });
-//                }
-//                return rows;
-//            }
-//
-//            @Override
-//            protected void done() {
-//                try {
-//                    // Update table model on the EDT
-//                    List<Object[]> rows = get();
-//                    if (!rows.isEmpty()) {
-//                        for (Object[] row : rows) {
-//                            model.insertRow(index + 1, row);
-//                        }
-//                        model.fireTableRowsInserted(index + 1, index + rows.size());
-//                    }
-//                } catch (InterruptedException | ExecutionException e) {
-//                    BurpExtender.getStderr().println("[!] modelExpand error:");
-//                    e.printStackTrace(BurpExtender.getStderr());
-//                }
-//            }
-//        };
-//
-//        worker.execute();
-//    }
-
-
-//    private Map<String, Object> fetchData(String selectedOption, String url) {
-//        // Your actual method to fetch data from the database
-//        // Replace the body of this method with your database access code
-//        // For example:
-//        switch (selectedOption) {
-//            case "只看status为200":
-//                return BurpExtender.getDataBaseService().selectPathDataByUrlAndStatus(url, "200");
-//            case "只看重点":
-//                return BurpExtender.getDataBaseService().selectPathDataByUrlAndImportance(url, true);
-//            case "只看敏感内容":
-//                return BurpExtender.getDataBaseService().selectPathDataByUrlAndResult(url, "敏感内容");
-//            case "只看敏感路径":
-//                return BurpExtender.getDataBaseService().selectPathDataByUrlAndResult(url, "敏感路径");
-//            default:
-//                return BurpExtender.getDataBaseService().selectAllPathDataByUrl(url);
-//        }
-//    }
-
-
-
-//    public void modeCollapse(ApiDataModel apiDataModel, int index) {
-//        // 看当前是否有过滤场景
-//        model.setValueAt(Constants.TREE_STATUS_COLLAPSE, index, 0);
-//
-//        // 计算即将删除的行区间
-//        int startDeleteIndex = index + 1;
-//        int deleteNumber = 0;
-//
-//        // 从后向前删除子项，这样索引就不会因为列表的变动而改变
-//        int numberOfRows = model.getRowCount();
-//        for (int i = 0; i < numberOfRows; i++) {
-//            try {
-//                if (startDeleteIndex > (model.getRowCount() - 1)){
-//                    break;
-//                }
-//                if (!model.getValueAt(startDeleteIndex, 0).equals(Constants.TREE_STATUS_EXPAND) && !model.getValueAt(startDeleteIndex, 0).equals(Constants.TREE_STATUS_COLLAPSE)) {
-//                    model.removeRow(startDeleteIndex);
-//                    deleteNumber += 1;
-//                } else {
-//                    break;
-//                }} catch (Exception e) {
-//                    BurpExtender.getStderr().println("[!] 数据收起报错，报错如下：");
-//                    e.printStackTrace(BurpExtender.getStderr());
-//                }
-//        }
-//
-//        // 现在所有的子项都被删除了，通知表格模型更新
-//        // 注意这里的索引是根据删除前的状态传递的
-//        model.fireTableRowsDeleted(startDeleteIndex, index+deleteNumber);
-//    }
-
-    public int findRowIndexByURL(String url) {
-        for (int i = 0; i < model.getRowCount(); i++) {
-            // 获取每一行第二列的值
-            Object value = model.getValueAt(i, 2);
-            // 检查这个值是否与要查找的URL匹配
-            if (value != null && value.equals(url)) {
-                // 如果匹配，返回当前行的索引
-                return i;
-            }
-        }
-        // 如果没有找到，返回-1表示未找到
-        return -1;
-    }
-
-    public String findUrlFromPath(int row){
-        for (int index = row; index >= 0; index--) {
-            // 获取每一行第二列的值
-            String value = (String)model.getValueAt(index, 0);
-            if (value.equals(Constants.TREE_STATUS_EXPAND) || value.equals((Constants.TREE_STATUS_COLLAPSE))){
-                return (String)model.getValueAt(index, 2);
-            }
-        }
-        return null;
-    }
-
-    public DefaultTableModel getModel(){
-        return model;
-    }
-
 }
 
 

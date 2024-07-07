@@ -1,14 +1,17 @@
-package model;
+package burp;
 
-import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import model.FingerPrintRule;
+import model.HttpMsgInfo;
+import model.HttpRespInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static burp.BurpExtender.*;
-import static utils.BurpPrintUtils.*;
+import static utils.BurpPrintUtils.LOG_DEBUG;
+import static utils.BurpPrintUtils.stdout_println;
 import static utils.ElementUtils.isContainAllKey;
 import static utils.ElementUtils.isEqualsOneKey;
 import static utils.InfoAnalyseUtils.*;

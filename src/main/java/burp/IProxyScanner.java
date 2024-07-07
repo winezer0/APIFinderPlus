@@ -5,7 +5,6 @@ import com.alibaba.fastjson2.JSONObject;
 import dataModel.*;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
-import model.InfoAnalyse;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -16,7 +15,7 @@ import static dataModel.PathRecordTable.fetchUnhandledRecordUrlId;
 import static dataModel.PathTreeTable.fetchOnePathTreeData;
 import static dataModel.PathTreeTable.insertOrUpdatePathTree;
 import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
-import static model.InfoAnalyse.analyseInfoIsNotEmpty;
+import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.InfoAnalyseUtils.UrlAddPath;
 import static utils.PathTreeUtils.findNodePathInTree;
@@ -183,11 +182,11 @@ public class IProxyScanner implements IProxyListener {
                     Integer needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
                         //获取 msgDataIndex 对应的数据
-                        Map<String, Object> needHandledReqData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
-                        String requestUrl = (String) needHandledReqData.get(ReqMsgDataTable.req_url);
-                        byte[] requestBytes = (byte[]) needHandledReqData.get(ReqMsgDataTable.req_bytes);
-                        byte[] responseBytes = (byte[]) needHandledReqData.get(ReqMsgDataTable.resp_bytes);
-                        String msgInfoHash = (String) needHandledReqData.get(ReqMsgDataTable.msg_hash);
+                        JSONObject msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
+                        String msgInfoHash = (String) msgData.get(Constants.MSG_HASH);
+                        String requestUrl = (String) msgData.get(Constants.REQ_URL);
+                        byte[] requestBytes = (byte[]) msgData.get(Constants.REQ_BYTES);
+                        byte[] responseBytes = (byte[]) msgData.get(Constants.RESP_BYTES);
 
                         //进行数据分析
                         HttpMsgInfo msgInfo =  new HttpMsgInfo(requestUrl, requestBytes, responseBytes,msgInfoHash);
@@ -199,7 +198,6 @@ public class IProxyScanner implements IProxyListener {
                             if (analyseDataIndex > 0){
                                 stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                             }
-
                         }
 
                         //更新数据后先返回,优先进行之前的操作
@@ -232,9 +230,9 @@ public class IProxyScanner implements IProxyListener {
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
                         //获取一条需要分析的数据
-                        Map<String, Object> unhandledSmartApiData = fetchUnhandledSmartApiData();
+                        JSONObject unhandledSmartApiData = fetchUnhandledSmartApiData();
                         if (unhandledSmartApiData != null && !unhandledSmartApiData.isEmpty()) {
-                            analysisUpdateSmartApiData(unhandledSmartApiData);
+                            analyseAndUpdateSmartApiData(unhandledSmartApiData);
                             //更新数据后先返回,优先进行之前的操作
                             return;
                         }
@@ -243,9 +241,9 @@ public class IProxyScanner implements IProxyListener {
                     //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
                     int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
                     if (unhandledSmartApiDataId <= 0){
-                        Map<String, Object> needUpdatedSmartApiData = fetchNeedUpdatedSmartApiData();
-                        if (needUpdatedSmartApiData != null && !needUpdatedSmartApiData.isEmpty()) {
-                            analysisUpdateSmartApiData(needUpdatedSmartApiData);
+                        JSONObject oneNeedUpdatedSmartApiData = UnionTableSql.fetchOneNeedUpdatedSmartApiData();
+                        if (oneNeedUpdatedSmartApiData != null && !oneNeedUpdatedSmartApiData.isEmpty()) {
+                            analyseAndUpdateSmartApiData(oneNeedUpdatedSmartApiData);
                             //更新数据后先返回,优先进行之前的操作
                             return;
                         }
@@ -270,7 +268,7 @@ public class IProxyScanner implements IProxyListener {
      * 重复使用的独立的Smart API 路径计算+更新函数
      * @param needAnalysedPathData
      */
-    private void analysisUpdateSmartApiData(Map<String, Object> needAnalysedPathData) {
+    private void analyseAndUpdateSmartApiData(JSONObject needAnalysedPathData) {
         if (needAnalysedPathData != null && !needAnalysedPathData.isEmpty()) {
             int dataId = (int) needAnalysedPathData.get(Constants.DATA_ID);
             String reqUrl = (String) needAnalysedPathData.get(Constants.REQ_URL);
@@ -281,7 +279,7 @@ public class IProxyScanner implements IProxyListener {
 
             // 从数据库中查询树信息表
             JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
-            int pathNum = (int) pathTreeData.get(Constants.PATH_NUM);
+            int basicPathNum = (int) pathTreeData.get(Constants.BASIC_PATH_NUM);
             String pathTree = (String) pathTreeData.get(Constants.PATH_TREE);
 
             // 基于根树和paths列表计算新的字典
@@ -311,7 +309,7 @@ public class IProxyScanner implements IProxyListener {
                 }
                 //不管找没找到数据 都应该写入数据库进行存储
                 JSONObject analyseApiInfo = new JSONObject();
-                analyseApiInfo.put(Constants.PATH_NUM, pathNum);
+                analyseApiInfo.put(Constants.BASIC_PATH_NUM, basicPathNum);
                 analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
                 int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
                 if (apiDataIndex > 0)

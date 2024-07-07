@@ -1,10 +1,15 @@
 package utils;
 
 import burp.IHttpService;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.MalformedURLException;
 import java.net.URL;
+
+import static utils.BurpPrintUtils.stderr_println;
 
 /**
  * @author： shaun
@@ -42,7 +47,7 @@ public class UiUtils {
                 .replace("/", "&#x2F;");
     }
 
-    public static IHttpService iHttpService(String host, int port, String protocol){
+    public static IHttpService getIHttpService(String host, int port, String protocol){
         return new IHttpService() {
             @Override
             public String getHost() {
@@ -60,4 +65,85 @@ public class UiUtils {
             }
         };
     }
+
+    public static IHttpService getIHttpService(String url){
+        try {
+            URL urlObj = new URL(url);
+            //获取请求协议
+            String protocol = urlObj.getProtocol();
+            //从URL中获取请求host
+            String host = urlObj.getHost();
+            //从URL中获取请求Port
+            int port = urlObj.getPort();
+            return getIHttpService(host, port, protocol);
+        } catch (MalformedURLException e) {
+            stderr_println(String.format("URL格式不正确: %s -> %s", url, e.getMessage()));
+            return null;
+        }
+    }
+
+
+    /**
+     * 格式化Json数据为可输出的状态
+     * @param jsonArrayString
+     * @return
+     */
+    public static String stringJsonArrayFormat(String jsonArrayString) {
+        if (jsonArrayString == null || jsonArrayString.length()<=2 )
+            return "-";
+
+        // 解析JSON数组
+        JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
+        StringBuilder formattedString = new StringBuilder();
+        for (Object item : jsonArray) {
+            if (item instanceof String) {
+                formattedString.append((String) item).append("\n");
+            } else {
+                throw new IllegalArgumentException("JSONArray contains non-string element.");
+            }
+        }
+        return formattedString.toString();
+    }
+
+    /**
+     * 格式化Json数据为可输出的状态
+     * @param jsonArrayString
+     * @return
+     */
+    public static String infoJsonArrayFormatHtml(String jsonArrayString) {
+        if (jsonArrayString == null || jsonArrayString.length()<=2 )
+            return "-";
+
+        JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
+        StringBuilder formattedResult = new StringBuilder();
+
+        for (Object obj : jsonArray) {
+            if (obj instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject) obj;
+
+                // 使用String.format进行格式化
+                String formattedItem = String.format(
+                        "############# type: %s #############<br>" +
+                                "describe: <span style='color: $color$};'>%s</span><br>" +
+                                "value: <span style='color: $color$};'>%s</span><br>" +
+                                "accuracy: %s<br>" +
+                                "important: %s<br>"
+                        ,
+                        jsonObject.getString("type"),
+                        jsonObject.getString("describe"),
+                        encodeForHTML(jsonObject.getString("value")),
+                        jsonObject.getString("accuracy"),
+                        jsonObject.getString("important")
+                );
+
+                //进行颜色标记
+                String color = jsonObject.getBoolean("important") ? "red" : "blue";
+                formattedItem = formattedItem.replace("$color$",color);
+                formattedResult.append(formattedItem);
+            }
+        }
+
+        return formattedResult.toString();
+    }
+
 }

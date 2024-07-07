@@ -305,7 +305,7 @@ public class PathTreeUtils {
         if (tree != null && !tree.isEmpty()){
             jsonObject.put(Constants.REQ_HOST_PORT, reqHostPort);
             jsonObject.put(Constants.PATH_TREE, tree);
-            jsonObject.put(Constants.PATH_NUM, paths.length);
+            jsonObject.put(Constants.BASIC_PATH_NUM, paths.length);
         }
         return jsonObject;
     }
