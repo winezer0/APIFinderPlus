@@ -11,6 +11,7 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
@@ -160,36 +161,46 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         // SINGLE_SELECTION 设置表格的选择模式为单选
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        //设置表格每列的宽度
+        tableSetColumnsWidth();
+
+        //设置表格每列的对齐设置
+        tableSetColumnsRender();
+
+        //添加表头排序功能
+        tableAddActionSortByHeader();
+
+        //为表格添加点击显示下方的消息动作
+        tableAddActionSetAcMsgTabData();
+    }
+
+    /**
+     * 为 table 设置每一列的 宽度
+     */
+    private void tableSetColumnsWidth() {
         //设置数据表的宽度 //前两列设置宽度 30px、60px
         tableSetColumnMaxWidth(0, 50);
         tableSetColumnMaxWidth(1, 100);
         tableSetColumnMinWidth(2, 300);
         tableSetColumnMinWidth(11, 50);
         tableSetColumnMinWidth(12, 50);
+    }
 
-        //设置表格每列的对齐设置
+    /**
+     * 为 table 设置每一列的对齐方式
+     */
+    private void tableSetColumnsRender() {
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer(); //居中对齐的单元格渲染器
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
         leftRenderer.setHorizontalAlignment(JLabel.LEFT);
 
-        if (true){
-            tableSetColumnRender(0, leftRenderer);
-            tableSetColumnRender(1, leftRenderer);
-            tableSetColumnRender(2, leftRenderer);
-            tableSetColumnRender(3, centerRenderer);
-            tableSetColumnRender(4, centerRenderer);
-            tableSetColumnRender(5, centerRenderer);
-            tableSetColumnRender(6, centerRenderer);
-            tableSetColumnRender(7, leftRenderer);
-            tableSetColumnRender(8, leftRenderer);
-            tableSetColumnRender(9, leftRenderer);
-            tableSetColumnRender(10, leftRenderer);
-            tableSetColumnRender(11, leftRenderer);
-            tableSetColumnRender(12, leftRenderer);
-        }
+        List<Integer> leftColumns = Arrays.asList(0, 1, 2, 7, 8, 9, 10, 11, 12);
+        tableSetColumnRenders(leftColumns, leftRenderer);
 
+        List<Integer> centerColumns = Arrays.asList(3, 4, 5, 6);
+        tableSetColumnRenders(centerColumns, centerRenderer);
 
         //创建 IsJsFindUrl的独特渲染器
         // IsJsFindUrlRenderer isJsFindUrlRenderer = new IsJsFindUrlRenderer();
@@ -198,12 +209,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         //创建 havingImportantRenderer的独特渲染器
         //IconTableCellRenderer havingImportantRenderer = new IconTableCellRenderer();
         //table.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
-
-        //添加表头排序功能
-        tableAddActionSortByHeader();
-
-        //为表格添加点击显示下方的消息动作
-        tableAddActionSetAcMsgTabData();
     }
 
     /**
@@ -336,13 +341,16 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
     /**
-     * 设置 table 指定列的样式
-     * @param columnIndex
+     * 设置指定多列的样式
+     * @param columns
      * @param renderer
      */
-    private void tableSetColumnRender(int columnIndex, DefaultTableCellRenderer renderer) {
-        table.getColumnModel().getColumn(columnIndex).setCellRenderer(renderer);
+    private void tableSetColumnRenders(List<Integer> columns, DefaultTableCellRenderer renderer) {
+        for (Integer column : columns) {
+            table.getColumnModel().getColumn(column).setCellRenderer(renderer);
+        }
     }
+
 
     /**
      * 把 jsonArray 赋值到 model 中
