@@ -2,19 +2,19 @@ package model;
 
 
 public class ApiDataModel {
-    private int msgId;
+    private Integer msgId;
     private String msgHash;
     private String reqUrl;
     private String reqMethod;
-    private int respStatusCode;
+    private Integer respStatusCode;
     private String reqSource;
-    private int findUrlNum;
-    private int findPathNum;
-    private int findInfoNum;
-    private int findApiNum;
-    private int smartApiNum;
+    private Integer findUrlNum;
+    private Integer findPathNum;
+    private Integer findInfoNum;
+    private Integer findApiNum;
+    private Integer smartApiNum;
     private String runStatus;
-    private int basicPathNum;
+    private Integer basicPathNum;
 
     // 构造函数
     public ApiDataModel(int msgId, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
@@ -53,7 +53,7 @@ public class ApiDataModel {
         };
     }
 
-    public int getMsgId() {
+    public Integer getMsgId() {
         return msgId;
     }
 
@@ -69,7 +69,7 @@ public class ApiDataModel {
         return reqMethod;
     }
 
-    public int getRespStatusCode() {
+    public Integer getRespStatusCode() {
         return respStatusCode;
     }
 
@@ -77,23 +77,23 @@ public class ApiDataModel {
         return reqSource;
     }
 
-    public int getFindUrlNum() {
+    public Integer getFindUrlNum() {
         return findUrlNum;
     }
 
-    public int getFindPathNum() {
+    public Integer getFindPathNum() {
         return findPathNum;
     }
 
-    public int getFindInfoNum() {
+    public Integer getFindInfoNum() {
         return findInfoNum;
     }
 
-    public int getFindApiNum() {
+    public Integer getFindApiNum() {
         return findApiNum;
     }
 
-    public int getSmartApiNum() {
+    public Integer getSmartApiNum() {
         return smartApiNum;
     }
 
@@ -101,7 +101,10 @@ public class ApiDataModel {
         return runStatus;
     }
 
-    public int getBasicPathNum() {
+    public Integer getBasicPathNum() {
         return basicPathNum;
     }
+
+
+
 }
