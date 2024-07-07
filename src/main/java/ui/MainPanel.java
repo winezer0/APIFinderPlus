@@ -89,11 +89,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         add(configPanel, BorderLayout.NORTH);
         add(mainSplitPane, BorderLayout.CENTER);
 
-        // 初始化定时刷新页面函数
-        initTimer(10000);
-
         //初始化表格数据
         initDataTableUIData();
+
+        // 初始化定时刷新页面函数
+        initTimer(10000);
     }
 
     /**
@@ -983,7 +983,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 // 调用刷新表格的方法
                 try{
-                    refreshTableModel();
+                    instance.refreshTableModel();
                 } catch (Exception ep){
                     BurpExtender.getStderr().println("[!] 刷新表格报错， 报错如下：");
                     ep.printStackTrace(BurpExtender.getStderr());
@@ -1082,62 +1082,13 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
     }
 
-    public void refreshTableModel() {
-        //设置成功数量
-        int successCount = ReqDataTable.getReqDataCount();
-        ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
 
-        // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (ConfigPanel.getFlushButtonStatus()) {
-            if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                ConfigPanel.setFlashButtonTrue();
-            }
-            return;
-        }
-
-        // 获取搜索框和搜索选项
-        final String searchText = ConfigPanel.searchField.getText();
-        final String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-
-        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                // 执行耗时的数据操作
-                MainPanel.showFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                // 更新UI组件
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        model.fireTableDataChanged(); // 通知模型数据发生了变化，而不是连续插入或删除行
-                    }
-                });
-            }
-        };
-        worker.execute();
-    }
-
-
-    @Override
-    public byte[] getRequest() {
-        return requestsData;
-    }
-
-    @Override
-    public byte[] getResponse() {
-        return responseData;
-    }
-
-    @Override
-    public IHttpService getHttpService() {
-        return iHttpService;
-    }
-
-    public static void showFilter(String selectOption, String searchText) {
+    /**
+     * 基于过滤选项 和 搜索框内容 显示结果
+     * @param selectOption
+     * @param searchText
+     */
+    public static void showDataTableByFilter(String selectOption, String searchText) {
         // 在后台线程获取数据，避免冻结UI
         new SwingWorker<DefaultTableModel, Void>() {
             @Override
@@ -1162,11 +1113,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     }
                     if (url.toLowerCase().contains(searchText.toLowerCase())) {
                         Object[] rowData = apiDataModel.toRowDataArray();
-                        //插入到首行
-                        //model.insertRow(0, rowData);
-                        //插入到最后一行
-                        int rowCount = model.getRowCount();
-                        model.insertRow(rowCount, rowData);
+                        //model.insertRow(0, rowData); //插入到首行
+                        model.insertRow(model.getRowCount(), rowData); //插入到最后一行
                     }
                 }
                 return null;
@@ -1202,8 +1150,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             // 还可以清空编辑器中的数据
             MainPanel.requestTextEditor.setMessage(new byte[0], true); // 清空请求编辑器
             MainPanel.responseTextEditor.setMessage(new byte[0], false); // 清空响应编辑器
+
             MainPanel.findInfoTextPane.setText("");
-            
             MainPanel.findUrlTEditor.setText(new byte[0]);
             MainPanel.findPathTEditor.setText(new byte[0]);
             MainPanel.findApiTEditor.setText(new byte[0]);
@@ -1213,6 +1161,61 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             MainPanel.requestsData = null;
             MainPanel.responseData = null;
         }
+    }
+
+    //定时刷新表数据
+    public void refreshTableModel() {
+        //设置成功数量
+        int successCount = ReqDataTable.getReqDataCount();
+        ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
+
+        // 刷新页面, 如果自动更新关闭，则不刷新页面内容
+        if (ConfigPanel.getFlushButtonStatus()) {
+            if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
+                ConfigPanel.setFlashButtonTrue();
+            }
+            return;
+        }
+
+        // 获取搜索框和搜索选项
+        final String searchText = ConfigPanel.searchField.getText();
+        final String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
+
+        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                // 执行耗时的数据操作
+                MainPanel.showDataTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // 更新UI组件
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        model.fireTableDataChanged(); // 通知模型数据发生了变化，而不是连续插入或删除行
+                    }
+                });
+            }
+        };
+        worker.execute();
+    }
+
+    @Override
+    public byte[] getRequest() {
+        return requestsData;
+    }
+
+    @Override
+    public byte[] getResponse() {
+        return responseData;
+    }
+
+    @Override
+    public IHttpService getHttpService() {
+        return iHttpService;
     }
 }
 

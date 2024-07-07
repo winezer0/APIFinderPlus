@@ -285,7 +285,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String searchText = searchField.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-                MainPanel.showFilter(selectedOption, searchText);
+                MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setFlashButtonFalse();
                 MainPanel.operationStartTime = LocalDateTime.now();
             }
@@ -298,7 +298,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String searchText = searchField.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-                MainPanel.showFilter(selectedOption, searchText);
+                MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setFlashButtonFalse();
                 MainPanel.operationStartTime = LocalDateTime.now();
             }
@@ -316,10 +316,10 @@ public class ConfigPanel extends JPanel {
                     }
                     String selectedOption = (String)choicesComboBox.getSelectedItem();
                     if (selectedOption.equals("全部")){
-                        MainPanel.showFilter(selectedOption, searchText);
+                        MainPanel.showDataTableByFilter(selectedOption, searchText);
                         setFlashButtonTrue();
                     }else{
-                        MainPanel.showFilter(selectedOption, searchText);
+                        MainPanel.showDataTableByFilter(selectedOption, searchText);
                         setFlashButtonFalse();
                         MainPanel.operationStartTime = LocalDateTime.now();
                     }
