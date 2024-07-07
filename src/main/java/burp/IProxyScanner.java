@@ -144,7 +144,7 @@ public class IProxyScanner implements IProxyListener {
                     msgInfo.setRespBytes(respBytes);
                     //加入请求列表
                     int msgId = iInterceptedProxyMessage.getMessageReference();
-                    storeReqData(msgInfo, msgId, "ProxyMessage");
+                    storeReqData(msgInfo, msgId, "Proxy");
                 }
             });
         }
