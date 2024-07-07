@@ -10,6 +10,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
+import static utils.BurpPrintUtils.stderr_println;
+
 public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;
     public static JLabel lbSuccessCount;
@@ -290,45 +292,44 @@ public class ConfigPanel extends JPanel {
         });
 
 
-//        searchField.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                String searchText = searchField.getText();
-//                String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-//                MainPanel.showFilter(selectedOption, searchText);
-//                setFlashButtonFalse();
-//                MainPanel.operationStartTime = LocalDateTime.now();
-//            }
-//        });
+        //搜索框的回车事件
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchText = searchField.getText();
+                String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
+                MainPanel.showFilter(selectedOption, searchText);
+                setFlashButtonFalse();
+                MainPanel.operationStartTime = LocalDateTime.now();
+            }
+        });
 
-//        // “全部” 按钮事件监听器
-//        choicesComboBox.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                try{
-//                    // 触发显示所有行事件
-//                    String searchText = searchField.getText();
-//                    if(searchText.isEmpty()){
-//                        searchText = "";
-//                    }
-//                    String selectedOption = (String)choicesComboBox.getSelectedItem();
-//                    if (selectedOption.equals("全部")){
-//                        MainPanel.showFilter(selectedOption, searchText);
-//                        setFlashButtonTrue();
-//                    }else{
-//                        MainPanel.showFilter(selectedOption, searchText);
-//                        setFlashButtonFalse();
-//                        MainPanel.operationStartTime = LocalDateTime.now();
-//                    }
-//                } catch (Exception ex) {
-//                    BurpExtender.getStderr().println("[!] choicesComboBox:");
-//                    ex.printStackTrace(BurpExtender.getStderr());
-//                }
-//            }
-//        });
-//
+        // 快速选择框的监听事件
+        choicesComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    // 触发显示所有行事件
+                    String searchText = searchField.getText();
+                    if(searchText.isEmpty()){
+                        searchText = "";
+                    }
+                    String selectedOption = (String)choicesComboBox.getSelectedItem();
+                    if (selectedOption.equals("全部")){
+                        MainPanel.showFilter(selectedOption, searchText);
+                        setFlashButtonTrue();
+                    }else{
+                        MainPanel.showFilter(selectedOption, searchText);
+                        setFlashButtonFalse();
+                        MainPanel.operationStartTime = LocalDateTime.now();
+                    }
+                } catch (Exception ex) {
+                    stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
+                }
+            }
+        });
+
  }
-
 
 
     public static void setFlashButtonTrue(){
