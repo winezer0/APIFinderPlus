@@ -296,7 +296,6 @@ public class IProxyScanner implements IProxyListener {
                     // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
                     //todo: 增加自动递归查询功能
-                    // 新建 Model 优化代码中的Put对象返回,注意,每次修改都需要测试代码是否正常 暂时忽略
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();
