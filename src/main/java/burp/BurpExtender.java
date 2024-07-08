@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import dataModel.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
+import ui.MainPanel;
 import ui.Tags;
 import utils.BurpPrintUtils;
 
@@ -162,7 +163,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         }
 
         //Todo: 停止面板更新器, 待实现数据查询面板
-        //MailPanel.timer.stop();
+        MainPanel.timer.stop();
 
         // 关闭数据库连接
         if (dbService != null) {

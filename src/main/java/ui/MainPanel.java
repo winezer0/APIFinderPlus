@@ -11,7 +11,6 @@ import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
@@ -41,7 +40,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private static byte[] responseData; //响应数据,设置为全局变量,便于IMessageEditorController函数调用
     private static IHttpService iHttpService; //请求服务信息,设置为全局变量,便于IMessageEditorController函数调用
 
-    private static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
+    public static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
 
     public static MainPanel getInstance(IBurpExtenderCallbacks callbacks) {
@@ -57,10 +56,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
 
     public MainPanel(IBurpExtenderCallbacks callbacks) {
-        //contentPane = new JPanel();
-        //contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        //contentPane.setLayout(new BorderLayout(0, 0));
-
         // EmptyBorder 四周各有了5像素的空白边距
         setBorder(new EmptyBorder(5, 5, 5, 5));
         ////BorderLayout 将容器分为五个区域：北 南 东 西 中 每个区域可以放置一个组件，
