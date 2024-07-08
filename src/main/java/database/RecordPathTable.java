@@ -28,12 +28,8 @@ public class RecordPathTable {
     //插入数据库
     public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName "
-                .replace("tableName", tableName)
-                + "WHERE req_proto = ? "
-                + "AND req_host_port = ? "
-                + "AND req_path_dir = ? "
-                + "AND resp_status_code = ?";
+        String checkSql = ("SELECT id FROM tableName WHERE req_proto = ? AND req_host_port = ? AND req_path_dir = ? AND resp_status_code = ?")
+                .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
