@@ -1,8 +1,8 @@
 package database;
 
-import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import model.FindPathModel;
 import model.HttpMsgInfo;
 
 import static utils.BurpPrintUtils.*;
@@ -112,8 +112,8 @@ public class InfoAnalyseTable {
     }
 
     //获取一条需要分析的Path数据
-    public static synchronized JSONObject fetchUnhandledSmartApiData(){
-        JSONObject pathData = new JSONObject();
+    public static synchronized FindPathModel fetchUnhandledSmartApiData(){
+        FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID
         String selectSQL = ("SELECT id,req_url,req_host_port,find_path FROM tableName " +
@@ -130,11 +130,13 @@ public class InfoAnalyseTable {
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pathData.put(Constants.DATA_ID, rs.getInt("id"));
-                    pathData.put(Constants.REQ_URL, rs.getString("req_url"));
-                    pathData.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
-                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
-                    
+                    findPathModel =  new FindPathModel(
+                            rs.getInt("id"),
+                            rs.getString("req_url"),
+                            rs.getString("req_host_port"),
+                            rs.getString("find_path")
+                    );
+
                     //更新索引对应的数据
                     try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                         updateStatement.setInt(1, rs.getInt("id"));
@@ -145,7 +147,7 @@ public class InfoAnalyseTable {
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
         }
-        return pathData;
+        return findPathModel;
     }
 
     //插入分析完整的smart api 数据

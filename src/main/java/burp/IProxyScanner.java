@@ -3,6 +3,7 @@ package burp;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
+import model.FindPathModel;
 import model.HttpMsgInfo;
 import model.ReqMsgDataModel;
 import model.RecordHashMap;
@@ -266,8 +267,8 @@ public class IProxyScanner implements IProxyListener {
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
                         //获取一条需要分析的数据
-                        JSONObject unhandledSmartApiData = fetchUnhandledSmartApiData();
-                        if (unhandledSmartApiData != null && !unhandledSmartApiData.isEmpty()) {
+                        FindPathModel unhandledSmartApiData = fetchUnhandledSmartApiData();
+                        if (unhandledSmartApiData != null) {
                             analyseAndUpdateSmartApiData(unhandledSmartApiData);
                             //更新数据后先返回,优先进行之前的操作
                             return;
@@ -277,8 +278,8 @@ public class IProxyScanner implements IProxyListener {
                     //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
                     int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
                     if (unhandledSmartApiDataId <= 0){
-                        JSONObject oneNeedUpdatedSmartApiData = UnionTableSql.fetchOneNeedUpdatedSmartApiData();
-                        if (oneNeedUpdatedSmartApiData != null && !oneNeedUpdatedSmartApiData.isEmpty()) {
+                        FindPathModel oneNeedUpdatedSmartApiData = UnionTableSql.fetchOneNeedUpdatedSmartApiData();
+                        if (oneNeedUpdatedSmartApiData != null) {
                             analyseAndUpdateSmartApiData(oneNeedUpdatedSmartApiData);
                             //更新数据后先返回,优先进行之前的操作
                             return;
@@ -306,16 +307,14 @@ public class IProxyScanner implements IProxyListener {
 
     /**
      * 重复使用的独立的Smart API 路径计算+更新函数
-     * @param needAnalysedPathData
+     * @param findPathModel
      */
-    private void analyseAndUpdateSmartApiData(JSONObject needAnalysedPathData) {
-        if (needAnalysedPathData != null && !needAnalysedPathData.isEmpty()) {
-            int dataId = (int) needAnalysedPathData.get(Constants.DATA_ID);
-            String reqUrl = (String) needAnalysedPathData.get(Constants.REQ_URL);
-            String reqHostPort = (String) needAnalysedPathData.get(Constants.REQ_HOST_PORT);
-            String findPath = (String) needAnalysedPathData.get(Constants.FIND_PATH);
-
-            String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
+    private void analyseAndUpdateSmartApiData(FindPathModel findPathModel) {
+        if (findPathModel != null) {
+            int id = findPathModel.getId();
+            String reqUrl = findPathModel.getReqUrl();
+            String reqHostPort = findPathModel.getReqHostPort();
+            String findPath = findPathModel.getFindPath();
 
             // 从数据库中查询树信息表
             JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
@@ -334,6 +333,7 @@ public class IProxyScanner implements IProxyListener {
             {
                 Set<String> findUrlsSet = new HashSet();
                 //遍历路径列表,开始进行查询
+                String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
                 for (Object path: findPathObj){
                     JSONArray findNodePath = findNodePathInTree(pathTreeObj, (String) path);
                     //查询到结果就组合成URL,加到查询结果中
@@ -351,7 +351,7 @@ public class IProxyScanner implements IProxyListener {
                 JSONObject smartApiJsonObj = new JSONObject();
                 smartApiJsonObj.put(Constants.BASIC_PATH_NUM, basicPathNum);
                 smartApiJsonObj.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
-                int apiDataIndex = insertAnalyseSmartApiData(dataId, smartApiJsonObj);
+                int apiDataIndex = insertAnalyseSmartApiData(id, smartApiJsonObj);
                 if (apiDataIndex > 0)
                     stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
             }

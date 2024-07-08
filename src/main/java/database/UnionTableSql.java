@@ -1,6 +1,6 @@
 package database;
 
-import com.alibaba.fastjson2.JSONObject;
+import model.FindPathModel;
 import model.TableLineDataModel;
 
 import java.sql.Connection;
@@ -13,8 +13,8 @@ import static utils.BurpPrintUtils.stderr_println;
 
 public class UnionTableSql {
     //联合 获取一条需要更新的Path数据
-    public static synchronized JSONObject fetchOneNeedUpdatedSmartApiData(){
-        JSONObject pathData = new JSONObject();
+    public static synchronized FindPathModel fetchOneNeedUpdatedSmartApiData(){
+        FindPathModel pathData = null;
 
         // 首先选取一条记录的ID
         String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
@@ -28,10 +28,12 @@ public class UnionTableSql {
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pathData.put(Constants.DATA_ID, rs.getInt("id"));
-                    pathData.put(Constants.REQ_URL, rs.getString("req_url"));
-                    pathData.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
-                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
+                    pathData = new FindPathModel(
+                            rs.getInt("id"),
+                            rs.getString("req_url"),
+                            rs.getString("req_host_port"),
+                            rs.getString("find_path")
+                    );
                 }
             }
         } catch (Exception e) {
