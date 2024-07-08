@@ -1,5 +1,6 @@
 package database;
 
+import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;

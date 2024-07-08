@@ -3,6 +3,7 @@ package ui;
 import burp.*;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
+import model.RecordHashMap;
 import model.TableLineDataModel;
 import utils.UiUtils;
 
@@ -521,9 +522,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         synchronized (model) {
             // 清空model
             model.setRowCount(0);
-            // 清空表格
-            //IProxyScanner.setHaveScanUrlNew(); //该代码暂未完善
-            // 清空检索
+
+            //清空记录变量的内容
+            IProxyScanner.urlScanRecordMap = new RecordHashMap();
+            ConfigPanel.lbSuccessCount.setText("0");
+            ConfigPanel.lbRequestCount.setText("0");
+            ConfigPanel.jsCrawledCount.setText("0/0");
+            ConfigPanel.urlCrawledCount.setText("0/0");
+
+            //清空数据库内容
+            DBService.clearAllTableData();
+
+            // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ConfigPanel.searchField.setText("");

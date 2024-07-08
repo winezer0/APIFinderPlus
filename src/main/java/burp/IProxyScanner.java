@@ -29,7 +29,7 @@ public class IProxyScanner implements IProxyListener {
     private int totalScanCount = 0; //记录所有经过插件的URL数量
 
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
-    private static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
+    public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
     private static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
 
     final ThreadPoolExecutor executorService;
@@ -403,4 +403,5 @@ public class IProxyScanner implements IProxyListener {
             }
         }
     }
+
 }

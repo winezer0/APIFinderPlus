@@ -4,10 +4,7 @@ import burp.BurpExtender;
 import org.sqlite.SQLiteConfig;
 import utils.BurpFileUtils;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 import static utils.BurpPrintUtils.*;
 
@@ -107,5 +104,35 @@ public class DBService {
             stderr_println(String.format("关闭数据库连接时发生错误: %s", e.getMessage()));
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 清空表数据
+     * @param tableName
+     */
+    private static void clearTable(String tableName) {
+        // 用 DELETE 语句来清空表
+        String deleteSql = "DELETE FROM tableName;"
+                .replace("tableName", tableName);
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
+            stmt.executeUpdate();
+            stdout_println(String.format("[-] table [%s] has been cleared.", tableName));
+        } catch (Exception e) {
+            stderr_println(String.format("Error clearing table [%s] -> Error: %s",tableName, e.getMessage()));
+        }
+    }
+
+    /**
+     * 清空所有表的数据
+     */
+    public static void clearAllTableData(){
+       clearTable(InfoAnalyseTable.tableName);
+       clearTable(ReqDataTable.tableName);
+       clearTable(ReqMsgDataTable.tableName);
+
+//        clearTable(PathTreeTable.tableName);
+//        clearTable(RecordPathTable.tableName);
+//        clearTable(RecordUrlTable.tableName);
     }
 }
