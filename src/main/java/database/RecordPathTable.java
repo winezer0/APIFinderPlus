@@ -7,9 +7,9 @@ import java.sql.*;
 
 import static utils.BurpPrintUtils.*;
 
-public class PathRecordTable {
+public class RecordPathTable {
     //数据表名称
-    static String tableName = "PATH_RECORD";
+    static String tableName = "RECORD_PATH";
 
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"

@@ -11,10 +11,10 @@ import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static database.InfoAnalyseTable.*;
-import static database.PathRecordTable.fetchUnhandledRecordUrlId;
+import static database.RecordPathTable.fetchUnhandledRecordUrlId;
 import static database.PathTreeTable.fetchOnePathTreeData;
 import static database.PathTreeTable.insertOrUpdatePathTree;
-import static database.PathRecordTable.fetchUnhandledRecordUrls;
+import static database.RecordPathTable.fetchUnhandledRecordUrls;
 import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.InfoAnalyseUtils.UrlAddPath;
@@ -99,7 +99,7 @@ public class IProxyScanner implements IProxyListener {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        PathRecordTable.insertOrUpdateSuccessUrl(msgInfo);
+                        RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
                     }
                 });
             }
