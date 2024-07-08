@@ -1,4 +1,4 @@
-package dataModel;
+package database;
 
 public class Constants {
     //所有表状态都使用
@@ -19,8 +19,9 @@ public class Constants {
     public static final String FIND_PATH = "FIND_PATH";
     public static final String FIND_URL = "FIND_URL";
     public static final String FIND_INFO = "FIND_INFO";
-    public static final String SMART_API = "SMART_API";
     public static final String FIND_API = "FIND_API";
+    public static final String SMART_API = "SMART_API";
+    public static final String UNVISITED_URL = "UNVISITED_URL";
 
     //RecordUrlsTable使用
     public static final String SPLIT_SYMBOL = "<->";
@@ -30,16 +31,6 @@ public class Constants {
 
 
     //联合语句用到的遍历
-    public static final String MSG_ID = "MSG_ID";
-    public static final String REQ_METHOD = "REQ_METHOD";
-    public static final String RESP_STATUS_CODE = "RESP_STATUS_CODE";
-    public static final String REQ_SOURCE = "REQ_SOURCE";
-    public static final String FIND_URL_NUM = "FIND_URL_NUM";
-    public static final String FIND_PATH_NUM = "FIND_PATH_NUM";
-    public static final String FIND_INFO_NUM = "FIND_INFO_NUM";
-    public static final String FIND_API_NUM = "FIND_API_NUM";
-    public static final String SMART_API_NUM = "SMART_API_NUM";
-    public static final String RUN_STATUS = "RUN_STATUS";
     public static final String BASIC_PATH_NUM = "BASIC_PATH_NUM";
 
 

@@ -1,4 +1,4 @@
-package dataModel;
+package database;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -38,6 +38,9 @@ public class InfoAnalyseTable {
 
             + " smart_api TEXT DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
             + " smart_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
+
+            + " unvisited_url TEXT DEFAULT '',\n"      //合并所有URL 并去除已经访问过的URL (Json格式)
+            + " unvisited_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 并去除已经访问过的URL的数量
 
             + " basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
@@ -147,6 +150,7 @@ public class InfoAnalyseTable {
     public static synchronized int insertAnalyseSmartApiData(int dataId, JSONObject analyseApiInfo){
         int dataIndex = -1; // 默认ID值，如果没有生成ID，则保持此值
 
+        // todo: 实现插入 unvisited_url 数据
         String updateSQL = "UPDATE tableName SET smart_api = ?, smart_api_num = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
@@ -197,7 +201,7 @@ public class InfoAnalyseTable {
     public static synchronized JSONObject fetchAnalyseResultByMsgHash(String msgHash){
         JSONObject pathData = new JSONObject();
 
-        String selectSQL = "SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api FROM tableName WHERE msg_hash = ?;"
+        String selectSQL = "SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api,unvisited_url FROM tableName WHERE msg_hash = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -211,6 +215,7 @@ public class InfoAnalyseTable {
                     pathData.put(Constants.FIND_INFO, rs.getString("find_info"));
                     pathData.put(Constants.FIND_API, rs.getString("find_api"));
                     pathData.put(Constants.SMART_API, rs.getString("smart_api"));
+                    pathData.put(Constants.UNVISITED_URL, rs.getString("unvisited_url"));
                 }
             }
         } catch (Exception e) {

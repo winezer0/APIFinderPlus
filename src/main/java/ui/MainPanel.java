@@ -2,7 +2,7 @@ package ui;
 
 import burp.*;
 import com.alibaba.fastjson2.JSONObject;
-import dataModel.*;
+import database.*;
 import model.TableLineDataModel;
 import utils.UiUtils;
 
@@ -35,6 +35,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private static ITextEditor findPathTEditor; //显示找到的PATH
     private static ITextEditor findApiTEditor; //基于PATH计算出的URL
     private static ITextEditor smartApiTEditor; //基于树算法计算出的URL
+    private static ITextEditor unvisitedUrlTEditor; //未访问过的URL
 
     private static byte[] requestsData; //请求数据,设置为全局变量,便于IMessageEditorController函数调用
     private static byte[] responseData; //响应数据,设置为全局变量,便于IMessageEditorController函数调用
@@ -124,6 +125,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 "find_info_num",
                 "find_api_num",
                 "smart_api_num",
+                "unvisited_url_num",
                 "run_status",
                 "basic_path_num",
         }, 0) {
@@ -390,6 +392,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         findPathTEditor = callbacks.createTextEditor();
         findApiTEditor = callbacks.createTextEditor();
         smartApiTEditor = callbacks.createTextEditor();
+        unvisitedUrlTEditor = callbacks.createTextEditor();
 
         tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
         tabs.addTab("Response", responseTextEditor.getComponent()); //显示原始响应
@@ -400,6 +403,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         tabs.addTab("findPath", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
         tabs.addTab("findApi", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
         tabs.addTab("smartApi", smartApiTEditor.getComponent()); //显示在这个URL中找到的PATH
+
+        tabs.addTab("unvisitedUrl", unvisitedUrlTEditor.getComponent()); //显示在这个URL中找到的Path 且还没有访问过的URL
+
         return tabs;
     }
 
@@ -433,6 +439,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             String findPath = (String) analyseResult.get(Constants.FIND_PATH);
             String findApi = (String) analyseResult.get(Constants.FIND_API);
             String smartApi = (String) analyseResult.get(Constants.SMART_API);
+            String unvisitedUrl = (String) analyseResult.get(Constants.UNVISITED_URL);
 
             //格式化为可输出的类型
             findInfo = UiUtils.infoJsonArrayFormatHtml(findInfo);
@@ -440,18 +447,21 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             findPath = UiUtils.stringJsonArrayFormat(findPath);
             findApi = UiUtils.stringJsonArrayFormat(findApi);
             smartApi = UiUtils.stringJsonArrayFormat(smartApi);
+            unvisitedUrl = UiUtils.stringJsonArrayFormat(unvisitedUrl);
 
             findInfoTextPane.setText(findInfo);
             findUrlTEditor.setText(findUrl.getBytes());
             findPathTEditor.setText(findPath.getBytes());
             findApiTEditor.setText(findApi.getBytes());
             smartApiTEditor.setText(smartApi.getBytes());
+            unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         } else {
             findInfoTextPane.setText("");
             findUrlTEditor.setText("".getBytes());
             findPathTEditor.setText("".getBytes());
             findApiTEditor.setText("".getBytes());
             smartApiTEditor.setText("".getBytes());
+            unvisitedUrlTEditor.setText("".getBytes());
         }
     }
 
@@ -529,6 +539,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             MainPanel.findPathTEditor.setText(new byte[0]);
             MainPanel.findApiTEditor.setText(new byte[0]);
             MainPanel.smartApiTEditor.setText(new byte[0]);
+            MainPanel.unvisitedUrlTEditor.setText(new byte[0]);
 
             MainPanel.iHttpService = null; // 清空当前显示的项
             MainPanel.requestsData = null;

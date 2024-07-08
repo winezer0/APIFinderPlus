@@ -1,4 +1,4 @@
-package dataModel;
+package database;
 
 import com.alibaba.fastjson2.JSONObject;
 

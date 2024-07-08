@@ -2,7 +2,7 @@ package burp;
 
 
 import com.alibaba.fastjson2.JSON;
-import dataModel.DBService;
+import database.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
 import ui.MainPanel;

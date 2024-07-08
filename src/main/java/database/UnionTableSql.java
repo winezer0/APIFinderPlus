@@ -1,4 +1,4 @@
-package dataModel;
+package database;
 
 import com.alibaba.fastjson2.JSONObject;
 import model.TableLineDataModel;
@@ -46,7 +46,7 @@ public class UnionTableSql {
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
         // 获取当前所有记录的数据
         String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,B.find_url_num," +
-                "B.find_path_num,B.find_info_num,B.find_api_num,B.smart_api_num,B.run_status,B.basic_path_num " +
+                "B.find_path_num,B.find_info_num,B.find_api_num,B.smart_api_num,B.unvisited_url_num,B.run_status,B.basic_path_num " +
                 "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash order by A.msg_id;")
                 .replace("ANALYSE_ING", Constants.ANALYSE_ING)
                 .replace("table1", ReqDataTable.tableName)
@@ -68,6 +68,7 @@ public class UnionTableSql {
                             rs.getInt("find_info_num"),
                             rs.getInt("find_api_num"),
                             rs.getInt("smart_api_num"),
+                            rs.getInt("unvisited_url_num"),
                             rs.getString("run_status"),
                             rs.getInt("basic_path_num")
                     );

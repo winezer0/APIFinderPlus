@@ -2,7 +2,7 @@ package burp;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import dataModel.*;
+import database.*;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 
@@ -10,11 +10,11 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static dataModel.InfoAnalyseTable.*;
-import static dataModel.PathRecordTable.fetchUnhandledRecordUrlId;
-import static dataModel.PathTreeTable.fetchOnePathTreeData;
-import static dataModel.PathTreeTable.insertOrUpdatePathTree;
-import static dataModel.PathRecordTable.fetchUnhandledRecordUrls;
+import static database.InfoAnalyseTable.*;
+import static database.PathRecordTable.fetchUnhandledRecordUrlId;
+import static database.PathTreeTable.fetchOnePathTreeData;
+import static database.PathTreeTable.insertOrUpdatePathTree;
+import static database.PathRecordTable.fetchUnhandledRecordUrls;
 import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.InfoAnalyseUtils.UrlAddPath;

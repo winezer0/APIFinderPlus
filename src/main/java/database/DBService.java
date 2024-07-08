@@ -1,4 +1,4 @@
-package dataModel;
+package database;
 
 import burp.BurpExtender;
 import utils.BurpFileUtils;

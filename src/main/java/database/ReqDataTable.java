@@ -1,4 +1,4 @@
-package dataModel;
+package database;
 
 import model.HttpMsgInfo;
 

@@ -2,7 +2,7 @@ package utils;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import dataModel.Constants;
+import database.Constants;
 
 import java.net.MalformedURLException;
 import java.net.URL;
