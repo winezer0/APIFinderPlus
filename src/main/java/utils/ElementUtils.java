@@ -3,7 +3,9 @@ package utils;
 import burp.*;
 
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ElementUtils {
     /**
@@ -116,4 +118,18 @@ public class ElementUtils {
     private static String format(String string){
         return string.toLowerCase().trim();
     }
+
+
+    /**
+     * 返回两个集合的差集。 该集合包含在setA中但不在setB中的所有元素。
+     * @param setA 第一个集合
+     * @param setB 第二个集合
+     * @return 差集
+     */
+    public static <T> Set<T> differenceSet(Set<T> setA, Set<T> setB) {
+        Set<T> result = new HashSet<>(setA);
+        result.removeAll(setB);
+        return result;
+    }
+
 }

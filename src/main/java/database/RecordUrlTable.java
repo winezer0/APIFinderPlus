@@ -1,13 +1,10 @@
 package database;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
@@ -34,6 +31,8 @@ public class RecordUrlTable {
         return insertOrUpdateAccessedUrl(reqUrl, reqHostPort, respStatusCode);
     }
 
+
+    //插入访问的URl
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl,String reqHostPort, int respStatusCode) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE req_url = ? AND resp_status_code = ?;"
@@ -74,4 +73,30 @@ public class RecordUrlTable {
         }
         return generatedId;
     }
+
+
+    //获取所有访问过的URL
+    public static synchronized Set<String> fetchAllAccessedUrl(String reqHostPort) {
+        Set<String> uniqueURLs = new HashSet<>();
+
+        String selectSql = "SELECT DISTINCT req_url FROM tableName WHERE req_host_port = '?';"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+            // 获取所有的URL
+            stmt.setString(1, reqHostPort);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String reqUrl = rs.getString("req_url");
+                uniqueURLs.add(reqUrl);
+            }
+
+    } catch (Exception e) {
+            stderr_println(String.format("[-] Error fetch All Accessed Url On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return uniqueURLs;
+    }
+
 }
