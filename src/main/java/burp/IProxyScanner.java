@@ -213,7 +213,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    Integer needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
+                    int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
                         //获取 msgDataIndex 对应的数据
                         ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
