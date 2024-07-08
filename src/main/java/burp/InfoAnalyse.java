@@ -33,6 +33,8 @@ public class InfoAnalyse {
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
     public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
+        JSONObject analyseInfoJsonObj = new JSONObject();
+
         //实现响应敏感信息提取
         JSONArray analysedInfoArray = findSensitiveInfoByConfig(msgInfo);
         stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s", analysedInfoArray.size()));
@@ -113,14 +115,13 @@ public class InfoAnalyse {
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s", analysedApiList.size()));
         }
 
-        ///////////////////////////返回最终结果///////////////////////////
-        JSONObject analyseInfo = new JSONObject();
-        analyseInfo.put(URL_KEY, analysedUrlList);
-        analyseInfo.put(PATH_KEY, analysedPathList);
-        analyseInfo.put(API_KEY, analysedApiList);
-        analyseInfo.put(INFO_KEY, analysedInfoArray);
-        //stdout_println(LOG_DEBUG, String.format("[+] 最终解析结果:%s", analyseInfo.toJSONString()));
-        return analyseInfo;
+        //返回最终分析结果
+        analyseInfoJsonObj.put(URL_KEY, analysedUrlList);
+        analyseInfoJsonObj.put(PATH_KEY, analysedPathList);
+        analyseInfoJsonObj.put(API_KEY, analysedApiList);
+        analyseInfoJsonObj.put(INFO_KEY, analysedInfoArray);
+        //stdout_println(LOG_DEBUG, String.format("[+] 最终解析结果:%s", analyseInfoJsonObj.toJSONString()));
+        return analyseInfoJsonObj;
     }
 
     /**
