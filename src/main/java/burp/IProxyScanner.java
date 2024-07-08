@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.HttpMsgInfo;
+import model.ReqMsgDataModel;
 import model.RecordHashMap;
 import ui.ConfigPanel;
 import utils.BurpSitemapUtils;
@@ -214,21 +215,24 @@ public class IProxyScanner implements IProxyListener {
                     Integer needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
                         //获取 msgDataIndex 对应的数据
-                        JSONObject msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
-                        String msgInfoHash = (String) msgData.get(Constants.MSG_HASH);
-                        String requestUrl = (String) msgData.get(Constants.REQ_URL);
-                        byte[] requestBytes = (byte[]) msgData.get(Constants.REQ_BYTES);
-                        byte[] responseBytes = (byte[]) msgData.get(Constants.RESP_BYTES);
+                        ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
+                        if (msgData != null){
+                            //进行数据分析
+                            HttpMsgInfo msgInfo =  new HttpMsgInfo(
+                                    msgData.getReqUrl(),
+                                    msgData.getReqBytes(),
+                                    msgData.getRespBytes(),
+                                    msgData.getMsgHash()
+                            );
 
-                        //进行数据分析
-                        HttpMsgInfo msgInfo =  new HttpMsgInfo(requestUrl, requestBytes, responseBytes,msgInfoHash);
-                        JSONObject analyseResult = InfoAnalyse.analysisMsgInfo(msgInfo);
+                            JSONObject analyseResult = InfoAnalyse.analysisMsgInfo(msgInfo);
 
-                        //将分析结果写入数据库
-                        if(analyseInfoIsNotEmpty(analyseResult)){
-                            int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseResult);
-                            if (analyseDataIndex > 0){
-                                stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                            //将分析结果写入数据库
+                            if(analyseInfoIsNotEmpty(analyseResult)){
+                                int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseResult);
+                                if (analyseDataIndex > 0){
+                                    stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                                }
                             }
                         }
 

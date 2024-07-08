@@ -3,6 +3,7 @@ package ui;
 import burp.*;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
+import model.ReqMsgDataModel;
 import model.RecordHashMap;
 import model.TableLineDataModel;
 import utils.UiUtils;
@@ -20,6 +21,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import static utils.BurpPrintUtils.stderr_println;
 
 public class MainPanel extends JPanel implements IMessageEditorController {
     private static volatile MainPanel instance; //实现单例模式
@@ -416,14 +419,20 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      */
     private void updateComponentsBasedOnSelectedRow(int row) {
         //1、获取当前行的msgHash
-        String msgHash = (String) table.getModel().getValueAt(row, 1);
+        String msgHash = null;
+        try {
+            msgHash = (String) table.getModel().getValueAt(row, 1);
+        } catch (Exception e) {
+            stderr_println(String.format("[!] Table get Value At Row [%s] MsgHash Error:%s", row, e.getMessage() ));
+        }
+
+        if (msgHash == null) return;
 
         //根据 msgHash值 查询对应的请求体响应体数据
-        JSONObject msgData = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
-        //String msgInfoHash = (String) msgData.get(Constants.MSG_HASH);
-        String requestUrl = (String) msgData.get(Constants.REQ_URL);
-        requestsData = (byte[]) msgData.get(Constants.REQ_BYTES);
-        responseData = (byte[]) msgData.get(Constants.RESP_BYTES);
+        ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+        String requestUrl = msgData.getReqUrl();
+        requestsData = msgData.getReqBytes();
+        responseData = msgData.getRespBytes();
 
         //显示在UI中
         iHttpService = UiUtils.getIHttpService(requestUrl);
@@ -431,8 +440,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(responseData, false);
 
         //根据 msgHash值 查询api分析结果数据
-        JSONObject analyseResult =  InfoAnalyseTable.fetchAnalyseResultByMsgHash(msgHash);
-        if(!analyseResult.isEmpty()){
+        JSONObject analyseResult = InfoAnalyseTable.fetchAnalyseResultByMsgHash(msgHash);
+        if (!analyseResult.isEmpty()) {
             //analyseResult.get(Constants.MSG_HASH);
             String findInfo = (String) analyseResult.get(Constants.FIND_INFO);
 

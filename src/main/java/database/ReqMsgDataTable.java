@@ -1,7 +1,7 @@
 package database;
 
-import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
+import model.ReqMsgDataModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -68,9 +68,10 @@ public class ReqMsgDataTable {
 
     /**
      * 基于id获取对应的数据 考虑更换为msg_hash
+     * @return
      */
-    public static synchronized JSONObject fetchMsgDataById(Integer msgDataIndex){
-        JSONObject msgData = new JSONObject();
+    public static synchronized ReqMsgDataModel fetchMsgDataById(Integer msgDataIndex){
+        ReqMsgDataModel msgData = null;
 
         String sql = "SELECT * FROM tableName WHERE id = ?;"
                 .replace("tableName", tableName);
@@ -80,10 +81,12 @@ public class ReqMsgDataTable {
             stmt.setInt(1, msgDataIndex);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    msgData.put(Constants.MSG_HASH, rs.getString("msg_hash"));
-                    msgData.put(Constants.REQ_URL, rs.getString("req_url"));
-                    msgData.put(Constants.REQ_BYTES, rs.getBytes("req_bytes"));
-                    msgData.put(Constants.RESP_BYTES, rs.getBytes("resp_bytes"));
+                    msgData = new ReqMsgDataModel(
+                            rs.getString("msg_hash"),
+                            rs.getString("req_url"),
+                            rs.getBytes("req_bytes"),
+                            rs.getBytes("resp_bytes")
+                    );
                 }
             }
         } catch (Exception e) {
@@ -95,9 +98,10 @@ public class ReqMsgDataTable {
 
     /**
      * 根据消息ID查询请求内容
+     * @return
      */
-    public static synchronized JSONObject fetchMsgDataByMsgHash(String msgHash){
-        JSONObject msgData = new JSONObject();
+    public static synchronized ReqMsgDataModel fetchMsgDataByMsgHash(String msgHash){
+        ReqMsgDataModel msgData = null;
 
         String sql = "SELECT * FROM tableName WHERE msg_hash = ?;"
                 .replace("tableName", tableName);
@@ -107,10 +111,12 @@ public class ReqMsgDataTable {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    msgData.put(Constants.MSG_HASH, rs.getString("msg_hash"));
-                    msgData.put(Constants.REQ_URL, rs.getString("req_url"));
-                    msgData.put(Constants.REQ_BYTES, rs.getBytes("req_bytes"));
-                    msgData.put(Constants.RESP_BYTES, rs.getBytes("resp_bytes"));
+                    msgData = new ReqMsgDataModel(
+                            rs.getString("msg_hash"),
+                            rs.getString("req_url"),
+                            rs.getBytes("req_bytes"),
+                            rs.getBytes("resp_bytes")
+                    );
                 }
             }
         } catch (Exception e) {
