@@ -297,6 +297,8 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
+                    //TODO 动态实现未访问URL的更新
+                    
                     //todo: 增加自动递归查询功能
 
                     //todo: UI完善全局变量内容的更新
