@@ -287,13 +287,13 @@ public class PathTreeUtils {
 
     /**
      * 生成路径树  输入格式 {host:[path list]}
-     * @param record
+     * @param recordJsonObj
      * @return
      */
-    public static JSONObject genPathsTree(JSONObject record) {
+    public static JSONObject genPathsTree(JSONObject recordJsonObj) {
         JSONObject jsonObject = new JSONObject();
+
         // 确保map中有期望的键，避免NullPointerException
-        JSONObject recordJsonObj = record;
         String reqHostPort = (String) recordJsonObj.get(Constants.REQ_HOST_PORT);
         String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
 
@@ -302,6 +302,7 @@ public class PathTreeUtils {
         //格式化列表
         List<String> filterPaths = filterPath(Arrays.asList(paths));
         JSONObject tree = createRootTree(filterPaths);
+
         if (tree != null && !tree.isEmpty()){
             jsonObject.put(Constants.REQ_HOST_PORT, reqHostPort);
             jsonObject.put(Constants.PATH_TREE, tree);

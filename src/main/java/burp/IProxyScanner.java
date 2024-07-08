@@ -348,10 +348,10 @@ public class IProxyScanner implements IProxyListener {
                     }
                 }
                 //不管找没找到数据 都应该写入数据库进行存储
-                JSONObject analyseApiInfo = new JSONObject();
-                analyseApiInfo.put(Constants.BASIC_PATH_NUM, basicPathNum);
-                analyseApiInfo.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
-                int apiDataIndex = insertAnalyseSmartApiData(dataId, analyseApiInfo);
+                JSONObject smartApiJsonObj = new JSONObject();
+                smartApiJsonObj.put(Constants.BASIC_PATH_NUM, basicPathNum);
+                smartApiJsonObj.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
+                int apiDataIndex = insertAnalyseSmartApiData(dataId, smartApiJsonObj);
                 if (apiDataIndex > 0)
                     stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
             }

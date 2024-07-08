@@ -159,7 +159,7 @@ public class InfoAnalyse {
             if (rule.getMatch().equals("keyword"))
                 if(isContainAllKey(willFindText, rule.getKeyword(), false)){
                     //匹配关键字模式成功,应该标记敏感信息
-                    JSONObject findInfo = generateInfoJson(rule, String.valueOf(rule.getKeyword()));
+                    JSONObject findInfo = genMatchInfoJson(rule, String.valueOf(rule.getKeyword()));
                     stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                     findInfosSet.add(findInfo);
                 }
@@ -169,7 +169,7 @@ public class InfoAnalyse {
                 for (String patter : rule.getKeyword()){
                     Set<String> groups = regularMatchInfo(willFindText, patter);
                     if (!groups.isEmpty()){
-                        JSONObject findInfo = generateInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
+                        JSONObject findInfo = genMatchInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
                         stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                         findInfosSet.add(findInfo);
                     }
@@ -186,14 +186,14 @@ public class InfoAnalyse {
      * @param group
      * @return
      */
-    private static JSONObject generateInfoJson(FingerPrintRule rule, String group) {
-        JSONObject findInfo = new JSONObject();
-        findInfo.put(type, rule.getType()); // "type": "敏感内容",
-        findInfo.put(describe, rule.getDescribe()); //"describe": "身份证",
-        findInfo.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
-        findInfo.put(important, rule.getIsImportant()); //"isImportant": true,
-        findInfo.put(value, group);
-        return findInfo;
+    private static JSONObject genMatchInfoJson(FingerPrintRule rule, String group) {
+        JSONObject matchInfoJsonObj = new JSONObject();
+        matchInfoJsonObj.put(type, rule.getType()); // "type": "敏感内容",
+        matchInfoJsonObj.put(describe, rule.getDescribe()); //"describe": "身份证",
+        matchInfoJsonObj.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
+        matchInfoJsonObj.put(important, rule.getIsImportant()); //"isImportant": true,
+        matchInfoJsonObj.put(value, group);
+        return matchInfoJsonObj;
     }
 
     /**
@@ -235,7 +235,7 @@ public class InfoAnalyse {
      * @return
      */
     public static Map<String, List> SeparateUrlOrPath(Set<String> matchUriSet) {
-        Map<String, List> setMap = new HashMap<>();
+        Map<String, List> hashMap = new HashMap<>();
         ArrayList<String> urlList = new ArrayList<>();
         ArrayList<String> pathList = new ArrayList<>();
 
@@ -247,9 +247,9 @@ public class InfoAnalyse {
             }
         }
 
-        setMap.put(URL_KEY,  urlList);
-        setMap.put(PATH_KEY, pathList);
-        return setMap;
+        hashMap.put(URL_KEY,  urlList);
+        hashMap.put(PATH_KEY, pathList);
+        return hashMap;
     }
 
     /**

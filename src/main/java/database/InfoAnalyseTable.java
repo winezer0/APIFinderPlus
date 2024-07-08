@@ -116,7 +116,8 @@ public class InfoAnalyseTable {
         JSONObject pathData = new JSONObject();
 
         // 首先选取一条记录的ID
-        String selectSQL = "SELECT id,req_url,req_host_port,find_path FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
+        String selectSQL = ("SELECT id,req_url,req_host_port,find_path FROM tableName " +
+                "WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;")
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
@@ -200,9 +201,10 @@ public class InfoAnalyseTable {
 
     //获取指定msgHash的数据
     public static synchronized JSONObject fetchAnalyseResultByMsgHash(String msgHash){
-        JSONObject pathData = new JSONObject();
+        JSONObject analyseResult = new JSONObject();
 
-        String selectSQL = "SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api,unvisited_url FROM tableName WHERE msg_hash = ?;"
+        String selectSQL = ("SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api,unvisited_url " +
+                "FROM tableName WHERE msg_hash = ?;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -210,18 +212,18 @@ public class InfoAnalyseTable {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pathData.put(Constants.MSG_HASH, rs.getString("msg_hash"));
-                    pathData.put(Constants.FIND_URL, rs.getString("find_url"));
-                    pathData.put(Constants.FIND_PATH, rs.getString("find_path"));
-                    pathData.put(Constants.FIND_INFO, rs.getString("find_info"));
-                    pathData.put(Constants.FIND_API, rs.getString("find_api"));
-                    pathData.put(Constants.SMART_API, rs.getString("smart_api"));
-                    pathData.put(Constants.UNVISITED_URL, rs.getString("unvisited_url"));
+                    analyseResult.put(Constants.MSG_HASH, rs.getString("msg_hash"));
+                    analyseResult.put(Constants.FIND_URL, rs.getString("find_url"));
+                    analyseResult.put(Constants.FIND_PATH, rs.getString("find_path"));
+                    analyseResult.put(Constants.FIND_INFO, rs.getString("find_info"));
+                    analyseResult.put(Constants.FIND_API, rs.getString("find_api"));
+                    analyseResult.put(Constants.SMART_API, rs.getString("smart_api"));
+                    analyseResult.put(Constants.UNVISITED_URL, rs.getString("unvisited_url"));
                 }
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Analyse Result Data By MsgHash: %s", e.getMessage()));
         }
-        return pathData;
+        return analyseResult;
     }
 }
