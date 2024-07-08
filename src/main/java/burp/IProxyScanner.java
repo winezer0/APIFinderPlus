@@ -6,6 +6,8 @@ import database.*;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 import ui.ConfigPanel;
+import utils.BurpSitemapUtils;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -30,7 +32,7 @@ public class IProxyScanner implements IProxyListener {
 
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
-    private static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
+    public static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
 
     final ThreadPoolExecutor executorService;
     static ScheduledExecutorService monitorExecutor;
@@ -106,12 +108,12 @@ public class IProxyScanner implements IProxyListener {
                     //加载sitemap中已经访问过的URL到数据库中 针对每个主机需要执行一次
                     String reqPrefix = msgInfo.getUrlInfo().getReqPrefix();
                     String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-                    //判断当前前缀是否已经已经被记录
+                    //判断当前前缀开头的所有URL是否已经已经被记录到内存中
                     if (urlPathRecordMap.get(reqPrefix) <= 0){
                         urlPathRecordMap.add(reqPrefix);
                         //把当前前缀的URl + 999 状态码 作为标记,插入到数据库中, 如果已存在表示这个sitemap数据都已经加入成功
                         if (RecordUrlTable.insertOrUpdateAccessedUrl(reqPrefix, reqHostPort, 999) > 0)
-                            addSiteMapUrlsToDB(reqPrefix);
+                            BurpSitemapUtils.addSiteMapUrlsToDB(reqPrefix);
                     }
                 }
             });
@@ -374,34 +376,4 @@ public class IProxyScanner implements IProxyListener {
             }
         }
     }
-
-    /**
-     * 添加 指定前缀的URL到数据库中
-     * @param urlPrefix
-     */
-    private static void addSiteMapUrlsToDB(String urlPrefix){
-        IHttpRequestResponse[] httpRequestResponses = getCallbacks().getSiteMap(urlPrefix);
-        for (IHttpRequestResponse requestResponse : httpRequestResponses) {
-            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
-
-            String reqBaseUrl = msgInfo.getUrlInfo().getReqBaseUrl();
-            String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-            int respStatusCode = msgInfo.getRespStatusCode();
-
-            //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
-            if(!isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
-                RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
-            }
-
-            //插入路径 仅保留200 403等有效目录
-            if(urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
-                    && isEqualsOneKey(String.valueOf(msgInfo.getRespStatusCode()), CONF_NEED_RECORD_STATUS, true)
-                    && !msgInfo.getUrlInfo().getReqPath().equals("/")
-            ){
-                urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
-                RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
-            }
-        }
-    }
-
 }
