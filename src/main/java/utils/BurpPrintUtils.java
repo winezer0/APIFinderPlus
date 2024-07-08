@@ -9,7 +9,6 @@ import static burp.BurpExtender.SHOW_MSG_LEVEL;
 public class BurpPrintUtils {
     private static PrintWriter stdout;
     private static PrintWriter stderr;
-    private static BurpPrintUtils instance = null;
 
     // 定义日志级别
     public static int LOG_ERROR = 0;  //重要
