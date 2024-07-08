@@ -162,7 +162,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             stdout_println(LOG_DEBUG, "[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
         }
 
-        //Todo: 停止面板更新器, 待实现数据查询面板
+        // 停止面板更新器
         MainPanel.timer.stop();
 
         // 关闭数据库连接

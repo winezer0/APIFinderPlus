@@ -1,7 +1,7 @@
 package model;
 
 
-public class ApiDataModel {
+public class TableLineDataModel {
     private Integer msgId;
     private String msgHash;
     private String reqUrl;
@@ -17,9 +17,9 @@ public class ApiDataModel {
     private Integer basicPathNum;
 
     // 构造函数
-    public ApiDataModel(int msgId, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
-                        String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
-                        int findApiNum, int smartApiNum, String runStatus, int basicPathNum) {
+    public TableLineDataModel(int msgId, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
+                              String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
+                              int findApiNum, int smartApiNum, String runStatus, int basicPathNum) {
         this.msgId = msgId;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;

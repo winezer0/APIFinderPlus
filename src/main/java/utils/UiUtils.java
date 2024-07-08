@@ -3,7 +3,7 @@ package utils;
 import burp.IHttpService;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import model.ApiDataModel;
+import model.TableLineDataModel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,11 +15,6 @@ import java.util.Iterator;
 
 import static utils.BurpPrintUtils.stderr_println;
 
-/**
- * @author： shaun
- * @create： 2024/3/27 21:21
- * @description：TODO
- */
 public class UiUtils {
     public static ImageIcon getImageIcon(String iconPath, int xWidth, int yWidth){
         // 根据按钮的大小缩放图标
@@ -155,12 +150,12 @@ public class UiUtils {
      * @param model
      * @param jsonArray
      */
-    public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<ApiDataModel> jsonArray) {
+    public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<TableLineDataModel> jsonArray) {
         if (jsonArray.isEmpty()) return;
 
-        Iterator<ApiDataModel> iterator = jsonArray.iterator();
+        Iterator<TableLineDataModel> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
-            ApiDataModel apiDataModel = iterator.next();
+            TableLineDataModel apiDataModel = iterator.next();
             Object[] rowData = apiDataModel.toRowDataArray();
             model.addRow(rowData);
         }

@@ -3,7 +3,7 @@ package ui;
 import burp.*;
 import com.alibaba.fastjson2.JSONObject;
 import dataModel.*;
-import model.ApiDataModel;
+import model.TableLineDataModel;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -100,7 +100,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<ApiDataModel> allReqAnalyseData  = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
+                ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
                 //将数据赋值给表模型
                 UiUtils.populateModelFromJsonArray(model, allReqAnalyseData);
             }
@@ -469,10 +469,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 model.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<ApiDataModel> apiDataModels = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
+                ArrayList<TableLineDataModel> apiDataModels = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
 
                 // 遍历apiDataModelMap
-                for (ApiDataModel apiDataModel : apiDataModels) {
+                for (TableLineDataModel apiDataModel : apiDataModels) {
                     String url = apiDataModel.getReqUrl();
                     if (selectOption.equals("只看status为200") && !(apiDataModel.getRespStatusCode() == 200)){
                         continue;

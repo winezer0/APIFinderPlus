@@ -1,7 +1,7 @@
 package dataModel;
 
 import com.alibaba.fastjson2.JSONObject;
-import model.ApiDataModel;
+import model.TableLineDataModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,8 +42,8 @@ public class UnionTableSql {
 
 
     //联合 获取一条需要更新的Path数据
-    public static synchronized ArrayList<ApiDataModel> fetchAllReqDataLeftJoinAnalyseInfo(){
-        ArrayList<ApiDataModel> apiDataModels = new ArrayList<>();
+    public static synchronized ArrayList<TableLineDataModel> fetchAllReqDataLeftJoinAnalyseInfo(){
+        ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
         // 获取当前所有记录的数据
         String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,B.find_url_num," +
                 "B.find_path_num,B.find_info_num,B.find_api_num,B.smart_api_num,B.run_status,B.basic_path_num " +
@@ -56,7 +56,7 @@ public class UnionTableSql {
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    ApiDataModel apiDataModel = new ApiDataModel(
+                    TableLineDataModel apiDataModel = new TableLineDataModel(
                             rs.getInt("msg_id"),
                             rs.getString("msg_hash"),
                             rs.getString("req_url"),

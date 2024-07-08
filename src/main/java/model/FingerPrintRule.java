@@ -4,11 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-/**
- * @author： shaun
- * @create： 2024/3/2 17:49
- * @description：TODO
- */
 public class FingerPrintRule {
     private String match;
     private String location;
