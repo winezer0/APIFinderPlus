@@ -1,8 +1,8 @@
 package ui;
 
 import burp.*;
-import com.alibaba.fastjson2.JSONObject;
 import database.*;
+import model.TableTabDataModel;
 import model.ReqMsgDataModel;
 import model.RecordHashMap;
 import model.TableLineDataModel;
@@ -440,16 +440,15 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(responseData, false);
 
         //根据 msgHash值 查询api分析结果数据
-        JSONObject analyseResult = InfoAnalyseTable.fetchAnalyseResultByMsgHash(msgHash);
-        if (!analyseResult.isEmpty()) {
-            //analyseResult.get(Constants.MSG_HASH);
-            String findInfo = (String) analyseResult.get(Constants.FIND_INFO);
-
-            String findUrl = (String) analyseResult.get(Constants.FIND_URL);
-            String findPath = (String) analyseResult.get(Constants.FIND_PATH);
-            String findApi = (String) analyseResult.get(Constants.FIND_API);
-            String smartApi = (String) analyseResult.get(Constants.SMART_API);
-            String unvisitedUrl = (String) analyseResult.get(Constants.UNVISITED_URL);
+        TableTabDataModel tabDataModel = InfoAnalyseTable.fetchAnalyseResultByMsgHash(msgHash);
+        if (tabDataModel != null) {
+            //String msgHash = analyseResult.getMsgHash();
+            String findInfo = tabDataModel.getFindInfo();
+            String findUrl = tabDataModel.getFindUrl();
+            String findPath = tabDataModel.getFindPath();
+            String findApi = tabDataModel.getFindApi();
+            String smartApi = tabDataModel.getSmartApi();
+            String unvisitedUrl = tabDataModel.getUnvisitedUrl();
 
             //格式化为可输出的类型
             findInfo = UiUtils.infoJsonArrayFormatHtml(findInfo);

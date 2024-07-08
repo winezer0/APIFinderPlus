@@ -2,6 +2,7 @@ package database;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import model.TableTabDataModel;
 import model.FindPathModel;
 import model.HttpMsgInfo;
 
@@ -202,8 +203,8 @@ public class InfoAnalyseTable {
 
 
     //获取指定msgHash的数据
-    public static synchronized JSONObject fetchAnalyseResultByMsgHash(String msgHash){
-        JSONObject analyseResult = new JSONObject();
+    public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
+        TableTabDataModel tabDataModel = null;
 
         String selectSQL = ("SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api,unvisited_url " +
                 "FROM tableName WHERE msg_hash = ?;")
@@ -214,18 +215,20 @@ public class InfoAnalyseTable {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    analyseResult.put(Constants.MSG_HASH, rs.getString("msg_hash"));
-                    analyseResult.put(Constants.FIND_URL, rs.getString("find_url"));
-                    analyseResult.put(Constants.FIND_PATH, rs.getString("find_path"));
-                    analyseResult.put(Constants.FIND_INFO, rs.getString("find_info"));
-                    analyseResult.put(Constants.FIND_API, rs.getString("find_api"));
-                    analyseResult.put(Constants.SMART_API, rs.getString("smart_api"));
-                    analyseResult.put(Constants.UNVISITED_URL, rs.getString("unvisited_url"));
+                    tabDataModel = new TableTabDataModel(
+                            rs.getString("msg_hash"),
+                            rs.getString("find_url"),
+                            rs.getString("find_path"),
+                            rs.getString("find_info"),
+                            rs.getString("find_api"),
+                            rs.getString("smart_api"),
+                            rs.getString("unvisited_url")
+                    );
                 }
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Analyse Result Data By MsgHash: %s", e.getMessage()));
         }
-        return analyseResult;
+        return tabDataModel;
     }
 }
