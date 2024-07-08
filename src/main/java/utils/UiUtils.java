@@ -3,11 +3,15 @@ package utils;
 import burp.IHttpService;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import model.ApiDataModel;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import static utils.BurpPrintUtils.stderr_println;
 
@@ -146,4 +150,21 @@ public class UiUtils {
         return formattedResult.toString();
     }
 
+    /**
+     * 把 jsonArray 赋值到 model 中
+     * @param model
+     * @param jsonArray
+     */
+    public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<ApiDataModel> jsonArray) {
+        if (jsonArray.isEmpty()) return;
+
+        Iterator<ApiDataModel> iterator = jsonArray.iterator();
+        while (iterator.hasNext()) {
+            ApiDataModel apiDataModel = iterator.next();
+            Object[] rowData = apiDataModel.toRowDataArray();
+            model.addRow(rowData);
+        }
+        //刷新表数据模型
+        model.fireTableDataChanged();
+    }
 }

@@ -54,7 +54,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         return instance;
     }
 
-
     public MainPanel(IBurpExtenderCallbacks callbacks) {
         // EmptyBorder 四周各有了5像素的空白边距
         setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -95,7 +94,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
     /**
-     * 初始化表格数据
+     * 初始化 table 数据
      */
     private void initDataTableUIData() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -103,7 +102,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //获取所有数据
                 ArrayList<ApiDataModel> allReqAnalyseData  = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
                 //将数据赋值给表模型
-                populateModelFromJsonArray(model, allReqAnalyseData);
+                UiUtils.populateModelFromJsonArray(model, allReqAnalyseData);
             }
         });
     }
@@ -166,7 +165,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         tableAddActionSortByHeader();
 
         //为表格添加点击显示下方的消息动作
-        tableAddActionSetAcMsgTabData();
+        tableAddActionSetMsgTabData();
     }
 
     /**
@@ -207,9 +206,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
     /**
-     * 鼠标点击或键盘移动到行时,自动获取对应行的其他信息,更新到msgTab
+     * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
      */
-    private void tableAddActionSetAcMsgTabData() {
+    private void tableAddActionSetMsgTabData() {
         //为表格 添加 鼠标监听器
         //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
         table.addMouseListener(new MouseAdapter() {
@@ -228,7 +227,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         }
                     }
                 });
-
             }
         });
 
@@ -346,25 +344,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
     }
 
-
-    /**
-     * 把 jsonArray 赋值到 model 中
-     * @param model
-     * @param jsonArray
-     */
-    private void populateModelFromJsonArray(DefaultTableModel model, ArrayList<ApiDataModel> jsonArray) {
-        if (jsonArray.isEmpty()) return;
-
-        Iterator<ApiDataModel> iterator = jsonArray.iterator();
-        while (iterator.hasNext()) {
-            ApiDataModel apiDataModel = iterator.next();
-            Object[] rowData = apiDataModel.toRowDataArray();
-            model.addRow(rowData);
-        }
-        //刷新表数据模型
-        model.fireTableDataChanged();
-    }
-
     /**
      * 初始化任务定时器
      * @param delay
@@ -476,7 +455,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
     }
 
-
     /**
      * 基于过滤选项 和 搜索框内容 显示结果
      * @param selectOption
@@ -526,8 +504,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }.execute();
     }
 
-
-    //清理所有数据
+    /**
+     * 清理所有数据
+     */
     public static void clearAllData(){
         synchronized (model) {
             // 清空model
@@ -557,7 +536,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
     }
 
-    //定时刷新表数据
+    /**
+     * 定时刷新表数据
+     */
     public void refreshTableModel() {
         //设置成功数量
         int successCount = ReqDataTable.getReqDataCount();
