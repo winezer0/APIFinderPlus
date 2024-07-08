@@ -58,6 +58,9 @@ public class DBService {
 
     //创建数据表结构
     private synchronized void initCreateTables() {
+        // RecordUrlTable URL 访问记录表 用于后续排除已访问过的UR了
+        execCreatTableSql(RecordUrlTable.creatTableSQL, RecordUrlTable.tableName);
+
         // RecordUrlsTable URL PATH记录表 用于后续路径猜测记录
         execCreatTableSql(RecordPathTable.creatTableSQL, RecordPathTable.tableName);
 

@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
+import ui.ConfigPanel;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -26,6 +27,8 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
+    private static int totalScanCount = 0; //记录所有经过插件的URL数量
+
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
     private static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
     private static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
@@ -33,6 +36,7 @@ public class IProxyScanner implements IProxyListener {
     final ThreadPoolExecutor executorService;
     static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
+
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -66,10 +70,16 @@ public class IProxyScanner implements IProxyListener {
     @Override
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
-//            totalScanCount += 1;
-//            ConfigPanel.lbRequestCount.setText(Integer.toString(totalScanCount));
+            totalScanCount += 1;
+            ConfigPanel.lbRequestCount.setText(Integer.toString(totalScanCount));
 
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
+            //判断URL是否已经扫描过
+            if (urlScanRecordMap.get(msgInfo.getMsgHash()) > 0) {
+                //stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                return;
+            }
+
             //判断是否是正常的响应 //返回结果为空则退出
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
                 stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
@@ -125,12 +135,6 @@ public class IProxyScanner implements IProxyListener {
 
             if (msgInfo.getRespStatusCode().equals("404")){
                 stdout_println(LOG_DEBUG, "[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
-                return;
-            }
-
-            //判断URL是否已经扫描过
-            if (urlScanRecordMap.get(msgInfo.getMsgHash()) > 0) {
-                //stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                 return;
             }
 
