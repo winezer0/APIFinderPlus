@@ -112,9 +112,6 @@ public class IProxyScanner implements IProxyListener {
                         //把当前前缀的URl + 999 状态码 作为标记,插入到数据库中, 如果已存在表示这个sitemap数据都已经加入成功
                         if (RecordUrlTable.insertOrUpdateAccessedUrl(reqPrefix, reqHostPort, 999) > 0)
                             addSiteMapUrlsToDB(reqPrefix);
-                        else {
-                            System.out.println(String.format("已插入过 [%s] ", reqPrefix));
-                        }
                     }
                 }
             });
