@@ -25,9 +25,6 @@ public class Tags implements ITab {
         this.fingerConfigTab = FingerConfigTab.getInstance();
         this.tabs.add("配置", this.fingerConfigTab);
 
-//        this.mainPanel = MainPanel.getInstance(callbacks);
-//        this.tabs.add("主页", this.mainPanel.getContentPane(callbacks));
-
         // 将整个tab加载到平台即可
         callbacks.customizeUiComponent(tabs);
         // 将自定义选项卡添加到Burp的UI
