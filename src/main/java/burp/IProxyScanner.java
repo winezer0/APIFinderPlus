@@ -70,33 +70,40 @@ public class IProxyScanner implements IProxyListener {
     @Override
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
+            //记录并更新UI面板中的扫描计数
             totalScanCount += 1;
-            ConfigPanel.lbRequestCount.setText(Integer.toString(totalScanCount));
+            ConfigPanel.lbRequestCount.setText(String.valueOf(totalScanCount));
 
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            //判断URL是否已经扫描过
-            if (urlScanRecordMap.get(msgInfo.getMsgHash()) > 0) {
-                //stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
-                return;
-            }
 
-            //判断是否是正常的响应 //返回结果为空则退出
+            //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
                 stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
                 return;
             }
 
-            //看URL识别是否报错
+            //看URL识别是否报错 不记录报错情况
             if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||msgInfo.getUrlInfo().getReqBaseUrl().equals("-")){
                 stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
-            //匹配黑名单域名
+            //匹配黑名单域名 不记录黑名单域名情况
             if(isContainOneKey(msgInfo.getUrlInfo().getReqHost(), CONF_BLACK_URL_HOSTS, false)){
                 stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
+
+            //记录请求记录到数据库中（仅记录正常请求）
+            stdout_println(LOG_DEBUG, String.format("[+] Record ReqUrl: %s -> %s", msgInfo.getReqUrl(), msgInfo.getRespStatusCode()));
+            // TODO 加载sitemap中已经访问过的URL到数据库中 仅需要执行一次
+
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                }
+            });
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
@@ -133,13 +140,21 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
+            // 看status是否为404
             if (msgInfo.getRespStatusCode().equals("404")){
                 stdout_println(LOG_DEBUG, "[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
+            //判断URL是否已经扫描过
+            if (urlScanRecordMap.get(msgInfo.getMsgHash()) <= 0) {
+                urlScanRecordMap.add(msgInfo.getMsgHash());
+            }else {
+                stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                return;
+            }
+
             //记录准备加入的请求
-            urlScanRecordMap.add(msgInfo.getMsgHash());
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
