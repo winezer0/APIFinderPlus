@@ -98,18 +98,15 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                 }
             }
 
-            //加载UI
+            //加载UI 标签界面
             tags = new Tags(callbacks, extensionName);
 
             //初始化数据配置
             dbService = DBService.getInstance();
 
             //注册监听操作
-            BurpExtender.iProxyScanner = new IProxyScanner();
+            iProxyScanner = new IProxyScanner();
             callbacks.registerProxyListener(iProxyScanner);
-
-            // 标签界面, ExtensionTab 构造时依赖 BurpExtender.callbacks, 所以这个必须放在下面
-            // BurpExtender.tags = new Tags(callbacks, extensionName);
 
             // 注册插件状态监听操作
             callbacks.registerExtensionStateListener(BurpExtender.this);
