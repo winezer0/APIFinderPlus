@@ -14,6 +14,7 @@ public class HttpUrlInfo {
     private String reqProto = null;
     private String reqHost = null;
     private String reqHostPort = null;
+    private String reqPrefix = null;
     private String reqRootDomain = null;
     private int reqPort = -1;
     private String reqPath = null;
@@ -36,9 +37,10 @@ public class HttpUrlInfo {
             reqPort = urlObj.getPort();
             //添加个HostPort对象
             reqHostPort = String.format("%s:%s", reqHost, reqPort);
+            //获取前缀对象
+            reqPrefix = String.format("%s://%s", reqProto, reqHostPort);
             //获取请求路径
             reqPath = urlObj.getPath();
-
             //解析请求文件的后缀
             reqPathExt = parseUrlExt(reqUrl);
             //获取主域名
@@ -101,6 +103,10 @@ public class HttpUrlInfo {
 
     public String getReqHostPort() {
         return reqHostPort;
+    }
+
+    public String getReqPrefix() {
+        return reqPrefix;
     }
 
     public String getReqRootDomain() {

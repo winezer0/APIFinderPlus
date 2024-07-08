@@ -7,25 +7,27 @@ import burp.IResponseInfo;
 import java.util.Arrays;
 
 public class HttpRespInfo {
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
-
-    private String statusCode;
-
-    private int respLength;
-    private int bodyLength;
-
-    private int bodyLenVague;
-    private String inferredMimeType;
-    private String statedMimeType;
-    private int bodyOffset;
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();
+    private int statusCode = -1;
+    private int respLength = -1;
+    private int bodyLength = -1;
+    private int bodyLenVague = -1;
+    private String inferredMimeType = "";
+    private String statedMimeType = "";
+    private int bodyOffset = -1;
 
     HttpRespInfo(byte[] responseBytes) {
+        if (responseBytes == null || responseBytes.length <= 0){
+            System.out.println("Warning: That response body is empty !!!");
+            return;
+        }
+
         //响应长度
         respLength = responseBytes.length;
         //响应信息
         IResponseInfo responseInfo = helpers.analyzeResponse(responseBytes);
         //响应状态码
-        statusCode = String.valueOf(responseInfo.getStatusCode());
+        statusCode = responseInfo.getStatusCode();
         //获取响应类型
         inferredMimeType = responseInfo.getInferredMimeType();
         statedMimeType = responseInfo.getStatedMimeType();
@@ -39,20 +41,16 @@ public class HttpRespInfo {
 
     /**
      * 获取 请求体或响应体的body部分
-     * @param respBytes
-     * @param bodyOffset
-     * @return
      */
     public static byte[] getBodyBytes(byte[] respBytes, int bodyOffset) {
         // 确保 bodyOffset 不会导致数组越界
         int bodyLength = Math.max(0, respBytes.length - bodyOffset);
 
         // 从 bytes 数组中复制 body 的部分
-        byte[] body = Arrays.copyOfRange(respBytes, bodyOffset, bodyOffset + bodyLength);
-        return body;
+        return Arrays.copyOfRange(respBytes, bodyOffset, bodyOffset + bodyLength);
     }
 
-    public String getStatusCode() {
+    public int getStatusCode() {
         return statusCode;
     }
 

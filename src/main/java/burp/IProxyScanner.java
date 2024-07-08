@@ -6,7 +6,6 @@ import database.*;
 import model.HttpMsgInfo;
 import model.RecordHashMap;
 import ui.ConfigPanel;
-
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -27,7 +26,7 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
-    private static int totalScanCount = 0; //记录所有经过插件的URL数量
+    private int totalScanCount = 0; //记录所有经过插件的URL数量
 
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
     private static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
@@ -74,7 +73,9 @@ public class IProxyScanner implements IProxyListener {
             totalScanCount += 1;
             ConfigPanel.lbRequestCount.setText(String.valueOf(totalScanCount));
 
+            //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
+            String respStatusCode = String.valueOf(msgInfo.getRespStatusCode());
 
             //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
@@ -94,22 +95,35 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            //记录请求记录到数据库中（仅记录正常请求）
-            stdout_println(LOG_DEBUG, String.format("[+] Record ReqUrl: %s -> %s", msgInfo.getReqUrl(), msgInfo.getRespStatusCode()));
-            // TODO 加载sitemap中已经访问过的URL到数据库中 仅需要执行一次
-
+            //记录请求记录到数据库中（仅记录正常有相应的请求）
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
+                    //记录请求记录到数据库中（仅记录正常有相应的请求）
+                    //stdout_println(LOG_DEBUG, String.format("[+] Record ReqUrl: %s -> %s", msgInfo.getReqUrl(), msgInfo.getRespStatusCode()));
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+
+                    //加载sitemap中已经访问过的URL到数据库中 针对每个主机需要执行一次
+                    String reqPrefix = msgInfo.getUrlInfo().getReqPrefix();
+                    String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
+                    //判断当前前缀是否已经已经被记录
+                    if (urlPathRecordMap.get(reqPrefix) <= 0){
+                        urlPathRecordMap.add(reqPrefix);
+                        //把当前前缀的URl + 999 状态码 作为标记,插入到数据库中, 如果已存在表示这个sitemap数据都已经加入成功
+                        if (RecordUrlTable.insertOrUpdateAccessedUrl(reqPrefix, reqHostPort, 999) > 0)
+                            addSiteMapUrlsToDB(reqPrefix);
+                        else {
+                            System.out.println(String.format("已插入过 [%s] ", reqPrefix));
+                        }
+                    }
                 }
             });
 
             //保存网站相关的所有 PATH, 便于后续path反查的使用
             //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
             if(urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
-                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true)
-                    && !msgInfo.getUrlInfo().getReqPath().trim().equals("/")
+                    && isEqualsOneKey(respStatusCode, CONF_NEED_RECORD_STATUS, true)
+                    && !msgInfo.getUrlInfo().getReqPath().equals("/")
             ){
                 urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
                 stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getRespStatusCode()));
@@ -135,13 +149,13 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 看status是否为30开头
-            if (msgInfo.getRespStatusCode().startsWith("3")){
+            if (respStatusCode.startsWith("3")){
                 stdout_println(LOG_DEBUG,"[-] URL的响应包状态码3XX 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
 
             // 看status是否为404
-            if (msgInfo.getRespStatusCode().equals("404")){
+            if (respStatusCode.equals("404")){
                 stdout_println(LOG_DEBUG, "[-] URL的响应包状态码404 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
@@ -361,6 +375,35 @@ public class IProxyScanner implements IProxyListener {
                 Thread.currentThread().interrupt();
                 // 强制关闭
                 monitorExecutor.shutdownNow();
+            }
+        }
+    }
+
+    /**
+     * 添加 指定前缀的URL到数据库中
+     * @param urlPrefix
+     */
+    private static void addSiteMapUrlsToDB(String urlPrefix){
+        IHttpRequestResponse[] httpRequestResponses = getCallbacks().getSiteMap(urlPrefix);
+        for (IHttpRequestResponse requestResponse : httpRequestResponses) {
+            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
+
+            String reqBaseUrl = msgInfo.getUrlInfo().getReqBaseUrl();
+            String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
+            int respStatusCode = msgInfo.getRespStatusCode();
+
+            //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
+            if(!isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
+                RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
+            }
+
+            //插入路径 仅保留200 403等有效目录
+            if(urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
+                    && isEqualsOneKey(String.valueOf(msgInfo.getRespStatusCode()), CONF_NEED_RECORD_STATUS, true)
+                    && !msgInfo.getUrlInfo().getReqPath().equals("/")
+            ){
+                urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
+                RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
             }
         }
     }

@@ -27,6 +27,14 @@ public class RecordPathTable {
 
     //插入数据库
     public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
+        String reqProto = msgInfo.getUrlInfo().getReqProto();
+        String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
+        String reqPathDir = msgInfo.getUrlInfo().getReqPathDir();
+        int respStatusCode = msgInfo.getRespStatusCode();
+        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
+    }
+
+    public static synchronized int insertOrUpdateSuccessUrl(String reqProto, String reqHostPort, String reqPathDir, int respStatusCode) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = ("SELECT id FROM tableName WHERE req_proto = ? AND req_host_port = ? AND req_path_dir = ? AND resp_status_code = ?")
                 .replace("tableName", tableName);
@@ -34,25 +42,25 @@ public class RecordPathTable {
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
-            checkStmt.setString(1, msgInfo.getUrlInfo().getReqProto());
-            checkStmt.setString(2, msgInfo.getUrlInfo().getReqHostPort());
-            checkStmt.setString(3, msgInfo.getUrlInfo().getReqPathDir());
-            checkStmt.setString(4, msgInfo.getRespStatusCode());
+            checkStmt.setString(1, reqProto);
+            checkStmt.setString(2, reqHostPort);
+            checkStmt.setString(3, reqPathDir);
+            checkStmt.setInt(4, respStatusCode);
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getMsgHash()));
+                // stdout_println(LOG_DEBUG, String.format("[*] Ignore Update %s ->  %s %s %s %s", tableName, reqProto, reqHostPort, reqPathDir, respStatusCode));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?)"
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, msgInfo.getUrlInfo().getReqProto());
-                    insertStmt.setString(2, msgInfo.getUrlInfo().getReqHostPort());
-                    insertStmt.setString(3, msgInfo.getUrlInfo().getReqPathDir());
-                    insertStmt.setString(4, msgInfo.getRespStatusCode());
+                    insertStmt.setString(1, reqProto);
+                    insertStmt.setString(2, reqHostPort);
+                    insertStmt.setString(3, reqPathDir);
+                    insertStmt.setInt(4, respStatusCode);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -64,7 +72,7 @@ public class RecordPathTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error inserting or updating table [%s] [%s %s %s %s]-> Error:[%s]", tableName, reqProto, reqHostPort, reqPathDir, respStatusCode, e.getMessage()));
             e.printStackTrace();
         }
 

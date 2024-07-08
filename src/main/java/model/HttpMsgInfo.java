@@ -7,12 +7,12 @@ import java.util.zip.CRC32;
 
 //创建一个类用于存储 代理 流量的解析结果
 public class HttpMsgInfo {
-    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();;
+    private static final IExtensionHelpers helpers = BurpExtender.getHelpers();
     private HttpUrlInfo urlInfo;
     private HttpRespInfo respInfo;
     private String reqUrl;
     private String reqMethod;
-    private String respStatusCode;
+    private int respStatusCode;
     private byte[] reqBytes;
     private byte[] respBytes;
     private String msgHash;
@@ -23,22 +23,47 @@ public class HttpMsgInfo {
         reqBytes = messageInfo.getRequest();
 
         //请求方法
-        IRequestInfo requestInfo = helpers.analyzeRequest(messageInfo);
-        reqMethod = requestInfo.getMethod();
+        IRequestInfo requestInfoBetter = helpers.analyzeRequest(messageInfo);
+        reqMethod = requestInfoBetter.getMethod();
 
         //从请求URL解析部分信息 //直接从请求体是没有办法获取到请求URL信息的, URL此时只能从外部传入
-        reqUrl = requestInfo.getUrl().toString();
+        reqUrl = requestInfoBetter.getUrl().toString();
         urlInfo = new HttpUrlInfo(reqUrl);
 
         //从响应结果解析部分信息
         respBytes = messageInfo.getResponse();
         respInfo = new HttpRespInfo(respBytes);
 
-        //响应码时常用的
+        //响应码是常用的
         respStatusCode =  respInfo.getStatusCode();
         //请求响应信息的简单hash值
         msgHash = calcMsgHash();
     }
+
+    // 构造函数
+    public HttpMsgInfo(IHttpRequestResponse iHttpRequestResponse) {
+        //请求信息
+        reqBytes = iHttpRequestResponse.getRequest();
+
+        //请求方法
+        IHttpService httpService = iHttpRequestResponse.getHttpService();
+        IRequestInfo requestInfoBetter = helpers.analyzeRequest(httpService,reqBytes);
+        reqMethod = requestInfoBetter.getMethod();
+
+        //从请求URL解析部分信息
+        reqUrl = requestInfoBetter.getUrl().toString();
+        urlInfo = new HttpUrlInfo(reqUrl);
+
+        //从响应结果解析部分信息
+        respBytes = iHttpRequestResponse.getResponse();
+        respInfo = new HttpRespInfo(respBytes);
+
+        //响应码是常用的
+        respStatusCode =  respInfo.getStatusCode();
+        //请求响应信息的简单hash值
+        msgHash = calcMsgHash();
+    }
+
 
     // 构造函数
     public HttpMsgInfo(String requestUrl, byte[] requestBytes, byte[] responseBytes, String msgInfoHash) {
@@ -46,8 +71,8 @@ public class HttpMsgInfo {
         reqBytes = requestBytes;
 
         //请求方法
-        IRequestInfo requestInfo = helpers.analyzeRequest(reqBytes);
-        reqMethod = requestInfo.getMethod();
+        IRequestInfo requestInfoSimple = helpers.analyzeRequest(reqBytes);
+        reqMethod = requestInfoSimple.getMethod();
 
         //从请求URL解析部分信息
         reqUrl = requestUrl;
@@ -57,6 +82,8 @@ public class HttpMsgInfo {
         respBytes = responseBytes;
         respInfo = new HttpRespInfo(respBytes);
 
+        //响应码是常用的
+        respStatusCode =  respInfo.getStatusCode();
         //请求响应信息的简单hash值 因为中间可能截断了超大的响应体 , 因此最好手动传入 msgHash
         msgHash = (msgInfoHash != null && !msgInfoHash.isEmpty()) ? msgInfoHash : calcMsgHash();
     }
@@ -117,7 +144,9 @@ public class HttpMsgInfo {
         return reqUrl;
     }
 
-    public String getRespStatusCode() {
+    public int getRespStatusCode() {
         return respStatusCode;
     }
+
+
 }

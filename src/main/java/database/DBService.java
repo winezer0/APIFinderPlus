@@ -1,6 +1,7 @@
 package database;
 
 import burp.BurpExtender;
+import org.sqlite.SQLiteConfig;
 import utils.BurpFileUtils;
 
 import java.sql.Connection;
@@ -90,7 +91,10 @@ public class DBService {
 
     //获取一个数据库语句
     public Connection getNewConnection() throws SQLException {
-        return DriverManager.getConnection(CONNECTION_STRING);
+        //解决 [SQLITE_BUSY] The database file is locked (database is locked) 错误
+        SQLiteConfig config = new SQLiteConfig();
+        config.setBusyTimeout(1000); // 设置超时时间，单位是毫秒
+        return DriverManager.getConnection(CONNECTION_STRING, config.toProperties());
     }
 
     // 关闭数据库连接的方法

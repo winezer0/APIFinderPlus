@@ -54,7 +54,7 @@ public class ReqDataTable {
                     insertStmt.setString(2, msgInfo.getMsgHash());
                     insertStmt.setString(3, msgInfo.getReqUrl());
                     insertStmt.setString(4, msgInfo.getReqMethod());
-                    insertStmt.setString(5, msgInfo.getRespStatusCode());
+                    insertStmt.setInt(5, msgInfo.getRespStatusCode());
                     insertStmt.setInt(6, msgDataIndex);
                     insertStmt.setString(7, reqSource);
                     insertStmt.executeUpdate();
