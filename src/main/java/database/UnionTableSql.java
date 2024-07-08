@@ -47,8 +47,8 @@ public class UnionTableSql {
     public static synchronized ArrayList<TableLineDataModel> fetchAllReqDataLeftJoinAnalyseInfo(){
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
         // 获取当前所有记录的数据
-        String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,B.find_url_num," +
-                "B.find_path_num,B.find_info_num,B.find_api_num,B.smart_api_num,B.unvisited_url_num,B.run_status,B.basic_path_num " +
+        String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
+                "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.smart_api_num,B.unvisited_url_num,B.basic_path_num " +
                 "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash order by A.msg_id;")
                 .replace("table1", ReqDataTable.tableName)
                 .replace("table2", InfoAnalyseTable.tableName);
