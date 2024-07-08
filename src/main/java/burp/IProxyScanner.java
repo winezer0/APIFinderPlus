@@ -213,6 +213,12 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //任务1、获取需要解析的响应体数据并进行解析响
+                    //TODO: 增加提取的PATH需要进一步过滤处理
+                    // 增加 已访问URL过滤
+                    // 增加 后缀过滤功能 static/image/k8-2.png
+                    // 增加 参数处理 plugin.php?id=qidou_assign
+                    // 增加 将直接扫描出来的URl加入PathTree表中
+
                     int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
                         //获取 msgDataIndex 对应的数据
@@ -263,6 +269,11 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
+                    //TODO: 增加智能生成的URl过滤
+                    // 已访问URL过滤
+                    // 黑名单后缀过滤
+                    // 考虑增加已有URL过滤 /bbs/login
+
                     //任务3、判断是否有树需要更新,没有的话就根据树生成计算新的URL
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
@@ -285,18 +296,10 @@ public class IProxyScanner implements IProxyListener {
                             return;
                         }
                     }
-                    //TODO: 添加 un visited url 列
-                    // 数据库中添加 un visited url 列、 un visited url num 列 OK
-                    // UI表中添加 un visited url 标签、un visited url num 列 OK
-                    // TODO: 添加已访问URL记录表 OK
-                    // TODO: 增加已访问URL过滤
-
-                    //todo: 提取的PATH需要进一步过滤处理
-                    // 考虑增加后缀过滤功能 static/image/k8-2.png
-                    // 考虑增加已有URL过滤 /bbs/login
-                    // 考虑增加 参数处理 plugin.php?id=qidou_assign
 
                     //todo: 增加自动递归查询功能
+
+                    //todo: UI完善全局变量内容的更新
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();
