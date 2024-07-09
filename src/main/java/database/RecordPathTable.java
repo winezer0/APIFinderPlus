@@ -3,6 +3,8 @@ package database;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
+import model.HttpUrlInfo;
+
 import java.sql.*;
 
 import static utils.BurpPrintUtils.*;
@@ -31,6 +33,15 @@ public class RecordPathTable {
         String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
         String reqPathDir = msgInfo.getUrlInfo().getReqPathDir();
         int respStatusCode = msgInfo.getRespStatusCode();
+        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
+    }
+
+    //插入数据库
+    public static synchronized int insertOrUpdateSuccessUrl(String reqUrl, int respStatusCode) {
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
+        String reqProto = urlInfo.getReqProto();
+        String reqHostPort = urlInfo.getReqHostPort();
+        String reqPathDir = urlInfo.getReqPathDir();
         return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
     }
 

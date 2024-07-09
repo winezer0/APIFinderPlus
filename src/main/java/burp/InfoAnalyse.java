@@ -31,54 +31,46 @@ public class InfoAnalyse {
 
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
-    public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
-        //存储所有结果信息
-        JSONObject analysisInfo = new JSONObject();
+    public static JSONObject analyseMsgInfo(HttpMsgInfo msgInfo) {
+        String reqUrl = msgInfo.getReqUrl();
+        //1、实现响应敏感信息提取
+        List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
+        findInfoList = deduplicateJsonList(findInfoList); //去重提取结果
+        stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", reqUrl, findInfoList.size()));
 
-        //实现响应敏感信息提取
-        if (true){
-            List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
-            findInfoList = deduplicateJsonList(findInfoList); //去重提取结果
-            stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s", findInfoList.size()));
-            analysisInfo.put(INFO_KEY, findInfoList); //存储到结果Json对象中
-        }
+        //2、实现响应中的 URL 和 PATH 提取
+        Set<String> findUriSet = findUriInfoByRegular(msgInfo);
+        Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
 
-        //提取URL和PATH信息
-        if (true){
-            //提取所有的 URL 和 PATH
-            Set<String> findUriSet = findUriInfoByRegular(msgInfo);
-            stdout_println(LOG_DEBUG, String.format("[*] 采集URL|PATH数量:%s", findUriSet.size()));
-            //拆分提取的URL和PATH为两个 List 用于进一步处理操作
-            Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
+        //采集 URL 处理
+        List<String> findUrlList = urlOrPathMap.get(URL_KEY);
+        stdout_println(LOG_DEBUG, String.format("[*] 初步采集URL数量:%s -> %s", reqUrl, findUrlList.size()));
+        //实现响应url过滤
+        findUrlList = filterFindUrls(reqUrl, findUrlList, false);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s -> %s", reqUrl, findUrlList.size()));
 
-            //采集 URL 处理
-            List<String> findUrlList = urlOrPathMap.get(URL_KEY);
-            stdout_println(LOG_DEBUG, String.format("[*] 初步采集URL数量:%s", findUrlList.size()));
-            //实现响应url过滤
-            findUrlList = filterFindUrls(msgInfo.getReqUrl(), findUrlList, false);
-            stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", findUrlList.size()));
+        //采集 path 处理
+        List<String> findPathList = urlOrPathMap.get(PATH_KEY);
+        stdout_println(LOG_DEBUG, String.format("[*] 初步采集PATH数量:%s -> %s", reqUrl, findUrlList.size()));
+        //实现响应Path过滤
+        findPathList = filterFindPaths(reqUrl, findPathList, false);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s -> %s", reqUrl, findPathList.size()));
 
-            //采集 path 处理
-            List<String> findPathList = urlOrPathMap.get(PATH_KEY);
-            stdout_println(LOG_DEBUG, String.format("[*] 初步采集PATH数量:%s -> %s", findUrlList.size(), findUrlList));
-            //实现响应Path过滤
-            findPathList = filterFindPaths(msgInfo.getReqUrl(), findPathList, false);
-            stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", findPathList.size()));
+        //基于Path和请求URL组合简单的URL 已验证，常规网站采集的PATH生成的URL基本都是正确的
+        List<String> findApiList = concatUrlAddPath(reqUrl, findPathList);
+        stdout_println(LOG_DEBUG, String.format("[+] 简单计算API数量: %s -> %s", reqUrl, findApiList.size()));
+        //实现 初步计算API的过滤
+        findApiList = filterFindUrls(reqUrl, findApiList, false);
+        stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s -> %s", reqUrl, findApiList.size()));
 
-            //基于Path和请求URL组合简单的URL 已验证，常规网站采集的PATH生成的URL基本都是正确的
-            List<String> findApiList = concatUrlAddPath(msgInfo.getReqUrl(), findPathList);
-            stdout_println(LOG_DEBUG, String.format("[+] 简单计算API数量: %s -> %s", msgInfo.getReqUrl(), findApiList.size()));
-            //实现 初步计算API的过滤
-            findApiList = filterFindUrls(msgInfo.getReqUrl(), findApiList, false);
-            stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s", findApiList.size()));
-
-            analysisInfo.put(URL_KEY, findUrlList);
-            analysisInfo.put(PATH_KEY, findPathList);
-            analysisInfo.put(API_KEY, findApiList);
-        }
-
+        //存储到结果Json对象中
+        JSONObject analyseInfo = new JSONObject();
+        analyseInfo.put(INFO_KEY, findInfoList);
+        analyseInfo.put(URL_KEY, findUrlList);
+        analyseInfo.put(PATH_KEY, findPathList);
+        analyseInfo.put(API_KEY, findApiList);
         //stdout_println(LOG_DEBUG, String.format("[+] 最终解析结果:%s", analyseInfoJsonObj.toJSONString()));
-        return analysisInfo;
+        return analyseInfo;
     }
 
     private static List<String> filterFindPaths(String reqUrl, List<String> findUriList, boolean filterChinese) {

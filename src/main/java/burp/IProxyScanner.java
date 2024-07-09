@@ -5,30 +5,30 @@ import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.FindPathModel;
 import model.HttpMsgInfo;
-import model.ReqMsgDataModel;
 import model.RecordHashMap;
-import org.checkerframework.checker.units.qual.A;
+import model.ReqMsgDataModel;
 import ui.ConfigPanel;
 import utils.BurpSitemapUtils;
 import utils.InfoAnalyseUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
+import static burp.InfoAnalyse.*;
 import static database.InfoAnalyseTable.*;
-import static database.RecordPathTable.fetchUnhandledRecordUrlId;
 import static database.PathTreeTable.fetchOnePathTreeData;
 import static database.PathTreeTable.insertOrUpdatePathTree;
+import static database.RecordPathTable.fetchUnhandledRecordUrlId;
 import static database.RecordPathTable.fetchUnhandledRecordUrls;
-import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
-import static utils.InfoAnalyseUtils.concatUrlAddPath;
-import static utils.PathTreeUtils.findNodePathInTree;
-import static utils.PathTreeUtils.genPathsTree;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
+import static utils.PathTreeUtils.findNodePathInTree;
+import static utils.PathTreeUtils.genPathsTree;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -215,11 +215,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //TODO:
-                    // 完成 增加提取的PATH需要进一步过滤处理 OK
-                    // 完成 后缀过滤功能 static/image/k8-2.png OK
-                    // 增加 已访问URL过滤
-                    // 暂时忽略 增加 参数处理 plugin.php?id=qidou_assign 暂时忽略
-                    // 增加 将直接扫描出来的URl加入PathTree表中
+                    // 增加 一列未访问URL 【已访问URL过滤】
 
                     //任务1、获取需要解析的响应体数据并进行解析响
                     int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
@@ -235,14 +231,23 @@ public class IProxyScanner implements IProxyListener {
                                     msgData.getMsgHash()
                             );
 
-                            JSONObject analyseResult = InfoAnalyse.analysisMsgInfo(msgInfo);
-
+                            JSONObject analyseInfo = InfoAnalyse.analyseMsgInfo(msgInfo);
                             //将分析结果写入数据库
-                            if(analyseInfoIsNotEmpty(analyseResult)){
-                                int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseResult);
+                            if(analyseInfoIsNotEmpty(analyseInfo)){
+                                int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseInfo);
                                 if (analyseDataIndex > 0){
                                     stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                                 }
+
+                                //将爬取到的 URL 加入到 RecordPathTable
+                                executorService.submit(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        JSONArray urls = analyseInfo.getJSONArray(URL_KEY);
+                                        for (Object url:urls)
+                                            RecordPathTable.insertOrUpdateSuccessUrl((String) url,200);
+                                    }
+                                });
                             }
                         }
                         //更新数据后先返回,优先进行之前的操作
@@ -271,10 +276,7 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //TODO: 增加智能生成的URl过滤
-                    // 已访问URL过滤
-                    // 黑名单后缀过滤
-                    // 考虑增加已有URL过滤 /bbs/login
+                    //TODO: 增加智能生成的URl过滤 已访问URL过滤
 
                     //任务3、判断是否有树需要更新,没有的话就根据树生成计算新的URL
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
