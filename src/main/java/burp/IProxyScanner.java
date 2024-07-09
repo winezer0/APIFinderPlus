@@ -212,13 +212,13 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6)
                         return;
 
-                    //任务1、获取需要解析的响应体数据并进行解析响
                     //TODO: 增加提取的PATH需要进一步过滤处理
                     // 增加 已访问URL过滤
                     // 增加 后缀过滤功能 static/image/k8-2.png
                     // 增加 参数处理 plugin.php?id=qidou_assign
                     // 增加 将直接扫描出来的URl加入PathTree表中
 
+                    //任务1、获取需要解析的响应体数据并进行解析响
                     int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
                         //获取 msgDataIndex 对应的数据
@@ -242,7 +242,6 @@ public class IProxyScanner implements IProxyListener {
                                 }
                             }
                         }
-
                         //更新数据后先返回,优先进行之前的操作
                         return;
                     }
@@ -298,7 +297,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //TODO 动态实现未访问URL的更新
-                    
+
                     //todo: 增加自动递归查询功能
 
                     //todo: UI完善全局变量内容的更新
