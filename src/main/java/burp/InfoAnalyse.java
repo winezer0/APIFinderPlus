@@ -117,7 +117,7 @@ public class InfoAnalyse {
         return findUriList;
     }
 
-    private static List<String> filterFindUrls(String reqUrl, List<String> urlList, boolean onlyScopeDomain) {
+    public static List<String> filterFindUrls(String reqUrl, List<String> urlList, boolean onlyScopeDomain) {
         //跳过空列表的情况
         if (urlList.isEmpty()) return urlList;
 

@@ -7,6 +7,7 @@ import model.FindPathModel;
 import model.HttpMsgInfo;
 import model.ReqMsgDataModel;
 import model.RecordHashMap;
+import org.checkerframework.checker.units.qual.A;
 import ui.ConfigPanel;
 import utils.BurpSitemapUtils;
 import utils.InfoAnalyseUtils;
@@ -213,10 +214,11 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6)
                         return;
 
-                    //TODO: 增加提取的PATH需要进一步过滤处理
+                    //TODO:
+                    // 完成 增加提取的PATH需要进一步过滤处理 OK
+                    // 完成 后缀过滤功能 static/image/k8-2.png OK
                     // 增加 已访问URL过滤
-                    // 增加 后缀过滤功能 static/image/k8-2.png
-                    // 增加 参数处理 plugin.php?id=qidou_assign
+                    // 暂时忽略 增加 参数处理 plugin.php?id=qidou_assign 暂时忽略
                     // 增加 将直接扫描出来的URl加入PathTree表中
 
                     //任务1、获取需要解析的响应体数据并进行解析响
@@ -336,7 +338,7 @@ public class IProxyScanner implements IProxyListener {
                     && !pathTreeObj.isEmpty()
                     && !((JSONObject) pathTreeObj.get("ROOT")).isEmpty())
             {
-                Set<String> findUrlsSet = new HashSet();
+                List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
                 String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
                 for (Object path: findPathObj){
@@ -348,14 +350,18 @@ public class IProxyScanner implements IProxyListener {
                             String prefixPath = (String) prefix;
                             prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
                             String findUrl = InfoAnalyseUtils.concatUrlAddPath(prefixPath, (String) path);
-                            findUrlsSet.add(findUrl);
+                            findUrlsList.add(findUrl);
                         }
                     }
                 }
+
+                // findUrlsList 去重和过滤
+                findUrlsList = InfoAnalyse.filterFindUrls(reqUrl, findUrlsList, false);
+
                 //不管找没找到数据 都应该写入数据库进行存储
                 JSONObject smartApiJsonObj = new JSONObject();
                 smartApiJsonObj.put(Constants.BASIC_PATH_NUM, basicPathNum);
-                smartApiJsonObj.put(Constants.FIND_PATH, new JSONArray(findUrlsSet));
+                smartApiJsonObj.put(Constants.FIND_PATH, new JSONArray(findUrlsList));
                 int apiDataIndex = insertAnalyseSmartApiData(id, smartApiJsonObj);
                 if (apiDataIndex > 0)
                     stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
