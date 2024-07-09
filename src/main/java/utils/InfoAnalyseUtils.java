@@ -235,16 +235,16 @@ public class InfoAnalyseUtils {
      * @param path
      * @return
      */
-    public static String UrlAddPath(String reqUrl, String path){
+    public static String concatUrlAddPath(String reqUrl, String path){
         String newUrl;
         try {
             //使用当前请求的reqUrl创建URI对象
             URI baseUrl = new URI(reqUrl);
             //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
             newUrl = baseUrl.resolve(path).toString();
-//            stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
+            //stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
         } catch (URISyntaxException e) {
-            stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", path, e.getMessage()));
+            stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s", reqUrl, path, e.getMessage()));
             return null;
         }
         return newUrl;
@@ -256,11 +256,11 @@ public class InfoAnalyseUtils {
      * @param pathList
      * @return
      */
-    public static List<String> UrlAddPath(String reqUrl, List<String> pathList){
+    public static List<String> concatUrlAddPath(String reqUrl, List<String> pathList){
         List<String> urlList = new ArrayList<>();
         for(String path : pathList){
-            String newUrl = UrlAddPath(reqUrl, path);
-            if (newUrl != null && newUrl != "")
+            String newUrl = concatUrlAddPath(reqUrl, path);
+            if (newUrl != null && newUrl.trim() != "")
                 urlList.add(newUrl);
         }
         return urlList;
@@ -275,7 +275,7 @@ public class InfoAnalyseUtils {
         for (String url : urlList)
             for (String path : pathList){
                 path = formatUri(path);
-                System.out.println(String.format("%s <--> %s %s", UrlAddPath(url,path), url, path));
+                System.out.println(String.format("%s <--> %s %s", concatUrlAddPath(url,path), url, path));
             }
     }
 

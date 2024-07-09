@@ -9,6 +9,7 @@ import model.ReqMsgDataModel;
 import model.RecordHashMap;
 import ui.ConfigPanel;
 import utils.BurpSitemapUtils;
+import utils.InfoAnalyseUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -21,7 +22,7 @@ import static database.PathTreeTable.insertOrUpdatePathTree;
 import static database.RecordPathTable.fetchUnhandledRecordUrls;
 import static burp.InfoAnalyse.analyseInfoIsNotEmpty;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
-import static utils.InfoAnalyseUtils.UrlAddPath;
+import static utils.InfoAnalyseUtils.concatUrlAddPath;
 import static utils.PathTreeUtils.findNodePathInTree;
 import static utils.PathTreeUtils.genPathsTree;
 import static utils.BurpPrintUtils.*;
@@ -346,7 +347,7 @@ public class IProxyScanner implements IProxyListener {
                             //组合URL、findNodePath、path
                             String prefixPath = (String) prefix;
                             prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
-                            String findUrl = UrlAddPath(prefixPath, (String) path);
+                            String findUrl = InfoAnalyseUtils.concatUrlAddPath(prefixPath, (String) path);
                             findUrlsSet.add(findUrl);
                         }
                     }

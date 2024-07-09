@@ -1,5 +1,6 @@
 package utils;
 
+import burp.InfoAnalyse;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.net.MalformedURLException;
@@ -7,7 +8,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static model.HttpUrlInfo.parseUrlExt;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isEqualsOneKey;
 
@@ -91,15 +91,15 @@ public class InfoUriFilterUtils {
 
     /**
      * 过滤黑名单后缀名 图片后缀之类的不需要提取请求信息
-     * @param urls
+     * @param uris
      * @param blackSuffixes
      * @return
      */
-    public static List<String> filterBlackSuffixes(List<String> urls, List<String> blackSuffixes) {
-        if (blackSuffixes==null || blackSuffixes.isEmpty()||urls==null||urls.isEmpty()) return urls;
+    public static List<String> filterBlackSuffixes(List<String> uris, List<String> blackSuffixes) {
+        if (blackSuffixes==null || blackSuffixes.isEmpty()||uris==null||uris.isEmpty()) return uris;
 
         List<String> list = new ArrayList<>();
-        for (String urlStr : urls) {
+        for (String urlStr : uris) {
             String suffix = parseUrlExt(urlStr);
             if (!isEqualsOneKey(suffix, blackSuffixes, false))
                 list.add(urlStr);
@@ -217,4 +217,13 @@ public class InfoUriFilterUtils {
         return result;
     }
 
+    /**
+     * 粗略获取一个URI的后缀 支持PATH 忽略 # 号
+     * @param uri
+     * @return
+     */
+    private static String parseUrlExt(String uri) {
+        String pureUrl = uri.substring(0, uri.contains("?") ? uri.indexOf("?") : uri.length());
+        return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
+    }
 }

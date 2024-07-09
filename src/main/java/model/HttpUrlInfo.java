@@ -63,11 +63,25 @@ public class HttpUrlInfo {
      * @param url
      * @return
      */
-    public static String parseUrlExt(String url) {
-        String pureUrl = url.substring(0, url.contains("?") ? url.indexOf("?") : url.length());
-        return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
-    }
+    private String parseUrlExt(String url) {
+        int queryIndex = url.indexOf('?');
+        int fragmentIndex = url.indexOf('#');
 
+        // 计算有效部分的结束索引
+        int endIndex = Math.min(url.length(), Math.max(queryIndex, fragmentIndex));
+
+        // 如果查询参数或片段标识符存在，截取有效部分；否则使用整个URL
+        String pureUrl = url.substring(0, endIndex > -1 ? endIndex : url.length());
+
+        // 查找最后一个`.`的位置
+        int lastDotIndex = pureUrl.lastIndexOf('.');
+
+        // 如果有扩展名，提取它；否则返回空字符串
+        String extension = lastDotIndex > -1 ? pureUrl.substring(lastDotIndex + 1) : "";
+
+        // 将扩展名转换为小写
+        return extension.toLowerCase();
+    }
 
     /**
      * 从给定的URL字符串中提取请求的目录部分。
