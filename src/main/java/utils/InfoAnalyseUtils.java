@@ -23,17 +23,17 @@ public class InfoAnalyseUtils {
 
 
     /**
-     * 正则提取文本中的内容
-     * @param willFindText
+     * 支持自动截断的正则提取文本中的内容
+     * @param text
      * @param patter
      * @return
      */
-    public static Set<String> regularMatchInfo(String willFindText, String patter) {
+    public static Set<String> extractInfoWithChunk(String text, String patter) {
         Set<String> groups = new HashSet<>();
         try{
-            for (int start = 0; start < willFindText.length(); start += CHUNK_SIZE) {
-                int end = Math.min(start + CHUNK_SIZE, willFindText.length());
-                String beFindContentChunk = willFindText.substring(start, end);
+            for (int start = 0; start < text.length(); start += CHUNK_SIZE) {
+                int end = Math.min(start + CHUNK_SIZE, text.length());
+                String beFindContentChunk = text.substring(start, end);
 
                 Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(beFindContentChunk);
@@ -278,6 +278,7 @@ public class InfoAnalyseUtils {
                 System.out.println(String.format("%s <--> %s %s", UrlAddPath(url,path), url, path));
             }
     }
+
 
 
 }

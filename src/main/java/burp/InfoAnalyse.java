@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
-import model.HttpRespInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -33,10 +32,8 @@ public class InfoAnalyse {
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
     public static JSONObject analysisMsgInfo(HttpMsgInfo msgInfo) {
-        JSONObject analyseInfoJsonObj = new JSONObject();
-
         //实现响应敏感信息提取
-        JSONArray analysedInfoArray = findSensitiveInfoByConfig(msgInfo);
+        JSONArray analysedInfoArray = findSensitiveInfoByRules(msgInfo);
         stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s", analysedInfoArray.size()));
 
         //提取URL和PATH信息
@@ -116,6 +113,7 @@ public class InfoAnalyse {
         }
 
         //返回最终分析结果
+        JSONObject analyseInfoJsonObj = new JSONObject();
         analyseInfoJsonObj.put(URL_KEY, analysedUrlList);
         analyseInfoJsonObj.put(PATH_KEY, analysedPathList);
         analyseInfoJsonObj.put(API_KEY, analysedApiList);
@@ -129,7 +127,7 @@ public class InfoAnalyse {
      * @param msgInfo
      * @return
      */
-    public static JSONArray findSensitiveInfoByConfig(HttpMsgInfo msgInfo) {
+    public static JSONArray findSensitiveInfoByRules(HttpMsgInfo msgInfo) {
         // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
         Set<JSONObject> findInfosSet = new HashSet<>();
 
@@ -140,38 +138,45 @@ public class InfoAnalyse {
                 continue;
             }
 
-            // 定位查找范围
-            String willFindText;
-            if ("urlPath".equalsIgnoreCase(rule.getLocation())) {
-                willFindText = msgInfo.getUrlInfo().getReqPath();
+            // 根据不同的规则 配置 查找范围
+            String locationText;
+            switch (rule.getLocation()) {
+                case "urlPath":
+                    locationText = msgInfo.getUrlInfo().getReqPath();
+                    break;
+                case "body":
+                    locationText = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
+                    break;
+                case "header":
+                    locationText = new String(msgInfo.getRespInfo().getHeaderBytes(), StandardCharsets.UTF_8);
+                    break;
+                default:
+                    locationText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+                    break;
             }
-//            else if ("body".equalsIgnoreCase(rule.getLocation())) {
-//                willFindText = new String(HttpMsgInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespBodyOffset()),  StandardCharsets.UTF_8);
-//                willFindText = SubString(willFindText, MAX_HANDLE_SIZE);
-//            }
-            else {
-                willFindText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
-                willFindText = SubString(willFindText, MAX_HANDLE_SIZE);
-            }
 
+            //当存在字符串不为空时进行匹配
+            if (locationText.length() > 0) {
+                locationText = SubString(locationText, MAX_HANDLE_SIZE);
 
-            //多个关键字匹配
-            if (rule.getMatch().equals("keyword"))
-                if(isContainAllKey(willFindText, rule.getKeyword(), false)){
-                    //匹配关键字模式成功,应该标记敏感信息
-                    JSONObject findInfo = genMatchInfoJson(rule, String.valueOf(rule.getKeyword()));
-                    stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
-                    findInfosSet.add(findInfo);
-                }
-
-            //多个正则匹配
-            if (rule.getMatch().equals("regular")){
-                for (String patter : rule.getKeyword()){
-                    Set<String> groups = regularMatchInfo(willFindText, patter);
-                    if (!groups.isEmpty()){
-                        JSONObject findInfo = genMatchInfoJson(rule, String.valueOf(new ArrayList<>(groups)));
-                        stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
+                //多个关键字匹配
+                if (rule.getMatch().equals("keyword"))
+                    if(isContainAllKey(locationText, rule.getKeyword(), false)){
+                        //匹配关键字模式成功,应该标记敏感信息 关键字匹配的有效信息就是关键字
+                        JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(rule.getKeyword()));
+                        stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
                         findInfosSet.add(findInfo);
+                    }
+
+                //多个正则匹配
+                if (rule.getMatch().equals("regular")){
+                    for (String patter : rule.getKeyword()){
+                        Set<String> groups = extractInfoWithChunk(locationText, patter);
+                        if (!groups.isEmpty()){
+                            JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(new ArrayList<>(groups)));
+                            stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
+                            findInfosSet.add(findInfo);
+                        }
                     }
                 }
             }
@@ -186,14 +191,14 @@ public class InfoAnalyse {
      * @param group
      * @return
      */
-    private static JSONObject genMatchInfoJson(FingerPrintRule rule, String group) {
-        JSONObject matchInfoJsonObj = new JSONObject();
-        matchInfoJsonObj.put(type, rule.getType()); // "type": "敏感内容",
-        matchInfoJsonObj.put(describe, rule.getDescribe()); //"describe": "身份证",
-        matchInfoJsonObj.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
-        matchInfoJsonObj.put(important, rule.getIsImportant()); //"isImportant": true,
-        matchInfoJsonObj.put(value, group);
-        return matchInfoJsonObj;
+    private static JSONObject formatMatchInfoToJson(FingerPrintRule rule, String group) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(type, rule.getType()); // "type": "敏感内容",
+        jsonObject.put(describe, rule.getDescribe()); //"describe": "身份证",
+        jsonObject.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
+        jsonObject.put(important, rule.getIsImportant()); //"isImportant": true,
+        jsonObject.put(value, group);
+        return jsonObject;
     }
 
     /**
