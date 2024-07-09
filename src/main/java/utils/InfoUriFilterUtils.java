@@ -190,6 +190,8 @@ public class InfoUriFilterUtils {
      * @return 去重后的列表。
      */
     public static List<JSONObject> deduplicateJsonList(List<JSONObject> originalList) {
+        if (originalList.isEmpty()) return originalList;
+
         // 使用LinkedHashMap来保持插入顺序并去除重复
         Map<String, JSONObject> map = new LinkedHashMap<>();
 
