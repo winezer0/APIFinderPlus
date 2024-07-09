@@ -38,6 +38,7 @@ public class HttpRespInfo {
         bodyLength = getBodyBytes().length;
         //大致的响应长度
         bodyLenVague = bodyLength /200;
+
     }
 
 
@@ -50,6 +51,16 @@ public class HttpRespInfo {
 
         // 从 bytes 数组中复制 body 的部分
         return Arrays.copyOfRange(respBytes, bodyOffset, bodyOffset + bodyLength);
+    }
+
+    /**
+     * 获取 请求或响应的头部信息部分
+     */
+    public byte[] getHeaderBytes() {
+        // 确保 headerOffset 不会导致数组越界，并且至少是从0开始
+        int headerLength = Math.max(0, bodyOffset);
+        // 从 bytes 数组中复制 header 的部分
+        return Arrays.copyOfRange(respBytes, 0, headerLength);
     }
 
     public int getStatusCode() {
