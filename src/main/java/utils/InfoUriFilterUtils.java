@@ -1,12 +1,10 @@
 package utils;
 
-import model.HttpMsgInfo;
+import com.alibaba.fastjson2.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static model.HttpUrlInfo.parseUrlExt;
@@ -185,4 +183,35 @@ public class InfoUriFilterUtils {
         return new ArrayList<>(new HashSet<>(list));
     }
 
+    /**
+     * 返回两个集合的差集。 该集合包含在setA中但不在setB中的所有元素。
+     * @param setA 第一个集合
+     * @param setB 第二个集合
+     * @return 差集
+     */
+    public static <T> Set<T> differenceSet(Set<T> setA, Set<T> setB) {
+        Set<T> result = new HashSet<>(setA);
+        result.removeAll(setB);
+        return result;
+    }
+
+    /**
+     * 去除List<JSONObject>中的重复项。
+     *
+     * @param originalList 需要去重的原始列表。
+     * @return 去重后的列表。
+     */
+    public static List<JSONObject> deduplicate(List<JSONObject> originalList) {
+        // 使用LinkedHashMap来保持插入顺序并去除重复
+        Map<String, JSONObject> map = new LinkedHashMap<>();
+
+        for (JSONObject jsonObject : originalList) {
+            // 将每个JSONObject转换成字符串，并用作Map的键
+            String jsonString = jsonObject.toString();
+            map.putIfAbsent(jsonString, jsonObject);
+        }
+
+        // 将Map的值转换回List
+        return new ArrayList<>(map.values());
+    }
 }
