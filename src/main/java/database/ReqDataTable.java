@@ -30,10 +30,13 @@ public class ReqDataTable {
             + ");";
 
 
-    //插入数据库
+    //插入请求消息到数据库
     public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex, String reqSource) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?".replace("tableName", tableName);
+
+        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
+                .replace("tableName", tableName);
+
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
@@ -49,6 +52,7 @@ public class ReqDataTable {
                         "msg_id, msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName);
+
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setInt(1, msgId);
                     insertStmt.setString(2, msgInfo.getMsgHash());
@@ -76,7 +80,7 @@ public class ReqDataTable {
     }
 
 
-    //获取一条需要处理的数据，并且标记为处理中
+    //获取一条需要处理的数据 （状态为等待解析），并且标记状态为处理中
     public static synchronized int fetchUnhandledReqDataId(boolean updateStatus) {
         // 考虑开启事务
         int msgDataIndex = -1;
@@ -86,9 +90,6 @@ public class ReqDataTable {
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
-        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE msg_data_index = ?;"
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
@@ -101,6 +102,10 @@ public class ReqDataTable {
                     return selectedMsgDataIndex;
 
                 //更新索引对应的数据
+                String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE msg_data_index = ?;"
+                        .replace("ANALYSE_ING", Constants.ANALYSE_ING)
+                        .replace("tableName", tableName);
+
                 try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                     updateStatement.setInt(1, selectedMsgDataIndex);
                     int affectedRows = updateStatement.executeUpdate();
