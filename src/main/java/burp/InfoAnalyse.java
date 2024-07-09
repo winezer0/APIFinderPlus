@@ -206,9 +206,7 @@ public class InfoAnalyse {
         Set<String> uriSet = new HashSet<>();
 
         //转换响应体,后续可能需要解决编码问题
-        String respBody = new String(
-                HttpRespInfo.getBodyBytes(msgInfo.getRespBytes(), msgInfo.getRespInfo().getBodyOffset()),
-                StandardCharsets.UTF_8);
+        String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
 
         //截取最大响应体长度
         respBody = SubString(respBody, MAX_HANDLE_SIZE);

@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 public class HttpRespInfo {
     private static final IExtensionHelpers helpers = BurpExtender.getHelpers();
+    private byte[] respBytes = "".getBytes();
     private int statusCode = -1;
     private int respLength = -1;
     private int bodyLength = -1;
@@ -22,10 +23,11 @@ public class HttpRespInfo {
             return;
         }
 
+        respBytes = responseBytes;
         //响应长度
-        respLength = responseBytes.length;
+        respLength = respBytes.length;
         //响应信息
-        IResponseInfo responseInfo = helpers.analyzeResponse(responseBytes);
+        IResponseInfo responseInfo = helpers.analyzeResponse(respBytes);
         //响应状态码
         statusCode = responseInfo.getStatusCode();
         //获取响应类型
@@ -33,7 +35,7 @@ public class HttpRespInfo {
         statedMimeType = responseInfo.getStatedMimeType();
         //响应体分割标记
         bodyOffset = responseInfo.getBodyOffset();
-        bodyLength = getBodyBytes(responseBytes, bodyOffset).length;
+        bodyLength = getBodyBytes(respBytes, bodyOffset).length;
         //大致的响应长度
         bodyLenVague = bodyLength /200;
     }
@@ -42,7 +44,7 @@ public class HttpRespInfo {
     /**
      * 获取 请求体或响应体的body部分
      */
-    public static byte[] getBodyBytes(byte[] respBytes, int bodyOffset) {
+    public byte[] getBodyBytes() {
         // 确保 bodyOffset 不会导致数组越界
         int bodyLength = Math.max(0, respBytes.length - bodyOffset);
 
