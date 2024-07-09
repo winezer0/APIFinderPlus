@@ -50,7 +50,7 @@ public class InfoAnalyse {
         //实现响应url过滤
         if (!analysedUrlList.isEmpty()){
             //过滤重复内容
-            analysedUrlList = removeDuplicates(analysedUrlList);
+            analysedUrlList = deduplicateStringList(analysedUrlList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", analysedUrlList.size()));
 
             //仅保留主域名相关URL
@@ -81,7 +81,7 @@ public class InfoAnalyse {
         //实现响应Path过滤
         if (!analysedPathList.isEmpty()){
             //过滤重复内容
-            analysedPathList = removeDuplicates(analysedPathList);
+            analysedPathList = deduplicateStringList(analysedPathList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", analysedPathList.size()));
 
             //过滤自身包含的Path (包含说明相同)
@@ -108,7 +108,7 @@ public class InfoAnalyse {
 
         //实现 初步计算API的过滤
         if (!analysedApiList.isEmpty()){
-            analysedApiList = removeDuplicates(analysedApiList);
+            analysedApiList = deduplicateStringList(analysedApiList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s", analysedApiList.size()));
         }
 

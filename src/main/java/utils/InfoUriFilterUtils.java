@@ -179,8 +179,28 @@ public class InfoUriFilterUtils {
     /**
      * List<String> list 元素去重
      */
-    public static List<String> removeDuplicates(List<String> list) {
+    public static List<String> deduplicateStringList(List<String> list) {
         return new ArrayList<>(new HashSet<>(list));
+    }
+
+    /**
+     * 去除List<JSONObject>中的重复项。
+     *
+     * @param originalList 需要去重的原始列表。
+     * @return 去重后的列表。
+     */
+    public static List<JSONObject> deduplicateJsonList(List<JSONObject> originalList) {
+        // 使用LinkedHashMap来保持插入顺序并去除重复
+        Map<String, JSONObject> map = new LinkedHashMap<>();
+
+        for (JSONObject jsonObject : originalList) {
+            // 将每个JSONObject转换成字符串，并用作Map的键
+            String jsonString = jsonObject.toString();
+            map.putIfAbsent(jsonString, jsonObject);
+        }
+
+        // 将Map的值转换回List
+        return new ArrayList<>(map.values());
     }
 
     /**
@@ -195,23 +215,4 @@ public class InfoUriFilterUtils {
         return result;
     }
 
-    /**
-     * 去除List<JSONObject>中的重复项。
-     *
-     * @param originalList 需要去重的原始列表。
-     * @return 去重后的列表。
-     */
-    public static List<JSONObject> deduplicate(List<JSONObject> originalList) {
-        // 使用LinkedHashMap来保持插入顺序并去除重复
-        Map<String, JSONObject> map = new LinkedHashMap<>();
-
-        for (JSONObject jsonObject : originalList) {
-            // 将每个JSONObject转换成字符串，并用作Map的键
-            String jsonString = jsonObject.toString();
-            map.putIfAbsent(jsonString, jsonObject);
-        }
-
-        // 将Map的值转换回List
-        return new ArrayList<>(map.values());
-    }
 }
