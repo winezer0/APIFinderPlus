@@ -3,6 +3,7 @@ package burp;
 import com.alibaba.fastjson2.JSONObject;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
+import model.HttpUrlInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -54,21 +55,21 @@ public class InfoAnalyse {
             List<String> findUrlList = urlOrPathMap.get(URL_KEY);
             stdout_println(LOG_DEBUG, String.format("[*] 初步采集URL数量:%s", findUrlList.size()));
             //实现响应url过滤
-            findUrlList = filterFindUrls(msgInfo, findUrlList, false);
+            findUrlList = filterFindUrls(msgInfo.getReqUrl(), findUrlList, false);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", findUrlList.size()));
 
             //采集 path 处理
             List<String> findPathList = urlOrPathMap.get(PATH_KEY);
             stdout_println(LOG_DEBUG, String.format("[*] 初步采集PATH数量:%s -> %s", findUrlList.size(), findUrlList));
             //实现响应Path过滤
-            findPathList = filterFindPaths(msgInfo, findPathList, false);
+            findPathList = filterFindPaths(msgInfo.getReqUrl(), findPathList, false);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", findPathList.size()));
 
             //基于Path和请求URL组合简单的URL 已验证，常规网站采集的PATH生成的URL基本都是正确的
             List<String> findApiList = concatUrlAddPath(msgInfo.getReqUrl(), findPathList);
             stdout_println(LOG_DEBUG, String.format("[+] 简单计算API数量: %s -> %s", msgInfo.getReqUrl(), findApiList.size()));
             //实现 初步计算API的过滤
-            findApiList = filterFindUrls(msgInfo, findApiList, false);
+            findApiList = filterFindUrls(msgInfo.getReqUrl(), findApiList, false);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s", findApiList.size()));
 
             analysisInfo.put(URL_KEY, findUrlList);
@@ -80,15 +81,19 @@ public class InfoAnalyse {
         return analysisInfo;
     }
 
-    private static List<String> filterFindPaths(HttpMsgInfo msgInfo, List<String> findUriList, boolean filterChinese) {
+    private static List<String> filterFindPaths(String reqUrl, List<String> findUriList, boolean filterChinese) {
+        //跳过空列表的情况
         if (findUriList.isEmpty()) return findUriList;
+
+        //格式化为URL对象进行操作
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         //过滤重复内容
         findUriList = deduplicateStringList(findUriList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", findUriList.size()));
 
         //过滤自身包含的Path (包含说明相同)
-        findUriList = filterUriBySelfContain(msgInfo.getUrlInfo().getReqPath(), findUriList);
+        findUriList = filterUriBySelfContain(urlInfo.getReqPath(), findUriList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s", findUriList.size()));
 
         //过滤包含禁止关键字的PATH
@@ -112,17 +117,19 @@ public class InfoAnalyse {
         return findUriList;
     }
 
-
-
-    private static List<String> filterFindUrls(HttpMsgInfo msgInfo, List<String> urlList, boolean onlyScopeDomain) {
+    private static List<String> filterFindUrls(String reqUrl, List<String> urlList, boolean onlyScopeDomain) {
+        //跳过空列表的情况
         if (urlList.isEmpty()) return urlList;
+
+        //格式化为URL对象进行操作
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         //过滤重复内容
         urlList = deduplicateStringList(urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", urlList.size()));
 
         //过滤自身包含的URL (包含说明相同) //功能测试通过
-        urlList = filterUriBySelfContain(msgInfo.getReqUrl(), urlList);
+        urlList = filterUriBySelfContain(reqUrl, urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的URL:%s", urlList.size()));
 
         //过滤黑名单host
@@ -139,7 +146,7 @@ public class InfoAnalyse {
 
         //仅保留主域名相关URL
         if (onlyScopeDomain){
-            urlList = filterUrlByMainHost(msgInfo.getUrlInfo().getReqRootDomain(), urlList);
+            urlList = filterUrlByMainHost(urlInfo.getReqRootDomain(), urlList);
             stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s", urlList.size()));
         }
 
