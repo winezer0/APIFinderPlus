@@ -35,7 +35,7 @@ public class HttpRespInfo {
         statedMimeType = responseInfo.getStatedMimeType();
         //响应体分割标记
         bodyOffset = responseInfo.getBodyOffset();
-        bodyLength = getBodyBytes(respBytes, bodyOffset).length;
+        bodyLength = getBodyBytes().length;
         //大致的响应长度
         bodyLenVague = bodyLength /200;
     }
