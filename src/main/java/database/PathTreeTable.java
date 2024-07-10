@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 
 import java.sql.*;
 
-import static utils.PathTreeUtils.deepMerge;
+import static utils.PathTreeUtils.deepMergeJsonTree;
 import static utils.BurpPrintUtils.*;
 
 public class PathTreeTable {
@@ -55,7 +55,7 @@ public class PathTreeTable {
                 JSONObject newTree = pathTree;
                 if (oldPathTree != null && oldPathTree != ""){
                     JSONObject oldTree = JSONObject.parse(oldPathTree);
-                    newTree = deepMerge(oldTree, pathTree);
+                    newTree = deepMergeJsonTree(oldTree, pathTree);
                 }
 
                 //合并新旧path num

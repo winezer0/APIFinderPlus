@@ -75,7 +75,7 @@ public class PathTreeUtils {
      * @param addTree
      * @return
      */
-    public static JSONObject deepMerge(JSONObject baseTree, JSONObject addTree) {
+    public static JSONObject deepMergeJsonTree(JSONObject baseTree, JSONObject addTree) {
         if (baseTree.isEmpty())
             return addTree;
         if (addTree.isEmpty())
@@ -86,7 +86,7 @@ public class PathTreeUtils {
             Object value = entry.getValue();
             if (baseTree.containsKey(key)) {
                 if (baseTree.get(key) instanceof JSONObject && value instanceof JSONObject) {
-                    baseTree.put(key, deepMerge(baseTree.getJSONObject(key), (JSONObject) value));
+                    baseTree.put(key, deepMergeJsonTree(baseTree.getJSONObject(key), (JSONObject) value));
                 } else if (baseTree.get(key) instanceof JSONArray && value instanceof JSONArray) {
                     // 这里简单合并数组，实际情况可能需要更复杂的逻辑处理
                     JSONArray array = new JSONArray();
@@ -264,7 +264,7 @@ public class PathTreeUtils {
             //处理其他情况
             baseTree = createRootTree(uriPathList.get(0));
             for (int i = 1; i < uriPathList.size(); i++) {
-                baseTree = deepMerge(baseTree, createRootTree(uriPathList.get(i)));
+                baseTree = deepMergeJsonTree(baseTree, createRootTree(uriPathList.get(i)));
             }
         }
 
@@ -334,11 +334,11 @@ public class PathTreeUtils {
         JSONObject tree2 = createRootTree(url2);
 //        System.out.println(tree2.toJSONString());
 
-        tree = deepMerge(tree, tree2);
+        tree = deepMergeJsonTree(tree, tree2);
 //        System.out.println(tree.toJSONString());
 
         String url3 = "/biz-gateway/walletSystem/sysLogin/randomImage/walletParam";
-        tree = deepMerge(tree, createRootTree(url3));
+        tree = deepMergeJsonTree(tree, createRootTree(url3));
 //        System.out.println(tree.toJSONString());
 
         String sub_url = "/walletParam/paramTypeGroup/findListByGroupName";
