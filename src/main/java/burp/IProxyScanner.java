@@ -117,7 +117,7 @@ public class IProxyScanner implements IProxyListener {
                         urlPathRecordMap.add(reqPrefix);
                         //把当前前缀的URl + 999 状态码 作为标记,插入到数据库中, 如果已存在表示这个sitemap数据都已经加入成功
                         if (RecordUrlTable.insertOrUpdateAccessedUrl(reqPrefix, reqHostPort, 999) > 0)
-                            BurpSitemapUtils.addSiteMapUrlsToDB(reqPrefix);
+                            BurpSitemapUtils.addSiteMapUrlsToDB(reqPrefix, false);
                     }
                 }
             });
@@ -216,7 +216,6 @@ public class IProxyScanner implements IProxyListener {
 
                     //TODO:
                     // 增加 一列未访问URL 【已访问URL过滤】
-
                     //任务1、获取需要解析的响应体数据并进行解析响
                     int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
@@ -277,7 +276,6 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //TODO: 增加智能生成的URl过滤 已访问URL过滤
-
                     //任务3、判断是否有树需要更新,没有的话就根据树生成计算新的URL
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {

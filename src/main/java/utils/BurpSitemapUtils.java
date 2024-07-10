@@ -11,11 +11,13 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 public class BurpSitemapUtils {
 
+
     /**
-     * 添加 指定前缀的URL到数据库中
-     * @param urlPrefix
+     * 添加 SiteMap 中指定前缀的URL到数据库中
+     * @param urlPrefix 指定前缀的Url
+     * @param addToRecordUrl 是否添加到 RecordUrl 表
      */
-    public static void addSiteMapUrlsToDB(String urlPrefix){
+    public static void addSiteMapUrlsToDB(String urlPrefix, boolean addToRecordUrl){
         IHttpRequestResponse[] httpRequestResponses = getCallbacks().getSiteMap(urlPrefix);
         for (IHttpRequestResponse requestResponse : httpRequestResponses) {
             HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
@@ -25,7 +27,7 @@ public class BurpSitemapUtils {
             int respStatusCode = msgInfo.getRespStatusCode();
 
             //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
-            if(!isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
+            if(addToRecordUrl && !isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
                 RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
             }
 
