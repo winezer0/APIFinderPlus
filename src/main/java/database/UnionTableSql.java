@@ -13,7 +13,7 @@ import static utils.BurpPrintUtils.stderr_println;
 
 public class UnionTableSql {
     //联合 获取一条需要更新的Path数据
-    public static synchronized FindPathModel fetchOneNeedUpdatedSmartApiData(){
+    public static synchronized FindPathModel fetchOneNeedUpdatedPathDataToUrl(){
         FindPathModel pathData = null;
 
         // 首先选取一条记录的ID

@@ -186,7 +186,7 @@ public class InfoAnalyseTable {
     }
 
     //获取一条需要分析的数据的ID,判断是否有需要分析的数据
-    public static synchronized int fetchUnhandledSmartApiDataId(){
+    public static synchronized int fetchUnhandledPathDataId(){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         // 首先选取一条记录的ID
         String selectSQL = "SELECT id FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"

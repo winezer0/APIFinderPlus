@@ -293,11 +293,11 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
-                    int unhandledSmartApiDataId = fetchUnhandledSmartApiDataId();
-                    if (unhandledSmartApiDataId <= 0){
-                        FindPathModel oneNeedUpdatedSmartApiData = UnionTableSql.fetchOneNeedUpdatedSmartApiData();
-                        if (oneNeedUpdatedSmartApiData != null) {
-                            pathsToUrlsBasedPathTree(oneNeedUpdatedSmartApiData);
+                    int unhandledPathDataId = fetchUnhandledPathDataId();
+                    if (unhandledPathDataId <= 0){
+                        FindPathModel findPathModel = UnionTableSql.fetchOneNeedUpdatedPathDataToUrl();
+                        if (findPathModel != null) {
+                            pathsToUrlsBasedPathTree(findPathModel);
                             //更新数据后先返回,优先进行之前的操作
                             return;
                         }
