@@ -3,13 +3,11 @@ package burp;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
-import model.FindPathModel;
-import model.HttpMsgInfo;
-import model.RecordHashMap;
-import model.ReqMsgDataModel;
+import model.*;
 import ui.ConfigPanel;
 import utils.BurpSitemapUtils;
 import utils.InfoAnalyseUtils;
+import utils.InfoUriFilterUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +20,7 @@ import static database.InfoAnalyseTable.*;
 import static database.PathTreeTable.fetchOnePathTreeData;
 import static database.PathTreeTable.insertOrUpdatePathTree;
 import static database.RecordPathTable.fetchUnhandledRecordUrlId;
-import static database.RecordPathTable.fetchUnhandledRecordUrls;
+import static database.RecordPathTable.fetchUnhandledRecordPaths;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isContainOneKey;
@@ -163,24 +161,23 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            //判断URL是否已经扫描过
-            if (urlScanRecordMap.get(msgInfo.getMsgHash()) <= 0) {
-                urlScanRecordMap.add(msgInfo.getMsgHash());
-            }else {
-                stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
-                return;
-            }
-
             //记录准备加入的请求
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    //防止响应体过大
-                    byte[] respBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
-                    msgInfo.setRespBytes(respBytes);
-                    //加入请求列表
-                    int msgId = iInterceptedProxyMessage.getMessageReference();
-                    storeReqData(msgInfo, msgId, "Proxy");
+                    //判断URL是否已经扫描过
+                    if (urlScanRecordMap.get(msgInfo.getMsgHash()) <= 0) {
+                        urlScanRecordMap.add(msgInfo.getMsgHash());
+                        //防止响应体过大
+                        byte[] respBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
+                        msgInfo.setRespBytes(respBytes);
+                        //加入请求列表
+                        int msgId = iInterceptedProxyMessage.getMessageReference();
+                        storeReqData(msgInfo, msgId, "Proxy");
+                    }else {
+                        stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                        return;
+                    }
                 }
             });
         }
@@ -214,8 +211,6 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6)
                         return;
 
-                    //TODO:
-                    // 增加 一列未访问URL 【已访问URL过滤】
                     //任务1、获取需要解析的响应体数据并进行解析响
                     int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
@@ -230,10 +225,19 @@ public class IProxyScanner implements IProxyListener {
                                     msgData.getMsgHash()
                             );
 
-                            JSONObject analyseInfo = InfoAnalyse.analyseMsgInfo(msgInfo);
-                            //将分析结果写入数据库
-                            if(analyseInfoIsNotEmpty(analyseInfo)){
-                                int analyseDataIndex = InfoAnalyseTable.insertBaseAnalyseData(msgInfo, analyseInfo);
+                            AnalyseResult analyseResult = InfoAnalyse.analyseMsgInfo(msgInfo);
+
+                            if(analyseInfoIsNotEmpty(analyseResult)){
+                                //过滤掉未访问URL中已经访问过的URL
+                                if (analyseResult.getUnvisitedUrl().size()>0){
+                                    List<String> unvisitedUrls = analyseResult.getUnvisitedUrl();
+                                    List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
+                                    unvisitedUrls = InfoUriFilterUtils.listReduceList(unvisitedUrls, accessedUrls);
+                                    analyseResult.setUnvisitedUrl(unvisitedUrls);
+                                }
+
+                                //将分析结果写入数据库
+                                int analyseDataIndex = InfoAnalyseTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
                                     stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                                 }
@@ -242,9 +246,9 @@ public class IProxyScanner implements IProxyListener {
                                 executorService.submit(new Runnable() {
                                     @Override
                                     public void run() {
-                                        JSONArray urls = analyseInfo.getJSONArray(URL_KEY);
-                                        for (Object url:urls)
-                                            RecordPathTable.insertOrUpdateSuccessUrl((String) url,200);
+                                        List<String> urls = analyseResult.getUrlList();
+                                        for (String url:urls)
+                                            RecordPathTable.insertOrUpdateSuccessUrl(url,200);
                                     }
                                 });
                             }
@@ -253,20 +257,20 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
-                    //任务2、判断是否还有需要分析的数据,如果没有的话，就可以考虑更新树信息
+                    //任务2、如果没有需要分析的数据,就更新Path树信息 为动态计算SmartApi做准备
                     int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (unhandledReqDataId <= 0){
                         //获取需要更新的所有URL记录
-                        JSONArray recordUrls = fetchUnhandledRecordUrls();
+                        JSONArray recordUrls = fetchUnhandledRecordPaths();
                         if (!recordUrls.isEmpty()){
                             for (Object record : recordUrls) {
                                 //生成新的路径树
-                                JSONObject treeObj = genPathsTree((JSONObject) record);
-                                if (treeObj != null && !treeObj.isEmpty()){
+                                JSONObject addedTreeObj = genPathsTree((JSONObject) record);
+                                if (addedTreeObj != null && !addedTreeObj.isEmpty()){
                                     //合并|插入新的路径树
-                                    int pathTreeIndex = insertOrUpdatePathTree(treeObj);
+                                    int pathTreeIndex = insertOrUpdatePathTree(addedTreeObj);
                                     if (pathTreeIndex > 0) {
-                                        stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",treeObj.toJSONString()));
+                                        stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",addedTreeObj.toJSONString()));
                                     }
                                 }
                             }
@@ -276,7 +280,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //TODO: 增加智能生成的URl过滤 已访问URL过滤
-                    //任务3、判断是否有树需要更新,没有的话就根据树生成计算新的URL
+                    //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                     int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
                     if (unhandledRecordUrlId <= 0) {
                         //获取一条需要分析的数据

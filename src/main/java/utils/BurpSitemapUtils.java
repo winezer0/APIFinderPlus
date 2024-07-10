@@ -27,7 +27,8 @@ public class BurpSitemapUtils {
             int respStatusCode = msgInfo.getRespStatusCode();
 
             //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
-            if(addToRecordUrl && !isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
+            if(addToRecordUrl
+                    && !isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
                 RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
             }
 

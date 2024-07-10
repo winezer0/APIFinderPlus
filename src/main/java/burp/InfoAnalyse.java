@@ -1,6 +1,7 @@
 package burp;
 
 import com.alibaba.fastjson2.JSONObject;
+import model.AnalyseResult;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
@@ -31,7 +32,7 @@ public class InfoAnalyse {
 
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
-    public static JSONObject analyseMsgInfo(HttpMsgInfo msgInfo) {
+    public static AnalyseResult analyseMsgInfo(HttpMsgInfo msgInfo) {
         String reqUrl = msgInfo.getReqUrl();
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
@@ -63,14 +64,14 @@ public class InfoAnalyse {
         findApiList = filterFindUrls(reqUrl, findApiList, false);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s -> %s", reqUrl, findApiList.size()));
 
-        //存储到结果Json对象中
-        JSONObject analyseInfo = new JSONObject();
-        analyseInfo.put(INFO_KEY, findInfoList);
-        analyseInfo.put(URL_KEY, findUrlList);
-        analyseInfo.put(PATH_KEY, findPathList);
-        analyseInfo.put(API_KEY, findApiList);
-        //stdout_println(LOG_DEBUG, String.format("[+] 最终解析结果:%s", analyseInfoJsonObj.toJSONString()));
-        return analyseInfo;
+        //返回 AnalyseInfoResultModel 结果数据
+        AnalyseResult analyseResult = new AnalyseResult(
+                findInfoList,
+                findUrlList,
+                findPathList,
+                findApiList
+        );
+        return analyseResult;
     }
 
     private static List<String> filterFindPaths(String reqUrl, List<String> findUriList, boolean filterChinese) {
@@ -280,9 +281,9 @@ public class InfoAnalyse {
      * 判断提取的敏感信息（URL|PATH|INFO）是否都为空值
      * @param analyseInfo
      */
-    public static boolean analyseInfoIsNotEmpty(JSONObject analyseInfo) {
-        return !analyseInfo.getJSONArray(URL_KEY).isEmpty()
-                || !analyseInfo.getJSONArray(PATH_KEY).isEmpty()
-                || !analyseInfo.getJSONArray(INFO_KEY).isEmpty();
+    public static boolean analyseInfoIsNotEmpty(AnalyseResult analyseInfo) {
+        return !analyseInfo.getUrlList().isEmpty()
+                || !analyseInfo.getPathList().isEmpty()
+                || !analyseInfo.getInfoList().isEmpty();
     }
 }

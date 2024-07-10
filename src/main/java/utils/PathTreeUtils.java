@@ -276,7 +276,7 @@ public class PathTreeUtils {
      * @param uriPathList
      * @return
      */
-    public static List<String> filterPath(List<String> uriPathList) {
+    public static List<String> filterBlankPath(List<String> uriPathList) {
         List list = new ArrayList<String>();
         for (String path: uriPathList){
             if (path != null && path.trim() != "" && path.trim() != "/")
@@ -287,27 +287,26 @@ public class PathTreeUtils {
 
     /**
      * 生成路径树  输入格式 {host:[path list]}
-     * @param recordJsonObj
-     * @return
      */
     public static JSONObject genPathsTree(JSONObject recordJsonObj) {
         JSONObject jsonObject = new JSONObject();
 
-        // 确保map中有期望的键，避免NullPointerException
+        //确保map中有期望的键，避免NullPointerException
         String reqHostPort = (String) recordJsonObj.get(Constants.REQ_HOST_PORT);
         String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
 
         // 3、为每个域名计算根数
         String[] paths = reqPathDirs.split(Constants.SPLIT_SYMBOL);
-        //格式化列表
-        List<String> filterPaths = filterPath(Arrays.asList(paths));
-        JSONObject tree = createRootTree(filterPaths);
-
-        if (tree != null && !tree.isEmpty()){
-            jsonObject.put(Constants.REQ_HOST_PORT, reqHostPort);
-            jsonObject.put(Constants.PATH_TREE, tree);
-            jsonObject.put(Constants.BASIC_PATH_NUM, paths.length);
+        if (paths.length > 0) {
+            List<String> filterPaths = filterBlankPath(Arrays.asList(paths));
+            JSONObject tree = createRootTree(filterPaths);
+            if (tree != null && !tree.isEmpty()){
+                jsonObject.put(Constants.REQ_HOST_PORT, reqHostPort);
+                jsonObject.put(Constants.PATH_TREE, tree);
+                jsonObject.put(Constants.BASIC_PATH_NUM, paths.length);
+            }
         }
+
         return jsonObject;
     }
 

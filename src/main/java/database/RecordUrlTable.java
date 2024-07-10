@@ -3,8 +3,8 @@ package database;
 import model.HttpMsgInfo;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
@@ -76,8 +76,8 @@ public class RecordUrlTable {
 
 
     //获取所有访问过的URL
-    public static synchronized Set<String> fetchAllAccessedUrl(String reqHostPort) {
-        Set<String> uniqueURLs = new HashSet<>();
+    public static synchronized List<String> fetchAllAccessedUrls(String reqHostPort) {
+        List<String> uniqueURLs = new ArrayList<>();
 
         String selectSql = "SELECT DISTINCT req_url FROM tableName WHERE req_host_port = '?';"
                 .replace("tableName", tableName);
@@ -99,4 +99,26 @@ public class RecordUrlTable {
         return uniqueURLs;
     }
 
+    //获取所有访问过的URL
+    public static synchronized List<String> fetchAllAccessedUrls() {
+        List<String> uniqueURLs = new ArrayList<>();
+
+        String selectSql = "SELECT DISTINCT req_url FROM tableName;"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+            // 获取所有的URL
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String reqUrl = rs.getString("req_url");
+                uniqueURLs.add(reqUrl);
+            }
+
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error fetch All Accessed Url On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return uniqueURLs;
+    }
 }

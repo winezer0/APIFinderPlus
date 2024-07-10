@@ -1,6 +1,5 @@
 package utils;
 
-import burp.InfoAnalyse;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.net.MalformedURLException;
@@ -206,15 +205,17 @@ public class InfoUriFilterUtils {
     }
 
     /**
-     * 返回两个集合的差集。 该集合包含在setA中但不在setB中的所有元素。
-     * @param setA 第一个集合
-     * @param setB 第二个集合
+     * 返回两个集合的差集。该集合包含在setA中但不在setB中的所有元素。
+     * @param listA 第一个集合
+     * @param listB 第二个集合
      * @return 差集
      */
-    public static <T> Set<T> differenceSet(Set<T> setA, Set<T> setB) {
-        Set<T> result = new HashSet<>(setA);
-        result.removeAll(setB);
-        return result;
+    public static <T> List<T> listReduceList(List<T> listA, List<T> listB) {
+        if (listA.isEmpty() || listB.isEmpty()) return listA;
+
+        Set<T> result = new HashSet<>(listA);
+        result.removeAll(listB);
+        return new ArrayList<>(result);
     }
 
     /**

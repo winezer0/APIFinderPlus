@@ -2,21 +2,22 @@ package database;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import model.TableTabDataModel;
+import model.AnalyseResult;
 import model.FindPathModel;
 import model.HttpMsgInfo;
+import model.TableTabDataModel;
 
-import static utils.BurpPrintUtils.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static burp.InfoAnalyse.*;
+import static com.alibaba.fastjson2.JSON.toJSONString;
+import static utils.BurpPrintUtils.*;
 
 public class InfoAnalyseTable {
     //数据表名称
-    static String tableName = "INFO_ANALYSE";
+    static String tableName = "ANALYSE_RESULT";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
@@ -50,7 +51,7 @@ public class InfoAnalyseTable {
             + ");";
 
     //插入分析完整的 基本 敏感信息 和 URI数据
-    public static synchronized int insertBaseAnalyseData(HttpMsgInfo msgInfo, JSONObject analyseInfo){
+    public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResult analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
                 .replace("tableName", tableName);
@@ -67,31 +68,35 @@ public class InfoAnalyseTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num, find_info, find_info_num, find_api, find_api_num, run_status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                        "msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num, " +
+                        "find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName) ;
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getReqUrl());
                     insertStmt.setString(3, msgInfo.getUrlInfo().getReqHostPort());
 
-                    insertStmt.setString(4, analyseInfo.getJSONArray(URL_KEY).toJSONString());
-                    insertStmt.setInt(5, analyseInfo.getJSONArray(URL_KEY).size());
+                    insertStmt.setString(4, toJSONString(analyseInfo.getUrlList()));
+                    insertStmt.setInt(5, analyseInfo.getUrlList().size());
 
-                    insertStmt.setString(6, analyseInfo.getJSONArray(PATH_KEY).toJSONString());
-                    insertStmt.setInt(7, analyseInfo.getJSONArray(PATH_KEY).size());
+                    insertStmt.setString(6, toJSONString(analyseInfo.getPathList()));
+                    insertStmt.setInt(7, analyseInfo.getPathList().size());
 
-                    insertStmt.setString(8, analyseInfo.getJSONArray(INFO_KEY).toJSONString());
-                    insertStmt.setInt(9, analyseInfo.getJSONArray(INFO_KEY).size());
+                    insertStmt.setString(8, toJSONString(analyseInfo.getInfoList()));
+                    insertStmt.setInt(9, analyseInfo.getInfoList().size());
 
-                    insertStmt.setString(10, analyseInfo.getJSONArray(API_KEY).toJSONString());
-                    insertStmt.setInt(11, analyseInfo.getJSONArray(API_KEY).size());
+                    insertStmt.setString(10, toJSONString(analyseInfo.getApiList()));
+                    insertStmt.setInt(11, analyseInfo.getApiList().size());
+
+                    insertStmt.setString(12, toJSONString(analyseInfo.getUnvisitedUrl()));
+                    insertStmt.setInt(13, analyseInfo.getUnvisitedUrl().size());
 
                     //在这个响应中没有找到API数据,就修改状态为无需解析
-                    if (analyseInfo.getJSONArray(API_KEY).size() > 0){
-                        insertStmt.setString(12, Constants.ANALYSE_WAIT);
+                    if (analyseInfo.getApiList().size() > 0){
+                        insertStmt.setString(14, Constants.ANALYSE_WAIT);
                     } else {
-                        insertStmt.setString(12, Constants.ANALYSE_SKIP);
+                        insertStmt.setString(14, Constants.ANALYSE_SKIP);
                     }
 
                     insertStmt.executeUpdate();
@@ -109,7 +114,7 @@ public class InfoAnalyseTable {
             e.printStackTrace();
         }
 
-        return generatedId; // 返回ID值，无论是更新还是插入
+        return generatedId; //返回ID值，无论是更新还是插入
     }
 
     //获取一条需要分析的Path数据
@@ -200,7 +205,6 @@ public class InfoAnalyseTable {
         }
         return generatedId;
     }
-
 
     //获取指定msgHash的数据
     public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
