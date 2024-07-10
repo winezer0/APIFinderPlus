@@ -118,7 +118,7 @@ public class InfoAnalyseTable {
     }
 
     //获取一条需要分析的Path数据
-    public static synchronized FindPathModel fetchUnhandledSmartApiData(){
+    public static synchronized FindPathModel fetchUnhandledPathData(){
         FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID

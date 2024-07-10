@@ -92,7 +92,7 @@ public class RecordPathTable {
 
 
     //判断是否存在需要处理的URL
-    public static synchronized int fetchUnhandledRecordUrlId(){
+    public static synchronized int fetchUnhandledRecordPathId(){
         // 考虑开启事务
         int dataIndex = -1;
 

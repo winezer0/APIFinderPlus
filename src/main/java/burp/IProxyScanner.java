@@ -19,7 +19,7 @@ import static burp.InfoAnalyse.*;
 import static database.InfoAnalyseTable.*;
 import static database.PathTreeTable.fetchOnePathTreeData;
 import static database.PathTreeTable.insertOrUpdatePathTree;
-import static database.RecordPathTable.fetchUnhandledRecordUrlId;
+import static database.RecordPathTable.fetchUnhandledRecordPathId;
 import static database.RecordPathTable.fetchUnhandledRecordPaths;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.BurpPrintUtils.*;
@@ -281,12 +281,12 @@ public class IProxyScanner implements IProxyListener {
 
                     //TODO: 增加智能生成的URl过滤 已访问URL过滤
                     //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-                    int unhandledRecordUrlId = fetchUnhandledRecordUrlId();
-                    if (unhandledRecordUrlId <= 0) {
+                    int unhandledRecordPathId = fetchUnhandledRecordPathId();
+                    if (unhandledRecordPathId <= 0) {
                         //获取一条需要分析的数据
-                        FindPathModel unhandledSmartApiData = fetchUnhandledSmartApiData();
-                        if (unhandledSmartApiData != null) {
-                            analyseAndUpdateSmartApiData(unhandledSmartApiData);
+                        FindPathModel unhandledPathData = fetchUnhandledPathData();
+                        if (unhandledPathData != null) {
+                            pathsToUrlsBasedPathTree(unhandledPathData);
                             //更新数据后先返回,优先进行之前的操作
                             return;
                         }
@@ -297,7 +297,7 @@ public class IProxyScanner implements IProxyListener {
                     if (unhandledSmartApiDataId <= 0){
                         FindPathModel oneNeedUpdatedSmartApiData = UnionTableSql.fetchOneNeedUpdatedSmartApiData();
                         if (oneNeedUpdatedSmartApiData != null) {
-                            analyseAndUpdateSmartApiData(oneNeedUpdatedSmartApiData);
+                            pathsToUrlsBasedPathTree(oneNeedUpdatedSmartApiData);
                             //更新数据后先返回,优先进行之前的操作
                             return;
                         }
@@ -320,7 +320,7 @@ public class IProxyScanner implements IProxyListener {
      * 重复使用的独立的Smart API 路径计算+更新函数
      * @param findPathModel
      */
-    private void analyseAndUpdateSmartApiData(FindPathModel findPathModel) {
+    private void pathsToUrlsBasedPathTree(FindPathModel findPathModel) {
         if (findPathModel != null) {
             int id = findPathModel.getId();
             String reqUrl = findPathModel.getReqUrl();
@@ -363,10 +363,10 @@ public class IProxyScanner implements IProxyListener {
                 findUrlsList = InfoAnalyse.filterFindUrls(reqUrl, findUrlsList, false);
 
                 //不管找没找到数据 都应该写入数据库进行存储
-                JSONObject smartApiJsonObj = new JSONObject();
-                smartApiJsonObj.put(Constants.BASIC_PATH_NUM, basicPathNum);
-                smartApiJsonObj.put(Constants.FIND_PATH, new JSONArray(findUrlsList));
-                int apiDataIndex = insertAnalyseSmartApiData(id, smartApiJsonObj);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(Constants.BASIC_PATH_NUM, basicPathNum);
+                jsonObject.put(Constants.FIND_PATH, new JSONArray(findUrlsList));
+                int apiDataIndex = insertAnalyseSmartApiData(id, jsonObject);
                 if (apiDataIndex > 0)
                     stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
             }
