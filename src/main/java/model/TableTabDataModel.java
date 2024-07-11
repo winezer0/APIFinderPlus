@@ -6,17 +6,17 @@ public class TableTabDataModel {
     private String findPath;
     private String findInfo;
     private String findApi;
-    private String smartApi;
+    private String pathToUrl;
     private String unvisitedUrl;
 
     public TableTabDataModel(String msgHash, String findUrl, String findPath, String findInfo,
-                             String findApi, String smartApi, String unvisitedUrl) {
+                             String findApi, String pathToUrl, String unvisitedUrl) {
         this.msgHash = msgHash;
         this.findUrl = findUrl;
         this.findPath = findPath;
         this.findInfo = findInfo;
         this.findApi = findApi;
-        this.smartApi = smartApi;
+        this.pathToUrl = pathToUrl;
         this.unvisitedUrl = unvisitedUrl;
     }
 
@@ -40,8 +40,8 @@ public class TableTabDataModel {
         return findApi;
     }
 
-    public String getSmartApi() {
-        return smartApi;
+    public String getPathToUrl() {
+        return pathToUrl;
     }
 
     public String getUnvisitedUrl() {

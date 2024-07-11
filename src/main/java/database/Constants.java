@@ -15,13 +15,7 @@ public class Constants {
     public static final String RESP_BYTES = "RESP_BYTES";
 
     //AnalyseDataTable 使用
-    public static final String DATA_ID = "DATA_ID";
     public static final String FIND_PATH = "FIND_PATH";
-    public static final String FIND_URL = "FIND_URL";
-    public static final String FIND_INFO = "FIND_INFO";
-    public static final String FIND_API = "FIND_API";
-    public static final String SMART_API = "SMART_API";
-    public static final String UNVISITED_URL = "UNVISITED_URL";
 
     //RecordUrlsTable使用
     public static final String SPLIT_SYMBOL = "<->";

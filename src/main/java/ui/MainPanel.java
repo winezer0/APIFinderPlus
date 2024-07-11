@@ -38,7 +38,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private static ITextEditor findUrlTEditor; //显示找到的URL
     private static ITextEditor findPathTEditor; //显示找到的PATH
     private static ITextEditor findApiTEditor; //基于PATH计算出的URL
-    private static ITextEditor smartApiTEditor; //基于树算法计算出的URL
+    private static ITextEditor pathtoUrlTEditor; //基于树算法计算出的URL
     private static ITextEditor unvisitedUrlTEditor; //未访问过的URL
 
     private static byte[] requestsData; //请求数据,设置为全局变量,便于IMessageEditorController函数调用
@@ -128,7 +128,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 "find_path_num",
                 "find_info_num",
                 "find_api_num",
-                "smart_api_num",
+                "path_to_url_num",
                 "unvisited_url_num",
                 "run_status",
                 "basic_path_num",
@@ -395,7 +395,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         findUrlTEditor = callbacks.createTextEditor();
         findPathTEditor = callbacks.createTextEditor();
         findApiTEditor = callbacks.createTextEditor();
-        smartApiTEditor = callbacks.createTextEditor();
+        pathtoUrlTEditor = callbacks.createTextEditor();
         unvisitedUrlTEditor = callbacks.createTextEditor();
 
         tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
@@ -406,7 +406,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         tabs.addTab("findUrl", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
         tabs.addTab("findPath", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
         tabs.addTab("findApi", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("smartApi", smartApiTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("pathToUrl", pathtoUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
 
         tabs.addTab("unvisitedUrl", unvisitedUrlTEditor.getComponent()); //显示在这个URL中找到的Path 且还没有访问过的URL
 
@@ -447,7 +447,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             String findUrl = tabDataModel.getFindUrl();
             String findPath = tabDataModel.getFindPath();
             String findApi = tabDataModel.getFindApi();
-            String smartApi = tabDataModel.getSmartApi();
+            String pathToUrl = tabDataModel.getPathToUrl();
             String unvisitedUrl = tabDataModel.getUnvisitedUrl();
 
             //格式化为可输出的类型
@@ -455,21 +455,21 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             findUrl = UiUtils.stringJsonArrayFormat(findUrl);
             findPath = UiUtils.stringJsonArrayFormat(findPath);
             findApi = UiUtils.stringJsonArrayFormat(findApi);
-            smartApi = UiUtils.stringJsonArrayFormat(smartApi);
+            pathToUrl = UiUtils.stringJsonArrayFormat(pathToUrl);
             unvisitedUrl = UiUtils.stringJsonArrayFormat(unvisitedUrl);
 
             findInfoTextPane.setText(findInfo);
             findUrlTEditor.setText(findUrl.getBytes());
             findPathTEditor.setText(findPath.getBytes());
             findApiTEditor.setText(findApi.getBytes());
-            smartApiTEditor.setText(smartApi.getBytes());
+            pathtoUrlTEditor.setText(pathToUrl.getBytes());
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         } else {
             findInfoTextPane.setText("");
             findUrlTEditor.setText("".getBytes());
             findPathTEditor.setText("".getBytes());
             findApiTEditor.setText("".getBytes());
-            smartApiTEditor.setText("".getBytes());
+            pathtoUrlTEditor.setText("".getBytes());
             unvisitedUrlTEditor.setText("".getBytes());
         }
     }
@@ -556,7 +556,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             MainPanel.findUrlTEditor.setText(new byte[0]);
             MainPanel.findPathTEditor.setText(new byte[0]);
             MainPanel.findApiTEditor.setText(new byte[0]);
-            MainPanel.smartApiTEditor.setText(new byte[0]);
+            MainPanel.pathtoUrlTEditor.setText(new byte[0]);
             MainPanel.unvisitedUrlTEditor.setText(new byte[0]);
 
             MainPanel.iHttpService = null; // 清空当前显示的项

@@ -13,7 +13,7 @@ import static utils.BurpPrintUtils.stderr_println;
 
 public class UnionTableSql {
     //联合 获取一条需要更新的Path数据
-    public static synchronized FindPathModel fetchOneNeedUpdatedPathDataToUrl(){
+    public static synchronized FindPathModel fetchOneNeedUpdatedPathToUrlData(){
         FindPathModel pathData = null;
 
         // 首先选取一条记录的ID
@@ -48,7 +48,7 @@ public class UnionTableSql {
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
         // 获取当前所有记录的数据
         String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
-                "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.smart_api_num,B.unvisited_url_num,B.basic_path_num " +
+                "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
                 "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash order by A.msg_id;")
                 .replace("table1", ReqDataTable.tableName)
                 .replace("table2", InfoAnalyseTable.tableName);
@@ -68,7 +68,7 @@ public class UnionTableSql {
                             rs.getInt("find_path_num"),
                             rs.getInt("find_info_num"),
                             rs.getInt("find_api_num"),
-                            rs.getInt("smart_api_num"),
+                            rs.getInt("path_to_url_num"),
                             rs.getInt("unvisited_url_num"),
                             rs.getString("run_status"),
                             rs.getInt("basic_path_num")

@@ -39,8 +39,8 @@ public class InfoAnalyseTable {
             + " find_api TEXT DEFAULT '',\n"        //基于分析的不完整URI信息 直接拼接 出来的URL (Json格式)
             + " find_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
 
-            + " smart_api TEXT DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
-            + " smart_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
+            + " path_to_url TEXT DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
+            + " path_to_url_num INTEGER DEFAULT -1,\n"     //发现API的数量
 
             + " unvisited_url TEXT DEFAULT '',\n"      //合并所有URL 并去除已经访问过的URL (Json格式)
             + " unvisited_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 并去除已经访问过的URL的数量
@@ -156,12 +156,12 @@ public class InfoAnalyseTable {
         return findPathModel;
     }
 
-    //插入分析完整的smart api 数据
-    public static synchronized int insertAnalyseSmartApiData(int dataId, JSONObject analyseApiInfo){
+    //插入分析完整的 path to url 数据
+    public static synchronized int insertPathToUrlData(int dataId, JSONObject analyseApiInfo){
         int dataIndex = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         // todo: 实现插入 unvisited_url 数据
-        String updateSQL = "UPDATE tableName SET smart_api = ?, smart_api_num = ?, basic_path_num = ? WHERE id = ?;"
+        String updateSQL = "UPDATE tableName SET path_to_url = ?, path_to_url_num = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
         int basicPathNum = (int) analyseApiInfo.get(Constants.BASIC_PATH_NUM);
@@ -201,7 +201,7 @@ public class InfoAnalyseTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Smart Api Data: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Path to Url Data: %s", e.getMessage()));
         }
         return generatedId;
     }
@@ -210,7 +210,7 @@ public class InfoAnalyseTable {
     public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
         TableTabDataModel tabDataModel = null;
 
-        String selectSQL = ("SELECT msg_hash,find_url,find_path,find_info,find_api,smart_api,unvisited_url " +
+        String selectSQL = ("SELECT msg_hash,find_url,find_path,find_info,find_api,path_to_url,unvisited_url " +
                 "FROM tableName WHERE msg_hash = ?;")
                 .replace("tableName", tableName);
 
@@ -225,7 +225,7 @@ public class InfoAnalyseTable {
                             rs.getString("find_path"),
                             rs.getString("find_info"),
                             rs.getString("find_api"),
-                            rs.getString("smart_api"),
+                            rs.getString("path_to_url"),
                             rs.getString("unvisited_url")
                     );
                 }

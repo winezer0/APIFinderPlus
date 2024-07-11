@@ -12,7 +12,7 @@ public class TableLineDataModel {
     private Integer findPathNum;
     private Integer findInfoNum;
     private Integer findApiNum;
-    private Integer smartApiNum;
+    private Integer pathToUrlNum;
     private Integer unvisitedUrlNum;
     private String runStatus;
     private Integer basicPathNum;
@@ -20,7 +20,7 @@ public class TableLineDataModel {
     // 构造函数
     public TableLineDataModel(int msgId, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
                               String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
-                              int findApiNum, int smartApiNum, int unvisitedUrlNum, String runStatus, int basicPathNum) {
+                              int findApiNum, int pathToUrlNum, int unvisitedUrlNum, String runStatus, int basicPathNum) {
         this.msgId = msgId;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
@@ -31,7 +31,7 @@ public class TableLineDataModel {
         this.findPathNum = findPathNum;
         this.findInfoNum = findInfoNum;
         this.findApiNum = findApiNum;
-        this.smartApiNum = smartApiNum;
+        this.pathToUrlNum = pathToUrlNum;
         this.unvisitedUrlNum = unvisitedUrlNum;
         this.runStatus = runStatus;
         this.basicPathNum = basicPathNum;
@@ -49,7 +49,7 @@ public class TableLineDataModel {
                 this.getFindPathNum(),
                 this.getFindInfoNum(),
                 this.getFindApiNum(),
-                this.getSmartApiNum(),
+                this.getPathToUrlNum(),
                 this.getUnvisitedUrlNum(),
                 this.getRunStatus(),
                 this.getBasicPathNum()
@@ -96,8 +96,8 @@ public class TableLineDataModel {
         return findApiNum;
     }
 
-    public Integer getSmartApiNum() {
-        return smartApiNum;
+    public Integer getPathToUrlNum() {
+        return pathToUrlNum;
     }
 
     public Integer getUnvisitedUrlNum() {
