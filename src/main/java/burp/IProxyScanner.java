@@ -76,7 +76,7 @@ public class IProxyScanner implements IProxyListener {
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            String respStatusCode = String.valueOf(msgInfo.getRespStatusCode());
+            String respStatusCodeString = String.valueOf(msgInfo.getRespStatusCode());
 
             //看URL识别是否报错 不记录报错情况
             if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||msgInfo.getUrlInfo().getReqBaseUrl().equals("-")){
@@ -127,7 +127,7 @@ public class IProxyScanner implements IProxyListener {
                 @Override
                 public void run() {
                     if(urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
-                            && isEqualsOneKey(respStatusCode, CONF_NEED_RECORD_STATUS, true)
+                            && isEqualsOneKey(respStatusCodeString, CONF_NEED_RECORD_STATUS, true)
                             && !msgInfo.getUrlInfo().getReqPath().equals("/")){
                         RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
                         urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
@@ -143,9 +143,8 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            // 看status是否为30开头 || 看status是否为404
-            if (respStatusCode.startsWith("3") ||
-                    respStatusCode.equals("404")){
+            // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
+            if (respStatusCodeString.startsWith("3") || respStatusCodeString.startsWith("4")){
                 //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }

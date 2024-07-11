@@ -504,7 +504,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
 
-
     /**
      * 基于过滤选项 和 搜索框内容 显示结果
      * @param selectOption
