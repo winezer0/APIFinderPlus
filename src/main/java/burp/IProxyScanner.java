@@ -19,7 +19,6 @@ import static burp.InfoAnalyse.*;
 import static database.InfoAnalyseTable.*;
 import static database.PathTreeTable.fetchOnePathTreeData;
 import static database.PathTreeTable.insertOrUpdatePathTree;
-import static database.RecordPathTable.fetchUnhandledRecordPathId;
 import static database.RecordPathTable.fetchUnhandledRecordPaths;
 import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.BurpPrintUtils.*;
@@ -173,7 +172,7 @@ public class IProxyScanner implements IProxyListener {
                         msgInfo.setRespBytes(respBytes);
                         //加入请求列表
                         int msgId = iInterceptedProxyMessage.getMessageReference();
-                        storeReqData(msgInfo, msgId, "Proxy");
+                        insertOrUpdateReqDataAndReqMsgData(msgInfo, msgId, "Proxy");
                     }else {
                         stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                         return;
@@ -188,7 +187,7 @@ public class IProxyScanner implements IProxyListener {
      * @param msgInfo
      * @param msgId
      */
-    private void storeReqData(HttpMsgInfo msgInfo, int msgId, String reqSource) {
+    private void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, int msgId, String reqSource) {
         //存储请求体|响应体数据
         int msgDataIndex = ReqMsgDataTable.insertOrUpdateMsgData(msgInfo);
         if (msgDataIndex > 0){
@@ -257,7 +256,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
-                    //任务2、如果没有需要分析的数据,就更新Path树信息 为动态计算SmartApi做准备
+                    //任务2、如果没有需要分析的数据,就更新Path树信息 为动态 path to url 做准备
                     int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (unhandledReqDataId <= 0){
                         //获取需要更新的所有URL记录
@@ -279,23 +278,12 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //TODO: 增加智能生成的URl过滤 已访问URL过滤
+                    //TODO: 把基于路径新生成的URL加入到未访问URL数据中
                     //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-                    int unhandledRecordPathId = fetchUnhandledRecordPathId();
+                    int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
                     if (unhandledRecordPathId <= 0) {
                         //获取一条需要分析的数据
-                        FindPathModel unhandledPathData = fetchUnhandledPathData();
-                        if (unhandledPathData != null) {
-                            pathsToUrlsBasedPathTree(unhandledPathData);
-                            //更新数据后先返回,优先进行之前的操作
-                            return;
-                        }
-                    }
-
-                    //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
-                    int unhandledPathDataId = fetchUnhandledPathDataId();
-                    if (unhandledPathDataId <= 0){
-                        FindPathModel findPathModel = UnionTableSql.fetchOneNeedUpdatedPathDataToUrl();
+                        FindPathModel findPathModel = InfoAnalyseTable.fetchUnhandledPathData();
                         if (findPathModel != null) {
                             pathsToUrlsBasedPathTree(findPathModel);
                             //更新数据后先返回,优先进行之前的操作
@@ -303,7 +291,16 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //TODO 动态实现未访问URL的更新
+                    //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
+                    int unhandledPathDataId = InfoAnalyseTable.fetchUnhandledPathDataId();
+                    if (unhandledPathDataId <= 0){
+                        FindPathModel findPathModel = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
+                        if (findPathModel != null) {
+                            pathsToUrlsBasedPathTree(findPathModel);
+                            //更新数据后先返回,优先进行之前的操作
+                            return;
+                        }
+                    }
 
                     //todo: 增加自动递归查询功能
 
@@ -317,7 +314,7 @@ public class IProxyScanner implements IProxyListener {
     }
 
     /**
-     * 重复使用的独立的Smart API 路径计算+更新函数
+     * 重复使用的独立的 path to url 路径计算+更新函数
      * @param findPathModel
      */
     private void pathsToUrlsBasedPathTree(FindPathModel findPathModel) {
@@ -366,7 +363,7 @@ public class IProxyScanner implements IProxyListener {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(Constants.BASIC_PATH_NUM, basicPathNum);
                 jsonObject.put(Constants.FIND_PATH, new JSONArray(findUrlsList));
-                int apiDataIndex = insertAnalyseSmartApiData(id, jsonObject);
+                int apiDataIndex = insertPathToUrlData(id, jsonObject);
                 if (apiDataIndex > 0)
                     stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
             }
