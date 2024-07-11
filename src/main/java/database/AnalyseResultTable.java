@@ -340,7 +340,6 @@ public class AnalyseResultTable {
             int affectedRows = updateStatement.executeUpdate();
             if (affectedRows > 0) {
                 generatedId = unVisitedUrlsModel.getId();
-                stdout_println(String.format("定时更新 unvisited_url_id [%s] -> unvisited_url_num [%s]", unVisitedUrlsModel.getId(), unVisitedUrlsModel.getUnvisitedUrls().size() ));
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));

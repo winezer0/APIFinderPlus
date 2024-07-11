@@ -1,7 +1,6 @@
 package ui;
 
 import burp.*;
-import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
 import utils.CastUtils;
@@ -447,10 +446,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * @param row
      */
     private void updateComponentsBasedOnSelectedRow(int row) {
+        clearTabsMsgData();
+
         //1、获取当前行的msgHash
         String msgHash = null;
         try {
-            msgHash = (String) table.getModel().getValueAt(row, 1);
+            //实现排序后 视图行 数据的正确获取
+            TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+            int modelRow = sorter.convertRowIndexToModel(row);
+            msgHash = (String) table.getModel().getValueAt(modelRow, 1);
+
+            //msgHash = (String) table.getModel().getValueAt(row, 1);
+            stdout_println(String.format("当前点击第[%s]行 获取 msgHash [%s]",row, msgHash));
         } catch (Exception e) {
             stderr_println(String.format("[!] Table get Value At Row [%s] MsgHash Error:%s", row, e.getMessage() ));
         }
@@ -493,15 +500,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             findApiTEditor.setText(findApi.getBytes());
             pathtoUrlTEditor.setText(pathToUrl.getBytes());
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
-        } else {
-            findInfoTextPane.setText("");
-            findUrlTEditor.setText("".getBytes());
-            findPathTEditor.setText("".getBytes());
-            findApiTEditor.setText("".getBytes());
-            pathtoUrlTEditor.setText("".getBytes());
-            unvisitedUrlTEditor.setText("".getBytes());
         }
     }
+
+
 
     /**
      * 基于过滤选项 和 搜索框内容 显示结果
@@ -578,19 +580,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             });
 
             // 还可以清空编辑器中的数据
-            MainPanel.requestTextEditor.setMessage(new byte[0], true); // 清空请求编辑器
-            MainPanel.responseTextEditor.setMessage(new byte[0], false); // 清空响应编辑器
-
-            MainPanel.findInfoTextPane.setText("");
-            MainPanel.findUrlTEditor.setText(new byte[0]);
-            MainPanel.findPathTEditor.setText(new byte[0]);
-            MainPanel.findApiTEditor.setText(new byte[0]);
-            MainPanel.pathtoUrlTEditor.setText(new byte[0]);
-            MainPanel.unvisitedUrlTEditor.setText(new byte[0]);
-
-            MainPanel.iHttpService = null; // 清空当前显示的项
-            MainPanel.requestsData = null;
-            MainPanel.responseData = null;
+            clearTabsMsgData();
         }
     }
 
@@ -649,6 +639,25 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     @Override
     public IHttpService getHttpService() {
         return iHttpService;
+    }
+
+    /**
+     * 清空当前Msg tabs中显示的数据
+     */
+    private static void clearTabsMsgData() {
+        iHttpService = null; // 清空当前显示的项
+        requestsData = null;
+        responseData = null;
+
+        requestTextEditor.setMessage(new byte[0], true); // 清空请求编辑器
+        responseTextEditor.setMessage(new byte[0], false); // 清空响应编辑器
+
+        findInfoTextPane.setText("");
+        findUrlTEditor.setText(new byte[0]);
+        findPathTEditor.setText(new byte[0]);
+        findApiTEditor.setText(new byte[0]);
+        pathtoUrlTEditor.setText(new byte[0]);
+        unvisitedUrlTEditor.setText(new byte[0]);
     }
 }
 
