@@ -6,8 +6,8 @@ import database.*;
 import model.*;
 import ui.ConfigPanel;
 import utils.BurpSitemapUtils;
+import utils.CastUtils;
 import utils.InfoAnalyseUtils;
-import utils.InfoUriFilterUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +67,23 @@ public class IProxyScanner implements IProxyListener {
         monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 
         startDatabaseMonitor();
+    }
+
+    // 假设的后续代码用于更新未访问URL列表
+    public static void updateUnVisitedUrlsList(List<JSONObject> unVisitedUrlsTasks) {
+        // 获取所有 已经被访问过得URL列表
+        List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
+        for (int i = 0; i < unVisitedUrlsTasks.size(); i++) {
+            JSONObject unVisitedUrlsTask = unVisitedUrlsTasks.get(i);
+            int unvisitedUrlsId = unVisitedUrlsTask.getInteger("id");
+            String unvisitedUrlsJson = unVisitedUrlsTask.getString("unvisited_url");
+            List<String> unvisitedUrls = CastUtils.listReduceList(
+                    JSONArray.parseArray(unvisitedUrlsJson),
+                    accessedUrls
+            );
+            // 执行更新插入数据操作
+            InfoAnalyseTable.updateUnVisitedUrlsList(unvisitedUrlsId, unvisitedUrls);
+        }
     }
 
     @Override
@@ -231,7 +248,7 @@ public class IProxyScanner implements IProxyListener {
                                 if (analyseResult.getUnvisitedUrl().size()>0){
                                     List<String> unvisitedUrls = analyseResult.getUnvisitedUrl();
                                     List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
-                                    unvisitedUrls = InfoUriFilterUtils.listReduceList(unvisitedUrls, accessedUrls);
+                                    unvisitedUrls = CastUtils.listReduceList(unvisitedUrls, accessedUrls);
                                     analyseResult.setUnvisitedUrl(unvisitedUrls);
                                 }
 
@@ -278,7 +295,7 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //TODO: 把基于路径新生成的URL加入到未访问URL数据中
+                    //TODO: 考虑整合任务3和任务4
                     //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                     int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
                     if (unhandledRecordPathId <= 0) {

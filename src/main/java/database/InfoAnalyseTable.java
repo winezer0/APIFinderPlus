@@ -6,13 +6,15 @@ import model.AnalyseResult;
 import model.FindPathModel;
 import model.HttpMsgInfo;
 import model.TableTabDataModel;
+import utils.CastUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.alibaba.fastjson2.JSON.toJSONString;
 import static utils.BurpPrintUtils.*;
 
 public class InfoAnalyseTable {
@@ -77,19 +79,19 @@ public class InfoAnalyseTable {
                     insertStmt.setString(2, msgInfo.getReqUrl());
                     insertStmt.setString(3, msgInfo.getUrlInfo().getReqHostPort());
 
-                    insertStmt.setString(4, toJSONString(analyseInfo.getUrlList()));
+                    insertStmt.setString(4, CastUtils.toJson(analyseInfo.getUrlList()));
                     insertStmt.setInt(5, analyseInfo.getUrlList().size());
 
-                    insertStmt.setString(6, toJSONString(analyseInfo.getPathList()));
+                    insertStmt.setString(6, CastUtils.toJson(analyseInfo.getPathList()));
                     insertStmt.setInt(7, analyseInfo.getPathList().size());
 
-                    insertStmt.setString(8, toJSONString(analyseInfo.getInfoList()));
+                    insertStmt.setString(8, CastUtils.toJson(analyseInfo.getInfoList()));
                     insertStmt.setInt(9, analyseInfo.getInfoList().size());
 
-                    insertStmt.setString(10, toJSONString(analyseInfo.getApiList()));
+                    insertStmt.setString(10, CastUtils.toJson(analyseInfo.getApiList()));
                     insertStmt.setInt(11, analyseInfo.getApiList().size());
 
-                    insertStmt.setString(12, toJSONString(analyseInfo.getUnvisitedUrl()));
+                    insertStmt.setString(12, CastUtils.toJson(analyseInfo.getUnvisitedUrl()));
                     insertStmt.setInt(13, analyseInfo.getUnvisitedUrl().size());
 
                     //在这个响应中没有找到API数据,就修改状态为无需解析
@@ -157,10 +159,10 @@ public class InfoAnalyseTable {
     }
 
     //插入分析完整的 path to url 数据
-    public static synchronized int insertPathToUrlData(int dataId, JSONObject analyseApiInfo){
-        int dataIndex = -1; // 默认ID值，如果没有生成ID，则保持此值
+    public static synchronized int insertPathToUrlData(int id, JSONObject analyseApiInfo){
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        // todo: 实现插入 unvisited_url 数据
+        // todo: 实现更新 API 时 实时 插入 unvisited_url 数据
         String updateSQL = "UPDATE tableName SET path_to_url = ?, path_to_url_num = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
@@ -172,17 +174,17 @@ public class InfoAnalyseTable {
             updateStatement.setString(1, findUrls.toJSONString());
             updateStatement.setInt(2, findUrls.size());
             updateStatement.setInt(3, basicPathNum);
-            updateStatement.setInt(4, dataId);
+            updateStatement.setInt(4, id);
             int affectedRows = updateStatement.executeUpdate();
             if (affectedRows > 0) {
-                dataIndex = dataId;
+                generatedId = id;
             }
 
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update Path Data: %s", e.getMessage()));
         }
 
-        return dataIndex; // 返回ID值，无论是更新还是插入
+        return generatedId; // 返回ID值，无论是更新还是插入
     }
 
     //获取一条需要分析的数据的ID,判断是否有需要分析的数据
@@ -235,4 +237,56 @@ public class InfoAnalyseTable {
         }
         return tabDataModel;
     }
+
+
+    //1、获取所有未访问URl 注意需要大于0
+    public static synchronized List<JSONObject> fetchAllUnVisitedUrls(){
+        List<JSONObject> list = new ArrayList<>();
+
+        String selectSQL = ("SELECT id, unvisited_url FROM tableName WHERE unvisited_url_num > 0;")
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    JSONObject jsonObj = new JSONObject();
+                    jsonObj.put("id",rs.getInt("id"));
+                    jsonObj.put("unvisited_url",rs.getString("unvisited_url"));
+                    list.add(jsonObj);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch All UnVisited Urls: %s", e.getMessage()));
+        }
+        return list;
+    }
+
+    /**
+     * 实现 基于ID 更新 unvisitedUrls
+     * @param id
+     * @param unvisitedUrls
+     * @return
+     */
+    public static int updateUnVisitedUrlsList(int id, List<String> unvisitedUrls) {
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+            updateStatement.setString(1, CastUtils.toJson(unvisitedUrls));
+            updateStatement.setInt(2, unvisitedUrls.size());
+            updateStatement.setInt(3, id);
+            int affectedRows = updateStatement.executeUpdate();
+            if (affectedRows > 0) {
+                generatedId = id;
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
+        }
+        return generatedId;
+    }
+
 }

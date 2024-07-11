@@ -1,6 +1,7 @@
 package ui;
 
 import burp.*;
+import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.TableTabDataModel;
 import model.ReqMsgDataModel;
@@ -22,6 +23,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static utils.BurpPrintUtils.LOG_ERROR;
 import static utils.BurpPrintUtils.stderr_println;
 
 public class MainPanel extends JPanel implements IMessageEditorController {
@@ -364,15 +366,29 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 try{
                     instance.refreshTableModel();
                 } catch (Exception ep){
-                    BurpExtender.getStderr().println("[!] 刷新表格报错， 报错如下：");
-                    ep.printStackTrace(BurpExtender.getStderr());
+                    stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
                 }
+
+                //更新未访问URL列的数据
+                try{
+                    //1、获取所有未访问URl 注意需要大于0
+                    List<JSONObject> unVisitedUrlsTasks = InfoAnalyseTable.fetchAllUnVisitedUrls();
+                    if (unVisitedUrlsTasks.size()>0){
+                        //2、遍历JsonArray 进行更新
+                        IProxyScanner.updateUnVisitedUrlsList(unVisitedUrlsTasks);
+                    }
+                } catch (Exception ep){
+                    stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+                }
+
             }
         });
 
         // 启动定时器
         timer.start();
     }
+
+
 
     /**
      * 初始化创建表格下方的消息内容面板

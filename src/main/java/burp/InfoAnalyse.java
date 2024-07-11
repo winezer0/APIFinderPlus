@@ -5,6 +5,7 @@ import model.AnalyseResult;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
+import utils.CastUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -36,7 +37,7 @@ public class InfoAnalyse {
         String reqUrl = msgInfo.getReqUrl();
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
-        findInfoList = deduplicateJsonList(findInfoList); //去重提取结果
+        findInfoList = CastUtils.deduplicateJsonList(findInfoList); //去重提取结果
         stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", reqUrl, findInfoList.size()));
 
         //2、实现响应中的 URL 和 PATH 提取
@@ -82,7 +83,7 @@ public class InfoAnalyse {
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         //过滤重复内容
-        findUriList = deduplicateStringList(findUriList);
+        findUriList = CastUtils.deduplicateStringList(findUriList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", findUriList.size()));
 
         //过滤自身包含的Path (包含说明相同)
@@ -118,7 +119,7 @@ public class InfoAnalyse {
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         //过滤重复内容
-        urlList = deduplicateStringList(urlList);
+        urlList = CastUtils.deduplicateStringList(urlList);
         stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", urlList.size()));
 
         //过滤自身包含的URL (包含说明相同) //功能测试通过
