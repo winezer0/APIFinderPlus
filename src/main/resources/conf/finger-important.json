@@ -1386,7 +1386,7 @@
         ".github.com",
         ".githubusercontent.com"
       ],
-      "type": "CONF_BLACK_URL_DOMAIN",
+      "type": "CONF_BLACK_URL_HOSTS",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"

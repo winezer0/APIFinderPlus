@@ -1,6 +1,7 @@
 package model;
 
 import com.alibaba.fastjson2.JSONObject;
+import utils.CastUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,7 +20,7 @@ public class AnalyseResult {
         this.urlList = urlList;
         this.pathList = pathList;
         this.apiList = apiList;
-        this.unvisitedUrl = mergeAndDedupLists(urlList, apiList);
+        this.unvisitedUrl = CastUtils.listAddList(urlList, apiList);
     }
 
     public List<JSONObject> getInfoList() {
@@ -40,21 +41,6 @@ public class AnalyseResult {
 
     public List<String> getUnvisitedUrl() {
         return unvisitedUrl;
-    }
-
-    /**
-     * 合并并去重两个List
-     * @param firstList
-     * @param secondList
-     * @return
-     */
-    private  List<String> mergeAndDedupLists(List<String> firstList, List<String> secondList) {
-        // 使用 LinkedHashSet 来存储合并后的列表，这将自动去除重复元素并保持插入顺序
-        Set<String> set = new HashSet<>(firstList);
-        set.addAll(secondList);
-
-        // 将 Set 转换回 List 并返回
-        return new ArrayList<>(set);
     }
 
     public void setUnvisitedUrl(List<String> unvisitedUrl) {

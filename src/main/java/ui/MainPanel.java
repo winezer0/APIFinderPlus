@@ -3,10 +3,8 @@ package ui;
 import burp.*;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
-import model.TableTabDataModel;
-import model.ReqMsgDataModel;
-import model.RecordHashMap;
-import model.TableLineDataModel;
+import model.*;
+import utils.CastUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -23,8 +21,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static utils.BurpPrintUtils.LOG_ERROR;
-import static utils.BurpPrintUtils.stderr_println;
+import static utils.BurpPrintUtils.*;
 
 public class MainPanel extends JPanel implements IMessageEditorController {
     private static volatile MainPanel instance; //实现单例模式
@@ -362,23 +359,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         timer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //定时更新未访问URL列的数据
+                try{
+                    updateUnVisitedUrls();
+                } catch (Exception ep){
+                    stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+                }
+
                 // 调用刷新表格的方法
                 try{
                     instance.refreshTableModel();
                 } catch (Exception ep){
                     stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
-                }
-
-                //更新未访问URL列的数据
-                try{
-                    //1、获取所有未访问URl 注意需要大于0
-                    List<JSONObject> unVisitedUrlsTasks = AnalyseResultTable.fetchAllUnVisitedUrls();
-                    if (unVisitedUrlsTasks.size()>0){
-                        //2、遍历JsonArray 进行更新
-                        IProxyScanner.updateUnVisitedUrlsList(unVisitedUrlsTasks);
-                    }
-                } catch (Exception ep){
-                    stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
                 }
 
             }
@@ -388,6 +380,27 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         timer.start();
     }
 
+    private void updateUnVisitedUrls() {
+        // 获取所有未访问URl 注意需要大于0
+        List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
+        if (unVisitedUrlsModels.size() > 0){
+            // 获取所有 已经被访问过得URL列表
+            List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
+            // 遍历 unVisitedUrlsModels 进行更新
+            for (UnVisitedUrlsModel unVisitedUrlsModel : unVisitedUrlsModels) {
+                //更新 unVisitedUrls 对象
+                List<String> rawUnVisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+                List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
+                unVisitedUrlsModel.setUnvisitedUrls(newUnVisitedUrls);
+                // 执行更新插入数据操作
+                try {
+                    AnalyseResultTable.updateUnVisitedUrlsById(unVisitedUrlsModel);
+                } catch (Exception ex){
+                    stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+                }
+            }
+        }
+    }
 
 
     /**
@@ -468,11 +481,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             //格式化为可输出的类型
             findInfo = UiUtils.infoJsonArrayFormatHtml(findInfo);
-            findUrl = UiUtils.stringJsonArrayFormat(findUrl);
-            findPath = UiUtils.stringJsonArrayFormat(findPath);
-            findApi = UiUtils.stringJsonArrayFormat(findApi);
-            pathToUrl = UiUtils.stringJsonArrayFormat(pathToUrl);
-            unvisitedUrl = UiUtils.stringJsonArrayFormat(unvisitedUrl);
+            findUrl = CastUtils.stringJsonArrayFormat(findUrl);
+            findPath = CastUtils.stringJsonArrayFormat(findPath);
+            findApi = CastUtils.stringJsonArrayFormat(findApi);
+            pathToUrl = CastUtils.stringJsonArrayFormat(pathToUrl);
+            unvisitedUrl = CastUtils.stringJsonArrayFormat(unvisitedUrl);
 
             findInfoTextPane.setText(findInfo);
             findUrlTEditor.setText(findUrl.getBytes());

@@ -115,7 +115,7 @@ public class RecordPathTable {
     }
 
     //获取所有需要处理的URl数据，并且标记
-    public static synchronized JSONArray fetchUnhandledRecordPaths() {
+    public static synchronized JSONArray fetchAllNotAddToTreeRecords() {
         // 创建一个列表或集合来存储查询结果
         JSONArray jsonArray = new JSONArray();
 

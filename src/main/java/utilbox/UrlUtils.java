@@ -89,13 +89,7 @@ public class UrlUtils {
      *
      * @return http://www.baidu.com/  不包含默认端口；包含默认path(/)
      */
-    public static String getBaseUrl(String urlString) {
-        String baseUrlWithPort = getBaseUrlWithDefaultPort(urlString);
-        return removeUrlDefaultPort(baseUrlWithPort);
-    }
-
-
-    public static String getBaseUrlNoDefaultPort(String urlString) {
+      public static String getBaseUrlNoDefaultPort(String urlString) {
         String baseUrlWithPort = getBaseUrlWithDefaultPort(urlString);
         return removeUrlDefaultPort(baseUrlWithPort);
     }

@@ -1,6 +1,7 @@
 package database;
 
 import com.alibaba.fastjson2.JSONObject;
+import model.PathTreeModel;
 
 import java.sql.*;
 
@@ -99,27 +100,30 @@ public class PathTreeTable {
 
 
     //根据域名查询对应的Host
-    public static synchronized JSONObject fetchOnePathTreeData(String reqHost) {
+    public static synchronized PathTreeModel fetchPathTreeByReqHostPort(String reqHost) {
+        PathTreeModel pathTreeModel= null;
+
         //查询
-        String checkSql = "SELECT * FROM tableName WHERE req_host_port = ? LIMIT 1;"
+        String checkSql = "SELECT path_tree, basic_path_num FROM tableName WHERE req_host_port = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
-        JSONObject pathTreeData = new JSONObject();
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setString(1, reqHost);
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
-                pathTreeData.put(Constants.PATH_TREE, rs.getString("path_tree"));
-                pathTreeData.put(Constants.BASIC_PATH_NUM, rs.getInt("basic_path_num"));
+                pathTreeModel = new PathTreeModel(
+                        rs.getInt("basic_path_num"),
+                        rs.getString("path_tree")
+                        );
             }
         } catch (Exception e) {
             stderr_println(String.format("[-] Error Fetch One table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
-        return pathTreeData;
+        return pathTreeModel;
     }
 
 }

@@ -87,28 +87,6 @@ public class UiUtils {
      * @param jsonArrayString
      * @return
      */
-    public static String stringJsonArrayFormat(String jsonArrayString) {
-        if (jsonArrayString == null || jsonArrayString.length()<=2 )
-            return "-";
-
-        // 解析JSON数组
-        JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
-        StringBuilder formattedString = new StringBuilder();
-        for (Object item : jsonArray) {
-            if (item instanceof String) {
-                formattedString.append((String) item).append("\n");
-            } else {
-                throw new IllegalArgumentException("JSONArray contains non-string element.");
-            }
-        }
-        return formattedString.toString();
-    }
-
-    /**
-     * 格式化Json数据为可输出的状态
-     * @param jsonArrayString
-     * @return
-     */
     public static String infoJsonArrayFormatHtml(String jsonArrayString) {
         if (jsonArrayString == null || jsonArrayString.length()<=2 )
             return "-";

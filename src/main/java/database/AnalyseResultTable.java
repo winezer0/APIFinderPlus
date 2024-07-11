@@ -1,10 +1,7 @@
 package database;
 
 import com.alibaba.fastjson2.JSONObject;
-import model.AnalyseResult;
-import model.FindPathModel;
-import model.HttpMsgInfo;
-import model.TableTabDataModel;
+import model.*;
 import utils.CastUtils;
 
 import java.sql.Connection;
@@ -51,7 +48,12 @@ public class AnalyseResultTable {
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
             + ");";
 
-    //插入分析完整的 基本 敏感信息 和 URI数据
+    /**
+     * 插入第一次分析完毕的 URL和PATH结果, 此时不包含动态生成的URL
+     * @param msgInfo
+     * @param analyseInfo
+     * @return
+     */
     public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResult analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
@@ -93,8 +95,8 @@ public class AnalyseResultTable {
                     insertStmt.setString(12, CastUtils.toJson(analyseInfo.getUnvisitedUrl()));
                     insertStmt.setInt(13, analyseInfo.getUnvisitedUrl().size());
 
-                    //在这个响应中没有找到API数据,就修改状态为无需解析
-                    if (analyseInfo.getApiList().size() > 0){
+                    //在这个响应中没有找到 PATH 数据,就修改状态为无需解析
+                    if (analyseInfo.getPathList().size() > 0){
                         insertStmt.setString(14, Constants.ANALYSE_WAIT);
                     } else {
                         insertStmt.setString(14, Constants.ANALYSE_SKIP);
@@ -118,13 +120,49 @@ public class AnalyseResultTable {
         return generatedId; //返回ID值，无论是更新还是插入
     }
 
-    //获取一条需要分析的Path数据
+    /**
+     * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
+     * @param msgHash
+     * @return
+     */
+    public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
+        TableTabDataModel tabDataModel = null;
+
+        String selectSQL = ("SELECT * FROM tableName WHERE msg_hash = ?;")
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, msgHash);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    tabDataModel = new TableTabDataModel(
+                            rs.getString("msg_hash"),
+                            rs.getString("find_url"),
+                            rs.getString("find_path"),
+                            rs.getString("find_info"),
+                            rs.getString("find_api"),
+                            rs.getString("path_to_url"),
+                            rs.getString("unvisited_url")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Analyse Result Data By MsgHash: %s", e.getMessage()));
+        }
+        return tabDataModel;
+    }
+
+
+    /**
+     * 获取一条 存在 Path 并且没有 动态计算过的 path数据
+     * @return
+     */
     public static synchronized FindPathModel fetchUnhandledPathData(){
         FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-        String selectSQL = ("SELECT id,req_url,req_host_port,find_path FROM tableName " +
-                "WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;")
+        String selectSQL = ("SELECT * FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;")
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 
@@ -157,20 +195,55 @@ public class AnalyseResultTable {
         return findPathModel;
     }
 
-    //插入分析完整的 path to url 数据
-    public static synchronized int insertPathToUrlData(int id, int basicPathNum, List<String> findUrls){
+
+    /**
+     * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
+     * @param id
+     * @return
+     */
+    public static synchronized DynamicUrlsModel fetchDynamicUrlsDataById(int id){
+        DynamicUrlsModel dynamicUrlsModel = null;
+
+        String selectSQL = "SELECT id,path_to_url,unvisited_url,basic_path_num FROM tableName WHERE id = ?;"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    dynamicUrlsModel = new DynamicUrlsModel(
+                            rs.getInt("id"),
+                            rs.getInt("basic_path_num"),
+                            rs.getString("path_to_url"),
+                            rs.getString("unvisited_url")
+                            );
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch path_to_url and unvisited_url By Id: %s", e.getMessage()));
+        }
+        return dynamicUrlsModel;
+    }
+
+    /**
+     * 基于ID更新 PathToUrl 的基础计数数据
+     * @param id
+     * @param basicPathNum
+     * @return
+     */
+    public static synchronized int updateDynamicUrlsBasicNumById(int id, int basicPathNum){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        // todo: 实现更新 API 时 实时 插入 unvisited_url 数据
-        String updateSQL = "UPDATE tableName SET path_to_url = ?, path_to_url_num = ?, basic_path_num = ? WHERE id = ?;"
+        String updateSQL = "UPDATE tableName SET basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-            updateStatement.setString(1, CastUtils.toJson(findUrls));
-            updateStatement.setInt(2, findUrls.size());
-            updateStatement.setInt(3, basicPathNum);
-            updateStatement.setInt(4, id);
+
+            updateStatement.setInt(1, basicPathNum);
+            updateStatement.setInt(2, id);
+
             int affectedRows = updateStatement.executeUpdate();
             if (affectedRows > 0) {
                 generatedId = id;
@@ -183,72 +256,62 @@ public class AnalyseResultTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-    //获取一条需要分析的数据的ID,判断是否有需要分析的数据
-    public static synchronized int fetchUnhandledPathDataId(){
+    /**
+     * 基于ID更新动态URl数据
+     * @param dynamicUrlModel
+     * @return
+     */
+    public static synchronized int updateDynamicUrlsModel(DynamicUrlsModel dynamicUrlModel){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        // 首先选取一条记录的ID
-        String selectSQL = "SELECT id FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;"
-                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+
+        String updateSQL = ("UPDATE tableName SET " +
+                "path_to_url = ?, path_to_url_num = ?, " +
+                "unvisited_url = ?, unvisited_url_num = ?, " +
+                "basic_path_num = ? WHERE id = ?;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    generatedId = rs.getInt("id");
-                }
+             PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+
+            updateStatement.setString(1, CastUtils.toJson(dynamicUrlModel.getPathToUrls()));
+            updateStatement.setInt(2, dynamicUrlModel.getPathToUrls().size());
+
+            updateStatement.setString(3, CastUtils.toJson(dynamicUrlModel.getUnvisitedUrls()));
+            updateStatement.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
+
+            updateStatement.setInt(5, dynamicUrlModel.getBasicPathNum());
+            updateStatement.setInt(6, dynamicUrlModel.getId());
+
+            int affectedRows = updateStatement.executeUpdate();
+            if (affectedRows > 0) {
+                generatedId = dynamicUrlModel.getId();
             }
+
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Path to Url Data: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error update Path Data: %s", e.getMessage()));
         }
-        return generatedId;
+
+        return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-    //获取指定msgHash的数据
-    public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
-        TableTabDataModel tabDataModel = null;
+    /**
+     * 获取 所有未访问URl (unvisited_url_num > 0)
+     * @return
+     */
+    public static synchronized List<UnVisitedUrlsModel> fetchAllUnVisitedUrls( ){
+        List<UnVisitedUrlsModel> list = new ArrayList<>();
 
-        String selectSQL = ("SELECT msg_hash,find_url,find_path,find_info,find_api,path_to_url,unvisited_url " +
-                "FROM tableName WHERE msg_hash = ?;")
+        String selectSQL = ("SELECT id, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    tabDataModel = new TableTabDataModel(
-                            rs.getString("msg_hash"),
-                            rs.getString("find_url"),
-                            rs.getString("find_path"),
-                            rs.getString("find_info"),
-                            rs.getString("find_api"),
-                            rs.getString("path_to_url"),
+                while (rs.next()) {
+                    UnVisitedUrlsModel jsonObj = new UnVisitedUrlsModel(
+                            rs.getInt("id"),
                             rs.getString("unvisited_url")
                     );
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Analyse Result Data By MsgHash: %s", e.getMessage()));
-        }
-        return tabDataModel;
-    }
-
-
-    //1、获取所有未访问URl 注意需要大于0
-    public static synchronized List<JSONObject> fetchAllUnVisitedUrls(){
-        List<JSONObject> list = new ArrayList<>();
-
-        String selectSQL = ("SELECT id, unvisited_url FROM tableName WHERE unvisited_url_num > 0;")
-                .replace("tableName", tableName);
-
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    JSONObject jsonObj = new JSONObject();
-                    jsonObj.put("id",rs.getInt("id"));
-                    jsonObj.put("unvisited_url",rs.getString("unvisited_url"));
                     list.add(jsonObj);
                 }
             }
@@ -259,12 +322,11 @@ public class AnalyseResultTable {
     }
 
     /**
-     * 实现 基于ID 更新 unvisitedUrls
-     * @param id
-     * @param unvisitedUrls
+     * 实现 基于 ID 更新 unvisitedUrls
+     * @param unVisitedUrlsModel
      * @return
      */
-    public static int updateUnVisitedUrlsList(int id, List<String> unvisitedUrls) {
+    public static synchronized int updateUnVisitedUrlsById(UnVisitedUrlsModel unVisitedUrlsModel) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;"
@@ -272,17 +334,20 @@ public class AnalyseResultTable {
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-            updateStatement.setString(1, CastUtils.toJson(unvisitedUrls));
-            updateStatement.setInt(2, unvisitedUrls.size());
-            updateStatement.setInt(3, id);
+            updateStatement.setString(1, CastUtils.toJson(unVisitedUrlsModel.getUnvisitedUrls()));
+            updateStatement.setInt(2, unVisitedUrlsModel.getUnvisitedUrls().size());
+            updateStatement.setInt(3, unVisitedUrlsModel.getId());
             int affectedRows = updateStatement.executeUpdate();
             if (affectedRows > 0) {
-                generatedId = id;
+                generatedId = unVisitedUrlsModel.getId();
+                stdout_println(String.format("定时更新 unvisited_url_id [%s] -> unvisited_url_num [%s]", unVisitedUrlsModel.getId(), unVisitedUrlsModel.getUnvisitedUrls().size() ));
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
         }
         return generatedId;
     }
+
+
 
 }
