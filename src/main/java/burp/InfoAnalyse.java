@@ -75,6 +75,13 @@ public class InfoAnalyse {
         return analyseResult;
     }
 
+    /**
+     * 整合过滤分析出来的URL列表
+     * @param reqUrl
+     * @param findUriList
+     * @param filterChinese
+     * @return
+     */
     private static List<String> filterFindPaths(String reqUrl, List<String> findUriList, boolean filterChinese) {
         //跳过空列表的情况
         if (findUriList.isEmpty()) return findUriList;
@@ -111,6 +118,13 @@ public class InfoAnalyse {
         return findUriList;
     }
 
+    /**
+     * 整合过滤分析出来的 Path 列表
+     * @param reqUrl
+     * @param urlList
+     * @param onlyScopeDomain
+     * @return
+     */
     public static List<String> filterFindUrls(String reqUrl, List<String> urlList, boolean onlyScopeDomain) {
         //跳过空列表的情况
         if (urlList.isEmpty()) return urlList;
