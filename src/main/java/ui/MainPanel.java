@@ -107,7 +107,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
+                ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchAllTableLineData();
                 //将数据赋值给表模型
                 UiUtils.populateModelFromJsonArray(model, allReqAnalyseData);
             }
@@ -372,7 +372,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //更新未访问URL列的数据
                 try{
                     //1、获取所有未访问URl 注意需要大于0
-                    List<JSONObject> unVisitedUrlsTasks = InfoAnalyseTable.fetchAllUnVisitedUrls();
+                    List<JSONObject> unVisitedUrlsTasks = AnalyseResultTable.fetchAllUnVisitedUrls();
                     if (unVisitedUrlsTasks.size()>0){
                         //2、遍历JsonArray 进行更新
                         IProxyScanner.updateUnVisitedUrlsList(unVisitedUrlsTasks);
@@ -456,7 +456,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(responseData, false);
 
         //根据 msgHash值 查询api分析结果数据
-        TableTabDataModel tabDataModel = InfoAnalyseTable.fetchAnalyseResultByMsgHash(msgHash);
+        TableTabDataModel tabDataModel = AnalyseResultTable.fetchAnalyseResultByMsgHash(msgHash);
         if (tabDataModel != null) {
             //String msgHash = analyseResult.getMsgHash();
             String findInfo = tabDataModel.getFindInfo();
@@ -504,7 +504,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 model.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<TableLineDataModel> apiDataModels = UnionTableSql.fetchAllReqDataLeftJoinAnalyseInfo();
+                ArrayList<TableLineDataModel> apiDataModels = UnionTableSql.fetchAllTableLineData();
 
                 // 遍历apiDataModelMap
                 for (TableLineDataModel apiDataModel : apiDataModels) {

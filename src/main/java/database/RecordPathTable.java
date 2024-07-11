@@ -96,7 +96,7 @@ public class RecordPathTable {
         // 考虑开启事务
         int dataIndex = -1;
 
-        String selectSQL = "SELECT id FROM tableName WHERE run_status == 'ANALYSE_WAIT' LIMIT 1;"
+        String selectSQL = "SELECT id FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
                 .replace("tableName", tableName);
 

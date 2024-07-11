@@ -26,6 +26,7 @@ public class Constants {
 
     //联合语句用到的遍历
     public static final String BASIC_PATH_NUM = "BASIC_PATH_NUM";
+    public static final String ID = "ID";
 
 
     static public String TREE_STATUS_EXPAND = "▼";

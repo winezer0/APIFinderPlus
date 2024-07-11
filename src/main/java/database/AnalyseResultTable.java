@@ -1,6 +1,5 @@
 package database;
 
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.AnalyseResult;
 import model.FindPathModel;
@@ -17,7 +16,7 @@ import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
-public class InfoAnalyseTable {
+public class AnalyseResultTable {
     //数据表名称
     static String tableName = "ANALYSE_RESULT";
 
@@ -123,7 +122,7 @@ public class InfoAnalyseTable {
     public static synchronized FindPathModel fetchUnhandledPathData(){
         FindPathModel findPathModel = null;
 
-        // 首先选取一条记录的ID
+        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
         String selectSQL = ("SELECT id,req_url,req_host_port,find_path FROM tableName " +
                 "WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;")
                 .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
@@ -159,19 +158,16 @@ public class InfoAnalyseTable {
     }
 
     //插入分析完整的 path to url 数据
-    public static synchronized int insertPathToUrlData(int id, JSONObject analyseApiInfo){
+    public static synchronized int insertPathToUrlData(int id, int basicPathNum, List<String> findUrls){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         // todo: 实现更新 API 时 实时 插入 unvisited_url 数据
         String updateSQL = "UPDATE tableName SET path_to_url = ?, path_to_url_num = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        int basicPathNum = (int) analyseApiInfo.get(Constants.BASIC_PATH_NUM);
-        JSONArray findUrls = (JSONArray) analyseApiInfo.get(Constants.FIND_PATH);
-
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-            updateStatement.setString(1, findUrls.toJSONString());
+            updateStatement.setString(1, CastUtils.toJson(findUrls));
             updateStatement.setInt(2, findUrls.size());
             updateStatement.setInt(3, basicPathNum);
             updateStatement.setInt(4, id);

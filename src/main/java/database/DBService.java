@@ -69,7 +69,7 @@ public class DBService {
         execCreatTableSql(ReqDataTable.creatTableSQL, ReqDataTable.tableName);
 
         // 用来创建数据库 analyse_path 存储分析后的数据
-        execCreatTableSql(InfoAnalyseTable.creatTableSQL, InfoAnalyseTable.tableName);
+        execCreatTableSql(AnalyseResultTable.creatTableSQL, AnalyseResultTable.tableName);
 
         // 创建存储根树的表
         execCreatTableSql(PathTreeTable.creatTableSQL, PathTreeTable.tableName);
@@ -127,7 +127,7 @@ public class DBService {
      * 清空所有表的数据
      */
     public static void clearAllTableData(){
-       clearTable(InfoAnalyseTable.tableName);
+       clearTable(AnalyseResultTable.tableName);
        clearTable(ReqDataTable.tableName);
        clearTable(ReqMsgDataTable.tableName);
 

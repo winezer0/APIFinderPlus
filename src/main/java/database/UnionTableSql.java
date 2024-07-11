@@ -16,12 +16,12 @@ public class UnionTableSql {
     public static synchronized FindPathModel fetchOneNeedUpdatedPathToUrlData(){
         FindPathModel pathData = null;
 
-        // 首先选取一条记录的ID
+        // 首先选取一条记录的ID 状态是已经分析完毕,并且 当前 PathTree 的 基本路径数量 大于 生成分析数据时的 基本路径数量
         String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
                 "From table1 A LEFT JOIN table2 B ON A.req_host_port = B.req_host_port " +
                 "WHERE A.run_status = 'ANALYSE_ING' AND B.basic_path_num > A.basic_path_num Limit 1;")
                 .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("table1", InfoAnalyseTable.tableName)
+                .replace("table1", AnalyseResultTable.tableName)
                 .replace("table2", PathTreeTable.tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -44,14 +44,14 @@ public class UnionTableSql {
 
 
     //联合 获取一条需要更新的Path数据
-    public static synchronized ArrayList<TableLineDataModel> fetchAllReqDataLeftJoinAnalyseInfo(){
+    public static synchronized ArrayList<TableLineDataModel> fetchAllTableLineData(){
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
         // 获取当前所有记录的数据
         String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
                 "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
                 "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash order by A.msg_id;")
                 .replace("table1", ReqDataTable.tableName)
-                .replace("table2", InfoAnalyseTable.tableName);
+                .replace("table2", AnalyseResultTable.tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {

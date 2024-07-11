@@ -16,7 +16,7 @@ import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static burp.InfoAnalyse.*;
-import static database.InfoAnalyseTable.*;
+import static database.AnalyseResultTable.*;
 import static database.PathTreeTable.fetchOnePathTreeData;
 import static database.PathTreeTable.insertOrUpdatePathTree;
 import static database.RecordPathTable.fetchUnhandledRecordPaths;
@@ -82,7 +82,7 @@ public class IProxyScanner implements IProxyListener {
                     accessedUrls
             );
             // 执行更新插入数据操作
-            InfoAnalyseTable.updateUnVisitedUrlsList(unvisitedUrlsId, unvisitedUrls);
+            AnalyseResultTable.updateUnVisitedUrlsList(unvisitedUrlsId, unvisitedUrls);
         }
     }
 
@@ -253,7 +253,7 @@ public class IProxyScanner implements IProxyListener {
                                 }
 
                                 //将分析结果写入数据库
-                                int analyseDataIndex = InfoAnalyseTable.insertBasicAnalyseResult(msgInfo, analyseResult);
+                                int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
                                     stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                                 }
@@ -296,11 +296,12 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //TODO: 考虑整合任务3和任务4
+                    // 优化语句 实现兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                     //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                     int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
                     if (unhandledRecordPathId <= 0) {
                         //获取一条需要分析的数据
-                        FindPathModel findPathModel = InfoAnalyseTable.fetchUnhandledPathData();
+                        FindPathModel findPathModel = AnalyseResultTable.fetchUnhandledPathData();
                         if (findPathModel != null) {
                             pathsToUrlsBasedPathTree(findPathModel);
                             //更新数据后先返回,优先进行之前的操作
@@ -309,7 +310,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //任务4、判断是否还存在需要生成路径的数据, 如果没有的话,定时更新数据
-                    int unhandledPathDataId = InfoAnalyseTable.fetchUnhandledPathDataId();
+                    int unhandledPathDataId = AnalyseResultTable.fetchUnhandledPathDataId();
                     if (unhandledPathDataId <= 0){
                         FindPathModel findPathModel = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
                         if (findPathModel != null) {
@@ -332,14 +333,14 @@ public class IProxyScanner implements IProxyListener {
 
     /**
      * 重复使用的独立的 path to url 路径计算+更新函数
-     * @param findPathModel
+     * @param baseFindPathModel
      */
-    private void pathsToUrlsBasedPathTree(FindPathModel findPathModel) {
-        if (findPathModel != null) {
-            int id = findPathModel.getId();
-            String reqUrl = findPathModel.getReqUrl();
-            String reqHostPort = findPathModel.getReqHostPort();
-            String findPath = findPathModel.getFindPath();
+    private void pathsToUrlsBasedPathTree(FindPathModel baseFindPathModel) {
+        if (baseFindPathModel != null) {
+            int id = baseFindPathModel.getId();
+            String reqUrl = baseFindPathModel.getReqUrl();
+            String reqHostPort = baseFindPathModel.getReqHostPort();
+            String findPath = baseFindPathModel.getFindPath();
 
             // 从数据库中查询树信息表
             JSONObject pathTreeData = fetchOnePathTreeData(reqHostPort);
@@ -373,14 +374,11 @@ public class IProxyScanner implements IProxyListener {
                     }
                 }
 
-                // findUrlsList 去重和过滤
+                // 去重和过滤 不符合规则的URL
                 findUrlsList = InfoAnalyse.filterFindUrls(reqUrl, findUrlsList, false);
 
                 //不管找没找到数据 都应该写入数据库进行存储
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put(Constants.BASIC_PATH_NUM, basicPathNum);
-                jsonObject.put(Constants.FIND_PATH, new JSONArray(findUrlsList));
-                int apiDataIndex = insertPathToUrlData(id, jsonObject);
+                int apiDataIndex = insertPathToUrlData(id, basicPathNum, findUrlsList);
                 if (apiDataIndex > 0)
                     stdout_println(LOG_INFO, "[+] API 查找结果 更新成功");
             }
