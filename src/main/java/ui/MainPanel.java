@@ -451,13 +451,13 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         //1、获取当前行的msgHash
         String msgHash = null;
         try {
+            //msgHash = (String) table.getModel().getValueAt(row, 1);
+            //stdout_println(String.format("当前点击第[%s]行 获取 msgHash [%s]",row, msgHash));
+
             //实现排序后 视图行 数据的正确获取
             TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
             int modelRow = sorter.convertRowIndexToModel(row);
             msgHash = (String) table.getModel().getValueAt(modelRow, 1);
-
-            //msgHash = (String) table.getModel().getValueAt(row, 1);
-            stdout_println(String.format("当前点击第[%s]行 获取 msgHash [%s]",row, msgHash));
         } catch (Exception e) {
             stderr_println(String.format("[!] Table get Value At Row [%s] MsgHash Error:%s", row, e.getMessage() ));
         }
