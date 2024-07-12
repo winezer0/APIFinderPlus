@@ -150,5 +150,77 @@ public class HttpUrlInfo {
     public String getReqBaseDir() {
         return reqBaseDir;
     }
+
+
+    /**
+     * 1.remove default port(80\443) from the url
+     * 2.add default path(/) to the url,if it's empty
+     * 这个函数的目的是让URL的格式和通常从浏览器中复制的格式一致：
+     * 在浏览器中，我们看到的是 baidu.com, 复制粘贴得到的是 https://www.baidu.com/
+     * <p>
+     * 比如
+     * http://bit4woo.com:80/ ---> http://bit4woo.com/
+     * https://bit4woo.com:443 ---> https://bit4woo.com/
+     */
+    public static String removeUrlDefaultPort(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            String protocol = url.getProtocol();
+            String host = url.getHost();
+            int port = url.getPort();//不包含端口时返回-1
+            String path = url.getPath();
+
+            if ((port == 80 && protocol.equalsIgnoreCase("http")) ||
+                    (port == 443 && protocol.equalsIgnoreCase("https"))) {
+                String oldHost = url.getHost() + ":" + url.getPort();
+                urlString = urlString.replaceFirst(oldHost, host);
+            }
+
+            if (path.equals("")) {
+                urlString = urlString + "/";
+            }
+            return new URL(urlString).toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return urlString;
+        }
+    }
+
+    /**
+     * 1、这个函数的目的是：在【浏览器URL】的基础上，加上默认端口。
+     * <p>
+     * https://www.baidu.com/ ---> https://www.baidu.com:443/
+     * http://www.baidu.com ---> http://www.baidu.com:80/
+     * <p>
+     * 在浏览器中，我们看到的是 baidu.com, 复制粘贴得到的是 https://www.baidu.com/
+     * let url String contains default port(80\443) and default path(/)
+     * <p>
+     * burp中获取到的URL是包含默认端口的，但是平常浏览器中的URL格式都是不包含默认端口的。
+     * 应该尽量和平常使用习惯保存一致！所以尽量避免使用该函数。
+     *
+     * @param urlStr
+     * @return
+     */
+    public static String addUrlDefaultPort(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            String host = url.getHost();
+            int port = url.getPort();
+            String path = url.getPath();
+
+            if (port == -1) {
+                String newHost = url.getHost() + ":" + url.getDefaultPort();
+                urlStr = urlStr.replaceFirst(host, newHost);
+            }
+
+            if (path.equals("")) {
+                urlStr = urlStr + "/";
+            }
+            return new URL(urlStr).toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return urlStr;
+        }
+    }
 }
 
