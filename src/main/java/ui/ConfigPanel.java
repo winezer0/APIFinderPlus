@@ -19,10 +19,10 @@ public class ConfigPanel extends JPanel {
     public static JLabel urlCrawledCount;
     public static JComboBox<String> choicesComboBox;
     // 在FingerTab类中添加成员变量
-    public static JToggleButton flashButton;
+    public static JToggleButton refreshbutton;
     public static JToggleButton toggleButton;
     public static JTextField searchField;
-    public static JLabel flashText;
+    public static JLabel refreshText;
 //    JCheckBox autoSendRequestCheckBox;
 //    JCheckBox includeCookieCheckBox;
 
@@ -160,16 +160,16 @@ public class ConfigPanel extends JPanel {
         toggleButton.setToolTipText("是否开启对提取URL进行发起请求");
 
         // 刷新按钮按钮
-        flashButton = new JToggleButton(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
-        flashButton.setSelectedIcon(UiUtils.getImageIcon("/icon/flashButton.png", 24, 24));
-        flashButton.setPreferredSize(new Dimension(30, 30));
-        flashButton.setBorder(null);  // 设置无边框
-        flashButton.setFocusPainted(false);  // 移除焦点边框
-        flashButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        flashButton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
+        refreshbutton = new JToggleButton(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
+        refreshbutton.setSelectedIcon(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
+        refreshbutton.setPreferredSize(new Dimension(30, 30));
+        refreshbutton.setBorder(null);  // 设置无边框
+        refreshbutton.setFocusPainted(false);  // 移除焦点边框
+        refreshbutton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        refreshbutton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
 
         // 刷新文本
-        flashText = new JLabel("自动每10秒刷新表格中");
+        refreshText = new JLabel("自动每10秒刷新表格中");
 
         // 添加填充以在左侧占位
         GridBagConstraints gbc_leftFiller = new GridBagConstraints();
@@ -189,9 +189,9 @@ public class ConfigPanel extends JPanel {
         // 在 FilterPanel 中添加 toggleButton
         FilterPanel.add(toggleButton, gbc_buttons);
         gbc_buttons.gridx = 11; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(flashButton, gbc_buttons);
+        FilterPanel.add(refreshbutton, gbc_buttons);
         gbc_buttons.gridx = 12; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(flashText, gbc_buttons);
+        FilterPanel.add(refreshText, gbc_buttons);
 
         // 添加填充以在右侧占位
         GridBagConstraints gbc_rightFiller = new GridBagConstraints();
@@ -248,16 +248,16 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(moreButton, gbc_btnMore);
 
         // 刷新按钮监听事件
-        flashButton.addActionListener(new ActionListener() {
+        refreshbutton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
-                if (flashButton.isSelected()) {
+                if (refreshbutton.isSelected()) {
                     // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
-                    flashText.setText("暂停每10秒刷新表格");
+                    refreshText.setText("暂停每10秒刷新表格");
                 } else {
                     // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
-                    flashText.setText("自动每10秒刷新表格中");
+                    refreshText.setText("自动每10秒刷新表格中");
                 }
             }
         });
@@ -275,7 +275,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
                 MainPanel.clearAllData();
-                setFlashButtonTrue();
+                setRefreshButtonTrue();
             }
         });
 
@@ -286,7 +286,7 @@ public class ConfigPanel extends JPanel {
                 String searchText = searchField.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
-                setFlashButtonFalse();
+                setRefreshButtonFalse();
                 MainPanel.operationStartTime = LocalDateTime.now();
             }
         });
@@ -299,7 +299,7 @@ public class ConfigPanel extends JPanel {
                 String searchText = searchField.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
-                setFlashButtonFalse();
+                setRefreshButtonFalse();
                 MainPanel.operationStartTime = LocalDateTime.now();
             }
         });
@@ -317,10 +317,10 @@ public class ConfigPanel extends JPanel {
                     String selectedOption = (String)choicesComboBox.getSelectedItem();
                     if (selectedOption.equals("全部")){
                         MainPanel.showDataTableByFilter(selectedOption, searchText);
-                        setFlashButtonTrue();
+                        setRefreshButtonTrue();
                     }else{
                         MainPanel.showDataTableByFilter(selectedOption, searchText);
-                        setFlashButtonFalse();
+                        setRefreshButtonFalse();
                         MainPanel.operationStartTime = LocalDateTime.now();
                     }
                 } catch (Exception ex) {
@@ -332,20 +332,20 @@ public class ConfigPanel extends JPanel {
  }
 
 
-    public static void setFlashButtonTrue(){
-        flashButton.setSelected(false);
-        flashText.setText("自动每10秒刷新表格中");
+    public static void setRefreshButtonTrue(){
+        refreshbutton.setSelected(false);
+        refreshText.setText("自动每10秒刷新表格中");
     }
 
 
-    public static void setFlashButtonFalse(){
-        flashButton.setSelected(true);
-        flashText.setText("暂停定时刷新表格");
+    public static void setRefreshButtonFalse(){
+        refreshbutton.setSelected(true);
+        refreshText.setText("暂停定时刷新表格");
     }
 
     public static boolean getFlushButtonStatus(){
         // 检查按钮的选中状态
-        if (flashButton.isSelected()) {
+        if (refreshbutton.isSelected()) {
             // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
             return true;
         } else {

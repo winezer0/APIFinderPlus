@@ -606,7 +606,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (ConfigPanel.getFlushButtonStatus()) {
             if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                ConfigPanel.setFlashButtonTrue();
+                ConfigPanel.setRefreshButtonTrue();
             }
             return;
         }
