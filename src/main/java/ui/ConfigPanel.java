@@ -212,7 +212,13 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_rightFiller);
 
         // 全部按钮
-        choicesComboBox = new JComboBox<>(new String[]{"只看重点", "全部", "只看status为200", "只看敏感内容", "只看敏感路径"});
+        choicesComboBox = new JComboBox<>(new String[]{
+                "显示全部内容",
+                "显示有效内容",
+                "显示敏感内容",
+                "显示未访问路径",
+                "显示无效内容",
+        });
         GridBagConstraints gbc_btnall = new GridBagConstraints();
         gbc_btnall.insets = new Insets(0, 0, 0, 5);
         gbc_btnall.fill = 0;
@@ -226,11 +232,12 @@ public class ConfigPanel extends JPanel {
         gbc_btnSearchField.fill = 0;
         gbc_btnSearchField.gridx = 16;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
+        searchField.setToolTipText("搜索URL关键字");
         FilterPanel.add(searchField, gbc_btnSearchField);
         // 检索按钮
         JButton searchButton = new JButton();
         searchButton.setIcon(UiUtils.getImageIcon("/icon/searchButton.png"));
-        searchButton.setToolTipText("搜索");
+        searchButton.setToolTipText("点击搜索");
         GridBagConstraints gbc_btnSearch = new GridBagConstraints();
         gbc_btnSearch.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearch.fill = 0;
@@ -240,12 +247,14 @@ public class ConfigPanel extends JPanel {
 
         // 功能按钮 弹出选项
         JPopupMenu moreMenu = new JPopupMenu("功能");
-        JMenuItem resetItem = new JMenuItem("清除");
-        resetItem.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(resetItem);
+
+        JMenuItem clearData = new JMenuItem("清除");
+        clearData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearData);
 
         // 功能按钮
         JButton moreButton = new JButton();
+        moreButton.setToolTipText("更多功能 ");
         moreButton.setIcon(UiUtils.getImageIcon("/icon/moreButton.png", 17, 17));
         GridBagConstraints gbc_btnMore = new GridBagConstraints();
         gbc_btnMore.insets = new Insets(0, 0, 0, 5);
@@ -254,7 +263,7 @@ public class ConfigPanel extends JPanel {
         gbc_btnMore.gridy = 0;
         FilterPanel.add(moreButton, gbc_btnMore);
 
-        // 刷新按钮监听事件
+        // 自动刷新按钮监听事件
         autoRefreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -264,12 +273,12 @@ public class ConfigPanel extends JPanel {
                     autoRefreshText.setText(String.format("暂停每%s秒刷新表格", MainPanel.timerDelay));
                 } else {
                     // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
-                    autoRefreshText.setText(String.format("自动每%s秒刷新表格中", MainPanel.timerDelay));
+                    autoRefreshText.setText(String.format("自动每%s秒刷新表格", MainPanel.timerDelay));
                 }
             }
         });
 
-        // 刷新按钮监听事件
+        // 手动刷新按钮监听事件
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -284,8 +293,8 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        // 为菜单项添加 Action Listener
-        resetItem.addActionListener(new ActionListener() {
+        // 为 点击”功能“的 菜单项添加 Action Listener
+        clearData.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
@@ -302,7 +311,6 @@ public class ConfigPanel extends JPanel {
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshButtonFalse();
-                MainPanel.operationStartTime = LocalDateTime.now();
             }
         });
 
@@ -315,7 +323,6 @@ public class ConfigPanel extends JPanel {
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshButtonFalse();
-                MainPanel.operationStartTime = LocalDateTime.now();
             }
         });
 
@@ -330,14 +337,7 @@ public class ConfigPanel extends JPanel {
                         searchText = "";
                     }
                     String selectedOption = (String)choicesComboBox.getSelectedItem();
-                    if ("全部".equals(selectedOption)){
-                        MainPanel.showDataTableByFilter(selectedOption, searchText);
-                        setAutoRefreshButtonTrue();
-                    }else{
-                        MainPanel.showDataTableByFilter(selectedOption, searchText);
-                        setAutoRefreshButtonFalse();
-                        MainPanel.operationStartTime = LocalDateTime.now();
-                    }
+                    MainPanel.showDataTableByFilter(selectedOption, searchText);
                 } catch (Exception ex) {
                     stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
                 }
@@ -349,13 +349,14 @@ public class ConfigPanel extends JPanel {
 
     public static void setAutoRefreshButtonTrue(){
         autoRefreshButton.setSelected(false);
-        autoRefreshText.setText("自动每10秒刷新表格中");
+        autoRefreshText.setText(String.format("自动每%s秒刷新表格", MainPanel.timerDelay));
     }
 
 
     public static void setAutoRefreshButtonFalse(){
         autoRefreshButton.setSelected(true);
-        autoRefreshText.setText("暂停定时刷新表格");
+        autoRefreshText.setText(String.format("暂停每%s秒刷新表格", MainPanel.timerDelay));
+        MainPanel.operationStartTime = LocalDateTime.now();
     }
 
     public static boolean getAutoRefreshButtonStatus(){

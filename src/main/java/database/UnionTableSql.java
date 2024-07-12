@@ -102,14 +102,6 @@ public class UnionTableSql {
         return  fetchTableLineDataBySQl(selectSQL);
     }
 
-    //获取存在敏感信息 或者 还有未访问完毕的URL的行
-    public static ArrayList<TableLineDataModel> fetchTableLineDataHasInfoOrHasUnVisitedUrls() {
-        // 获取当前所有记录的数据
-        String WhereCondition = "where find_info_num>0 or unvisited_url_num>0";
-        String selectSQL = genSqlByWhereCondition(WhereCondition);
-        return  fetchTableLineDataBySQl(selectSQL);
-    }
-
     //获取还有未访问完毕的URL的行
     public static ArrayList<TableLineDataModel> fetchTableLineDataHasUnVisitedUrls() {
         // 获取当前所有记录的数据

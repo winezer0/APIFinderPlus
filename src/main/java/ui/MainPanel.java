@@ -486,20 +486,33 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 model.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<TableLineDataModel> apiDataModels = UnionTableSql.fetchTableLineDataAll();
+                ArrayList<TableLineDataModel> apiDataModels =null;
+
+                switch (selectOption) {
+                    case "显示有效内容":
+                        apiDataModels = UnionTableSql.fetchTableLineDataHasData();
+                        break;
+                    case "显示敏感内容":
+                        apiDataModels = UnionTableSql.fetchTableLineDataHasInfo();
+                        break;
+                    case "显示未访问路径":
+                        apiDataModels = UnionTableSql.fetchTableLineDataHasUnVisitedUrls();
+                        break;
+                    case "显示无效内容":
+                        apiDataModels = UnionTableSql.fetchTableLineDataIsNull();
+                        break;
+                    case "显示全部内容":
+                        apiDataModels = UnionTableSql.fetchTableLineDataAll();
+                        break;
+                    default:
+                        apiDataModels = UnionTableSql.fetchTableLineDataAll();
+                        break;
+                }
 
                 // 遍历apiDataModelMap
                 for (TableLineDataModel apiDataModel : apiDataModels) {
                     String url = apiDataModel.getReqUrl();
-                    if (selectOption.equals("只看status为200") && !(apiDataModel.getRespStatusCode() == 200)){
-                        continue;
-//                    } else if (selectOption.equals("只看重点") &&  !apiDataModel.getHavingImportant()) {
-//                        continue;
-//                    } else if (selectOption.equals("只看敏感内容") && !apiDataModel.getResult().contains("敏感内容")){
-//                        continue;
-//                    } else if (selectOption.equals("只看敏感路径") && !apiDataModel.getResult().contains("敏感路径")) {
-//                        continue;
-                    }
+                    //是否包含关键字,当输入了关键字时,使用本函数再次进行过滤
                     if (url.toLowerCase().contains(searchText.toLowerCase())) {
                         Object[] rowData = apiDataModel.toRowDataArray();
                         //model.insertRow(0, rowData); //插入到首行
