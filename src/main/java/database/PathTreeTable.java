@@ -1,7 +1,6 @@
 package database;
 
 import com.alibaba.fastjson2.JSONObject;
-import model.PathTreeDataModel;
 import model.PathTreeModel;
 
 import java.sql.*;
@@ -10,7 +9,6 @@ import java.util.Set;
 
 import static utils.PathTreeUtils.deepMergeJsonTree;
 import static utils.BurpPrintUtils.*;
-import static utils.PathTreeUtils.genPathsTree;
 
 public class PathTreeTable {
     //数据表名称
@@ -27,11 +25,11 @@ public class PathTreeTable {
             + ");";
 
     //插入数据库
-    public static synchronized int insertOrUpdatePathTree(PathTreeDataModel pathTreeDataModel) {
-        String reqProto = pathTreeDataModel.getReqProto();
-        String reqHostPort = pathTreeDataModel.getReqHostPort();
-        Integer newBasicPathNum = pathTreeDataModel.getBasicPathNum();
-        JSONObject newPathTree = pathTreeDataModel.getPathTree();
+    public static synchronized int insertOrUpdatePathTree(PathTreeModel pathTreeModel) {
+        String reqProto = pathTreeModel.getReqProto();
+        String reqHostPort = pathTreeModel.getReqHostPort();
+        Integer newBasicPathNum = pathTreeModel.getBasicPathNum();
+        JSONObject newPathTree = pathTreeModel.getPathTree();
 
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
@@ -108,7 +106,7 @@ public class PathTreeTable {
         PathTreeModel pathTreeModel= null;
 
         //查询
-        String selectSql = "SELECT path_tree, basic_path_num FROM tableName WHERE req_host_port = ? LIMIT 1;"
+        String selectSql = "SELECT req_proto, req_host_port, path_tree, basic_path_num FROM tableName WHERE req_host_port = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
@@ -117,6 +115,8 @@ public class PathTreeTable {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 pathTreeModel = new PathTreeModel(
+                        rs.getString("req_proto"),
+                        rs.getString("req_host_port"),
                         rs.getInt("basic_path_num"),
                         rs.getString("path_tree")
                         );

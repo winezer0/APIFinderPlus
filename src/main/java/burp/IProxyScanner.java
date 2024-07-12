@@ -161,9 +161,6 @@ public class IProxyScanner implements IProxyListener {
         }
     }
 
-    // TODO 严重 BUG RECORD PATh记录的 HOST 端口号为 -1 【 k8422.com:-1】
-    // TODO 严重 BUG PATH TREE 记录的 HOST 端口号为 -1 【 k8422.com:-1】  问题出在 找到的URL添加到 RECORD的地方
-
     /**
      * 合并添加请求数据和请求信息为一个函数
      * @param msgInfo
@@ -213,12 +210,12 @@ public class IProxyScanner implements IProxyListener {
                                 //将初次分析结果写入数据库
                                 int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
-                                    stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
+                                    stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
                                 }
 
                                 //将爬取到的 URL 加入到 RecordPathTable
-                                for (String url:analyseResult.getUrlList())
-                                    RecordPathTable.insertOrUpdateSuccessUrl(url,200);
+                                for (String findUrl:analyseResult.getUrlList())
+                                    RecordPathTable.insertOrUpdateSuccessUrl(findUrl,202);
                             }
                         }
                         return;
@@ -232,13 +229,12 @@ public class IProxyScanner implements IProxyListener {
                         if (recordPathModels.size()>0){
                             for (RecordPathModel recordPathModel : recordPathModels) {
                                 //生成新的路径树
-                                PathTreeDataModel pathTreeDataModel = PathTreeUtils.genPathsTree(recordPathModel);
-                                if (pathTreeDataModel != null){
+                                PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
+                                if (pathTreeModel != null){
                                     //合并|插入新的路径树
-                                    int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeDataModel);
-//                                    if (pathTreeIndex > 0) {
-//                                        stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",addedTreeObj.toJSONString()));
-//                                    }
+                                    int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeModel);
+                                    if (pathTreeIndex > 0)
+                                        stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
                                 }
                             }
                             //更新数据后先返回,优先进行之前的操作
@@ -246,7 +242,7 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    // TODO 优化语句 实现兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
+                    // 兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                     //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                     int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
                     if (unhandledRecordPathId <= 0) {
@@ -285,22 +281,17 @@ public class IProxyScanner implements IProxyListener {
             String reqHostPort = findPathModel.getReqHostPort();
             JSONArray findPathArray = findPathModel.getFindPath();
 
-            System.out.println(String.format("pathsToUrlsByPathTree:\n id %s reqHostPort %s reqUrl %s", id, reqHostPort, reqUrl));
-
-            // 从数据库中获取当前 reqHostPort 的 PathTree 不应该是空的,有路径的话 任务二就已经生成树了
+            // 从数据库中获取当前 reqHostPort 的 PathTree
             PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByReqHostPort(reqHostPort);
-
-            JSONObject currPathTree;
-            int currBasicPathNum;
             //如果 PATH TREE都没有添加过, pathTreeModel 就是空的
-            if (pathTreeModel != null){
-                currBasicPathNum = pathTreeModel.getBasicPathNum();
-                currPathTree = pathTreeModel.getPathTree();
-            } else {
-                currBasicPathNum = 0;
-                currPathTree = new JSONObject();
+            if (pathTreeModel == null){
+                //如果 PATH TREE 不应该是空的,因为任务二已经添加过了,
+                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [id:%s host:%s url:%s findPath:%s] 对应的 PathTree 失败!!! 请检查数据库内容!!!",id, reqHostPort, reqUrl, findPathArray.size()));
+                return;
             }
 
+            Integer currBasicPathNum = pathTreeModel.getBasicPathNum();
+            JSONObject currPathTree = pathTreeModel.getPathTree();
             // 基于根树和paths列表计算新的字典
             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
             if (findPathArray != null && !findPathArray.isEmpty() && currPathTree != null
@@ -341,19 +332,11 @@ public class IProxyScanner implements IProxyListener {
                         dynamicUrlsModel.setUnvisitedUrls(CastUtils.listAddList(rawUnvisitedUrls, newAddUrls));
                         dynamicUrlsModel.setBasicPathNum(currBasicPathNum);
 
+                        //更新动态的URL数据
                         int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModel(dynamicUrlsModel);
-/*
                         if (apiDataIndex > 0)
-                            stdout_println(LOG_DEBUG, String.format(
-                                    "[+] PATH To URL存在新结果: \n" +
-                                            "newAddUrls:[%s], currBasicPathNum:[%s]" +
-                                            "rawPathToUrls:[%s] ,  newPathToUrls:[%s] " +
-                                            "rawUnvisitedUrls:[%s] , newUnvisitedUrls:[%s]",
-                                    newAddUrls.size(), dynamicUrlsModel.getBasicPathNum(),
-                                    rawPathToUrls.size(), dynamicUrlsModel.getPathToUrls(),
-                                    rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls()
-                            ));
-*/
+                            stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]",
+                                    newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
                         AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);

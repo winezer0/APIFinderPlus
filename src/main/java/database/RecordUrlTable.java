@@ -1,6 +1,7 @@
 package database;
 
 import model.HttpMsgInfo;
+import model.HttpUrlInfo;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -58,6 +59,12 @@ public class RecordUrlTable {
         }
 
         return generatedId;
+    }
+
+    //插入访问的URl
+    public static synchronized int insertOrUpdateAccessedUrl(String reqUrl, int respStatusCode) {
+        String reqHostPort = new HttpUrlInfo(reqUrl).getReqHostPort();
+        return insertOrUpdateAccessedUrl(reqUrl, reqHostPort, respStatusCode);
     }
 
 

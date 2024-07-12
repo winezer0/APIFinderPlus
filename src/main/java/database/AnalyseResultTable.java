@@ -341,7 +341,7 @@ public class AnalyseResultTable {
     /**
      * 实现 基于 msgHash 删除 unvisitedUrls
      */
-    public static synchronized int clearUnVisitedUrlsById(String msgHash) {
+    public static synchronized int clearUnVisitedUrlsByMsgHash(String msgHash) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;"
@@ -357,5 +357,31 @@ public class AnalyseResultTable {
             stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
         }
         return affectedRows;
+    }
+
+    /**
+     * 实现 基于 msgHash 获取 unvisitedUrls
+     */
+    public static synchronized UnVisitedUrlsModel fetchUnVisitedUrlsByMsgHash(String msgHash) {
+        UnVisitedUrlsModel jsonObj = null;
+
+        String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE msg_hash = ?;")
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, msgHash);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    jsonObj = new UnVisitedUrlsModel(
+                            rs.getInt("id"),
+                            rs.getString("req_url"),
+                            rs.getString("unvisited_url")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch UnVisited Urls By MsgHash: %s", e.getMessage()));
+        }
+        return jsonObj;
     }
 }

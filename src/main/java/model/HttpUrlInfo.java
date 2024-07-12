@@ -10,7 +10,6 @@ import static utils.BurpPrintUtils.stderr_println;
 //创建一个类用于存储 URL解析结果的类
 public class HttpUrlInfo {
     private String reqUrl;
-    private String reqMethod = null;
     private String reqProto = null;
     private String reqHost = null;
     private String reqHostPort = null;
@@ -33,8 +32,8 @@ public class HttpUrlInfo {
             reqProto = urlObj.getProtocol();
             //从URL中获取请求host
             reqHost = urlObj.getHost();
-            //从URL中获取请求Port
-            reqPort = urlObj.getPort();
+            //从URL中获取请求Port 同时 检查reqPort为-1的情况
+            reqPort = urlObj.getPort() == -1 ? urlObj.getDefaultPort() : urlObj.getPort();
             //添加个HostPort对象
             reqHostPort = String.format("%s:%s", reqHost, reqPort);
             //获取前缀对象
@@ -111,10 +110,6 @@ public class HttpUrlInfo {
         return reqUrl;
     }
 
-    public String getReqMethod() {
-        return reqMethod;
-    }
-
     public String getReqProto() {
         return reqProto;
     }
@@ -172,16 +167,19 @@ public class HttpUrlInfo {
     private String removeUrlDefaultPort(String urlString) {
         try {
             URL url = new URL(urlString);
-            String protocol = url.getProtocol();
+            String proto = url.getProtocol();
             String host = url.getHost();
-            int port = url.getPort();//不包含端口时返回-1
+            int port = url.getPort(); //不包含端口时返回-1
             String path = url.getPath();
 
-            if ((port == 80 && protocol.equalsIgnoreCase("http")) ||
-                    (port == 443 && protocol.equalsIgnoreCase("https"))) {
+            if ((port == 80 && proto.equalsIgnoreCase("http")) ||
+                    (port == 443 && proto.equalsIgnoreCase("https"))||
+                    port == -1
+            ) {
                 String oldHost = url.getHost() + ":" + url.getPort();
                 urlString = urlString.replaceFirst(oldHost, host);
             }
+
 
             if (path.equals("")) {
                 urlString = urlString + "/";

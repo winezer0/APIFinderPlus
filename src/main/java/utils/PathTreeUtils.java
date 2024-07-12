@@ -3,11 +3,9 @@ package utils;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
-import model.PathTreeDataModel;
+import model.PathTreeModel;
 import model.RecordPathModel;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -280,8 +278,8 @@ public class PathTreeUtils {
     /**
      * 生成路径树  输入格式 {host:[path list]}
      */
-    public static PathTreeDataModel genPathsTree(RecordPathModel recordPathModel) {
-        PathTreeDataModel pathTreeDataModel = null;
+    public static PathTreeModel genPathsTree(RecordPathModel recordPathModel) {
+        PathTreeModel pathTreeModel = null;
 
         // 3、为每个域名计算根数
         String[] reqPathDirsToPaths = recordPathModel.getReqPathDirs().split(Constants.SPLIT_SYMBOL);
@@ -289,7 +287,7 @@ public class PathTreeUtils {
             List<String> filterPaths = filterBlankPath(Arrays.asList(reqPathDirsToPaths));
             JSONObject newPathTree = createRootTree(filterPaths);
             if (newPathTree != null && !newPathTree.isEmpty()){
-                pathTreeDataModel = new PathTreeDataModel(
+                pathTreeModel = new PathTreeModel(
                         recordPathModel.getReqProto(),
                         recordPathModel.getReqHostPort(),
                         reqPathDirsToPaths.length,
@@ -298,7 +296,7 @@ public class PathTreeUtils {
             }
         }
 
-        return pathTreeDataModel;
+        return pathTreeModel;
     }
 
 

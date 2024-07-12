@@ -186,6 +186,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
         JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
         JMenuItem ClearUnVisitedItem = new JMenuItem("清空未访问", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        JMenuItem IgnoreUnVisitedItem = new JMenuItem("写入未访问", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
+        IgnoreUnVisitedItem.setToolTipText("当访问URL后依然无法过滤时使用");
+
         //JMenuItem setUnImportantItem = new JMenuItem("误报", UiUtils.getImageIcon("/icon/setUnImportantItemIcon.png", 15, 15));
         //JMenuItem customizeItem = new JMenuItem("自定义父路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         //JMenuItem insertNewPathItem = new JMenuItem("自定义路径扫描", UiUtils.getImageIcon("/icon/insertNewPathIcon.png", 15, 15));
@@ -193,9 +196,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
         popupMenu.add(ClearUnVisitedItem);
-        //popupMenu.add(customizeItem);
-        //popupMenu.add(insertNewPathItem);
-        //popupMenu.add(setUnImportantItem);
+        popupMenu.add(IgnoreUnVisitedItem);
+
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
 
@@ -218,8 +220,15 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
                     int id = getIdAtActualRow(selectedRow);
-                    ReqDataTable.deleteReqDataById(id);
-                    refreshTableModel(false);
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            ReqDataTable.deleteReqDataById(id);
+                            refreshTableModel(false);
+                            return null;
+                        }
+                    }.execute();
                 }
             }
         });
@@ -231,8 +240,41 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
                     String msgHash = getMsgHashAtActualRow(selectedRow);
-                    AnalyseResultTable.clearUnVisitedUrlsById(msgHash);
-                    refreshTableModel(false);
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
+                            refreshTableModel(false);
+                            return null;
+                        }
+                    }.execute();
+                }
+            }
+        });
+
+        // 添加 ClearUnVisitedItem 事件监听器
+        IgnoreUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    String msgHash = getMsgHashAtActualRow(selectedRow);
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            UnVisitedUrlsModel unVisitedUrlsModel= AnalyseResultTable.fetchUnVisitedUrlsByMsgHash(msgHash);
+                            List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+
+                            for (String unvisitedUrl: unvisitedUrls) {
+                                RecordUrlTable.insertOrUpdateAccessedUrl(unvisitedUrl, 202);
+                            }
+                            AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
+                            refreshTableModel(false);
+                            return null;
+                        }
+                    }.execute();
                 }
             }
         });
@@ -267,13 +309,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         List<Integer> centerColumns = Arrays.asList(3, 4, 5, 6);
         tableSetColumnRenders(centerColumns, centerRenderer);
 
-        //创建 IsJsFindUrl的独特渲染器
-        // IsJsFindUrlRenderer isJsFindUrlRenderer = new IsJsFindUrlRenderer();
-        // table.getColumnModel().getColumn(6).setCellRenderer(isJsFindUrlRenderer);
-
-        //创建 havingImportantRenderer的独特渲染器
-        //IconTableCellRenderer havingImportantRenderer = new IconTableCellRenderer();
-        //table.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
     }
 
     /**
