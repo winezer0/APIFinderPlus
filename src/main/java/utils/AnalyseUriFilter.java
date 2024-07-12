@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isEqualsOneKey;
 
-public class InfoUriFilterUtils {
+public class AnalyseUriFilter {
     private static final Pattern CHINESE_PATTERN = Pattern.compile("[\u4E00-\u9FA5]");
 
     /**
@@ -187,6 +187,11 @@ public class InfoUriFilterUtils {
     }
 
 
+    /**
+     * 格式化所有URL 以HttpUrlInfo 内部为基准 统一带端口或不带默认端口
+     * @param urls
+     * @return
+     */
     public static List<String> formatUrls(List<String> urls) {
         if (urls == null || urls.isEmpty()) return urls;
 

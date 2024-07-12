@@ -3,19 +3,16 @@ package model;
 import com.alibaba.fastjson2.JSONObject;
 import utils.CastUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class AnalyseResult {
+public class AnalyseResultModel {
     private List<JSONObject> infoList;
     private List<String> urlList;
     private List<String> pathList;
     private List<String> apiList;
     private List<String> unvisitedUrl;
 
-    public AnalyseResult(List<JSONObject> infoList, List<String> urlList, List<String> pathList, List<String> apiList) {
+    public AnalyseResultModel(List<JSONObject> infoList, List<String> urlList, List<String> pathList, List<String> apiList) {
         this.infoList = infoList;
         this.urlList = urlList;
         this.pathList = pathList;

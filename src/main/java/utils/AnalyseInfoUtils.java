@@ -12,7 +12,7 @@ import java.util.regex.PatternSyntaxException;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isEqualsOneKey;
 
-public class InfoAnalyseUtils {
+public class AnalyseInfoUtils {
 
     static final int CHUNK_SIZE = 20000; // 分割大小
     private static final int RESULT_SIZE = 1024;

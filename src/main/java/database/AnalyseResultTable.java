@@ -1,6 +1,5 @@
 package database;
 
-import com.alibaba.fastjson2.JSONObject;
 import model.*;
 import utils.CastUtils;
 
@@ -54,7 +53,7 @@ public class AnalyseResultTable {
      * @param analyseInfo
      * @return
      */
-    public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResult analyseInfo){
+    public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResultModel analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
                 .replace("tableName", tableName);

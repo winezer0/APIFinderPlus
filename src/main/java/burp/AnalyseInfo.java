@@ -1,7 +1,7 @@
 package burp;
 
 import com.alibaba.fastjson2.JSONObject;
-import model.AnalyseResult;
+import model.AnalyseResultModel;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
@@ -13,10 +13,10 @@ import java.util.*;
 import static burp.BurpExtender.*;
 import static utils.ElementUtils.isContainAllKey;
 import static utils.ElementUtils.isEqualsOneKey;
-import static utils.InfoAnalyseUtils.*;
-import static utils.InfoUriFilterUtils.*;
+import static utils.AnalyseInfoUtils.*;
+import static utils.AnalyseUriFilter.*;
 
-public class InfoAnalyse {
+public class AnalyseInfo {
 
     public static final String type = "type";
     public static final String describe = "describe";
@@ -29,7 +29,7 @@ public class InfoAnalyse {
 
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
-    public static AnalyseResult analyseMsgInfo(HttpMsgInfo msgInfo) {
+    public static AnalyseResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
         findInfoList = CastUtils.deduplicateJsonList(findInfoList); //去重提取结果
@@ -64,7 +64,7 @@ public class InfoAnalyse {
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s -> %s", reqUrl, findApiList.size()));
 
         //返回 AnalyseInfoResultModel 结果数据
-        AnalyseResult analyseResult = new AnalyseResult(
+        AnalyseResultModel analyseResult = new AnalyseResultModel(
                 findInfoList,
                 findUrlList,
                 findPathList,

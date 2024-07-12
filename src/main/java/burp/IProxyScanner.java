@@ -6,7 +6,7 @@ import database.*;
 import model.*;
 import ui.ConfigPanel;
 import utils.CastUtils;
-import utils.InfoAnalyseUtils;
+import utils.AnalyseInfoUtils;
 import utils.PathTreeUtils;
 
 import java.util.ArrayList;
@@ -229,7 +229,7 @@ public class IProxyScanner implements IProxyListener {
                             );
 
                             //进行数据分析
-                            AnalyseResult analyseResult = InfoAnalyse.analyseMsgInfo(msgInfo);
+                            AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
 
                             //存入分析结果
                             if(!analyseResult.getInfoList().isEmpty() || !analyseResult.getPathList().isEmpty() || !analyseResult.getUrlList().isEmpty()){
@@ -332,14 +332,14 @@ public class IProxyScanner implements IProxyListener {
                             //组合URL、findNodePath、path
                             String prefixPath = (String) prefix;
                             prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
-                            String findUrl = InfoAnalyseUtils.concatUrlAddPath(prefixPath, (String) findPath);
+                            String findUrl = AnalyseInfoUtils.concatUrlAddPath(prefixPath, (String) findPath);
                             findUrlsList.add(findUrl);
                         }
                     }
                 }
 
                 // 去重、格式化、过滤 不符合规则的URL
-                findUrlsList = InfoAnalyse.filterFindUrls(reqUrl, findUrlsList, false);
+                findUrlsList = AnalyseInfo.filterFindUrls(reqUrl, findUrlsList, false);
 
                 if (findUrlsList.size() > 0){
                     //判断查找到的URL是全新的
