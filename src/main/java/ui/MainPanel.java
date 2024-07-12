@@ -487,7 +487,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             String unvisitedUrl = tabDataModel.getUnvisitedUrl();
 
             //格式化为可输出的类型
-            findInfo = UiUtils.infoJsonArrayFormatHtml(findInfo);
+            findInfo = CastUtils.infoJsonArrayFormatHtml(findInfo);
             findUrl = CastUtils.stringJsonArrayFormat(findUrl);
             findPath = CastUtils.stringJsonArrayFormat(findPath);
             findApi = CastUtils.stringJsonArrayFormat(findApi);

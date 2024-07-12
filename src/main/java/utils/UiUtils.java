@@ -1,8 +1,6 @@
 package utils;
 
 import burp.IHttpService;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import model.TableLineDataModel;
 
 import javax.swing.*;
@@ -81,47 +79,6 @@ public class UiUtils {
         }
     }
 
-
-    /**
-     * 格式化Json数据为可输出的状态
-     * @param jsonArrayString
-     * @return
-     */
-    public static String infoJsonArrayFormatHtml(String jsonArrayString) {
-        if (jsonArrayString == null || jsonArrayString.length()<=2 )
-            return "-";
-
-        JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
-        StringBuilder formattedResult = new StringBuilder();
-
-        for (Object obj : jsonArray) {
-            if (obj instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject) obj;
-
-                // 使用String.format进行格式化
-                String formattedItem = String.format(
-                        "############# type: %s #############<br>" +
-                                "describe: <span style='color: $color$};'>%s</span><br>" +
-                                "value: <span style='color: $color$};'>%s</span><br>" +
-                                "accuracy: %s<br>" +
-                                "important: %s<br>"
-                        ,
-                        jsonObject.getString("type"),
-                        jsonObject.getString("describe"),
-                        encodeForHTML(jsonObject.getString("value")),
-                        jsonObject.getString("accuracy"),
-                        jsonObject.getString("important")
-                );
-
-                //进行颜色标记
-                String color = jsonObject.getBoolean("important") ? "red" : "blue";
-                formattedItem = formattedItem.replace("$color$",color);
-                formattedResult.append(formattedItem);
-            }
-        }
-
-        return formattedResult.toString();
-    }
 
     /**
      * 把 jsonArray 赋值到 model 中
