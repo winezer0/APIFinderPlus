@@ -604,9 +604,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (ConfigPanel.getFlushButtonStatus()) {
+        if (ConfigPanel.getAutoRefreshButtonStatus()) {
             if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                ConfigPanel.setRefreshButtonTrue();
+                ConfigPanel.setAutoRefreshButtonTrue();
             }
             return;
         }
