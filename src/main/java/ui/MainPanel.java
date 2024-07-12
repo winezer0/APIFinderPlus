@@ -427,7 +427,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             int modelRow = sorter.convertRowIndexToModel(row);
             msgHash = (String) table.getModel().getValueAt(modelRow, 1);
         } catch (Exception e) {
-            stderr_println(String.format("[!] Table get Value At Row [%s] MsgHash Error:%s", row, e.getMessage() ));
+            stderr_println(String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
         }
 
         if (msgHash == null) return;
@@ -470,7 +470,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
-
 
     /**
      * 基于过滤选项 和 搜索框内容 显示结果
@@ -561,21 +560,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             // 还可以清空编辑器中的数据
             clearTabsMsgData();
-        }
-    }
-
-    /**
-     * 清理表格中的数据
-     */
-    public static void clearUserLessData(){
-        synchronized (model) {
-            // 清空model
-            model.setRowCount(0);
-            //清空数据库内容
-            DBService.clearModelTableData();
-            // 还可以清空编辑器中的数据
-            clearTabsMsgData();
-
         }
     }
 
