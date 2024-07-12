@@ -24,6 +24,8 @@ public class ConfigPanel extends JPanel {
     public static JLabel autoRefreshText;
 
     public static JTextField searchField;
+    
+    public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
     public ConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -279,10 +281,10 @@ public class ConfigPanel extends JPanel {
                 // 检查按钮的选中状态
                 if (autoRefreshButton.isSelected()) {
                     // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
-                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", MainPanel.timerDelay));
+                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 } else {
                     // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
-                    autoRefreshText.setText(String.format("自动每%s秒刷新表格", MainPanel.timerDelay));
+                    autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
                 }
             }
         });
@@ -378,13 +380,13 @@ public class ConfigPanel extends JPanel {
 
     public static void setAutoRefreshButtonTrue(){
         autoRefreshButton.setSelected(false);
-        autoRefreshText.setText(String.format("自动每%s秒刷新表格", MainPanel.timerDelay));
+        autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
     }
 
 
     public static void setAutoRefreshButtonFalse(){
         autoRefreshButton.setSelected(true);
-        autoRefreshText.setText(String.format("暂停每%s秒刷新表格", MainPanel.timerDelay));
+        autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
         MainPanel.operationStartTime = LocalDateTime.now();
     }
 

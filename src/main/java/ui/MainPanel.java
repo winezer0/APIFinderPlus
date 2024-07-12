@@ -47,7 +47,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
     public static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
-    public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
     public static MainPanel getInstance() {
         if (instance == null) {
@@ -96,7 +95,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         initDataTableUIData();
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimer(timerDelay * 1000);
+        initTimer(ConfigPanel.timerDelay * 1000);
     }
 
     /**
