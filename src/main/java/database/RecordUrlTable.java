@@ -66,7 +66,7 @@ public class RecordUrlTable {
     public static synchronized List<String> fetchAllAccessedUrls(String reqHostPort) {
         List<String> uniqueURLs = new ArrayList<>();
 
-        String selectSql = "SELECT req_url FROM tableName WHERE req_host_port = '?';"
+        String selectSql = "SELECT req_url FROM tableName WHERE req_host_port = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();

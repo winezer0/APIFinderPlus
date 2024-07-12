@@ -1,5 +1,6 @@
 package database;
 
+import com.alibaba.fastjson2.JSONArray;
 import model.*;
 import utils.CastUtils;
 
@@ -194,7 +195,6 @@ public class AnalyseResultTable {
         return findPathModel;
     }
 
-
     /**
      * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
      * @param id
@@ -231,7 +231,7 @@ public class AnalyseResultTable {
      * @param basicPathNum
      * @return
      */
-    public static synchronized int updateDynamicUrlsBasicNumById(int id, int basicPathNum){
+    public static synchronized int updateDynamicUrlsBasicNum(int id, int basicPathNum){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET basic_path_num = ? WHERE id = ?;"
@@ -327,26 +327,42 @@ public class AnalyseResultTable {
      * @return
      */
     public static synchronized int updateUnVisitedUrlsById(UnVisitedUrlsModel unVisitedUrlsModel) {
-        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+        int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-            updateStatement.setString(1, CastUtils.toJson(unVisitedUrlsModel.getUnvisitedUrls()));
-            updateStatement.setInt(2, unVisitedUrlsModel.getUnvisitedUrls().size());
-            updateStatement.setInt(3, unVisitedUrlsModel.getId());
-            int affectedRows = updateStatement.executeUpdate();
-            if (affectedRows > 0) {
-                generatedId = unVisitedUrlsModel.getId();
-            }
+             PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            stmt.setString(1, CastUtils.toJson(unVisitedUrlsModel.getUnvisitedUrls()));
+            stmt.setInt(2, unVisitedUrlsModel.getUnvisitedUrls().size());
+            stmt.setInt(3, unVisitedUrlsModel.getId());
+            affectedRows = stmt.executeUpdate();
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
         }
-        return generatedId;
+        return affectedRows;
     }
 
+    /**
+     * 实现 基于 msgHash 删除 unvisitedUrls
+     */
+    public static synchronized int updateUnVisitedUrlsById(String msgHash) {
+        int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
+        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;"
+                .replace("tableName", tableName);
 
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            JSONArray emptyArray = new JSONArray();
+            stmt.setString(1, emptyArray.toJSONString());
+            stmt.setInt(2, emptyArray.size());
+            stmt.setString(3, msgHash);
+            affectedRows = stmt.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
+        }
+        return affectedRows;
+    }
 }

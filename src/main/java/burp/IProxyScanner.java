@@ -364,11 +364,11 @@ public class IProxyScanner implements IProxyListener {
 */
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
-                        AnalyseResultTable.updateDynamicUrlsBasicNumById(id, currBasicPathNum);
+                        AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
                     }
                 } else {
                     // 没有找到新路径时,仅需要更新基础计数即可
-                    AnalyseResultTable.updateDynamicUrlsBasicNumById(id, currBasicPathNum);
+                    AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
                 }
             }
         }

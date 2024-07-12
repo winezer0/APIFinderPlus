@@ -138,4 +138,25 @@ public class ReqDataTable {
         }
         return count;
     }
+
+
+    //获取没有数据的行,备用,用于后续删除数据
+    public static synchronized int deleteReqDataById(int id) {
+        int rowsAffected = -1;
+
+        // 获取当前所有记录的数据
+        String deleteSQL = ("DELETE FROM tableName WHERE id = ?;")
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+            stmt.setInt(1, id);
+            rowsAffected = stmt.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error delete Data By Id On Table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return rowsAffected;
+    }
 }

@@ -13,6 +13,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -171,7 +173,72 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         //为表格添加点击显示下方的消息动作
         tableAddActionSetMsgTabData();
+
+        //为表的每一行添加右键菜单
+        tableAddRightClickMenu();
     }
+
+    /**
+     * 为 table 设置每一列的 右键菜单
+     */
+    private void tableAddRightClickMenu() {
+        // 创建右键菜单
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
+        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        JMenuItem ClearUnVisitedItem = new JMenuItem("清空未访问", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        //JMenuItem setUnImportantItem = new JMenuItem("误报", UiUtils.getImageIcon("/icon/setUnImportantItemIcon.png", 15, 15));
+        //JMenuItem customizeItem = new JMenuItem("自定义父路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        //JMenuItem insertNewPathItem = new JMenuItem("自定义路径扫描", UiUtils.getImageIcon("/icon/insertNewPathIcon.png", 15, 15));
+
+        popupMenu.add(copyUrlItem);
+        popupMenu.add(deleteItem);
+        popupMenu.add(ClearUnVisitedItem);
+        //popupMenu.add(customizeItem);
+        //popupMenu.add(insertNewPathItem);
+        //popupMenu.add(setUnImportantItem);
+        // 将右键菜单添加到表格
+        table.setComponentPopupMenu(popupMenu);
+
+        // 添加 copyUrlItem 事件监听器
+        copyUrlItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    String url = getUrlAtActualRow(selectedRow);
+                    copyToSystemClipboard(url);
+                }
+            }
+        });
+
+        // 添加 copyUrlItem 事件监听器
+        deleteItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    int id = getIdAtActualRow(selectedRow);
+                    ReqDataTable.deleteReqDataById(id);
+                    refreshTableModel(false);
+                }
+            }
+        });
+
+        // 添加 copyUrlItem 事件监听器
+        ClearUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    String msgHash = getMsgHashAtActualRow(selectedRow);
+                    AnalyseResultTable.updateUnVisitedUrlsById(msgHash);
+                    refreshTableModel(false);
+                }
+            }
+        });
+    }
+
 
     /**
      * 为 table 设置每一列的 宽度
@@ -259,7 +326,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
     }
-
 
     /**
      * 为表头添加点击排序功能
@@ -423,9 +489,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             //stdout_println(String.format("当前点击第[%s]行 获取 msgHash [%s]",row, msgHash));
 
             //实现排序后 视图行 数据的正确获取
-            TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-            int modelRow = sorter.convertRowIndexToModel(row);
-            msgHash = (String) table.getModel().getValueAt(modelRow, 1);
+            msgHash = getMsgHashAtActualRow(row);
         } catch (Exception e) {
             stderr_println(String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
         }
@@ -693,6 +757,94 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         pathtoUrlTEditor.setText(new byte[0]);
         unvisitedUrlTEditor.setText(new byte[0]);
     }
+
+
+    /**
+     * 获取当前显示行的ID
+     * @param row
+     * @return
+     */
+    private int getIdAtActualRow(int row) {
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+        int modelRow = sorter.convertRowIndexToModel(row);
+        int columnIndex = 0;
+        int id = (int) table.getModel().getValueAt(modelRow, columnIndex);
+        return id;
+    }
+
+
+    /**
+     * 获取当前显示行的hash
+     * @param row
+     * @return
+     */
+    private String getMsgHashAtActualRow(int row) {
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+        int modelRow = sorter.convertRowIndexToModel(row);
+        int columnIndex = 1;
+        String msgHash = (String) table.getModel().getValueAt(modelRow, columnIndex);
+        return msgHash;
+    }
+
+    /**
+     * 获取当前显示行的 url
+     * @param row
+     * @return
+     */
+    private String getUrlAtActualRow(int row) {
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+        int modelRow = sorter.convertRowIndexToModel(row);
+        int columnIndex = 2;
+        String url = (String) table.getModel().getValueAt(modelRow, columnIndex);
+        return url;
+    }
+
+
+    /**
+     * 把字符串传递到系统剪贴板
+     * @param text
+     */
+    private void copyToSystemClipboard(String text) {
+        // 创建一个StringSelection对象，传入要复制的文本
+        StringSelection stringSelection = new StringSelection(text);
+        // 获取系统剪贴板
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        // 将数据放到剪贴板上
+        clipboard.setContents(stringSelection, null);
+        System.out.println("Text copied to clipboard.");
+    }
+
+
+    /**
+     * 显示消息到弹出框
+     * @param text
+     */
+    private void showOneMsgBoxToCopy(String text, String title) {
+        // 创建一个JTextArea
+        JTextArea textArea = new JTextArea(text);
+        textArea.setLineWrap(true); // 自动换行
+        textArea.setWrapStyleWord(true); // 断行不断字
+        textArea.setEditable(true); // 设置为不可编辑
+        textArea.setCaretPosition(0); // 将插入符号位置设置在文档开头，这样滚动条会滚动到顶部
+
+        // 使JTextArea能够被复制
+        textArea.setSelectionStart(0);
+        textArea.setSelectionEnd(textArea.getText().length());
+
+        // 将JTextArea放入JScrollPane
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(350, 150)); // 设定尺寸
+
+        // 弹出一个包含滚动条的消息窗口
+        //String title = "提取url成功";
+        JOptionPane.showMessageDialog(
+                null,
+                scrollPane,
+                title,
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
 }
 
 
