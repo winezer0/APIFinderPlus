@@ -8,8 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
-import static utils.BurpPrintUtils.LOG_ERROR;
-import static utils.BurpPrintUtils.stderr_println;
+import static utils.BurpPrintUtils.*;
 
 public class UnionTableSql {
     //联合 获取一条需要更新的Path数据
@@ -89,13 +88,13 @@ public class UnionTableSql {
     }
 
     // 获取当前所有记录
-    public static ArrayList<TableLineDataModel> fetchTableLineDataAll() {
+    public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataAll() {
         String selectSQL = genSqlByWhereCondition(null);
         return  fetchTableLineDataBySQl(selectSQL);
     }
 
     //获取有效数据的行
-    public static ArrayList<TableLineDataModel> fetchTableLineDataHasData() {
+    public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataHasData() {
         // 获取当前所有记录的数据
         String WhereCondition = "Where find_url_num>0 or find_path_num>0 or find_info_num>0";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
@@ -103,7 +102,7 @@ public class UnionTableSql {
     }
 
     //获取还有未访问完毕的URL的行
-    public static ArrayList<TableLineDataModel> fetchTableLineDataHasUnVisitedUrls() {
+    public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataHasUnVisitedUrls() {
         // 获取当前所有记录的数据
         String WhereCondition = "where unvisited_url_num>0";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
@@ -111,7 +110,7 @@ public class UnionTableSql {
     }
 
     //获取存在敏感信息的行
-    public static ArrayList<TableLineDataModel> fetchTableLineDataHasInfo() {
+    public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataHasInfo() {
         // 获取当前所有记录的数据
         String WhereCondition = "where find_info_num>0";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
@@ -119,10 +118,34 @@ public class UnionTableSql {
     }
 
     //获取没有数据的行,备用,用于后续删除数据
-    public static ArrayList<TableLineDataModel> fetchTableLineDataIsNull() {
+    public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataIsNull() {
         // 获取当前所有记录的数据
         String WhereCondition = "where (find_url_num is null and find_path_num is null and find_info_num is null) or (find_url_num <1  and find_path_num <1 and find_info_num <1) ";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
         return  fetchTableLineDataBySQl(selectSQL);
+    }
+
+    //获取没有数据的行,备用,用于后续删除数据
+    public static synchronized int clearUselessData() {
+        int rowsAffected = -1;
+
+        // 获取当前所有记录的数据
+        String deleteSQL = ("DELETE FROM table1 WHERE id IN (" +
+                "SELECT A.id FROM table1 A LEFT JOIN table2 B ON A.msg_hash=B.msg_hash " +
+                "WHERE (find_url_num IS NULL AND find_path_num IS NULL AND find_info_num IS NULL) " +
+                "OR (find_url_num < 1 AND find_path_num < 1 AND find_info_num < 1));")
+                .replace("table1", ReqDataTable.tableName)
+                .replace("table2", AnalyseResultTable.tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConnection();
+             PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+            rowsAffected = stmt.executeUpdate();
+            stdout_println(String.format(String.format("[-] table [%s] cleared Useless Data [%s] line.", ReqDataTable.tableName, rowsAffected)));
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error clear Useless Data On Table [%s] -> Error:[%s]", ReqDataTable.tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return rowsAffected;
     }
 }

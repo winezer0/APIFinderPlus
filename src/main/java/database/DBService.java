@@ -132,15 +132,21 @@ public class DBService {
     }
 
     /**
-     * 清空所有表的数据
+     * 清空常用表的数据
      */
-    public static void clearAllTableData(){
+    public static void clearModelTableData(){
        clearTable(AnalyseResultTable.tableName);
        clearTable(ReqDataTable.tableName);
        clearTable(ReqMsgDataTable.tableName);
+    }
 
-//        clearTable(PathTreeTable.tableName);
-//        clearTable(RecordPathTable.tableName);
-//        clearTable(RecordUrlTable.tableName);
+    /**
+     * 清空所有表的数据
+     */
+    public static void clearAllTableData(){
+        clearTable(PathTreeTable.tableName);
+        clearTable(RecordPathTable.tableName);
+        clearTable(RecordUrlTable.tableName);
+        clearModelTableData();
     }
 }

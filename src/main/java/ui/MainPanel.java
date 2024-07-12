@@ -537,7 +537,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     /**
      * 清理所有数据
      */
-    public static void clearAllData(){
+    public static void clearModelData(boolean clearAllTable){
         synchronized (model) {
             // 清空model
             model.setRowCount(0);
@@ -550,7 +550,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             ConfigPanel.urlCrawledCount.setText("0/0");
 
             //清空数据库内容
-            DBService.clearAllTableData();
+            if (clearAllTable) DBService.clearAllTableData(); else DBService.clearModelTableData();
 
             // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {
@@ -561,6 +561,21 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             // 还可以清空编辑器中的数据
             clearTabsMsgData();
+        }
+    }
+
+    /**
+     * 清理表格中的数据
+     */
+    public static void clearUserLessData(){
+        synchronized (model) {
+            // 清空model
+            model.setRowCount(0);
+            //清空数据库内容
+            DBService.clearModelTableData();
+            // 还可以清空编辑器中的数据
+            clearTabsMsgData();
+
         }
     }
 

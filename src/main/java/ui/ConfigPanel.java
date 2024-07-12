@@ -1,5 +1,6 @@
 package ui;
 
+import database.UnionTableSql;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -248,9 +249,17 @@ public class ConfigPanel extends JPanel {
         // 功能按钮 弹出选项
         JPopupMenu moreMenu = new JPopupMenu("功能");
 
-        JMenuItem clearData = new JMenuItem("清除");
-        clearData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearData);
+        JMenuItem clearUselessData = new JMenuItem("清除无用数据");
+        clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearUselessData);
+
+        JMenuItem clearModelTableData = new JMenuItem("清除表格数据");
+        clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearModelTableData);
+
+        JMenuItem clearAllTableData = new JMenuItem("清除所有数据");
+        clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearAllTableData);
 
         // 功能按钮
         JButton moreButton = new JButton();
@@ -286,20 +295,22 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        // 点击”功能“的监听事件
-        moreButton.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                moreMenu.show(e.getComponent(), e.getX(), e.getY());
-            }
-        });
 
-        // 为 点击”功能“的 菜单项添加 Action Listener
-        clearData.addActionListener(new ActionListener() {
+        // 快速选择框的监听事件
+        choicesComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 清空表格模型中的所有行数据
-                MainPanel.clearAllData();
-                setAutoRefreshButtonTrue();
+                try{
+                    // 触发显示所有行事件
+                    String searchText = searchField.getText();
+                    if(searchText.isEmpty()){
+                        searchText = "";
+                    }
+                    String selectedOption = (String)choicesComboBox.getSelectedItem();
+                    MainPanel.showDataTableByFilter(selectedOption, searchText);
+                } catch (Exception ex) {
+                    stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
+                }
             }
         });
 
@@ -326,24 +337,42 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        // 快速选择框的监听事件
-        choicesComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try{
-                    // 触发显示所有行事件
-                    String searchText = searchField.getText();
-                    if(searchText.isEmpty()){
-                        searchText = "";
-                    }
-                    String selectedOption = (String)choicesComboBox.getSelectedItem();
-                    MainPanel.showDataTableByFilter(selectedOption, searchText);
-                } catch (Exception ex) {
-                    stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
-                }
+
+        // 点击”功能“的监听事件
+        moreButton.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                moreMenu.show(e.getComponent(), e.getX(), e.getY());
             }
         });
 
+        // 为 点击”功能“的 菜单项添加 Action Listener
+        clearModelTableData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 清空表格模型中的所有行数据
+                MainPanel.clearModelData(false);
+                setAutoRefreshButtonTrue();
+            }
+        });
+
+        // 为 点击”功能“的 菜单项添加 Action Listener
+        clearAllTableData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 清空表格模型中的所有行数据
+                MainPanel.clearModelData(true);
+                setAutoRefreshButtonTrue();
+            }
+        });
+
+        clearUselessData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 清空表格模型中的无效数据
+                UnionTableSql.clearUselessData();
+                setAutoRefreshButtonTrue();
+            }
+        });
  }
 
 
