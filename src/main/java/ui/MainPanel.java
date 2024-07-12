@@ -45,19 +45,20 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
     public static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
+    public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
-    public static MainPanel getInstance(IBurpExtenderCallbacks callbacks) {
+    public static MainPanel getInstance() {
         if (instance == null) {
             synchronized (MainPanel.class) {
                 if (instance == null) {
-                    instance = new MainPanel(callbacks);
+                    instance = new MainPanel();
                 }
             }
         }
         return instance;
     }
 
-    public MainPanel(IBurpExtenderCallbacks callbacks) {
+    public MainPanel() {
         // EmptyBorder 四周各有了5像素的空白边距
         setBorder(new EmptyBorder(5, 5, 5, 5));
         ////BorderLayout 将容器分为五个区域：北 南 东 西 中 每个区域可以放置一个组件，
@@ -82,7 +83,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         mainSplitPane.setTopComponent(upScrollPane);
 
         //获取下方的消息面板
-        JTabbedPane tabs = getMsgTabs(callbacks);
+        JTabbedPane tabs = getMsgTabs();
         mainSplitPane.setBottomComponent(tabs);
 
         //组合最终的内容面板
@@ -92,8 +93,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         //初始化表格数据
         initDataTableUIData();
 
-        // 初始化定时刷新页面函数
-        initTimer(10000);
+        // 初始化定时刷新页面函数 单位是毫秒
+        initTimer(timerDelay * 1000);
     }
 
     /**
@@ -358,29 +359,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         timer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //定时更新未访问URL列的数据
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    try{
-                        //当添加进程还比较多的时候,暂时不进行响应数据处理
-                        updateUnVisitedUrls();
-                        //stdout_println(LOG_DEBUG, String.format("[*] 更新未访问URL完成...") );
-                    } catch (Exception ep){
-                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
-                    }
-
-                    // 调用刷新表格的方法
-                    try{
-                        instance.refreshTableModel();
-                        //stdout_println(LOG_DEBUG, String.format("[*] 刷新表格完成...") );
-                    } catch (Exception ep){
-                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
-                    }
-
-                    //建议JVM清理内存
-                    System.gc();
+                    refreshUnVisitedUrlsAndTableModel(true, true);
                 }
-
             }
         });
 
@@ -389,37 +371,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
     /**
-     * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
-     */
-    private void updateUnVisitedUrls() {
-        // 获取所有未访问URl 注意需要大于0
-        List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
-        if (unVisitedUrlsModels.size() > 0){
-            // 获取所有 已经被访问过得URL列表
-            List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
-            // 遍历 unVisitedUrlsModels 进行更新
-            for (UnVisitedUrlsModel unVisitedUrlsModel : unVisitedUrlsModels) {
-                //更新 unVisitedUrls 对象
-                List<String> rawUnVisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
-                List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
-                unVisitedUrlsModel.setUnvisitedUrls(newUnVisitedUrls);
-                // 执行更新插入数据操作
-                try {
-                    AnalyseResultTable.updateUnVisitedUrlsById(unVisitedUrlsModel);
-                } catch (Exception ex){
-                    stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
-                }
-            }
-        }
-    }
-
-
-    /**
      * 初始化创建表格下方的消息内容面板
-     * @param callbacks
-     * @return
      */
-    private JTabbedPane getMsgTabs(IBurpExtenderCallbacks callbacks) {
+    private JTabbedPane getMsgTabs() {
+        IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+
         // 将 结果消息面板 添加到窗口下方
         JTabbedPane tabs = new JTabbedPane();
         // 请求的面板
@@ -596,15 +552,66 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     }
 
     /**
+     * 刷新未访问的URL和数据表模型, 费内存的操作
+     * @param checkAutoRefreshButtonStatus 是否检查自动更新按钮的状态
+     * @param updateUnVisitedUrlsStatus 是否开启 updateUnVisitedUrls 函数的调用
+     */
+    public void refreshUnVisitedUrlsAndTableModel(boolean checkAutoRefreshButtonStatus,boolean updateUnVisitedUrlsStatus) {
+        // 调用更新未访问URL列的数据
+        if (updateUnVisitedUrlsStatus)
+            try{
+                //当添加进程还比较多的时候,暂时不进行响应数据处理
+                updateUnVisitedUrls();
+            } catch (Exception ep){
+                stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+            }
+
+        // 调用刷新表格的方法
+        try{
+            instance.refreshTableModel(checkAutoRefreshButtonStatus);
+        } catch (Exception ep){
+            stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+        }
+
+        //建议JVM清理内存
+        System.gc();
+    }
+
+    /**
+     * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
+     */
+    private void updateUnVisitedUrls() {
+        // 获取所有未访问URl 注意需要大于0
+        List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
+        if (unVisitedUrlsModels.size() > 0){
+            // 获取所有 已经被访问过得URL列表
+            List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
+            // 遍历 unVisitedUrlsModels 进行更新
+            for (UnVisitedUrlsModel unVisitedUrlsModel : unVisitedUrlsModels) {
+                //更新 unVisitedUrls 对象
+                List<String> rawUnVisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+                List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
+                unVisitedUrlsModel.setUnvisitedUrls(newUnVisitedUrls);
+                // 执行更新插入数据操作
+                try {
+                    AnalyseResultTable.updateUnVisitedUrlsById(unVisitedUrlsModel);
+                } catch (Exception ex){
+                    stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+                }
+            }
+        }
+    }
+
+    /**
      * 定时刷新表数据
      */
-    public void refreshTableModel() {
+    public void refreshTableModel(boolean checkAutoRefreshButtonStatus) {
         //设置成功数量
         int successCount = ReqDataTable.getReqDataCount();
         ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (ConfigPanel.getAutoRefreshButtonStatus()) {
+        if (checkAutoRefreshButtonStatus && ConfigPanel.getAutoRefreshButtonStatus()) {
             if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
                 ConfigPanel.setAutoRefreshButtonTrue();
             }

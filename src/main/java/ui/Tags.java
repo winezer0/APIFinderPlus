@@ -19,7 +19,7 @@ public class Tags implements ITab {
         // 定义tab标签页
         this.tabs = new JTabbedPane();
 
-        this.mainPanel = MainPanel.getInstance(callbacks);
+        this.mainPanel = MainPanel.getInstance();
         this.tabs.add("主页", this.mainPanel);
 
         this.fingerConfigTab = FingerConfigTab.getInstance();

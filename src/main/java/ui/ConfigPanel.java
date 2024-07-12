@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.stderr_println;
+import static utils.BurpPrintUtils.stdout_println;
 
 public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;
@@ -18,11 +19,11 @@ public class ConfigPanel extends JPanel {
     public static JLabel jsCrawledCount;
     public static JLabel urlCrawledCount;
     public static JComboBox<String> choicesComboBox;
-    // 在FingerTab类中添加成员变量
+
     public static JToggleButton autoRefreshButton;
-    public static JToggleButton toggleButton;
-    public static JTextField searchField;
     public static JLabel autoRefreshText;
+
+    public static JTextField searchField;
 
     public ConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -158,9 +159,15 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
         // 刷新按钮按钮
+        JToggleButton refreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton2.png", 24, 24));
+        refreshButton.setPreferredSize(new Dimension(30, 30));
+        refreshButton.setBorder(null);  // 设置无边框
+        refreshButton.setFocusPainted(false);  // 移除焦点边框
+        refreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        refreshButton.setToolTipText("点击刷新表格");
 
         // 开关 是否开启对提取URL进行发起请求
-        toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        JToggleButton toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
         toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
         toggleButton.setPreferredSize(new Dimension(50, 24));
         toggleButton.setBorder(null);  // 设置无边框
@@ -183,11 +190,14 @@ public class ConfigPanel extends JPanel {
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
         gbc_buttons.insets = new Insets(0, 5, 0, 5);
-        gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
         gbc_buttons.gridy = 0; // 设置按钮的纵坐标位置
         gbc_buttons.fill = GridBagConstraints.NONE; // 不填充
 
+        // 在 FilterPanel 中添加 refreshButton
+        gbc_buttons.gridx = 9; // 设置按钮的横坐标位置
+        FilterPanel.add(refreshButton, gbc_buttons);
         // 在 FilterPanel 中添加 toggleButton
+        gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
         FilterPanel.add(toggleButton, gbc_buttons);
         gbc_buttons.gridx = 11; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshButton, gbc_buttons);
@@ -252,11 +262,19 @@ public class ConfigPanel extends JPanel {
                 // 检查按钮的选中状态
                 if (autoRefreshButton.isSelected()) {
                     // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
-                    autoRefreshText.setText("暂停每10秒刷新表格");
+                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", MainPanel.timerDelay));
                 } else {
                     // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
-                    autoRefreshText.setText("自动每10秒刷新表格中");
+                    autoRefreshText.setText(String.format("自动每%s秒刷新表格中", MainPanel.timerDelay));
                 }
+            }
+        });
+
+        // 刷新按钮监听事件
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MainPanel.getInstance().refreshUnVisitedUrlsAndTableModel(false, true);
             }
         });
 
