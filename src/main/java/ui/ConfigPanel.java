@@ -302,9 +302,33 @@ public class ConfigPanel extends JPanel {
 
         // 手动刷新按钮监听事件
         refreshButton.addActionListener(new ActionListener() {
+            private boolean canClick = true;
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                MainPanel.getInstance().refreshUnVisitedUrlsAndTableModel(false, true);
+                if (canClick) {
+                    canClick = false;
+                    ImageIcon originalIcon = (ImageIcon) refreshButton.getIcon();  // 保存原始图标
+                    String originalTip = refreshButton.getToolTipText();   // 保存原始批注
+
+                    // 更换为新图标
+                    refreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
+
+                    //关键的代码
+                    MainPanel.getInstance().refreshUnVisitedUrlsAndTableModel(false, true);
+
+                    // 设置定时器，5秒后允许再次点击并恢复图标
+                    Timer timer = new Timer(3000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            canClick = true;
+                            refreshButton.setIcon(originalIcon); // 恢复原始图标
+                            refreshButton.setToolTipText(originalTip); // 恢复原始批注
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
             }
         });
 
