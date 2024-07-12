@@ -31,7 +31,7 @@ public class IProxyScanner implements IProxyListener {
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
     public static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
 
-    final ThreadPoolExecutor executorService;
+    public static ThreadPoolExecutor executorService = null;
     static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 

@@ -359,17 +359,23 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //定时更新未访问URL列的数据
-                try{
-                    updateUnVisitedUrls();
-                } catch (Exception ep){
-                    stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
-                }
+                if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
+                    //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
+                    try{
+                        //当添加进程还比较多的时候,暂时不进行响应数据处理
+                        updateUnVisitedUrls();
+                        //stdout_println(LOG_DEBUG, String.format("[*] 更新未访问URL完成...") );
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+                    }
 
-                // 调用刷新表格的方法
-                try{
-                    instance.refreshTableModel();
-                } catch (Exception ep){
-                    stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                    // 调用刷新表格的方法
+                    try{
+                        instance.refreshTableModel();
+                        //stdout_println(LOG_DEBUG, String.format("[*] 刷新表格完成...") );
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                    }
                 }
 
             }
@@ -379,6 +385,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         timer.start();
     }
 
+    /**
+     * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
+     */
     private void updateUnVisitedUrls() {
         // 获取所有未访问URl 注意需要大于0
         List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
