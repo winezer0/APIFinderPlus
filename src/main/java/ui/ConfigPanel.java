@@ -19,7 +19,7 @@ public class ConfigPanel extends JPanel {
     public static JLabel urlCrawledCount;
     public static JComboBox<String> choicesComboBox;
     // 在FingerTab类中添加成员变量
-    public static JToggleButton refreshbutton;
+    public static JToggleButton refreshButton;
     public static JToggleButton toggleButton;
     public static JTextField searchField;
     public static JLabel refreshText;
@@ -160,13 +160,13 @@ public class ConfigPanel extends JPanel {
         toggleButton.setToolTipText("是否开启对提取URL进行发起请求");
 
         // 刷新按钮按钮
-        refreshbutton = new JToggleButton(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
-        refreshbutton.setSelectedIcon(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
-        refreshbutton.setPreferredSize(new Dimension(30, 30));
-        refreshbutton.setBorder(null);  // 设置无边框
-        refreshbutton.setFocusPainted(false);  // 移除焦点边框
-        refreshbutton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        refreshbutton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
+        refreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
+        refreshButton.setSelectedIcon(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
+        refreshButton.setPreferredSize(new Dimension(30, 30));
+        refreshButton.setBorder(null);  // 设置无边框
+        refreshButton.setFocusPainted(false);  // 移除焦点边框
+        refreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        refreshButton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
 
         // 刷新文本
         refreshText = new JLabel("自动每10秒刷新表格中");
@@ -189,7 +189,7 @@ public class ConfigPanel extends JPanel {
         // 在 FilterPanel 中添加 toggleButton
         FilterPanel.add(toggleButton, gbc_buttons);
         gbc_buttons.gridx = 11; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(refreshbutton, gbc_buttons);
+        FilterPanel.add(refreshButton, gbc_buttons);
         gbc_buttons.gridx = 12; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(refreshText, gbc_buttons);
 
@@ -248,11 +248,11 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(moreButton, gbc_btnMore);
 
         // 刷新按钮监听事件
-        refreshbutton.addActionListener(new ActionListener() {
+        refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
-                if (refreshbutton.isSelected()) {
+                if (refreshButton.isSelected()) {
                     // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
                     refreshText.setText("暂停每10秒刷新表格");
                 } else {
@@ -333,19 +333,19 @@ public class ConfigPanel extends JPanel {
 
 
     public static void setRefreshButtonTrue(){
-        refreshbutton.setSelected(false);
+        refreshButton.setSelected(false);
         refreshText.setText("自动每10秒刷新表格中");
     }
 
 
     public static void setRefreshButtonFalse(){
-        refreshbutton.setSelected(true);
+        refreshButton.setSelected(true);
         refreshText.setText("暂停定时刷新表格");
     }
 
     public static boolean getFlushButtonStatus(){
         // 检查按钮的选中状态
-        if (refreshbutton.isSelected()) {
+        if (refreshButton.isSelected()) {
             // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
             return true;
         } else {
