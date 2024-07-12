@@ -2,6 +2,139 @@
   "fingerprint": [
     {
       "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "200",
+        "403"
+      ],
+      "type": "CONF_NEED_RECORD_STATUS",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        ".baidu.com",
+        ".google.com",
+        ".bing.com",
+        ".yahoo.com",
+        ".aliyun.com",
+        ".alibaba.com",
+        ".w3.org",
+        ".github.com",
+        ".githubusercontent.com"
+      ],
+      "type": "CONF_BLACK_URL_HOSTS",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "jquery.js"
+      ],
+      "type": "CONF_BLACK_URL_PATH",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "gif",
+        "png",
+        "jpg",
+        "jpeg",
+        "ico",
+        "webp",
+        "tif",
+        "tiff",
+        "bmp",
+        "css",
+        "woff",
+        "woff2",
+        "svg",
+        "pdf",
+        "docx",
+        "doc",
+        "xlsx",
+        "xls",
+        "pptx",
+        "ppt",
+        "ttf",
+        "otf",
+        "mp3",
+        "wav",
+        "aac",
+        "ogg",
+        "mp4",
+        "avi",
+        "mov",
+        "wmv",
+        "flv",
+        "zip",
+        "rar",
+        "gz",
+        "7z",
+        "scss",
+        "sass",
+        "less",
+        "eot",
+        "swf"
+      ],
+      "type": "CONF_BLACK_URL_EXT",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "js",
+        "html",
+        "cvs",
+        "php",
+        "jsp",
+        "asp",
+        "aspx"
+      ],
+      "type": "CONF_EXTRACT_SUFFIX",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "text/css",
+        "text/javascript"
+      ],
+      "type": "CONF_BLACK_PATH_KEYS",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "/",
+        "/?"
+      ],
+      "type": "CONF_BLACK_PATH_EQUALS",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
       "location": "body",
       "keyword": [
         "pass",
@@ -1357,139 +1490,6 @@
       "type": "敏感路径",
       "describe": "GraphQL API",
       "isImportant": true,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "200",
-        "403"
-      ],
-      "type": "CONF_NEED_RECORD_STATUS",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        ".baidu.com",
-        ".google.com",
-        ".bing.com",
-        ".yahoo.com",
-        ".aliyun.com",
-        ".alibaba.com",
-        ".w3.org",
-        ".github.com",
-        ".githubusercontent.com"
-      ],
-      "type": "CONF_BLACK_URL_HOSTS",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "jquery.js"
-      ],
-      "type": "CONF_BLACK_URL_PATH",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "gif",
-        "png",
-        "jpg",
-        "jpeg",
-        "ico",
-        "webp",
-        "tif",
-        "tiff",
-        "bmp",
-        "css",
-        "woff",
-        "woff2",
-        "svg",
-        "pdf",
-        "docx",
-        "doc",
-        "xlsx",
-        "xls",
-        "pptx",
-        "ppt",
-        "ttf",
-        "otf",
-        "mp3",
-        "wav",
-        "aac",
-        "ogg",
-        "mp4",
-        "avi",
-        "mov",
-        "wmv",
-        "flv",
-        "zip",
-        "rar",
-        "gz",
-        "7z",
-        "scss",
-        "sass",
-        "less",
-        "eot",
-        "swf"
-      ],
-      "type": "CONF_BLACK_URL_EXT",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "js",
-        "html",
-        "cvs",
-        "php",
-        "jsp",
-        "asp",
-        "aspx"
-      ],
-      "type": "CONF_EXTRACT_SUFFIX",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "text/css",
-        "text/javascript"
-      ],
-      "type": "CONF_BLACK_PATH_KEYS",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "/",
-        "/?"
-      ],
-      "type": "CONF_BLACK_PATH_EQUALS",
-      "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
     }
