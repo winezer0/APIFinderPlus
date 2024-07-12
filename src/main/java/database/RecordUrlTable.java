@@ -25,11 +25,10 @@ public class RecordUrlTable {
 
     //插入数据库
     public static synchronized int insertOrUpdateAccessedUrl(HttpMsgInfo msgInfo) {
-        String reqUrl = msgInfo.getReqUrl();
-        String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-        int respStatusCode = msgInfo.getRespStatusCode();
-
-        return insertOrUpdateAccessedUrl(reqUrl, reqHostPort, respStatusCode);
+        return insertOrUpdateAccessedUrl(
+                msgInfo.getUrlInfo().getReqUrl(),
+                msgInfo.getUrlInfo().getReqHostPort() ,
+                msgInfo.getRespStatusCode());
     }
 
 

@@ -52,6 +52,14 @@ public class HttpUrlInfo {
             reqBaseUrl = new URL(reqProto, reqHost, reqPort, reqPath).toString();
             //构造基本URL, 不包含请求文件
             reqBaseDir = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
+
+            //格式化URL 不显示默认端口
+            //reqUrl = removeUrlDefaultPort(reqUrl);
+            //reqBaseUrl = removeUrlDefaultPort(reqBaseUrl);
+            //reqBaseDir = removeUrlDefaultPort(reqBaseDir);
+
+            //格式化URL 显示默认端口
+            reqUrl = addUrlDefaultPort(reqUrl);
         } catch (MalformedURLException e) {
             stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();
@@ -151,7 +159,6 @@ public class HttpUrlInfo {
         return reqBaseDir;
     }
 
-
     /**
      * 1.remove default port(80\443) from the url
      * 2.add default path(/) to the url,if it's empty
@@ -162,7 +169,7 @@ public class HttpUrlInfo {
      * http://bit4woo.com:80/ ---> http://bit4woo.com/
      * https://bit4woo.com:443 ---> https://bit4woo.com/
      */
-    public static String removeUrlDefaultPort(String urlString) {
+    private String removeUrlDefaultPort(String urlString) {
         try {
             URL url = new URL(urlString);
             String protocol = url.getProtocol();
@@ -201,7 +208,7 @@ public class HttpUrlInfo {
      * @param urlStr
      * @return
      */
-    public static String addUrlDefaultPort(String urlStr) {
+    private String addUrlDefaultPort(String urlStr) {
         try {
             URL url = new URL(urlStr);
             String host = url.getHost();

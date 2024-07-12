@@ -163,9 +163,6 @@ public class IProxyScanner implements IProxyListener {
                 public void run() {
                     //记录请求记录到数据库中（记录所有请求）
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                    //Todo:解决记录URL和访问URL不一致的问题
-                    // 显示URL  https://www.am-liaotian.com/chat/chatClient/chatbox.jsp?companyID=8994&configID=15&k=1
-                    // 记录URL  https://www.am-liaotian.com:443/chat/chatClient/chatbox.jsp?companyID=8994&configID=15&k=1
                 }
             });
 
@@ -341,7 +338,7 @@ public class IProxyScanner implements IProxyListener {
                     }
                 }
 
-                // 去重和过滤 不符合规则的URL
+                // 去重、格式化、过滤 不符合规则的URL
                 findUrlsList = InfoAnalyse.filterFindUrls(reqUrl, findUrlsList, false);
 
                 if (findUrlsList.size() > 0){

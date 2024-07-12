@@ -1,5 +1,7 @@
 package utils;
 
+import model.HttpUrlInfo;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -137,7 +139,8 @@ public class InfoUriFilterUtils {
      * @return
      */
     public static List<String> filterUriBySelfContain(String baseUri, List<String> matchUriList) {
-        if (baseUri == null || baseUri == "" || matchUriList == null || matchUriList.isEmpty()) return matchUriList;
+        if (baseUri == null || baseUri == "" || baseUri == "/" ) return matchUriList;
+        if (matchUriList == null || matchUriList.isEmpty()) return matchUriList;
 
         List<String> list = new ArrayList<>();
         for (String uri : matchUriList){
@@ -181,5 +184,17 @@ public class InfoUriFilterUtils {
     private static String parseUrlExt(String uri) {
         String pureUrl = uri.substring(0, uri.contains("?") ? uri.indexOf("?") : uri.length());
         return (pureUrl.lastIndexOf(".") > -1 ? pureUrl.substring(pureUrl.lastIndexOf(".") + 1) : "").toLowerCase();
+    }
+
+
+    public static List<String> formatUrls(List<String> urls) {
+        if (urls == null || urls.isEmpty()) return urls;
+
+        List<String> list = new ArrayList<>();
+        for (String urlStr : urls) {
+            String url = new HttpUrlInfo(urlStr).getReqUrl();
+            list.add(url);
+        }
+        return list;
     }
 }

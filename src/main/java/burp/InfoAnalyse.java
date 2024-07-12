@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static burp.BurpExtender.*;
-import static utils.BurpPrintUtils.LOG_DEBUG;
-import static utils.BurpPrintUtils.stdout_println;
 import static utils.ElementUtils.isContainAllKey;
 import static utils.ElementUtils.isEqualsOneKey;
 import static utils.InfoAnalyseUtils.*;
@@ -28,13 +26,10 @@ public class InfoAnalyse {
 
     public static final String URL_KEY = "URL_KEY";
     public static final String PATH_KEY = "PATH_KEY";
-    public static final String INFO_KEY = "INFO_KEY";
-    public static final String API_KEY = "API_KEY";
 
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
 
     public static AnalyseResult analyseMsgInfo(HttpMsgInfo msgInfo) {
-        String reqUrl = msgInfo.getReqUrl();
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
         findInfoList = CastUtils.deduplicateJsonList(findInfoList); //去重提取结果
@@ -43,6 +38,9 @@ public class InfoAnalyse {
         //2、实现响应中的 URL 和 PATH 提取
         Set<String> findUriSet = findUriInfoByRegular(msgInfo);
         Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
+
+        String reqUrl = msgInfo.getUrlInfo().getReqUrl();
+        String reqPath = msgInfo.getUrlInfo().getReqPath();
 
         //采集 URL 处理
         List<String> findUrlList = urlOrPathMap.get(URL_KEY);
@@ -55,7 +53,7 @@ public class InfoAnalyse {
         List<String> findPathList = urlOrPathMap.get(PATH_KEY);
         //stdout_println(LOG_DEBUG, String.format("[*] 初步采集PATH数量:%s -> %s", reqUrl, findUrlList.size()));
         //实现响应Path过滤
-        findPathList = filterFindPaths(reqUrl, findPathList, false);
+        findPathList = filterFindPaths(reqPath, findPathList, false);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s -> %s", reqUrl, findPathList.size()));
 
         //基于Path和请求URL组合简单的URL 已验证，常规网站采集的PATH生成的URL基本都是正确的
@@ -77,24 +75,21 @@ public class InfoAnalyse {
 
     /**
      * 整合过滤分析出来的URL列表
-     * @param reqUrl
+     * @param reqPath
      * @param findUriList
      * @param filterChinese
      * @return
      */
-    private static List<String> filterFindPaths(String reqUrl, List<String> findUriList, boolean filterChinese) {
+    private static List<String> filterFindPaths(String reqPath, List<String> findUriList, boolean filterChinese) {
         //跳过空列表的情况
         if (findUriList.isEmpty()) return findUriList;
-
-        //格式化为URL对象进行操作
-        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         //过滤重复内容
         findUriList = CastUtils.deduplicateStringList(findUriList);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤重复PATH内容:%s", findUriList.size()));
 
         //过滤自身包含的Path (包含说明相同)
-        findUriList = filterUriBySelfContain(urlInfo.getReqPath(), findUriList);
+        findUriList = filterUriBySelfContain(reqPath, findUriList);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s", findUriList.size()));
 
         //过滤包含禁止关键字的PATH
@@ -129,15 +124,18 @@ public class InfoAnalyse {
         //跳过空列表的情况
         if (urlList.isEmpty()) return urlList;
 
-        //格式化为URL对象进行操作
-        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
-
         //过滤重复内容
         urlList = CastUtils.deduplicateStringList(urlList);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤重复URL内容:%s", urlList.size()));
 
+        //格式化为URL对象进行操作
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
+
+        //对所有URL进行格式化
+        urlList = formatUrls(urlList);
+
         //过滤自身包含的URL (包含说明相同) //功能测试通过
-        urlList = filterUriBySelfContain(reqUrl, urlList);
+        urlList = filterUriBySelfContain(urlInfo.getReqUrl(), urlList);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的URL:%s", urlList.size()));
 
         //过滤黑名单host
@@ -154,12 +152,14 @@ public class InfoAnalyse {
 
         //仅保留主域名相关URL
         if (onlyScopeDomain){
+
             urlList = filterUrlByMainHost(urlInfo.getReqRootDomain(), urlList);
             //stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s", urlList.size()));
         }
 
         return urlList;
     }
+
 
     /**
      * 根据规则提取敏感信息
