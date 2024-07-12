@@ -11,7 +11,6 @@ import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.stderr_println;
-import static utils.BurpPrintUtils.stdout_println;
 
 public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;

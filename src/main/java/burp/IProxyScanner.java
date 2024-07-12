@@ -15,13 +15,9 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
-import static database.PathTreeTable.fetchPathTreeByReqHostPort;
-import static database.PathTreeTable.insertOrUpdatePathTree;
-import static database.RecordPathTable.fetchAllNotAddToTreeRecords;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
-import static utils.PathTreeUtils.genPathsTree;
 
 
 public class IProxyScanner implements IProxyListener {
@@ -34,7 +30,6 @@ public class IProxyScanner implements IProxyListener {
     public static ThreadPoolExecutor executorService = null;
     static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
-
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -249,14 +244,14 @@ public class IProxyScanner implements IProxyListener {
                     int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (unhandledReqDataId <= 0){
                         //获取需要更新的所有URL记录
-                        JSONArray recordUrls = fetchAllNotAddToTreeRecords();
+                        JSONArray recordUrls = RecordPathTable.fetchAllNotAddToTreeRecords();
                         if (!recordUrls.isEmpty()){
                             for (Object record : recordUrls) {
                                 //生成新的路径树
-                                JSONObject addedTreeObj = genPathsTree((JSONObject) record);
+                                JSONObject addedTreeObj = PathTreeUtils.genPathsTree((JSONObject) record);
                                 if (addedTreeObj != null && !addedTreeObj.isEmpty()){
                                     //合并|插入新的路径树
-                                    int pathTreeIndex = insertOrUpdatePathTree(addedTreeObj);
+                                    int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(addedTreeObj);
 //                                    if (pathTreeIndex > 0) {
 //                                        stdout_println(LOG_INFO, String.format("[+] Path Tree 更新成功: %s",addedTreeObj.toJSONString()));
 //                                    }
@@ -308,7 +303,7 @@ public class IProxyScanner implements IProxyListener {
             JSONArray findPathArray = findPathModel.getFindPath();
 
             // 从数据库中获取当前 reqHostPort 的 PathTree
-            PathTreeModel pathTreeModel = fetchPathTreeByReqHostPort(reqHostPort);
+            PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByReqHostPort(reqHostPort);
             int currBasicPathNum = pathTreeModel.getBasicPathNum();
             JSONObject currPathTree = pathTreeModel.getPathTree();
 
@@ -337,7 +332,7 @@ public class IProxyScanner implements IProxyListener {
                 }
 
                 // 去重、格式化、过滤 不符合规则的URL
-                findUrlsList = AnalyseInfo.filterFindUrls(reqUrl, findUrlsList, false);
+                findUrlsList = AnalyseInfo.filterFindUrls(reqUrl, findUrlsList, BurpExtender.onlyScopeDomain);
 
                 if (findUrlsList.size() > 0){
                     //判断查找到的URL是全新的

@@ -591,6 +591,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //更新 unVisitedUrls 对象
                 List<String> rawUnVisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
                 List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
+                //过滤黑名单中的URL 因为黑名单是不定时更新的
+                newUnVisitedUrls = AnalyseInfo.filterFindUrls(null, newUnVisitedUrls, BurpExtender.onlyScopeDomain);
                 unVisitedUrlsModel.setUnvisitedUrls(newUnVisitedUrls);
                 // 执行更新插入数据操作
                 try {

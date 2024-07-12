@@ -7,6 +7,7 @@ import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
 import ui.MainPanel;
 import ui.Tags;
+import utils.BurpFileUtils;
 import utils.BurpPrintUtils;
 
 import javax.swing.*;
@@ -14,9 +15,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static utils.BurpFileUtils.ReadPluginConfFile;
 import static utils.BurpPrintUtils.*;
-
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     private static IBurpExtenderCallbacks callbacks;
@@ -70,6 +69,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static  String configName = "finger-important.json";
 
+    public static boolean onlyScopeDomain = false; //是否仅显示本主机域名的URL
+
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
         this.callbacks = callbacks;
@@ -80,7 +81,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
         SwingUtilities.invokeLater(new Runnable() { public void run() {
             // 读取配置文件参数
-            String configJson = ReadPluginConfFile(callbacks, configName);
+            String configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName);
             // 加载配置规则
             if(configJson != null && configJson != ""){
                 // 使用Fastjson的parseObject方法将JSON字符串转换为Rule对象
