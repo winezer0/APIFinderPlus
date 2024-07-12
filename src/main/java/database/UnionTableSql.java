@@ -47,9 +47,9 @@ public class UnionTableSql {
     public static synchronized ArrayList<TableLineDataModel> fetchAllTableLineData(){
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
         // 获取当前所有记录的数据
-        String selectSQL = ("SELECT A.msg_id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
+        String selectSQL = ("SELECT A.id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
                 "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
-                "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash order by A.msg_id;")
+                "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash order by A.id;")
                 .replace("table1", ReqDataTable.tableName)
                 .replace("table2", AnalyseResultTable.tableName);
 
@@ -58,7 +58,7 @@ public class UnionTableSql {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     TableLineDataModel apiDataModel = new TableLineDataModel(
-                            rs.getInt("msg_id"),
+                            rs.getInt("id"),
                             rs.getString("msg_hash"),
                             rs.getString("req_url"),
                             rs.getString("req_method"),

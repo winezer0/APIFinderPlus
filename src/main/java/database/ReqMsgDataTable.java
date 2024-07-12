@@ -18,7 +18,7 @@ public class ReqMsgDataTable {
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + " msg_hash TEXT,\n"
+            + " msg_hash TEXT UNIQUE,\n"
             + " req_url TEXT NOT NULL,\n"
             + " req_bytes BLOB,\n"
             + " resp_bytes BLOB\n"

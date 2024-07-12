@@ -141,8 +141,7 @@ public class IProxyScanner implements IProxyListener {
                         byte[] respBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
                         msgInfo.setRespBytes(respBytes);
                         //加入请求列表
-                        int msgId = iInterceptedProxyMessage.getMessageReference();
-                        insertOrUpdateReqDataAndReqMsgData(msgInfo, msgId, "Proxy");
+                        insertOrUpdateReqDataAndReqMsgData(msgInfo,"Proxy");
 
                         //放到后面,确保已经记录数据,不然会被过滤掉
                         urlScanRecordMap.add(msgInfo.getMsgHash());
@@ -195,14 +194,14 @@ public class IProxyScanner implements IProxyListener {
     /**
      * 合并添加请求数据和请求信息为一个函数
      * @param msgInfo
-     * @param msgId
+     * @param reqSource
      */
-    private void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, int msgId, String reqSource) {
+    private void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
         //存储请求体|响应体数据
         int msgDataIndex = ReqMsgDataTable.insertOrUpdateMsgData(msgInfo);
         if (msgDataIndex > 0){
             // 存储到URL表
-            int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgId, msgDataIndex, reqSource);
+            int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
                 stdout_println(LOG_INFO, String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
                         msgInfo.getReqUrl(), msgInfo.getMsgHash(), reqSource));

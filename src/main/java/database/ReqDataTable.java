@@ -17,8 +17,7 @@ public class ReqDataTable {
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName ("
             .replace("tableName", tableName)
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + "msg_id TEXT NOT NULL,"   //暂时没有什么用处
-            + "msg_hash TEXT NOT NULL,"  //作为实际的消息独立标记
+            + "msg_hash TEXT UNIQUE,"  //作为实际的消息独立标记
             + "req_url TEXT NOT NULL,"
             + "req_method TEXT NOT NULL,"
             + "resp_status_code TEXT NOT NULL,"
@@ -31,7 +30,7 @@ public class ReqDataTable {
 
 
     //插入请求消息到数据库
-    public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex, String reqSource) {
+    public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgDataIndex, String reqSource) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ;"
@@ -48,18 +47,17 @@ public class ReqDataTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_id, msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)")
+                        "msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName);
 
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setInt(1, msgId);
-                    insertStmt.setString(2, msgInfo.getMsgHash());
-                    insertStmt.setString(3, msgInfo.getReqUrl());
-                    insertStmt.setString(4, msgInfo.getReqMethod());
-                    insertStmt.setInt(5, msgInfo.getRespStatusCode());
-                    insertStmt.setInt(6, msgDataIndex);
-                    insertStmt.setString(7, reqSource);
+                    insertStmt.setString(1, msgInfo.getMsgHash());
+                    insertStmt.setString(2, msgInfo.getReqUrl());
+                    insertStmt.setString(3, msgInfo.getReqMethod());
+                    insertStmt.setInt(4, msgInfo.getRespStatusCode());
+                    insertStmt.setInt(5, msgDataIndex);
+                    insertStmt.setString(6, reqSource);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值

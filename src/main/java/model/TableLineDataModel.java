@@ -2,7 +2,7 @@ package model;
 
 
 public class TableLineDataModel {
-    private Integer msgId;
+    private Integer id;
     private String msgHash;
     private String reqUrl;
     private String reqMethod;
@@ -18,10 +18,10 @@ public class TableLineDataModel {
     private Integer basicPathNum;
 
     // 构造函数
-    public TableLineDataModel(int msgId, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
+    public TableLineDataModel(int id, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
                               String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
                               int findApiNum, int pathToUrlNum, int unvisitedUrlNum, String runStatus, int basicPathNum) {
-        this.msgId = msgId;
+        this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
         this.reqMethod = reqMethod;
@@ -39,7 +39,7 @@ public class TableLineDataModel {
 
     public Object[] toRowDataArray() {
         return new Object[]{
-                this.getMsgId(),
+                this.getId(),
                 this.getMsgHash(),
                 this.getReqUrl(),
                 this.getReqMethod(),
@@ -56,8 +56,8 @@ public class TableLineDataModel {
         };
     }
 
-    public Integer getMsgId() {
-        return msgId;
+    public Integer getId() {
+        return id;
     }
 
     public String getMsgHash() {

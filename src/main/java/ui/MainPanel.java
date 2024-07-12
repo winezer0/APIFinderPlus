@@ -116,7 +116,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private void initDataTableUI() {
         // 数据展示面板
         model = new DefaultTableModel(new Object[]{
-                "msg_id",
+                "id",
                 "msg_hash",
                 "req_url",
                 "req_method",

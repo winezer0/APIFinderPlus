@@ -8,14 +8,7 @@ public class Constants {
     public static final String ANALYSE_SKIP = "无需解析";
 
 
-    //msg data 使用
-    public static final String REQ_URL = "REQ_URL";
     public static final String MSG_HASH = "MSG_HASH";
-    public static final String REQ_BYTES = "REQ_BYTES";
-    public static final String RESP_BYTES = "RESP_BYTES";
-
-    //AnalyseDataTable 使用
-    public static final String FIND_PATH = "FIND_PATH";
 
     //RecordUrlsTable使用
     public static final String SPLIT_SYMBOL = "<->";

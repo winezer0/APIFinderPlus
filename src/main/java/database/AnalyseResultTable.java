@@ -21,7 +21,7 @@ public class AnalyseResultTable {
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + " msg_hash TEXT,\n"  //请求Hash信息
+            + " msg_hash TEXT UNIQUE,\n"  //请求Hash信息
             + " req_url TEXT NOT NULL,\n"  //请求URL
             + " req_host_port TEXT NOT NULL,\n"  //请求HOST PORT
 
