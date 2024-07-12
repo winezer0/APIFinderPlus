@@ -95,7 +95,7 @@ public class DBService {
     }
 
     //获取一个数据库语句
-    public Connection getNewConnection() throws SQLException {
+    public Connection getNewConn() throws SQLException {
         //解决 [SQLITE_BUSY] The database file is locked (database is locked) 错误
         SQLiteConfig config = new SQLiteConfig();
         config.setBusyTimeout(1000); // 设置超时时间，单位是毫秒
@@ -122,8 +122,7 @@ public class DBService {
         // 用 DELETE 语句来清空表
         String deleteSql = "DELETE FROM tableName;"
                 .replace("tableName", tableName);
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
             stmt.executeUpdate();
             stdout_println(String.format("[-] table [%s] has been cleared.", tableName));
         } catch (Exception e) {

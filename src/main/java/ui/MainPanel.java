@@ -606,10 +606,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             //清空记录变量的内容
             IProxyScanner.urlScanRecordMap = new RecordHashMap();
-            ConfigPanel.lbSuccessCount.setText("0");
             ConfigPanel.lbRequestCount.setText("0");
-            ConfigPanel.jsCrawledCount.setText("0/0");
-            ConfigPanel.urlCrawledCount.setText("0/0");
+            ConfigPanel.lbTaskerCount.setText("0");
+            ConfigPanel.lbAnalysisEndCount.setText("0/0");
+//            ConfigPanel.jsCrawledCount.setText("0/0");
 
             //清空数据库内容
             if (clearAllTable) DBService.clearAllTableData(); else DBService.clearModelTableData();
@@ -685,9 +685,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * 定时刷新表数据
      */
     public void refreshTableModel(boolean checkAutoRefreshButtonStatus) {
-        //设置成功数量
-        int successCount = ReqDataTable.getReqDataCount();
-        ConfigPanel.lbSuccessCount.setText(String.valueOf(successCount));
+        //设置已加入数据库的数量
+        ConfigPanel.lbTaskerCount.setText(String.valueOf(ReqDataTable.getReqDataCountUnConditional()));
+        //设置成功分析的数量
+        ConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (checkAutoRefreshButtonStatus && ConfigPanel.getAutoRefreshButtonStatus()) {

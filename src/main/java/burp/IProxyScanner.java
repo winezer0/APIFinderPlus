@@ -12,6 +12,7 @@ import utils.PathTreeUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
@@ -21,7 +22,7 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
-    private int totalScanCount = 0; //记录所有经过插件的URL数量
+    private int totalRequestCount = 0;  //记录所有经过插件的请求数量
 
     private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
@@ -64,8 +65,8 @@ public class IProxyScanner implements IProxyListener {
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
             //记录并更新UI面板中的扫描计数
-            totalScanCount += 1;
-            ConfigPanel.lbRequestCount.setText(String.valueOf(totalScanCount));
+            totalRequestCount += 1;
+            ConfigPanel.lbRequestCount.setText(String.valueOf(totalRequestCount));
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);

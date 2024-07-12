@@ -45,7 +45,9 @@ public class AnalyseResultTable {
 
             + " basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
-            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'"
+            .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+
             + ");";
 
     /**
@@ -56,14 +58,13 @@ public class AnalyseResultTable {
      */
     public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResultModel analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
+        String selectSql = "SELECT id FROM tableName WHERE msg_hash = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt1 = conn.prepareStatement(selectSql)) {
             // 检查记录是否存在
-            checkStmt.setString(1, msgInfo.getMsgHash());
-            ResultSet rs = checkStmt.executeQuery();
+            stmt1.setString(1, msgInfo.getMsgHash());
+            ResultSet rs = stmt1.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
                 stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
@@ -75,37 +76,38 @@ public class AnalyseResultTable {
                         "find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName) ;
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, msgInfo.getMsgHash());
-                    insertStmt.setString(2, msgInfo.getUrlInfo().getReqUrl());
-                    insertStmt.setString(3, msgInfo.getUrlInfo().getReqHostPort());
 
-                    insertStmt.setString(4, CastUtils.toJson(analyseInfo.getUrlList()));
-                    insertStmt.setInt(5, analyseInfo.getUrlList().size());
+                try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+                    stmt2.setString(1, msgInfo.getMsgHash());
+                    stmt2.setString(2, msgInfo.getUrlInfo().getReqUrl());
+                    stmt2.setString(3, msgInfo.getUrlInfo().getReqHostPort());
 
-                    insertStmt.setString(6, CastUtils.toJson(analyseInfo.getPathList()));
-                    insertStmt.setInt(7, analyseInfo.getPathList().size());
+                    stmt2.setString(4, CastUtils.toJson(analyseInfo.getUrlList()));
+                    stmt2.setInt(5, analyseInfo.getUrlList().size());
 
-                    insertStmt.setString(8, CastUtils.toJson(analyseInfo.getInfoList()));
-                    insertStmt.setInt(9, analyseInfo.getInfoList().size());
+                    stmt2.setString(6, CastUtils.toJson(analyseInfo.getPathList()));
+                    stmt2.setInt(7, analyseInfo.getPathList().size());
 
-                    insertStmt.setString(10, CastUtils.toJson(analyseInfo.getApiList()));
-                    insertStmt.setInt(11, analyseInfo.getApiList().size());
+                    stmt2.setString(8, CastUtils.toJson(analyseInfo.getInfoList()));
+                    stmt2.setInt(9, analyseInfo.getInfoList().size());
 
-                    insertStmt.setString(12, CastUtils.toJson(analyseInfo.getUnvisitedUrl()));
-                    insertStmt.setInt(13, analyseInfo.getUnvisitedUrl().size());
+                    stmt2.setString(10, CastUtils.toJson(analyseInfo.getApiList()));
+                    stmt2.setInt(11, analyseInfo.getApiList().size());
+
+                    stmt2.setString(12, CastUtils.toJson(analyseInfo.getUnvisitedUrl()));
+                    stmt2.setInt(13, analyseInfo.getUnvisitedUrl().size());
 
                     //在这个响应中没有找到 PATH 数据,就修改状态为无需解析
                     if (analyseInfo.getPathList().size() > 0){
-                        insertStmt.setString(14, Constants.ANALYSE_WAIT);
+                        stmt2.setString(14, Constants.ANALYSE_WAIT);
                     } else {
-                        insertStmt.setString(14, Constants.ANALYSE_SKIP);
+                        stmt2.setString(14, Constants.ANALYSE_SKIP);
                     }
 
-                    insertStmt.executeUpdate();
+                    stmt2.executeUpdate();
 
                     // 获取生成的键值
-                    try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
+                    try (ResultSet generatedKeys = stmt2.getGeneratedKeys()) {
                         if (generatedKeys.next()) {
                             generatedId = generatedKeys.getInt(1); // 获取生成的ID
                         }
@@ -131,8 +133,7 @@ public class AnalyseResultTable {
         String selectSQL = ("SELECT * FROM tableName WHERE msg_hash = ?;")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -162,29 +163,28 @@ public class AnalyseResultTable {
         FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-        String selectSQL = ("SELECT * FROM tableName WHERE find_path_num > 0 and run_status = 'ANALYSE_WAIT' LIMIT 1;")
-                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+        String selectSQL = "SELECT * FROM tableName WHERE find_path_num > 0 and run_status = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
-        //更新状态
-        String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id = ?;"
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("tableName", tableName);
-
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_WAIT);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    int id = rs.getInt("id");
                     findPathModel =  new FindPathModel(
-                            rs.getInt("id"),
+                            id,
                             rs.getString("req_url"),
                             rs.getString("req_host_port"),
                             rs.getString("find_path")
                     );
 
                     //更新索引对应的数据
+                    String updateSQL = "UPDATE tableName SET run_status = ? WHERE id = ?;"
+                            .replace("tableName", tableName);
+
                     try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-                        updateStatement.setInt(1, rs.getInt("id"));
+                        updateStatement.setString(1, Constants.ANALYSE_ING);
+                        updateStatement.setInt(2, id);
                         updateStatement.executeUpdate();
                     }
                 }
@@ -206,8 +206,7 @@ public class AnalyseResultTable {
         String selectSQL = "SELECT id,path_to_url,unvisited_url,basic_path_num FROM tableName WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -237,13 +236,12 @@ public class AnalyseResultTable {
         String updateSQL = "UPDATE tableName SET basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
-            updateStatement.setInt(1, basicPathNum);
-            updateStatement.setInt(2, id);
+            stmt.setInt(1, basicPathNum);
+            stmt.setInt(2, id);
 
-            int affectedRows = updateStatement.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
                 generatedId = id;
             }
@@ -269,19 +267,18 @@ public class AnalyseResultTable {
                 "basic_path_num = ? WHERE id = ?;")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
-            updateStatement.setString(1, CastUtils.toJson(dynamicUrlModel.getPathToUrls()));
-            updateStatement.setInt(2, dynamicUrlModel.getPathToUrls().size());
+            stmt.setString(1, CastUtils.toJson(dynamicUrlModel.getPathToUrls()));
+            stmt.setInt(2, dynamicUrlModel.getPathToUrls().size());
 
-            updateStatement.setString(3, CastUtils.toJson(dynamicUrlModel.getUnvisitedUrls()));
-            updateStatement.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
+            stmt.setString(3, CastUtils.toJson(dynamicUrlModel.getUnvisitedUrls()));
+            stmt.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
 
-            updateStatement.setInt(5, dynamicUrlModel.getBasicPathNum());
-            updateStatement.setInt(6, dynamicUrlModel.getId());
+            stmt.setInt(5, dynamicUrlModel.getBasicPathNum());
+            stmt.setInt(6, dynamicUrlModel.getId());
 
-            int affectedRows = updateStatement.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
                 generatedId = dynamicUrlModel.getId();
             }
@@ -303,8 +300,7 @@ public class AnalyseResultTable {
         String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     UnVisitedUrlsModel jsonObj = new UnVisitedUrlsModel(
@@ -332,8 +328,7 @@ public class AnalyseResultTable {
         String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             stmt.setString(1, CastUtils.toJson(unVisitedUrlsModel.getUnvisitedUrls()));
             stmt.setInt(2, unVisitedUrlsModel.getUnvisitedUrls().size());
             stmt.setInt(3, unVisitedUrlsModel.getId());
@@ -353,8 +348,7 @@ public class AnalyseResultTable {
         String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             JSONArray emptyArray = new JSONArray();
             stmt.setString(1, emptyArray.toJSONString());
             stmt.setInt(2, emptyArray.size());

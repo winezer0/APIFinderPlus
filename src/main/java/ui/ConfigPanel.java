@@ -14,17 +14,18 @@ import java.time.LocalDateTime;
 import static utils.BurpPrintUtils.stderr_println;
 
 public class ConfigPanel extends JPanel {
-    public static JLabel lbRequestCount;
-    public static JLabel lbSuccessCount;
-    public static JLabel jsCrawledCount;
-    public static JLabel urlCrawledCount;
+    public static JLabel lbRequestCount;   //记录所有加入到URL的请求
+    public static JLabel lbTaskerCount;    //记录所有加入数据库的请求
+    public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
+
+    // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
     public static JToggleButton autoRefreshButton;
     public static JLabel autoRefreshText;
 
     public static JTextField searchField;
-    
+
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
     public ConfigPanel() {
@@ -56,7 +57,7 @@ public class ConfigPanel extends JPanel {
 
         //为 FilterPanel 设置布局
         GridBagLayout gbl_panel_1 = new GridBagLayout();
-        gbl_panel_1.columnWidths = new int[] { 0, 0, 0, 0, 0 };  //设置每列的初始宽度为0 指示布局管理器根据组件实际大小和其他约束来计算宽度。
+        gbl_panel_1.columnWidths = new int[] { 0, 0, 0, 0, 0 };//设置每列的初始宽度为0 指示布局管理器根据组件实际大小和其他约束来计算宽度。
         gbl_panel_1.rowHeights = new int[] { 0, 0 };  //设置每行的初始高度为0，指按需计算行高。
 
         // 指定每列的扩展权重。这里前9列的权重都设为0.0，意味着这些列不会随容器大小变化而扩展，
@@ -90,66 +91,66 @@ public class ConfigPanel extends JPanel {
         lbRequestCount.setForeground(new Color(0,0,255));
         GridBagConstraints gbc_lbRequestCount = new GridBagConstraints();
         gbc_lbRequestCount.insets = new Insets(0, 0, 0, 5);
-        gbc_lbRequest.fill = GridBagConstraints.HORIZONTAL;
-        gbc_lbRequest.weightx = 0.0;
+        gbc_lbRequestCount.fill = GridBagConstraints.HORIZONTAL;
+        gbc_lbRequestCount.weightx = 0.0;
         gbc_lbRequestCount.gridx = 1;
         gbc_lbRequestCount.gridy = 0;
         FilterPanel.add(lbRequestCount, gbc_lbRequestCount);
 
         // 转发成功url数，默认0
-        JLabel lbSucces = new JLabel("Success Domain:");
-        GridBagConstraints gbc_lbSucces = new GridBagConstraints();
-        gbc_lbSucces.insets = new Insets(0, 0, 0, 5);
-        gbc_lbSucces.fill = 0;
-        gbc_lbSucces.gridx = 2;
-        gbc_lbSucces.gridy = 0;
-        FilterPanel.add(lbSucces, gbc_lbSucces);
+        JLabel lbTasker = new JLabel("Tasker Total:");
+        GridBagConstraints gbc_lbTasker = new GridBagConstraints();
+        gbc_lbTasker.insets = new Insets(0, 0, 0, 5);
+        gbc_lbTasker.fill = 0;
+        gbc_lbTasker.gridx = 2;
+        gbc_lbTasker.gridy = 0;
+        FilterPanel.add(lbTasker, gbc_lbTasker);
 
-        lbSuccessCount = new JLabel("0");
-        lbSuccessCount.setForeground(new Color(0, 255, 0));
-        GridBagConstraints gbc_lbSuccessCount = new GridBagConstraints();
-        gbc_lbSuccessCount.insets = new Insets(0, 0, 0, 5);
-        gbc_lbSuccessCount.fill = 0;
-        gbc_lbSuccessCount.gridx = 3;
-        gbc_lbSuccessCount.gridy = 0;
-        FilterPanel.add(lbSuccessCount, gbc_lbSuccessCount);
+        lbTaskerCount = new JLabel("0");
+        lbTaskerCount.setForeground(new Color(0, 255, 0));
+        GridBagConstraints gbc_lbTaskerCount = new GridBagConstraints();
+        gbc_lbTaskerCount.insets = new Insets(0, 0, 0, 5);
+        gbc_lbTaskerCount.fill = 0;
+        gbc_lbTaskerCount.gridx = 3;
+        gbc_lbTaskerCount.gridy = 0;
+        FilterPanel.add(lbTaskerCount, gbc_lbTaskerCount);
 
-        // 爬取JS的数量
-        JLabel urlCrawled = new JLabel("Analyze Url:");
-        GridBagConstraints gbc_urlCrawled = new GridBagConstraints();
-        gbc_urlCrawled.insets = new Insets(0, 0, 0, 5);
-        gbc_urlCrawled.fill = 0;
-        gbc_urlCrawled.gridx = 4;
-        gbc_urlCrawled.gridy = 0;
-        FilterPanel.add(urlCrawled, gbc_urlCrawled);
+        // 分析URL的数量
+        JLabel lbAnalysisEnd = new JLabel("Analysis End:");
+        GridBagConstraints gbc_lbAnalysisEnd = new GridBagConstraints();
+        gbc_lbAnalysisEnd.insets = new Insets(0, 0, 0, 5);
+        gbc_lbAnalysisEnd.fill = 0;
+        gbc_lbAnalysisEnd.gridx = 4;
+        gbc_lbAnalysisEnd.gridy = 0;
+        FilterPanel.add(lbAnalysisEnd, gbc_lbAnalysisEnd);
 
-        urlCrawledCount = new JLabel("0/0");
-        urlCrawledCount.setForeground(new Color(0, 0, 255)); // 蓝色
-        GridBagConstraints gbc_urlCrawledCount = new GridBagConstraints();
-        gbc_urlCrawledCount.insets = new Insets(0, 0, 0, 5);
-        gbc_urlCrawledCount.fill = 0;
-        gbc_urlCrawledCount.gridx = 5;
-        gbc_urlCrawledCount.gridy = 0;
-        FilterPanel.add(urlCrawledCount, gbc_urlCrawledCount);
+        lbAnalysisEndCount = new JLabel("0");
+        lbAnalysisEndCount.setForeground(new Color(0, 0, 255)); // 蓝色
+        GridBagConstraints gbc_lbAnalysisEndCount = new GridBagConstraints();
+        gbc_lbAnalysisEndCount.insets = new Insets(0, 0, 0, 5);
+        gbc_lbAnalysisEndCount.fill = 0;
+        gbc_lbAnalysisEndCount.gridx = 5;
+        gbc_lbAnalysisEndCount.gridy = 0;
+        FilterPanel.add(lbAnalysisEndCount, gbc_lbAnalysisEndCount);
 
 
-        // 爬取JS的数量
-        JLabel jsCrawled = new JLabel("Crawled JS:");
-        GridBagConstraints gbc_jsCrawled = new GridBagConstraints();
-        gbc_jsCrawled.insets = new Insets(0, 0, 0, 5);
-        gbc_jsCrawled.fill = 0;
-        gbc_jsCrawled.gridx = 6;
-        gbc_jsCrawled.gridy = 0;
-        FilterPanel.add(jsCrawled, gbc_jsCrawled);
-
-        jsCrawledCount = new JLabel("0/0");
-        jsCrawledCount.setForeground(new Color(0, 0, 255)); // 蓝色
-        GridBagConstraints gbc_jsCrawledCount = new GridBagConstraints();
-        gbc_jsCrawledCount.insets = new Insets(0, 0, 0, 5);
-        gbc_jsCrawledCount.fill = 0;
-        gbc_jsCrawledCount.gridx = 7;
-        gbc_jsCrawledCount.gridy = 0;
-        FilterPanel.add(jsCrawledCount, gbc_jsCrawledCount);
+//        // 爬取JS的数量
+//        JLabel jsCrawled = new JLabel("Crawled JS:");
+//        GridBagConstraints gbc_jsCrawled = new GridBagConstraints();
+//        gbc_jsCrawled.insets = new Insets(0, 0, 0, 5);
+//        gbc_jsCrawled.fill = 0;
+//        gbc_jsCrawled.gridx = 6;
+//        gbc_jsCrawled.gridy = 0;
+//        FilterPanel.add(jsCrawled, gbc_jsCrawled);
+//
+//        jsCrawledCount = new JLabel("0/0");
+//        jsCrawledCount.setForeground(new Color(0, 0, 255)); // 蓝色
+//        GridBagConstraints gbc_jsCrawledCount = new GridBagConstraints();
+//        gbc_jsCrawledCount.insets = new Insets(0, 0, 0, 5);
+//        gbc_jsCrawledCount.fill = 0;
+//        gbc_jsCrawledCount.gridx = 7;
+//        gbc_jsCrawledCount.gridy = 0;
+//        FilterPanel.add(jsCrawledCount, gbc_jsCrawledCount);
 
         // 添加填充以在左侧占位
         Component horizontalBlank = Box.createHorizontalGlue(); //创建一个水平组件
@@ -248,6 +249,17 @@ public class ConfigPanel extends JPanel {
         gbc_btnSearch.gridy = 0;
         FilterPanel.add(searchButton, gbc_btnSearch);
 
+        // 功能按钮
+        JButton moreButton = new JButton();
+        moreButton.setToolTipText("更多功能 ");
+        moreButton.setIcon(UiUtils.getImageIcon("/icon/moreButton.png", 17, 17));
+        GridBagConstraints gbc_btnMore = new GridBagConstraints();
+        gbc_btnMore.insets = new Insets(0, 0, 0, 5);
+        gbc_btnMore.fill = 0;
+        gbc_btnMore.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnMore.gridy = 0;
+        FilterPanel.add(moreButton, gbc_btnMore);
+
         // 功能按钮 弹出选项
         JPopupMenu moreMenu = new JPopupMenu("功能");
 
@@ -262,17 +274,6 @@ public class ConfigPanel extends JPanel {
         JMenuItem clearAllTableData = new JMenuItem("清除所有数据");
         clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearAllTableData);
-
-        // 功能按钮
-        JButton moreButton = new JButton();
-        moreButton.setToolTipText("更多功能 ");
-        moreButton.setIcon(UiUtils.getImageIcon("/icon/moreButton.png", 17, 17));
-        GridBagConstraints gbc_btnMore = new GridBagConstraints();
-        gbc_btnMore.insets = new Insets(0, 0, 0, 5);
-        gbc_btnMore.fill = 0;
-        gbc_btnMore.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
-        gbc_btnMore.gridy = 0;
-        FilterPanel.add(moreButton, gbc_btnMore);
 
         // 自动刷新按钮监听事件
         autoRefreshButton.addActionListener(new ActionListener() {
@@ -296,7 +297,6 @@ public class ConfigPanel extends JPanel {
                 MainPanel.getInstance().refreshUnVisitedUrlsAndTableModel(false, true);
             }
         });
-
 
         // 快速选择框的监听事件
         choicesComboBox.addActionListener(new ActionListener() {
@@ -327,7 +327,6 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-
         //搜索框的回车事件
         searchField.addActionListener(new ActionListener() {
             @Override
@@ -338,7 +337,6 @@ public class ConfigPanel extends JPanel {
                 setAutoRefreshButtonFalse();
             }
         });
-
 
         // 点击”功能“的监听事件
         moreButton.addMouseListener(new MouseAdapter() {
@@ -377,12 +375,10 @@ public class ConfigPanel extends JPanel {
         });
  }
 
-
     public static void setAutoRefreshButtonTrue(){
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
     }
-
 
     public static void setAutoRefreshButtonFalse(){
         autoRefreshButton.setSelected(true);

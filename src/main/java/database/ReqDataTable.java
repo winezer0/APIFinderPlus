@@ -36,8 +36,7 @@ public class ReqDataTable {
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
             checkStmt.setString(1, msgInfo.getMsgHash());
             ResultSet rs = checkStmt.executeQuery();
@@ -83,14 +82,12 @@ public class ReqDataTable {
         int msgDataIndex = -1;
 
         // 首先选取一条记录的 msg_data_index
-        String selectSQL = "SELECT msg_data_index FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
-                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+        String selectSQL = "SELECT msg_data_index FROM tableName WHERE run_status = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
-
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
-            ResultSet rs = selectStatement.executeQuery();
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_WAIT );
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 int selectedMsgDataIndex = rs.getInt("msg_data_index");
 
@@ -99,13 +96,13 @@ public class ReqDataTable {
                     return selectedMsgDataIndex;
 
                 //更新索引对应的数据
-                String updateSQL = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE msg_data_index = ?;"
-                        .replace("ANALYSE_ING", Constants.ANALYSE_ING)
+                String updateSQL = "UPDATE tableName SET run_status = ? WHERE msg_data_index = ?;"
                         .replace("tableName", tableName);
 
-                try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-                    updateStatement.setInt(1, selectedMsgDataIndex);
-                    int affectedRows = updateStatement.executeUpdate();
+                try (PreparedStatement stmt2 = conn.prepareStatement(updateSQL)) {
+                    stmt2.setString(1, Constants.ANALYSE_ING);
+                    stmt2.setInt(2, selectedMsgDataIndex);
+                    int affectedRows = stmt2.executeUpdate();
                     if (affectedRows > 0) {
                         msgDataIndex = selectedMsgDataIndex;
                     }
@@ -119,16 +116,41 @@ public class ReqDataTable {
     }
 
 
-    public static synchronized int getReqDataCount() {
+    /**
+     * 统计所有已经识别完成的URL的数量
+     * @return
+     */
+    public static synchronized int getReqDataCountWhereStatusIsEnd() {
         int count = 0;
 
-        String selectSQL = "SELECT COUNT(*) FROM table WHERE run_status != 'ANALYSE_WAIT'"
-                .replace("table",tableName)
-                .replace("ANALYSE_WAIT",Constants.ANALYSE_WAIT);
+        String selectSQL = "SELECT COUNT(*) FROM tableName WHERE run_status != ?;"
+                .replace("tableName",tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement selectStatement = conn.prepareStatement(selectSQL);
-             ResultSet rs = selectStatement.executeQuery()) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)){
+            stmt.setString(1, Constants.ANALYSE_WAIT);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("Counts Table [%s] Error: %s",tableName, e.getMessage() ));
+        }
+        return count;
+    }
+
+
+    /**
+     * 统计所有已加入到数据库的URL的数量
+     * @return
+     */
+    public static synchronized int getReqDataCountUnConditional() {
+        int count = 0;
+
+        String selectSQL = "SELECT COUNT(*) FROM tableName;"
+                .replace("tableName",tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);
+             ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
@@ -140,6 +162,7 @@ public class ReqDataTable {
     }
 
 
+
     //获取没有数据的行,备用,用于后续删除数据
     public static synchronized int deleteReqDataById(int id) {
         int rowsAffected = -1;
@@ -148,8 +171,7 @@ public class ReqDataTable {
         String deleteSQL = ("DELETE FROM tableName WHERE id = ?;")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             stmt.setInt(1, id);
             rowsAffected = stmt.executeUpdate();
         } catch (Exception e) {

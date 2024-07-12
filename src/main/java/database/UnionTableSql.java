@@ -17,14 +17,14 @@ public class UnionTableSql {
 
         // 首先选取一条记录的ID 状态是已经分析完毕,并且 当前 PathTree 的 基本路径数量 大于 生成分析数据时的 基本路径数量
         String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
-                "From table1 A LEFT JOIN table2 B ON A.req_host_port = B.req_host_port " +
-                "WHERE A.run_status = 'ANALYSE_ING' AND B.basic_path_num > A.basic_path_num Limit 1;")
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("table1", AnalyseResultTable.tableName)
-                .replace("table2", PathTreeTable.tableName);
+                "From tableName1 A LEFT JOIN tableName2 B ON A.req_host_port = B.req_host_port " +
+                "WHERE A.run_status = ? AND B.basic_path_num > A.basic_path_num Limit 1;")
+                .replace("tableName1", AnalyseResultTable.tableName)
+                .replace("tableName2", PathTreeTable.tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_ING);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     pathData = new FindPathModel(
@@ -46,8 +46,7 @@ public class UnionTableSql {
     public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataBySQl(String selectSQL){
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     TableLineDataModel apiDataModel = new TableLineDataModel(
@@ -78,9 +77,9 @@ public class UnionTableSql {
     private static String genSqlByWhereCondition(String WhereCondition){
         String selectSQL = ("SELECT A.id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
                 "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
-                "from table1 A LEFT JOIN table2 B ON A.msg_hash = B.msg_hash $WHERE$ order by A.id;")
-                .replace("table1", ReqDataTable.tableName)
-                .replace("table2", AnalyseResultTable.tableName);
+                "from tableName1 A LEFT JOIN tableName2 B ON A.msg_hash = B.msg_hash $WHERE$ order by A.id;")
+                .replace("tableName1", ReqDataTable.tableName)
+                .replace("tableName2", AnalyseResultTable.tableName);
 
         if (WhereCondition == null) WhereCondition="";
 
@@ -131,14 +130,13 @@ public class UnionTableSql {
 
         // 获取当前所有记录的数据
         String deleteSQL = ("DELETE FROM table1 WHERE id IN (" +
-                "SELECT A.id FROM table1 A LEFT JOIN table2 B ON A.msg_hash=B.msg_hash " +
+                "SELECT A.id FROM tableName1 A LEFT JOIN tableName2 B ON A.msg_hash=B.msg_hash " +
                 "WHERE (find_url_num IS NULL AND find_path_num IS NULL AND find_info_num IS NULL) " +
                 "OR (find_url_num < 1 AND find_path_num < 1 AND find_info_num < 1));")
-                .replace("table1", ReqDataTable.tableName)
-                .replace("table2", AnalyseResultTable.tableName);
+                .replace("tableName1", ReqDataTable.tableName)
+                .replace("tableName2", AnalyseResultTable.tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             rowsAffected = stmt.executeUpdate();
             stdout_println(String.format(String.format("[-] table [%s] cleared Useless Data [%s] line.", ReqDataTable.tableName, rowsAffected)));
         } catch (Exception e) {

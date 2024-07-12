@@ -41,8 +41,7 @@ public class PathTreeTable {
         String updateSQL = "UPDATE tableName SET path_tree = ?, basic_path_num = ? WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setString(1, reqHost);
 
             ResultSet rs = checkStmt.executeQuery();
@@ -104,14 +103,13 @@ public class PathTreeTable {
         PathTreeModel pathTreeModel= null;
 
         //查询
-        String checkSql = "SELECT path_tree, basic_path_num FROM tableName WHERE req_host_port = ? LIMIT 1;"
+        String selectSql = "SELECT path_tree, basic_path_num FROM tableName WHERE req_host_port = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-            checkStmt.setString(1, reqHost);
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+            stmt.setString(1, reqHost);
 
-            ResultSet rs = checkStmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 pathTreeModel = new PathTreeModel(
                         rs.getInt("basic_path_num"),

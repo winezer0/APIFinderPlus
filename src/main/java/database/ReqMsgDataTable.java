@@ -30,11 +30,10 @@ public class ReqMsgDataTable {
         String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? "
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
-            checkStmt.setString(1, msgInfo.getMsgHash());
-            ResultSet rs = checkStmt.executeQuery();
+            stmt.setString(1, msgInfo.getMsgHash());
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
                 // stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
@@ -76,8 +75,7 @@ public class ReqMsgDataTable {
         String sql = "SELECT * FROM tableName WHERE id = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, msgDataIndex);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -106,8 +104,7 @@ public class ReqMsgDataTable {
         String sql = "SELECT * FROM tableName WHERE msg_hash = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

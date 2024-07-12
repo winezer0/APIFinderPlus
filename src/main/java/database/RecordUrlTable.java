@@ -40,16 +40,15 @@ public class RecordUrlTable {
                 + "ON CONFLICT(req_url) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement upsertStmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
 
-            upsertStmt.setString(1, reqUrl);
-            upsertStmt.setString(2, reqHostPort);
-            upsertStmt.setInt(3, respStatusCode);
+            stmt.setString(1, reqUrl);
+            stmt.setString(2, reqHostPort);
+            stmt.setInt(3, respStatusCode);
 
-            upsertStmt.executeUpdate();
+            stmt.executeUpdate();
 
-            try (ResultSet generatedKeys = upsertStmt.getGeneratedKeys()) {
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     generatedId = generatedKeys.getInt(1);
                 }
@@ -69,8 +68,7 @@ public class RecordUrlTable {
         String selectSql = "SELECT req_url FROM tableName WHERE req_host_port = ?;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
             // 获取所有的URL
             stmt.setString(1, reqHostPort);
             ResultSet rs = stmt.executeQuery();
@@ -93,8 +91,7 @@ public class RecordUrlTable {
         String selectSql = "SELECT req_url FROM tableName;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
             // 获取所有的URL
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {

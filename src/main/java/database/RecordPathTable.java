@@ -23,7 +23,9 @@ public class RecordPathTable {
             + " req_path_dir TEXT NOT NULL,\n"
             + " resp_status_code TEXT NOT NULL, \n"
 
-            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'"
+            .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+
             + ");";
 
 
@@ -47,18 +49,17 @@ public class RecordPathTable {
 
     public static synchronized int insertOrUpdateSuccessUrl(String reqProto, String reqHostPort, String reqPathDir, int respStatusCode) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = ("SELECT id FROM tableName WHERE req_proto = ? AND req_host_port = ? AND req_path_dir = ? AND resp_status_code = ?")
+        String selectSql = ("SELECT id FROM tableName WHERE req_proto = ? AND req_host_port = ? AND req_path_dir = ? AND resp_status_code = ?")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
             // 检查记录是否存在
-            checkStmt.setString(1, reqProto);
-            checkStmt.setString(2, reqHostPort);
-            checkStmt.setString(3, reqPathDir);
-            checkStmt.setInt(4, respStatusCode);
+            stmt.setString(1, reqProto);
+            stmt.setString(2, reqHostPort);
+            stmt.setString(3, reqPathDir);
+            stmt.setInt(4, respStatusCode);
 
-            ResultSet rs = checkStmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
                 // stdout_println(LOG_DEBUG, String.format("[*] Ignore Update %s ->  %s %s %s %s", tableName, reqProto, reqHostPort, reqPathDir, respStatusCode));
@@ -96,13 +97,12 @@ public class RecordPathTable {
         // 考虑开启事务
         int dataIndex = -1;
 
-        String selectSQL = "SELECT id FROM tableName WHERE run_status = 'ANALYSE_WAIT' LIMIT 1;"
-                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+        String selectSQL = "SELECT id FROM tableName WHERE run_status = ? LIMIT 1;"
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement selectStatement = conn.prepareStatement(selectSQL)) {
-            ResultSet rs = selectStatement.executeQuery();
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_WAIT);
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 dataIndex = rs.getInt("id");
             }
@@ -120,32 +120,26 @@ public class RecordPathTable {
         JSONArray jsonArray = new JSONArray();
 
         //1、标记需要处理的数据 更新状态为解析中
-        String updateMarkSQL1 = "UPDATE tableName SET run_status = 'ANALYSE_ING' WHERE id in (SELECT id FROM tableName WHERE run_status = 'ANALYSE_WAIT');"
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+        String updateMarkSQL1 = ("UPDATE tableName SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);")
                 .replace("tableName", tableName);
 
-        //2、获取 解析中 状态的 Host、数据、ID列表
-        String selectSQL = "SELECT req_host_port, GROUP_CONCAT(req_path_dir, 'SPLIT_SYMBOL') AS req_path_dirs FROM tableName WHERE run_status == 'ANALYSE_ING' GROUP BY req_host_port;"
-                .replace("SPLIT_SYMBOL", Constants.SPLIT_SYMBOL)
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("tableName", tableName);
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement Stmt1 = conn.prepareStatement(updateMarkSQL1);){
+            Stmt1.setString(1, Constants.ANALYSE_ING);
+            Stmt1.setString(2, Constants.ANALYSE_WAIT);
 
-        //3、更新 解析中 对应的状态为解析完成
-        String updateMarkSQL2 = "UPDATE tableName SET run_status = 'ANALYSE_END' WHERE id in (SELECT id FROM tableName WHERE run_status = 'ANALYSE_ING');"
-                .replace("ANALYSE_END", Constants.ANALYSE_END)
-                .replace("ANALYSE_ING", Constants.ANALYSE_ING)
-                .replace("tableName", tableName);
-
-        try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement updateMarkSQL1Stmt = conn.prepareStatement(updateMarkSQL1);){
-            int affectedRows = updateMarkSQL1Stmt.executeUpdate();
+            int affectedRows = Stmt1.executeUpdate();
             if (affectedRows > 0) {
-                //存在需要更新的数据
-                try (PreparedStatement selectStatement = conn.prepareStatement(selectSQL)){
-                    //获取查询数据
-                    ResultSet rs = selectStatement.executeQuery();
+                //2、获取 解析中 状态的 Host、数据、ID列表
+                String selectSQL = ("SELECT req_host_port, GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
+                        "FROM tableName WHERE run_status == ? GROUP BY req_host_port;")
+                        .replace("tableName", tableName);
 
+                try (PreparedStatement stmt2 = conn.prepareStatement(selectSQL)){
+                    stmt2.setString(1, Constants.SPLIT_SYMBOL);
+                    stmt2.setString(2, Constants.ANALYSE_ING);
+
+                    //获取查询数据
+                    ResultSet rs = stmt2.executeQuery();
                     while (rs.next()) {
                         // 从结果集中获取每一列的值 将数据存储到Map中
                         JSONObject jsonObject = new JSONObject();
@@ -154,8 +148,14 @@ public class RecordPathTable {
                         jsonArray.add(jsonObject);
                     }
 
-                    //更新查询状态
+                    //3、更新 解析中 对应的状态为解析完成
+                    String updateMarkSQL2 = "UPDATE tableName SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);"
+                            .replace("tableName", tableName);
+
                     try (PreparedStatement updateMarkSQL2Stmt = conn.prepareStatement(updateMarkSQL2)){
+                        updateMarkSQL2Stmt.setString(1, Constants.ANALYSE_END);
+                        updateMarkSQL2Stmt.setString(2, Constants.ANALYSE_ING);
+
                         updateMarkSQL2Stmt.executeUpdate();
                     }
                 }
