@@ -68,7 +68,6 @@ public class IProxyScanner implements IProxyListener {
 
     @Override
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
-
         if (!messageIsRequest) {
             //记录并更新UI面板中的扫描计数
             totalScanCount += 1;
@@ -90,39 +89,13 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-//            //加载sitemap中已经访问过的URL到数据库中 针对每个主机需要执行一次
-//            executorService.submit(new Runnable() {
-//                @Override
-//                public void run() {
-//                    String reqPrefix = msgInfo.getUrlInfo().getReqPrefix();
-//                    String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-//                    //判断当前前缀开头的所有URL是否已经已经被记录到内存中
-//                    if (urlPathRecordMap.get(reqPrefix) <= 0){
-//                        urlPathRecordMap.add(reqPrefix);
-//                        //把当前前缀的URl + 999 状态码 作为标记,插入到数据库中, 如果已存在表示这个sitemap数据都已经加入成功
-//                        if (RecordUrlTable.insertOrUpdateAccessedUrl(reqPrefix, reqHostPort, 999) > 0)
-//                            BurpSitemapUtils.addSiteMapUrlsToDB(reqPrefix, false);
-//                    }
-//                }
-//            });
-
-            //记录请求记录到数据库中（仅记录正常有相应的请求）
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //记录请求记录到数据库中（记录所有请求）
-                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                }
-            });
-
             //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
                 stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
                 return;
             }
 
-            //保存网站相关的所有 PATH, 便于后续path反查的使用
-            //当响应状态 In [200 | 403 | 405] 说明路径存在 此时可以将URL存储已存在字典
+            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -165,12 +138,46 @@ public class IProxyScanner implements IProxyListener {
                         //放到后面,确保已经记录数据,不然会被过滤掉
                         urlScanRecordMap.add(msgInfo.getMsgHash());
                         stdout_println(LOG_DEBUG, String.format("[+] 成功添加URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
-                    }else {
-                        //stdout_println(LOG_DEBUG, String.format("[-] 已添加过URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
-                        return;
                     }
                 }
             });
+        } else {
+            //解析当前请求的信息
+            HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
+
+            //看URL识别是否报错  || 是否匹配黑名单域名
+            if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||
+                    msgInfo.getUrlInfo().getReqBaseUrl().equals("-") ||
+                    isContainOneKey(msgInfo.getUrlInfo().getReqHost(), CONF_BLACK_URL_HOSTS, false)
+            ) return;
+
+            //记录所有主动访问请求记录到数据库中
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //记录请求记录到数据库中（记录所有请求）
+                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                }
+            });
+
+/*
+            //加载sitemap中已经访问过的URL到数据库中 针对每个主机需要执行一次
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    String reqPrefix = msgInfo.getUrlInfo().getReqPrefix();
+                    String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
+                    //判断当前前缀开头的所有URL是否已经已经被记录到内存中
+                    if (urlPathRecordMap.get(reqPrefix) <= 0){
+                        urlPathRecordMap.add(reqPrefix);
+                        //把当前前缀的URl + 999 状态码 作为标记,插入到数据库中, 如果已存在表示这个sitemap数据都已经加入成功
+                        if (RecordUrlTable.insertOrUpdateAccessedUrl(reqPrefix, reqHostPort, 999) > 0)
+                            BurpSitemapUtils.addSiteMapUrlsToDB(reqPrefix, false);
+                    }
+                }
+            });
+*/
+
         }
     }
 
