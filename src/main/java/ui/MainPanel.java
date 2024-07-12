@@ -407,6 +407,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                 }
             }
+            //建议JVM清理内存
+            System.gc();
         }
     }
 
