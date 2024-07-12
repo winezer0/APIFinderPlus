@@ -35,43 +35,30 @@ public class RecordUrlTable {
 
     //插入访问的URl
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl,String reqHostPort, int respStatusCode) {
-        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName WHERE req_url = ? AND resp_status_code = ?;"
+        int generatedId = -1;
+        String upsertSql = ("INSERT INTO tableName (req_url, req_host_port, resp_status_code) "
+                + "VALUES (?, ?, ?) "
+                + "ON CONFLICT(req_url) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-            // 检查记录是否存在
-            checkStmt.setString(1, reqUrl);
-            checkStmt.setInt(2, respStatusCode);
+             PreparedStatement upsertStmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next()) {
-                // 记录存在，忽略操作
-                // stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, reqUrl, respStatusCode));
-                return 0;
-            } else {
-                // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (req_url,req_host_port,resp_status_code) VALUES (?, ?, ?);"
-                        .replace("tableName", tableName);
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, reqUrl);
-                    insertStmt.setString(2, reqHostPort); //便于查找对应的URl信息
-                    insertStmt.setInt(3, respStatusCode);
-                    insertStmt.executeUpdate();
+            upsertStmt.setString(1, reqUrl);
+            upsertStmt.setString(2, reqHostPort);
+            upsertStmt.setInt(3, respStatusCode);
 
-                    // 获取生成的键值
-                    try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
-                            generatedId = generatedKeys.getInt(1); // 获取生成的ID
-                        }
-                    }
+            upsertStmt.executeUpdate();
+
+            try (ResultSet generatedKeys = upsertStmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    generatedId = generatedKeys.getInt(1);
                 }
             }
-        } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] -> Error:[%s]", tableName, e.getMessage()));
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println(String.format("Error insert Or Update Accessed Url On table [%s] -> Error:[%s]", tableName, e.getMessage()));
         }
+
         return generatedId;
     }
 

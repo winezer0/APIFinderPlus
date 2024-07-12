@@ -95,6 +95,15 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
+            //更新所有有响应的主动访问请求URL记录到数据库中
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //记录请求记录到数据库中（记录所有请求）
+                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                }
+            });
+
             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
             executorService.submit(new Runnable() {
                 @Override
@@ -111,7 +120,7 @@ public class IProxyScanner implements IProxyListener {
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
             if(isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false) ||
-                    isContainOneKey(msgInfo.getUrlInfo().getReqPath(), CONF_BLACK_URL_PATH, false) ){
+                    isContainOneKey(msgInfo.getUrlInfo().getReqPath(), CONF_BLACK_URL_PATH, false)){
                 //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getReqUrl());
                 return;
             }
@@ -351,8 +360,9 @@ public class IProxyScanner implements IProxyListener {
                         dynamicUrlsModel.setBasicPathNum(currBasicPathNum);
 
                         int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModel(dynamicUrlsModel);
+/*
                         if (apiDataIndex > 0)
-                            stdout_println(LOG_INFO, String.format(
+                            stdout_println(LOG_DEBUG, String.format(
                                     "[+] PATH To URL存在新结果: \n" +
                                             "newAddUrls:[%s], currBasicPathNum:[%s]" +
                                             "rawPathToUrls:[%s] ,  newPathToUrls:[%s] " +
@@ -361,6 +371,7 @@ public class IProxyScanner implements IProxyListener {
                                     rawPathToUrls.size(), dynamicUrlsModel.getPathToUrls(),
                                     rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls()
                             ));
+*/
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
                         AnalyseResultTable.updateDynamicUrlsBasicNumById(id, currBasicPathNum);

@@ -116,7 +116,6 @@ public class ReqDataTable {
             }
         } catch (Exception e) {
             stderr_println(String.format("[-] Error fetch And Mark Req Data To Analysis: %s", e.getMessage()));
-            e.printStackTrace();
         }
 
         return msgDataIndex;
