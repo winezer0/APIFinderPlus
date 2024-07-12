@@ -15,10 +15,11 @@ public class RecordUrlTable {
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
-            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
-            + " req_host_port TEXT NOT NULL,\n"
-            + " req_url TEXT NOT NULL,\n"  //记录访问过的URL
-            + " resp_status_code TEXT NOT NULL\n" //记录访问过的URL状态
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
+            + "req_host_port TEXT NOT NULL,\n"
+            + "req_url TEXT NOT NULL,\n"  //记录访问过的URL
+            + "resp_status_code INTEGER,\n" //记录访问过的URL状态
+            + "UNIQUE (req_url) ON CONFLICT REPLACE\n" //添加唯一性约束，并指定在冲突时用REPLACE行为
             + ");";
 
 
@@ -75,11 +76,11 @@ public class RecordUrlTable {
     }
 
 
-    //获取所有访问过的URL
+    //基于host获取获取所有访问过的URL
     public static synchronized List<String> fetchAllAccessedUrls(String reqHostPort) {
         List<String> uniqueURLs = new ArrayList<>();
 
-        String selectSql = "SELECT DISTINCT req_url FROM tableName WHERE req_host_port = '?';"
+        String selectSql = "SELECT req_url FROM tableName WHERE req_host_port = '?';"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -103,7 +104,7 @@ public class RecordUrlTable {
     public static synchronized List<String> fetchAllAccessedUrls() {
         List<String> uniqueURLs = new ArrayList<>();
 
-        String selectSql = "SELECT DISTINCT req_url FROM tableName;"
+        String selectSql = "SELECT req_url FROM tableName;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
