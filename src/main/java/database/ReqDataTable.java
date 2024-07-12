@@ -34,7 +34,7 @@ public class ReqDataTable {
     public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgId, int msgDataIndex, String reqSource) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ?"
+        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -44,8 +44,7 @@ public class ReqDataTable {
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
-                return 0;
+                //stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +

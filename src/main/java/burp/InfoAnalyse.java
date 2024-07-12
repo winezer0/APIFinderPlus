@@ -38,7 +38,7 @@ public class InfoAnalyse {
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
         findInfoList = CastUtils.deduplicateJsonList(findInfoList); //去重提取结果
-        stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", reqUrl, findInfoList.size()));
+        //stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", reqUrl, findInfoList.size()));
 
         //2、实现响应中的 URL 和 PATH 提取
         Set<String> findUriSet = findUriInfoByRegular(msgInfo);
@@ -263,7 +263,7 @@ public class InfoAnalyse {
         if (isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getRespInfo().getInferredMimeType().contains("script")) {
             Set<String> extractUri = extractUriFromJs(respBody);
-            stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUri.size()));
+            //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUri.size()));
             allUriSet.addAll(extractUri);
         }
         return allUriSet;

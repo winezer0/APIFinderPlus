@@ -113,7 +113,7 @@ public class IProxyScanner implements IProxyListener {
                             && !msgInfo.getUrlInfo().getReqPath().equals("/")){
                         RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
                         urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
-                        stdout_println(LOG_INFO, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getRespStatusCode()));
+                        //stdout_println(LOG_DEBUG, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getRespStatusCode()));
                     }
                 }
             });
@@ -146,7 +146,6 @@ public class IProxyScanner implements IProxyListener {
 
                         //放到后面,确保已经记录数据,不然会被过滤掉
                         urlScanRecordMap.add(msgInfo.getMsgHash());
-                        stdout_println(LOG_DEBUG, String.format("[+] 成功添加URL: %s -> %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
                     }
                 }
             });
@@ -166,6 +165,9 @@ public class IProxyScanner implements IProxyListener {
                 public void run() {
                     //记录请求记录到数据库中（记录所有请求）
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                    //Todo:解决记录URL和访问URL不一致的问题
+                    // 显示URL  https://www.am-liaotian.com/chat/chatClient/chatbox.jsp?companyID=8994&configID=15&k=1
+                    // 记录URL  https://www.am-liaotian.com:443/chat/chatClient/chatbox.jsp?companyID=8994&configID=15&k=1
                 }
             });
 

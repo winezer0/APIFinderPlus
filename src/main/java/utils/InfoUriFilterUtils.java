@@ -77,7 +77,7 @@ public class InfoUriFilterUtils {
                 if (!ElementUtils.isContainOneKey(host, blackHosts, false)) {
                     list.add(urlStr);
                 }else {
-                    stdout_println(LOG_DEBUG, String.format("[*] Black Hosts Filter %s", urlStr));
+                    //stdout_println(LOG_DEBUG, String.format("[*] Black Hosts Filter: %s", urlStr));
                 }
             } catch (MalformedURLException e) {
                 stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
