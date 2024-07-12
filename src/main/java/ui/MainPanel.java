@@ -587,16 +587,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             // 获取所有 已经被访问过得URL列表
             List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
             // 遍历 unVisitedUrlsModels 进行更新
-            for (UnVisitedUrlsModel unVisitedUrlsModel : unVisitedUrlsModels) {
+            for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
                 //更新 unVisitedUrls 对象
-                List<String> rawUnVisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+                List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
                 List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
+
                 //过滤黑名单中的URL 因为黑名单是不定时更新的
-                newUnVisitedUrls = AnalyseInfo.filterFindUrls(null, newUnVisitedUrls, BurpExtender.onlyScopeDomain);
-                unVisitedUrlsModel.setUnvisitedUrls(newUnVisitedUrls);
+                newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getReqUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
+                urlsModel.setUnvisitedUrls(newUnVisitedUrls);
+
                 // 执行更新插入数据操作
                 try {
-                    AnalyseResultTable.updateUnVisitedUrlsById(unVisitedUrlsModel);
+                    AnalyseResultTable.updateUnVisitedUrlsById(urlsModel);
                 } catch (Exception ex){
                     stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                 }

@@ -300,7 +300,7 @@ public class AnalyseResultTable {
     public static synchronized List<UnVisitedUrlsModel> fetchAllUnVisitedUrls( ){
         List<UnVisitedUrlsModel> list = new ArrayList<>();
 
-        String selectSQL = ("SELECT id, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
+        String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConnection();
@@ -309,6 +309,7 @@ public class AnalyseResultTable {
                 while (rs.next()) {
                     UnVisitedUrlsModel jsonObj = new UnVisitedUrlsModel(
                             rs.getInt("id"),
+                            rs.getString("req_url"),
                             rs.getString("unvisited_url")
                     );
                     list.add(jsonObj);
