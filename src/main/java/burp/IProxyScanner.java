@@ -18,7 +18,6 @@ import static burp.BurpExtender.*;
 import static database.PathTreeTable.fetchPathTreeByReqHostPort;
 import static database.PathTreeTable.insertOrUpdatePathTree;
 import static database.RecordPathTable.fetchAllNotAddToTreeRecords;
-import static utilbox.UrlUtils.getBaseUrlNoDefaultPort;
 import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
@@ -326,7 +325,7 @@ public class IProxyScanner implements IProxyListener {
             {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
-                String reqBaseUrl = getBaseUrlNoDefaultPort(reqUrl);
+                String reqBaseUrl = new HttpUrlInfo(reqUrl).getReqBaseUrl();
 
                 for (Object findPath: findPathArray){
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);
