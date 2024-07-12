@@ -104,7 +104,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchAllTableLineData();
+                ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchTableLineDataAll();
                 //将数据赋值给表模型
                 UiUtils.populateModelFromJsonArray(model, allReqAnalyseData);
             }
@@ -486,7 +486,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 model.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<TableLineDataModel> apiDataModels = UnionTableSql.fetchAllTableLineData();
+                ArrayList<TableLineDataModel> apiDataModels = UnionTableSql.fetchTableLineDataAll();
 
                 // 遍历apiDataModelMap
                 for (TableLineDataModel apiDataModel : apiDataModels) {
