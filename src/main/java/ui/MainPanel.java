@@ -376,6 +376,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     } catch (Exception ep){
                         stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
                     }
+
+                    //建议JVM清理内存
+                    System.gc();
                 }
 
             }
@@ -407,8 +410,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                 }
             }
-            //建议JVM清理内存
-            System.gc();
         }
     }
 
