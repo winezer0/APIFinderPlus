@@ -11,7 +11,7 @@ public class PathTreeModel {
         this.pathTree = JSONObject.parse(pathTree);
     }
 
-    public PathTreeModel(int basicPathNum,JSONObject pathTree) {
+    public PathTreeModel(int basicPathNum, JSONObject pathTree) {
         this.basicPathNum = basicPathNum;
         this.pathTree = pathTree;
     }

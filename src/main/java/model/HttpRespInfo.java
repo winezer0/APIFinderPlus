@@ -19,7 +19,7 @@ public class HttpRespInfo {
 
     HttpRespInfo(byte[] responseBytes) {
         if (responseBytes == null || responseBytes.length <= 0){
-            //System.out.println("Warning: That response body is empty !!!");
+            // Warning: That response body is empty !!!
             return;
         }
 

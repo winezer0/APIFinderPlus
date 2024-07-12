@@ -170,9 +170,8 @@ public class AnalyseResultTable {
             stmt.setString(1, Constants.ANALYSE_WAIT);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int id = rs.getInt("id");
                     findPathModel =  new FindPathModel(
-                            id,
+                            rs.getInt("id"),
                             rs.getString("req_url"),
                             rs.getString("req_host_port"),
                             rs.getString("find_path")
@@ -184,7 +183,7 @@ public class AnalyseResultTable {
 
                     try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                         updateStatement.setString(1, Constants.ANALYSE_ING);
-                        updateStatement.setInt(2, id);
+                        updateStatement.setInt(2, rs.getInt("id"));
                         updateStatement.executeUpdate();
                     }
                 }
@@ -342,7 +341,7 @@ public class AnalyseResultTable {
     /**
      * 实现 基于 msgHash 删除 unvisitedUrls
      */
-    public static synchronized int updateUnVisitedUrlsById(String msgHash) {
+    public static synchronized int clearUnVisitedUrlsById(String msgHash) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;"

@@ -1,6 +1,7 @@
 package ui;
 
 import database.UnionTableSql;
+import utils.BurpSitemapUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -12,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.stderr_println;
+import static utils.BurpPrintUtils.stdout_println;
 
 public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;   //记录所有加入到URL的请求
@@ -263,6 +265,14 @@ public class ConfigPanel extends JPanel {
         // 功能按钮 弹出选项
         JPopupMenu moreMenu = new JPopupMenu("功能");
 
+        JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
+        loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
+        moreMenu.add(loadSitemapToRecordPath);
+
+        JMenuItem loadSitemapToRecordUrl = new JMenuItem("加载SiteMap到Url记录");
+        loadSitemapToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
+        moreMenu.add(loadSitemapToRecordUrl);
+
         JMenuItem clearUselessData = new JMenuItem("清除无用数据");
         clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearUselessData);
@@ -345,7 +355,17 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        // 为 点击”功能“的 菜单项添加 Action Listener
+        // 为 功能 菜单项 清除无用数据 添加 Action Listener
+        clearUselessData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 清空表格模型中的无效数据
+                UnionTableSql.clearUselessData();
+                setAutoRefreshButtonTrue();
+            }
+        });
+
+        // 为 功能 菜单项 清除数据表数据 添加 Action Listener
         clearModelTableData.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -355,7 +375,7 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        // 为 点击”功能“的 菜单项添加 Action Listener
+        // 为 功能 菜单项 清除所有表数据 添加 Action Listener
         clearAllTableData.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -365,14 +385,44 @@ public class ConfigPanel extends JPanel {
             }
         });
 
-        clearUselessData.addActionListener(new ActionListener() {
+        // 为 功能 菜单项 加载站点地图到PATH记录 添加 Action Listener
+        loadSitemapToRecordPath.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 清空表格模型中的无效数据
-                UnionTableSql.clearUselessData();
-                setAutoRefreshButtonTrue();
+                new SwingWorker<Void, Void>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        if (BurpSitemapUtils.firstAddSiteMapUrlsToRecordPath){
+                            BurpSitemapUtils.addSiteMapUrlsToRecord(false);
+                            BurpSitemapUtils.firstAddSiteMapUrlsToRecordPath = false;
+                        } else {
+                            stdout_println("This function [firstAddSiteMapUrlsToRecordPath] only can run once !!!");
+                        }
+                        return null;
+                    }
+                }.execute();
             }
         });
+
+        // 为 功能 菜单项 加载站点地图到URL记录 添加 Action Listener
+        loadSitemapToRecordUrl.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new SwingWorker<Void, Void>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        if (BurpSitemapUtils.firstAddSiteMapUrlsToRecordUrl) {
+                            BurpSitemapUtils.addSiteMapUrlsToRecord(true);
+                            BurpSitemapUtils.firstAddSiteMapUrlsToRecordUrl = false;
+                        } else {
+                            stdout_println("This function [firstAddSiteMapUrlsToRecordUrl] only can run once !!!");
+                        }
+                        return null;
+                    }
+                }.execute();
+            }
+        });
+
  }
 
     public static void setAutoRefreshButtonTrue(){

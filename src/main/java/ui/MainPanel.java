@@ -38,7 +38,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private static ITextEditor findUrlTEditor; //显示找到的URL
     private static ITextEditor findPathTEditor; //显示找到的PATH
     private static ITextEditor findApiTEditor; //基于PATH计算出的URL
-    private static ITextEditor pathtoUrlTEditor; //基于树算法计算出的URL
+    private static ITextEditor pathToUrlTEditor; //基于树算法计算出的URL
     private static ITextEditor unvisitedUrlTEditor; //未访问过的URL
 
     private static byte[] requestsData; //请求数据,设置为全局变量,便于IMessageEditorController函数调用
@@ -161,14 +161,14 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         // SINGLE_SELECTION 设置表格的选择模式为单选
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        //添加表头排序功能
+        tableAddActionSortByHeader();
+
         //设置表格每列的宽度
         tableSetColumnsWidth();
 
         //设置表格每列的对齐设置
         tableSetColumnsRender();
-
-        //添加表头排序功能
-        tableAddActionSortByHeader();
 
         //为表格添加点击显示下方的消息动作
         tableAddActionSetMsgTabData();
@@ -211,7 +211,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
-        // 添加 copyUrlItem 事件监听器
+        // 添加 deleteItem 事件监听器
         deleteItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -224,14 +224,14 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
-        // 添加 copyUrlItem 事件监听器
+        // 添加 ClearUnVisitedItem 事件监听器
         ClearUnVisitedItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
                     String msgHash = getMsgHashAtActualRow(selectedRow);
-                    AnalyseResultTable.updateUnVisitedUrlsById(msgHash);
+                    AnalyseResultTable.clearUnVisitedUrlsById(msgHash);
                     refreshTableModel(false);
                 }
             }
@@ -456,7 +456,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         findUrlTEditor = callbacks.createTextEditor();
         findPathTEditor = callbacks.createTextEditor();
         findApiTEditor = callbacks.createTextEditor();
-        pathtoUrlTEditor = callbacks.createTextEditor();
+        pathToUrlTEditor = callbacks.createTextEditor();
         unvisitedUrlTEditor = callbacks.createTextEditor();
 
         tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
@@ -467,7 +467,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         tabs.addTab("findUrl", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
         tabs.addTab("findPath", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
         tabs.addTab("findApi", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("pathToUrl", pathtoUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("pathToUrl", pathToUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
 
         tabs.addTab("unvisitedUrl", unvisitedUrlTEditor.getComponent()); //显示在这个URL中找到的Path 且还没有访问过的URL
 
@@ -529,7 +529,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             findUrlTEditor.setText(findUrl.getBytes());
             findPathTEditor.setText(findPath.getBytes());
             findApiTEditor.setText(findApi.getBytes());
-            pathtoUrlTEditor.setText(pathToUrl.getBytes());
+            pathToUrlTEditor.setText(pathToUrl.getBytes());
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
@@ -656,29 +656,36 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
      */
     private void updateUnVisitedUrls() {
-        // 获取所有未访问URl 注意需要大于0
-        List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
-        if (unVisitedUrlsModels.size() > 0){
-            // 获取所有 已经被访问过得URL列表
-            List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
-            // 遍历 unVisitedUrlsModels 进行更新
-            for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
-                //更新 unVisitedUrls 对象
-                List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
-                List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
+        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                // 获取所有未访问URl 注意需要大于0
+                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
+                if (unVisitedUrlsModels.size() > 0){
+                    // 获取所有 已经被访问过得URL列表
+                    List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
+                    // 遍历 unVisitedUrlsModels 进行更新
+                    for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
+                        //更新 unVisitedUrls 对象
+                        List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
+                        List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
 
-                //过滤黑名单中的URL 因为黑名单是不定时更新的
-                newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getReqUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
-                urlsModel.setUnvisitedUrls(newUnVisitedUrls);
+                        //过滤黑名单中的URL 因为黑名单是不定时更新的
+                        newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getReqUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
+                        urlsModel.setUnvisitedUrls(newUnVisitedUrls);
 
-                // 执行更新插入数据操作
-                try {
-                    AnalyseResultTable.updateUnVisitedUrlsById(urlsModel);
-                } catch (Exception ex){
-                    stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+                        // 执行更新插入数据操作
+                        try {
+                            AnalyseResultTable.updateUnVisitedUrlsById(urlsModel);
+                        } catch (Exception ex){
+                            stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+                        }
+                    }
                 }
+                return null;
             }
-        }
+        }.execute();
     }
 
     /**
@@ -706,19 +713,36 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                // 执行耗时的数据操作
-                MainPanel.showDataTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
+                try {
+                    // 执行耗时的数据操作
+                    MainPanel.showDataTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
+                } catch (Exception e) {
+                    // 处理数据操作中可能出现的异常
+                    System.err.println("Error while updating data: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 return null;
             }
 
             @Override
             protected void done() {
                 // 更新UI组件
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        model.fireTableDataChanged(); // 通知模型数据发生了变化，而不是连续插入或删除行
-                    }
-                });
+                try {
+                    // 更新UI组件
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            model.fireTableDataChanged(); // 通知模型数据发生了变化
+                        } catch (Exception e) {
+                            // 处理更新UI组件时可能出现的异常
+                            System.err.println("Error while updating UI: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
+                } catch (Exception e) {
+                    // 处理在done()方法中可能出现的异常，例如InterruptedException或ExecutionException
+                    System.err.println("Error in done method: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         };
         worker.execute();
@@ -754,7 +778,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         findUrlTEditor.setText(new byte[0]);
         findPathTEditor.setText(new byte[0]);
         findApiTEditor.setText(new byte[0]);
-        pathtoUrlTEditor.setText(new byte[0]);
+        pathToUrlTEditor.setText(new byte[0]);
         unvisitedUrlTEditor.setText(new byte[0]);
     }
 

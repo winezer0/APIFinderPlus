@@ -77,17 +77,30 @@ public class CastUtils {
     }
 
     /**
-     * 将任意类型的 Json字符串 转为 List
+     * 将任意类型的 Json字符串 转为 JSONArray
      * @param jsonString
      * @return
      */
     public static JSONArray toJsonArray(String jsonString){
         if (jsonString == null)
-            jsonString = "";
+            return new JSONArray();
 
         return JSONArray.parseArray(jsonString);
 
     }
+
+    /**
+     * 将任意类型的 Json字符串 转为 Json 对象
+     * @param jsonString
+     * @return
+     */
+    public static JSONObject toJsonObject(String jsonString){
+        if (jsonString == null)
+            return new JSONObject();
+
+        return JSONObject.parseObject(jsonString);
+    }
+
 
     /**
      * 将JsonArray 转为 List<String>

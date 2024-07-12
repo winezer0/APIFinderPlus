@@ -1,11 +1,12 @@
 package database;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
+import model.RecordPathModel;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
@@ -91,7 +92,6 @@ public class RecordPathTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-
     //判断是否存在需要处理的URL
     public static synchronized int fetchUnhandledRecordPathId(){
         // 考虑开启事务
@@ -115,9 +115,9 @@ public class RecordPathTable {
     }
 
     //获取所有需要处理的URl数据，并且标记
-    public static synchronized JSONArray fetchAllNotAddToTreeRecords() {
+    public static synchronized List<RecordPathModel> fetchAllNotAddToTreeRecords() {
         // 创建一个列表或集合来存储查询结果
-        JSONArray jsonArray = new JSONArray();
+        List<RecordPathModel> recordPathModels = new ArrayList<>();
 
         //1、标记需要处理的数据 更新状态为解析中
         String updateMarkSQL1 = ("UPDATE tableName SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);")
@@ -130,8 +130,8 @@ public class RecordPathTable {
             int affectedRows = Stmt1.executeUpdate();
             if (affectedRows > 0) {
                 //2、获取 解析中 状态的 Host、数据、ID列表
-                String selectSQL = ("SELECT req_host_port, GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
-                        "FROM tableName WHERE run_status == ? GROUP BY req_host_port;")
+                String selectSQL = ("SELECT req_proto,req_host_port,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
+                        "FROM tableName WHERE run_status == ? GROUP BY req_proto,req_host_port;")
                         .replace("tableName", tableName);
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(selectSQL)){
@@ -141,11 +141,13 @@ public class RecordPathTable {
                     //获取查询数据
                     ResultSet rs = stmt2.executeQuery();
                     while (rs.next()) {
-                        // 从结果集中获取每一列的值 将数据存储到Map中
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put(Constants.REQ_HOST_PORT, rs.getString("req_host_port"));
-                        jsonObject.put(Constants.REQ_PATH_DIRS, rs.getString("req_path_dirs"));
-                        jsonArray.add(jsonObject);
+                        RecordPathModel recordPathModel = new RecordPathModel(
+                                rs.getString("req_proto"),
+                                rs.getString("req_host_port"),
+                                rs.getString("req_path_dirs")
+                        );
+
+                        recordPathModels.add(recordPathModel);
                     }
 
                     //3、更新 解析中 对应的状态为解析完成
@@ -166,6 +168,7 @@ public class RecordPathTable {
             e.printStackTrace();
         }
 
-        return jsonArray;
+        return recordPathModels;
     }
+
 }

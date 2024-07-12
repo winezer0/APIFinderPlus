@@ -1,45 +1,102 @@
 package utils;
 
+import burp.BurpExtender;
 import burp.IHttpRequestResponse;
 import burp.IProxyScanner;
+import com.alibaba.fastjson2.JSONObject;
+import database.Constants;
+import database.PathTreeTable;
 import database.RecordPathTable;
 import database.RecordUrlTable;
 import model.HttpMsgInfo;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static burp.BurpExtender.*;
+import static utils.BurpPrintUtils.stderr_println;
 import static utils.ElementUtils.isEqualsOneKey;
 
-public class BurpSitemapUtils {
 
+
+public class BurpSitemapUtils {
+    public static boolean firstAddSiteMapUrlsToRecordPath = true;
+    public static boolean firstAddSiteMapUrlsToRecordUrl = true;
 
     /**
-     * 添加 SiteMap 中指定前缀的URL到数据库中
-     * @param urlPrefix 指定前缀的Url
-     * @param addToRecordUrl 是否添加到 RecordUrl 表
+     * 添加 SiteMap 中 所有有关的URL到 RecordPath 或 RecordUrl 表
      */
-    public static void addSiteMapUrlsToDB(String urlPrefix, boolean addToRecordUrl){
-        IHttpRequestResponse[] httpRequestResponses = getCallbacks().getSiteMap(urlPrefix);
-        for (IHttpRequestResponse requestResponse : httpRequestResponses) {
-            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
+    public static void addSiteMapUrlsToRecord(boolean isRecordUrl){
+        // 1、获取所有有关的 urlPrefix
+        Set<String> urlPrefixes = PathTreeTable.fetchAllRecordPathUrlPrefix();
+        for (String urlPrefix:urlPrefixes){
+            //获取URL相关的前缀
+            IHttpRequestResponse[] httpRequestResponses = BurpExtender.getCallbacks().getSiteMap(urlPrefix);
+            Set<String> JsonStringSet = extractSitemapUrlPaths(httpRequestResponses);
+            List<String> JsonStringList = new ArrayList<>(JsonStringSet);
 
-            String reqBaseUrl = msgInfo.getUrlInfo().getReqBaseUrl();
-            String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-            int respStatusCode = msgInfo.getRespStatusCode();
+            //判断是否存在添加的价值
+            if (JsonStringList.size() > 0){
+                String jsonString0 = JsonStringList.get(0);
+                JSONObject jsonObject0 = CastUtils.toJsonObject(jsonString0);
 
-            //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
-            if(addToRecordUrl
-                    && !isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false)){
-                RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
-            }
+                //插入一个标记,表明这个主机已经插入过滤
+                String insertedFlag = isRecordUrl ? urlPrefix + "/RecordUrl" : urlPrefix + "/RecordPath";
+                if (RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, jsonObject0.getString(Constants.REQ_HOST_PORT), 999) > 0){
+                    //没有被添加过,可以继续添加
+                    // 遍历 JsonStringSet 进行添加
+                    for (String JsonString : JsonStringSet){
+                        JSONObject jsonObject = CastUtils.toJsonObject(JsonString);
+                        String reqBaseUrl = jsonObject.getString(Constants.REQ_BASE_URL);
+                        String reqPathExt = jsonObject.getString(Constants.REQ_PATH_EXT);
+                        String reqHostPort =  jsonObject.getString(Constants.REQ_HOST_PORT);
+                        Integer respStatusCode = jsonObject.getInteger(Constants.RESP_STATUS_CODE);
 
-            //插入路径 仅保留200 403等有效目录
-            if(IProxyScanner.urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
-                    && isEqualsOneKey(String.valueOf(msgInfo.getRespStatusCode()), CONF_NEED_RECORD_STATUS, true)
-                    && !msgInfo.getUrlInfo().getReqPath().equals("/")
-            ){
-                IProxyScanner.urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
-                RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
+                        try {
+                            if (isRecordUrl){
+                                //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
+                                if(!isEqualsOneKey(reqPathExt, CONF_BLACK_URL_EXT, false)){
+                                    RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
+                                }
+                            } else {
+                                //插入路径 仅保留200 403等有效目录
+                                if(isEqualsOneKey(String.valueOf(respStatusCode), CONF_NEED_RECORD_STATUS, true)){
+                                    RecordPathTable.insertOrUpdateSuccessUrl(reqBaseUrl, respStatusCode);
+                                }
+                            }
+                        } catch (Exception e){
+                            stderr_println(String.format("Record SiteMap Urls (isRecordUrl:%s) reqBaseUrl:%s -> Error: %s", isRecordUrl, reqBaseUrl, e.getMessage()));
+                        }
+
+                    }
+                }
             }
         }
     }
+
+    /**
+     * 从sitemap中提取path部分
+     */
+    private static Set<String> extractSitemapUrlPaths(IHttpRequestResponse[] httpRequestResponses) {
+        //创建一个hashSet存储
+        Set<String> JsonStringSet = new HashSet<>();
+        for (IHttpRequestResponse requestResponse : httpRequestResponses) {
+            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
+
+            if (msgInfo.getUrlInfo().getReqHostPort().contains("-1")){
+                stderr_println(String.format("重大错误!!! URL %s 获取的 reqHostPort 没有合法的端口号 %s",msgInfo.getUrlInfo().getReqBaseUrl(), msgInfo.getUrlInfo().getReqHostPort()));
+            }
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getReqBaseUrl());
+            jsonObject.put(Constants.REQ_HOST_PORT, msgInfo.getUrlInfo().getReqHostPort());
+            jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getReqPathExt());
+            jsonObject.put(Constants.RESP_STATUS_CODE, msgInfo.getRespStatusCode());
+            JsonStringSet.add(jsonObject.toJSONString());
+        }
+        return JsonStringSet;
+    }
+
 }

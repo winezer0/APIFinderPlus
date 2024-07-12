@@ -1,12 +1,16 @@
 package database;
 
 import com.alibaba.fastjson2.JSONObject;
+import model.PathTreeDataModel;
 import model.PathTreeModel;
 
 import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static utils.PathTreeUtils.deepMergeJsonTree;
 import static utils.BurpPrintUtils.*;
+import static utils.PathTreeUtils.genPathsTree;
 
 public class PathTreeTable {
     //数据表名称
@@ -16,56 +20,49 @@ public class PathTreeTable {
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
+            + " req_proto TEXT NOT NULL,\n"
             + " req_host_port TEXT NOT NULL,\n"    //请求域名:端口
             + " path_tree TEXT NOT NULL,\n"   //根树的序列化Json数据
             + " basic_path_num INTEGER NOT NULL DEFAULT 0\n"  //基于多少个路径计算出来的根树,最好使用根树的稳定 hash
             + ");";
 
     //插入数据库
-    public static synchronized int insertOrUpdatePathTree(JSONObject treeObj) {
+    public static synchronized int insertOrUpdatePathTree(PathTreeDataModel pathTreeDataModel) {
+        String reqProto = pathTreeDataModel.getReqProto();
+        String reqHostPort = pathTreeDataModel.getReqHostPort();
+        Integer newBasicPathNum = pathTreeDataModel.getBasicPathNum();
+        JSONObject newPathTree = pathTreeDataModel.getPathTree();
+
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String reqHost = (String) treeObj.get(Constants.REQ_HOST_PORT);
-        Integer basicPathNum = (Integer) treeObj.get(Constants.BASIC_PATH_NUM);
-        JSONObject pathTree = (JSONObject) treeObj.get(Constants.PATH_TREE);
-
-        //查询
-        String checkSql = "SELECT * FROM tableName WHERE req_host_port = ?;"
+        //查询 是否已存在记录
+        String checkSql = "SELECT id,path_tree,basic_path_num FROM tableName WHERE req_host_port = ? and req_proto = ?;"
                 .replace("tableName", tableName);
-
-        //插入
-        String insertSql = "INSERT INTO tableName (req_host_port, path_tree, basic_path_num) VALUES (?, ?, ?);"
-                .replace("tableName", tableName);
-
-        //更新
-        String updateSQL = "UPDATE tableName SET path_tree = ?, basic_path_num = ? WHERE id = ?;"
-                .replace("tableName", tableName);
-
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-            checkStmt.setString(1, reqHost);
+            checkStmt.setString(1, reqHostPort);
+            checkStmt.setString(2, reqProto);
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
-                //记录存在,需要更新
+
                 int selectedId = rs.getInt("id");
                 String oldPathTree = rs.getString("path_tree");
                 int oldBasicPathNum = rs.getInt("basic_path_num");
 
+                //合并新旧pathNum 输入的PATH TREE 是基于新找到的PATH 因此是增量的
+                newBasicPathNum = Math.max(0, oldBasicPathNum) + Math.max(0, newBasicPathNum);
+
                 //合并新旧Json树
-                JSONObject newTree = pathTree;
                 if (oldPathTree != null && oldPathTree != ""){
                     JSONObject oldTree = JSONObject.parse(oldPathTree);
-                    newTree = deepMergeJsonTree(oldTree, pathTree);
+                    newPathTree = deepMergeJsonTree(oldTree, newPathTree);
                 }
 
-                //合并新旧path num
-                int newBasicPathNum = basicPathNum;
-                if (newBasicPathNum > 0)
-                    newBasicPathNum = oldBasicPathNum + basicPathNum;
-
                 //更新索引对应的数据
+                String updateSQL = "UPDATE tableName SET path_tree = ?, basic_path_num = ? WHERE id = ?;"
+                        .replace("tableName", tableName);
                 try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-                    updateStatement.setString(1, newTree.toJSONString());
+                    updateStatement.setString(1, newPathTree.toJSONString());
                     updateStatement.setInt(2, newBasicPathNum);
                     updateStatement.setInt(3, selectedId);
                     int affectedRows = updateStatement.executeUpdate();
@@ -75,16 +72,24 @@ public class PathTreeTable {
                 }
             } else {
                 // 记录不存在，插入新记录
+                String insertSql = "INSERT INTO tableName (req_proto, req_host_port, path_tree, basic_path_num) VALUES (?, ?, ?, ?);"
+                        .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, reqHost);
-                    insertStmt.setString(2, pathTree.toJSONString());
-                    insertStmt.setInt(3, basicPathNum);
-                    insertStmt.executeUpdate();
+                    insertStmt.setString(1, reqProto);
+                    insertStmt.setString(2, reqHostPort);
+                    insertStmt.setString(3, newPathTree.toJSONString());
+                    insertStmt.setInt(4, newBasicPathNum);
 
-                    // 获取生成的键值
-                    try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
-                            generatedId = generatedKeys.getInt(1); // 获取生成的ID
+                    int affectedRows = insertStmt.executeUpdate();
+
+                    if (affectedRows > 0) {
+                        // 获取生成的键值
+                        try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
+                            if (generatedKeys.next()) {
+                                generatedId = generatedKeys.getInt(1);
+                            } else {
+                                throw new SQLException("Creating user failed, no ID obtained.");
+                            }
                         }
                     }
                 }
@@ -124,4 +129,28 @@ public class PathTreeTable {
         return pathTreeModel;
     }
 
+
+    /**
+     * 获取 所有 表中记录的 URL前置
+     * @return
+     */
+    public static synchronized Set<String> fetchAllRecordPathUrlPrefix(){
+        Set<String> set = new HashSet<>();
+        String selectSQL = "SELECT DISTINCT req_proto || '://' || req_host_port AS  url_prefix FROM tableName;"
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String urlPrefix = rs.getString("url_prefix");
+                urlPrefix = urlPrefix.replace(":-1", "");
+                set.add(urlPrefix);
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error fetch All Record Path Url Prefix: %s", e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return set;
+    }
 }

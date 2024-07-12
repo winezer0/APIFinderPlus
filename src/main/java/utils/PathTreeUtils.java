@@ -3,6 +3,8 @@ package utils;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
+import model.PathTreeDataModel;
+import model.RecordPathModel;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,16 +15,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PathTreeUtils {
-    public static String getUrlPath(String uriPath) {
-        URL url = null;
-        try {
-            url = new URL(uriPath);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        uriPath = url.getPath();
-        return uriPath;
-    }
 
     /**
      * 基于输入的PATH路径实现字典树的生成
@@ -288,26 +280,25 @@ public class PathTreeUtils {
     /**
      * 生成路径树  输入格式 {host:[path list]}
      */
-    public static JSONObject genPathsTree(JSONObject recordJsonObj) {
-        JSONObject jsonObject = new JSONObject();
-
-        //确保map中有期望的键，避免NullPointerException
-        String reqHostPort = (String) recordJsonObj.get(Constants.REQ_HOST_PORT);
-        String reqPathDirs = (String) recordJsonObj.get(Constants.REQ_PATH_DIRS);
+    public static PathTreeDataModel genPathsTree(RecordPathModel recordPathModel) {
+        PathTreeDataModel pathTreeDataModel = null;
 
         // 3、为每个域名计算根数
-        String[] paths = reqPathDirs.split(Constants.SPLIT_SYMBOL);
-        if (paths.length > 0) {
-            List<String> filterPaths = filterBlankPath(Arrays.asList(paths));
-            JSONObject tree = createRootTree(filterPaths);
-            if (tree != null && !tree.isEmpty()){
-                jsonObject.put(Constants.REQ_HOST_PORT, reqHostPort);
-                jsonObject.put(Constants.PATH_TREE, tree);
-                jsonObject.put(Constants.BASIC_PATH_NUM, paths.length);
+        String[] reqPathDirsToPaths = recordPathModel.getReqPathDirs().split(Constants.SPLIT_SYMBOL);
+        if (reqPathDirsToPaths.length > 0) {
+            List<String> filterPaths = filterBlankPath(Arrays.asList(reqPathDirsToPaths));
+            JSONObject newPathTree = createRootTree(filterPaths);
+            if (newPathTree != null && !newPathTree.isEmpty()){
+                pathTreeDataModel = new PathTreeDataModel(
+                        recordPathModel.getReqProto(),
+                        recordPathModel.getReqHostPort(),
+                        reqPathDirsToPaths.length,
+                        newPathTree
+                );
             }
         }
 
-        return jsonObject;
+        return pathTreeDataModel;
     }
 
 

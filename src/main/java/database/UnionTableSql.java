@@ -13,7 +13,7 @@ import static utils.BurpPrintUtils.*;
 public class UnionTableSql {
     //联合 获取一条需要更新的Path数据
     public static synchronized FindPathModel fetchOneNeedUpdatedPathToUrlData(){
-        FindPathModel pathData = null;
+        FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID 状态是已经分析完毕,并且 当前 PathTree 的 基本路径数量 大于 生成分析数据时的 基本路径数量
         String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
@@ -27,7 +27,7 @@ public class UnionTableSql {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pathData = new FindPathModel(
+                    findPathModel = new FindPathModel(
                             rs.getInt("id"),
                             rs.getString("req_url"),
                             rs.getString("req_host_port"),
@@ -38,7 +38,7 @@ public class UnionTableSql {
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
         }
-        return pathData;
+        return findPathModel;
     }
 
 

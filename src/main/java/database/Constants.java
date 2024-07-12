@@ -13,4 +13,8 @@ public class Constants {
     public static final String PATH_TREE = "PATH_TREE";
     public static final String BASIC_PATH_NUM = "BASIC_PATH_NUM";
 
+    public static final String RESP_STATUS_CODE = "RESP_STATUS_CODE";
+    public static final String REQ_BASE_URL = "REQ_BASE_URL";
+    public static final String REQ_PATH_EXT = "REQ_PATH_EXT";
+    public static final String REQ_PROTO = "REQ_PROTO";
 }
