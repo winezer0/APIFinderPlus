@@ -54,12 +54,12 @@ public class HttpUrlInfo {
             reqBaseDir = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
 
             //格式化URL 不显示默认端口
-            //reqUrl = removeUrlDefaultPort(reqUrl);
-            //reqBaseUrl = removeUrlDefaultPort(reqBaseUrl);
-            //reqBaseDir = removeUrlDefaultPort(reqBaseDir);
+            reqUrl = removeUrlDefaultPort(reqUrl);
+            reqBaseUrl = removeUrlDefaultPort(reqBaseUrl);
+            reqBaseDir = removeUrlDefaultPort(reqBaseDir);
 
-            //格式化URL 显示默认端口
-            reqUrl = addUrlDefaultPort(reqUrl);
+            //格式化URL 显示默认端口 //可能存在缺陷,无法处理那种
+            //reqUrl = addUrlDefaultPort(reqUrl);
         } catch (MalformedURLException e) {
             stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
             e.printStackTrace();

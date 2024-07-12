@@ -255,15 +255,15 @@ public class AnalyseInfo {
         respBody = SubString(respBody, MAX_HANDLE_SIZE);
 
         // 针对html页面提取 直接的URL 已完成
-        Set<String> extractUrl = extractDirectUrls(msgInfo.getReqUrl(), respBody);
-        //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getReqUrl(), extractUrl.size()));
+        Set<String> extractUrl = extractDirectUrls(msgInfo.getUrlInfo().getReqUrl(), respBody);
+        //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUrl.size()));
         allUriSet.addAll(extractUrl);
 
         // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
         if (isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getRespInfo().getInferredMimeType().contains("script")) {
             Set<String> extractUri = extractUriFromJs(respBody);
-            //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getReqUrl(), extractUri.size()));
+            //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUri.size()));
             allUriSet.addAll(extractUri);
         }
         return allUriSet;

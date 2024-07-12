@@ -78,19 +78,19 @@ public class IProxyScanner implements IProxyListener {
 
             //看URL识别是否报错 不记录报错情况
             if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||msgInfo.getUrlInfo().getReqBaseUrl().equals("-")){
-                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
 
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
             if(isContainOneKey(msgInfo.getUrlInfo().getReqHost(), CONF_BLACK_URL_HOSTS, false)){
-                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
 
             //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getReqUrl());
+                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
 
@@ -120,13 +120,13 @@ public class IProxyScanner implements IProxyListener {
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
             if(isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false) ||
                     isContainOneKey(msgInfo.getUrlInfo().getReqPath(), CONF_BLACK_URL_PATH, false)){
-                //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getReqUrl());
+                //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
 
             // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
             if (respStatusCodeString.startsWith("3") || respStatusCodeString.startsWith("4")){
-                //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getReqUrl());
+                //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
 
@@ -151,10 +151,8 @@ public class IProxyScanner implements IProxyListener {
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
 
-            //看URL识别是否报错  || 是否匹配黑名单域名
-            if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||
-                    msgInfo.getUrlInfo().getReqBaseUrl().equals("-") ||
-                    isContainOneKey(msgInfo.getUrlInfo().getReqHost(), CONF_BLACK_URL_HOSTS, false)
+            //看URL识别是否报错
+            if (msgInfo.getUrlInfo().getReqBaseUrl() == null || msgInfo.getUrlInfo().getReqBaseUrl().equals("-")
             ) return;
 
             //记录所有主动访问请求记录到数据库中
@@ -200,7 +198,7 @@ public class IProxyScanner implements IProxyListener {
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
                 stdout_println(LOG_INFO, String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
-                        msgInfo.getReqUrl(), msgInfo.getMsgHash(), reqSource));
+                        msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash(), reqSource));
         }
     }
 
@@ -236,7 +234,7 @@ public class IProxyScanner implements IProxyListener {
                                 //将初次分析结果写入数据库
                                 int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
-                                    stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                                    stdout_println(LOG_INFO, String.format("[+] 分析结果已写入: %s -> msgHash: %s", msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
                                 }
 
                                 //将爬取到的 URL 加入到 RecordPathTable

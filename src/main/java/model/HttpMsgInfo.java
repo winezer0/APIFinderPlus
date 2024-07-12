@@ -10,7 +10,7 @@ public class HttpMsgInfo {
     private static final IExtensionHelpers helpers = BurpExtender.getHelpers();
     private HttpUrlInfo urlInfo;
     private HttpRespInfo respInfo;
-    private String reqUrl;
+    //private String reqUrl;
     private String reqMethod;
     private int respStatusCode;
     private byte[] reqBytes;
@@ -27,7 +27,7 @@ public class HttpMsgInfo {
         reqMethod = requestInfoBetter.getMethod();
 
         //从请求URL解析部分信息 //直接从请求体是没有办法获取到请求URL信息的, URL此时只能从外部传入
-        reqUrl = requestInfoBetter.getUrl().toString();
+        String reqUrl = requestInfoBetter.getUrl().toString();
         urlInfo = new HttpUrlInfo(reqUrl);
 
         //从响应结果解析部分信息
@@ -51,7 +51,7 @@ public class HttpMsgInfo {
         reqMethod = requestInfoBetter.getMethod();
 
         //从请求URL解析部分信息
-        reqUrl = requestInfoBetter.getUrl().toString();
+        String reqUrl = requestInfoBetter.getUrl().toString();
         urlInfo = new HttpUrlInfo(reqUrl);
 
         //从响应结果解析部分信息
@@ -75,7 +75,7 @@ public class HttpMsgInfo {
         reqMethod = requestInfoSimple.getMethod();
 
         //从请求URL解析部分信息
-        reqUrl = requestUrl;
+        String reqUrl = requestUrl;
         urlInfo = new HttpUrlInfo(reqUrl);
 
         //从响应结果解析部分信息
@@ -138,10 +138,6 @@ public class HttpMsgInfo {
 
     public HttpRespInfo getRespInfo() {
         return respInfo;
-    }
-
-    public String getReqUrl() {
-        return reqUrl;
     }
 
     public int getRespStatusCode() {

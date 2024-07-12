@@ -37,7 +37,7 @@ public class ReqMsgDataTable {
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                // stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getReqUrl(), msgInfo.getMsgHash()));
+                // stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
@@ -45,7 +45,7 @@ public class ReqMsgDataTable {
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
-                    insertStmt.setString(2, msgInfo.getReqUrl());
+                    insertStmt.setString(2, msgInfo.getUrlInfo().getReqUrl());
                     insertStmt.setBytes(3, msgInfo.getReqBytes());
                     insertStmt.setBytes(4, msgInfo.getRespBytes());
                     insertStmt.executeUpdate();
