@@ -9,10 +9,14 @@ import java.sql.*;
 import static utils.BurpPrintUtils.*;
 
 public class DBService {
-    //指定sqlite数据库配置文件路径
-    private static final String CONNECTION_STRING = "jdbc:sqlite:" + BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinder.db");
     private static DBService instance;
     private Connection connection;
+
+    //指定sqlite数据库配置文件路径
+    private static final String CONNECTION_STRING = String.format(
+            "jdbc:sqlite:%s?journal_mode=WAL", BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinder.db")
+    );
+
 
     private DBService() {
         initDBConnection();
@@ -44,6 +48,7 @@ public class DBService {
                 e.printStackTrace();
             }
 
+/* 把WAL模式设置放在链接字符串更加方便
             // Write-Ahead Logging (WAL) 模式，提供更好的并发性能
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA journal_mode = WAL");
@@ -51,6 +56,7 @@ public class DBService {
                 stderr_println(String.format("[!] set journal_mode error. -> %s", e.getMessage()));
                 e.printStackTrace();
             }
+*/
 
             stdout_println(LOG_INFO, "[+] SQLite database connection initialized successfully. ");
         } catch (ClassNotFoundException e) {
@@ -96,11 +102,10 @@ public class DBService {
 
     //获取一个数据库语句
     public Connection getNewConn() throws SQLException {
-        String connectionStringWithWal = CONNECTION_STRING + "?journal_mode=WAL";
         //勉强解决 [SQLITE_BUSY] The database file is locked (database is locked) 错误
         SQLiteConfig config = new SQLiteConfig();
         config.setBusyTimeout(5000); // 设置超时时间，单位是毫秒
-        return DriverManager.getConnection(connectionStringWithWal, config.toProperties());
+        return DriverManager.getConnection(CONNECTION_STRING, config.toProperties());
     }
 
     // 关闭数据库连接的方法
