@@ -1,6 +1,5 @@
 package utils;
 
-import burp.IHttpService;
 import model.TableLineDataModel;
 
 import javax.swing.*;
@@ -9,7 +8,6 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,41 +44,6 @@ public class UiUtils {
                 .replace("\"", "&quot;")
                 .replace("'", "&#x27;")
                 .replace("/", "&#x2F;");
-    }
-
-    public static IHttpService getIHttpService(String host, int port, String protocol){
-        return new IHttpService() {
-            @Override
-            public String getHost() {
-                return host;
-            }
-
-            @Override
-            public int getPort() {
-                return port;
-            }
-
-            @Override
-            public String getProtocol() {
-                return protocol;
-            }
-        };
-    }
-
-    public static IHttpService getIHttpService(String url){
-        try {
-            URL urlObj = new URL(url);
-            //获取请求协议
-            String protocol = urlObj.getProtocol();
-            //从URL中获取请求host
-            String host = urlObj.getHost();
-            //从URL中获取请求Port
-            int port = urlObj.getPort();
-            return getIHttpService(host, port, protocol);
-        } catch (MalformedURLException e) {
-            stderr_println(String.format("URL格式不正确: %s -> %s", url, e.getMessage()));
-            return null;
-        }
     }
 
 
