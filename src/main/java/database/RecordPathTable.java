@@ -2,6 +2,7 @@ package database;
 
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
+import model.RecordPathDirsModel;
 import model.RecordPathModel;
 
 import java.sql.*;
@@ -30,24 +31,7 @@ public class RecordPathTable {
             + ");";
 
 
-    //插入数据库
-    public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
-        String reqProto = msgInfo.getUrlInfo().getReqProto();
-        String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-        String reqPathDir = msgInfo.getUrlInfo().getReqPathDir();
-        int respStatusCode = msgInfo.getRespStatusCode();
-        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
-    }
-
-    //插入数据库
-    public static synchronized int insertOrUpdateSuccessUrl(String reqUrl, int respStatusCode) {
-        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
-        String reqProto = urlInfo.getReqProto();
-        String reqHostPort = urlInfo.getReqHostPort();
-        String reqPathDir = urlInfo.getReqPathDir();
-        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
-    }
-
+    //插入一条路径记录
     public static synchronized int insertOrUpdateSuccessUrl(String reqProto, String reqHostPort, String reqPathDir, int respStatusCode) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String selectSql = ("SELECT id FROM tableName WHERE req_proto = ? AND req_host_port = ? AND req_path_dir = ? AND resp_status_code = ?")
@@ -92,6 +76,26 @@ public class RecordPathTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
+
+    //插入一条路径记录 复用
+    public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
+        String reqProto = msgInfo.getUrlInfo().getReqProto();
+        String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
+        String reqPathDir = msgInfo.getUrlInfo().getReqPathDir();
+        int respStatusCode = msgInfo.getRespStatusCode();
+        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
+    }
+
+    //插入一条路径记录 复用
+    public static synchronized int insertOrUpdateSuccessUrl(String reqUrl, int respStatusCode) {
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
+        String reqProto = urlInfo.getReqProto();
+        String reqHostPort = urlInfo.getReqHostPort();
+        String reqPathDir = urlInfo.getReqPathDir();
+        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
+    }
+
+
     //判断是否存在需要处理的URL
     public static synchronized int fetchUnhandledRecordPathId(){
         // 考虑开启事务
@@ -114,10 +118,11 @@ public class RecordPathTable {
         return dataIndex;
     }
 
+
     //获取所有需要处理的URl数据，并且标记
-    public static synchronized List<RecordPathModel> fetchAllNotAddToTreeRecords() {
+    public static synchronized List<RecordPathDirsModel> fetchAllNotAddToTreeRecords() {
         // 创建一个列表或集合来存储查询结果
-        List<RecordPathModel> recordPathModels = new ArrayList<>();
+        List<RecordPathDirsModel> recordPathModels = new ArrayList<>();
 
         //1、标记需要处理的数据 更新状态为解析中
         String updateMarkSQL1 = ("UPDATE tableName SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);")
@@ -141,13 +146,13 @@ public class RecordPathTable {
                     //获取查询数据
                     ResultSet rs = stmt2.executeQuery();
                     while (rs.next()) {
-                        RecordPathModel recordPathModel = new RecordPathModel(
+                        RecordPathDirsModel recordPathDirsModel = new RecordPathDirsModel(
                                 rs.getString("req_proto"),
                                 rs.getString("req_host_port"),
                                 rs.getString("req_path_dirs")
                         );
 
-                        recordPathModels.add(recordPathModel);
+                        recordPathModels.add(recordPathDirsModel);
                     }
 
                     //3、更新 解析中 对应的状态为解析完成
@@ -170,5 +175,54 @@ public class RecordPathTable {
 
         return recordPathModels;
     }
+
+
+    public static int[] batchInsertOrUpdateSuccessUrl(List<RecordPathModel> recordPathModels) {
+        int[] generatedIds = null;
+
+        String insertSql = ("INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?) " +
+                "ON CONFLICT(req_proto, req_host_port, req_path_dir, resp_status_code) DO NOTHING")
+                .replace("tableName", tableName);
+
+        //ON CONFLICT(req_proto, req_host_port, req_path_dir, resp_status_code) DO NOTHING
+        // 这个语句的作用是在尝试向表中插入一条记录时，如果发现有与之冲突的唯一约束
+        // （即在 req_proto, req_host_port, req_path_dir, resp_status_code 这些字段上已经存在相同的值组合），
+        // 那么数据库将不会执行任何操作，也不会抛出错误，而是简单地跳过这条记录的插入。
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+            conn.setAutoCommit(false); // 开启事务处理
+            for (RecordPathModel record : recordPathModels) {
+                    insertStmt.setString(1, record.getReqProto());
+                    insertStmt.setString(2, record.getReqHostPort());
+                    insertStmt.setString(3, record.getReqPathDir());
+                    insertStmt.setInt(4, record.getRespStatusCode());
+                    insertStmt.addBatch(); // 添加到批处理
+                }
+                generatedIds = insertStmt.executeBatch();
+                conn.commit(); // 提交事务
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error executing batch insert/update table [%s] : [%s]",tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return generatedIds;
+    }
+
+    //简单复用 实现批量插入
+    public static int[] batchInsertOrUpdateSuccessUrl(List<String> findUrls, int respStatusCode) {
+        List<RecordPathModel> recordPathModels = new ArrayList<>();
+
+        for (String findUrl: findUrls){
+            HttpUrlInfo urlInfo = new HttpUrlInfo(findUrl);
+            RecordPathModel recordPathModel = new RecordPathModel(
+                    urlInfo.getReqProto(),
+                    urlInfo.getReqHostPort(),
+                    urlInfo.getReqPathDir(),
+                    respStatusCode
+            );
+            recordPathModels.add(recordPathModel);
+        }
+
+        return batchInsertOrUpdateSuccessUrl(recordPathModels);
+    }
+
 
 }

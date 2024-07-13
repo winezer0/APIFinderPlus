@@ -1,5 +1,6 @@
 package database;
 
+import model.AccessedUrlInfo;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
 
@@ -24,21 +25,12 @@ public class RecordUrlTable {
             + ");";
 
 
-    //插入数据库
-    public static synchronized int insertOrUpdateAccessedUrl(HttpMsgInfo msgInfo) {
-        return insertOrUpdateAccessedUrl(
-                msgInfo.getUrlInfo().getReqUrl(),
-                msgInfo.getUrlInfo().getReqHostPort() ,
-                msgInfo.getRespStatusCode());
-    }
-
-
     //插入访问的URl
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl,String reqHostPort, int respStatusCode) {
         int generatedId = -1;
         String upsertSql = ("INSERT INTO tableName (req_url, req_host_port, resp_status_code) "
-                + "VALUES (?, ?, ?) "
-                + "ON CONFLICT(req_url) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
+                + "VALUES (?, ?, ?)  " +
+                "ON CONFLICT(req_url) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -61,10 +53,66 @@ public class RecordUrlTable {
         return generatedId;
     }
 
-    //插入访问的URl
+
+    //插入访问的URl 复用
+    public static synchronized int insertOrUpdateAccessedUrl(HttpMsgInfo msgInfo) {
+        return insertOrUpdateAccessedUrl(
+                msgInfo.getUrlInfo().getReqUrl(),
+                msgInfo.getUrlInfo().getReqHostPort() ,
+                msgInfo.getRespStatusCode());
+    }
+
+
+    //插入访问的URl 复用
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl, int respStatusCode) {
         String reqHostPort = new HttpUrlInfo(reqUrl).getReqHostPort();
         return insertOrUpdateAccessedUrl(reqUrl, reqHostPort, respStatusCode);
+    }
+
+    //实现批量插入访问信息
+    public static synchronized int[] batchInsertOrUpdateAccessedUrls(List<AccessedUrlInfo> accessedUrlInfos) {
+        int[] generatedIds = null;
+
+        String upsertSql = ("INSERT INTO tableName (req_url, req_host_port, resp_status_code) "
+                + "VALUES (?, ?, ?) "
+                + "ON CONFLICT(req_url) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
+            // 添加到批处理队列
+            conn.setAutoCommit(false); // 开启事务
+            for (AccessedUrlInfo accessedUrlInfo : accessedUrlInfos) {
+                stmt.setString(1, accessedUrlInfo.getReqUrl());
+                stmt.setString(2, accessedUrlInfo.getReqHostPort());
+                stmt.setInt(3, accessedUrlInfo.getRespStatusCode());
+                stmt.addBatch();
+            }
+            // 执行批处理
+            generatedIds = stmt.executeBatch();
+            conn.commit(); // 提交事务
+
+//            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+//                while (generatedKeys.next()) {
+//                    generatedIds.add(generatedKeys.getInt(1));
+//                }
+//            }
+        } catch (Exception e) {
+            System.err.println(String.format("Error batch insert Or Update Accessed Urls On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+        }
+
+        return generatedIds;
+    }
+
+
+    //实现批量插入访问信息 复用
+    public static synchronized int[] batchInsertOrUpdateAccessedUrls(List<String> accessedUrls, int respStatusCode){
+        List<AccessedUrlInfo> accessedUrlInfos = new ArrayList<>();
+        for (String reqUrl : accessedUrls){
+            String reqHostPort = new HttpUrlInfo(reqUrl).getReqHostPort();
+            AccessedUrlInfo accessedUrlInfo = new AccessedUrlInfo(reqUrl, reqHostPort,respStatusCode);
+            accessedUrlInfos.add(accessedUrlInfo);
+        }
+        return batchInsertOrUpdateAccessedUrls(accessedUrlInfos);
     }
 
 
@@ -90,6 +138,7 @@ public class RecordUrlTable {
         }
         return uniqueURLs;
     }
+
 
     //获取所有访问过的URL
     public static synchronized List<String> fetchAllAccessedUrls() {

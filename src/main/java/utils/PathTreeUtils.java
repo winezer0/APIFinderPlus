@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
 import model.PathTreeModel;
-import model.RecordPathModel;
+import model.RecordPathDirsModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -278,7 +278,7 @@ public class PathTreeUtils {
     /**
      * 生成路径树  输入格式 {host:[path list]}
      */
-    public static PathTreeModel genPathsTree(RecordPathModel recordPathModel) {
+    public static PathTreeModel genPathsTree(RecordPathDirsModel recordPathModel) {
         PathTreeModel pathTreeModel = null;
 
         // 3、为每个域名计算根数

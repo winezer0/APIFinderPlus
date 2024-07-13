@@ -214,8 +214,7 @@ public class IProxyScanner implements IProxyListener {
                                 }
 
                                 //将爬取到的 URL 加入到 RecordPathTable
-                                for (String findUrl:analyseResult.getUrlList())
-                                    RecordPathTable.insertOrUpdateSuccessUrl(findUrl,202);
+                                RecordPathTable.batchInsertOrUpdateSuccessUrl(analyseResult.getUrlList(), 299);
                             }
                         }
                         return;
@@ -225,9 +224,9 @@ public class IProxyScanner implements IProxyListener {
                     int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
                     if (unhandledReqDataId <= 0){
                         //获取需要更新的所有URL记录
-                        List<RecordPathModel> recordPathModels = RecordPathTable.fetchAllNotAddToTreeRecords();
-                        if (recordPathModels.size()>0){
-                            for (RecordPathModel recordPathModel : recordPathModels) {
+                        List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchAllNotAddToTreeRecords();
+                        if (recordPathDirsModels.size()>0){
+                            for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
                                 //生成新的路径树
                                 PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
                                 if (pathTreeModel != null){

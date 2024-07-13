@@ -344,20 +344,51 @@ public class AnalyseResultTable {
     public static synchronized int clearUnVisitedUrlsByMsgHash(String msgHash) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;"
+        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash = ?;"
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             JSONArray emptyArray = new JSONArray();
             stmt.setString(1, emptyArray.toJSONString());
-            stmt.setInt(2, emptyArray.size());
-            stmt.setString(3, msgHash);
+            stmt.setString(2, msgHash);
             affectedRows = stmt.executeUpdate();
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
         }
         return affectedRows;
     }
+
+    /**
+     * 实现 基于 msgHash 列表 删除 unvisitedUrls
+     */
+    public static synchronized int clearUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
+        int totalRowsAffected = 0;
+
+        // 构建SQL语句
+        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash IN $buildInParamList$"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()))
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            // 设置第一个参数为JSON数组的toJSONString()
+            JSONArray emptyArray = new JSONArray();
+            stmt.setString(1, emptyArray.toJSONString());
+
+            // 循环设置消息哈希参数
+            int index = 2; // 开始于第二个参数位置，第一个参数已被设置
+            for (String msgHash : msgHashList) {
+                stmt.setString(index++, msgHash);
+            }
+
+            // 执行更新操作并获取受影响行数
+            totalRowsAffected = stmt.executeUpdate();
+
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error clearing unvisited URLs by msg hash list -> Error:[%s]", e.getMessage()));
+        }
+        return totalRowsAffected;
+    }
+
 
     /**
      * 实现 基于 msgHash 获取 unvisitedUrls
@@ -383,5 +414,39 @@ public class AnalyseResultTable {
             stderr_println(LOG_ERROR, String.format("[-] Error fetch UnVisited Urls By MsgHash: %s", e.getMessage()));
         }
         return jsonObj;
+    }
+
+    /**
+     * 实现 基于 msgHash 列表 获取 unvisitedUrls 列表
+     */
+    public static synchronized List<UnVisitedUrlsModel> fetchUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
+        List<UnVisitedUrlsModel> unVisitedUrlsModels = new ArrayList<>();
+
+        String selectSQL = "SELECT id, req_url, unvisited_url FROM tableName WHERE msg_hash IN $buildInParameterList$;"
+                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()))
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn();
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 1, msgHashList.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(
+                            rs.getInt("id"),
+                            rs.getString("req_url"),
+                            rs.getString("unvisited_url")
+                    );
+                    unVisitedUrlsModels.add(unVisitedUrlsModel);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching UnVisited Urls By MsgHash List: %s", e.getMessage()));
+        }
+
+        return unVisitedUrlsModels;
     }
 }

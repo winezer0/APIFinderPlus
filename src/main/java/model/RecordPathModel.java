@@ -3,13 +3,14 @@ package model;
 public class RecordPathModel {
     private String reqProto;
     private String reqHostPort;
-    private String reqPathDirs;
+    private String reqPathDir;
+    private int respStatusCode;
 
-    // 构造函数
-    public RecordPathModel(String reqProto, String reqHostPort, String reqPathDirs) {
+    public RecordPathModel(String reqProto, String reqHostPort, String reqPathDir, int respStatusCode) {
         this.reqProto = reqProto;
         this.reqHostPort = reqHostPort;
-        this.reqPathDirs = reqPathDirs;
+        this.reqPathDir = reqPathDir;
+        this.respStatusCode = respStatusCode;
     }
 
     public String getReqProto() {
@@ -20,7 +21,11 @@ public class RecordPathModel {
         return reqHostPort;
     }
 
-    public String getReqPathDirs() {
-        return reqPathDirs;
+    public String getReqPathDir() {
+        return reqPathDir;
+    }
+
+    public int getRespStatusCode() {
+        return respStatusCode;
     }
 }
