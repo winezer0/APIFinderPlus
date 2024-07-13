@@ -55,19 +55,6 @@ public class HelperPlus {
     }
 
     /**
-     * 获取HTTP请求的第一行（请求行） 没有解决第一行不是首行的问题
-     */
-    public String getFirstLine(byte[] request) {
-        String requestStr = helpers.bytesToString(request);
-
-        int firstLineEnd = requestStr.indexOf("\r\n");
-        if (firstLineEnd == -1) firstLineEnd = requestStr.indexOf("\n");
-
-        String firstLine = firstLineEnd != -1 ? requestStr.substring(0, firstLineEnd) : requestStr;
-        return firstLine;
-    }
-
-    /**
      * 返回HTTP请求或响应的整个header头部分，与body相对应
      */
     public String getHeadersAsStr(boolean isRequest, byte[] requestOrResponse) {

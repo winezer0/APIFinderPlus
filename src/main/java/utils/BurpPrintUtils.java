@@ -11,9 +11,9 @@ public class BurpPrintUtils {
     private static PrintWriter stderr;
 
     // 定义日志级别
-    public static int LOG_ERROR = 0;  //重要
+    public static int LOG_ERROR = 2;  //重要
     public static int LOG_INFO = 1;   //一般
-    public static int LOG_DEBUG = 2;   //调试
+    public static int LOG_DEBUG = 0;   //调试
 
     public BurpPrintUtils(){
         this.stdout = BurpExtender.getStdout();
@@ -31,12 +31,10 @@ public class BurpPrintUtils {
      * @param msg
      */
     public static void stdout_println(Integer msgLevel, Object msg){
-        if(msgLevel <=  SHOW_MSG_LEVEL)
+        if(msgLevel <=  SHOW_MSG_LEVEL){
             stdout.println(msg);
-
-        //显示到系统窗口,便于调试
-        if (SHOW_MSG_LEVEL >= LOG_DEBUG)
             System.out.println(msg);
+        }
     }
 
 
@@ -46,12 +44,10 @@ public class BurpPrintUtils {
      * @param msg
      */
     public static void stderr_println(Integer msgLevel, Object msg){
-        if(msgLevel <=  SHOW_MSG_LEVEL)
+        if(msgLevel <= SHOW_MSG_LEVEL){
             stderr.println(msg);
-
-        //显示到系统窗口,便于调试
-        if (SHOW_MSG_LEVEL >= LOG_DEBUG)
             System.out.println(msg);
+        }
     }
 
 

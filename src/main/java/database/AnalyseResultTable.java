@@ -324,7 +324,8 @@ public class AnalyseResultTable {
     public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls( ) {
         UnVisitedUrlsModel unVisitedUrlsModel = null;
 
-        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC Limit 1;")
+        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName " +
+                "WHERE unvisited_url_num > 0 ORDER BY unvisited_url_num DESC Limit 1;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {

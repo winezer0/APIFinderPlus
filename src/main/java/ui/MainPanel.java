@@ -662,9 +662,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      */
     public static void showDataTableByFilter(String selectOption, String searchText) {
         // 在后台线程获取数据，避免冻结UI
-        new SwingWorker<DefaultTableModel, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected DefaultTableModel doInBackground() throws Exception {
+            protected Void doInBackground() throws Exception {
                 // 构建一个新的表格模型
                 model.setRowCount(0);
 
@@ -708,8 +708,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 try {
                     get();
                 } catch (InterruptedException | ExecutionException e) {
-                    BurpExtender.getStderr().println("[!] showFilter error:");
-                    e.printStackTrace(BurpExtender.getStderr());
+                    stderr_println(String.format("[!] showFilter error: %s", e.getMessage()));
+                    //e.printStackTrace(BurpExtender.getStderr());
                 }
             }
         }.execute();
@@ -726,10 +726,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             //清空记录变量的内容
             IProxyScanner.urlScanRecordMap = new RecordHashMap();
+            IProxyScanner.urlAutoRecordMap = new RecordHashMap();
+
             ConfigPanel.lbRequestCount.setText("0");
             ConfigPanel.lbTaskerCount.setText("0");
             ConfigPanel.lbAnalysisEndCount.setText("0/0");
-//            ConfigPanel.jsCrawledCount.setText("0/0");
 
             //清空数据库内容
             if (clearAllTable) {
@@ -815,6 +816,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * 定时刷新表数据
      */
     public void refreshTableModel(boolean checkAutoRefreshButtonStatus) {
+        //当已经卸载插件时,不要再进行刷新UI
+        if (!BurpExtender.extensionIsLoading)
+            return;
+
         //设置已加入数据库的数量
         ConfigPanel.lbTaskerCount.setText(String.valueOf(ReqDataTable.getReqDataCountUnConditional()));
         //设置成功分析的数量
@@ -904,10 +909,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         pathToUrlTEditor.setText(new byte[0]);
         unvisitedUrlTEditor.setText(new byte[0]);
     }
-
-
-
-
 }
 
 

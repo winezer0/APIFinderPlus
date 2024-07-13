@@ -48,12 +48,13 @@ public class ElementUtils {
     /**
      * 判断字符串 是否 等于 元素列表中的任意元素 忽略大小写
      *
-     * @param string 单个字符串。
+     * @param stringA 单个字符串。
      * @param elements 允许的字符串列表
      * @param bool 当 elements 为空时应该返回的响应码
      * @return 如果 string 在 elements 范围内则返回 true，否则返回false。
      */
-    public static boolean isEqualsOneKey(String string, List<String> elements, boolean bool) {
+    public static boolean isEqualsOneKey(Object stringA, List<String> elements, boolean bool) {
+        String string = String.valueOf(stringA);
         //当元素为空时,返回默认值
         if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
 

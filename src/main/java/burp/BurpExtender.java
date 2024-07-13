@@ -24,8 +24,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     private static IExtensionHelpers helpers;
 
     private static IProxyScanner iProxyScanner;
-
     private static Tags tags;
+
+    public static boolean extensionIsLoading = false; //记录插件是否处于加载状态
 
     public static PrintWriter getStdout() {
         return stdout;
@@ -65,7 +66,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     private static DBService dbService;  //数据库实例
 
-    public static int SHOW_MSG_LEVEL = LOG_DEBUG;  //显示消息级别
+    public static int SHOW_MSG_LEVEL = LOG_INFO;  //显示消息级别
 
     public static  String configName = "finger-important.json";
 
@@ -113,7 +114,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             callbacks.registerExtensionStateListener(BurpExtender.this);
         }});
 
-        //表示打印成功
+        //设置插件已加载完成
+        extensionIsLoading = true;
         stdout_println(LOG_INFO, String.format("[+] %s Load success ...", this.extensionName));
     }
 
@@ -153,6 +155,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         // 扩展卸载时，立刻关闭线程池
         stdout_println(LOG_DEBUG, "[+] Plugin will unloaded, cleaning resources...");
 
+        //更新插件状态
+        extensionIsLoading = false;
+
         // 立刻关闭线程池
         if (iProxyScanner.executorService != null) {
             // 尝试立即关闭所有正在执行的任务
@@ -166,13 +171,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         // 关闭数据库连接
         if (dbService != null) {
             dbService.closeConnection();
+
             stdout_println(LOG_DEBUG, "[+] 断开数据连接成功.");
         }
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();
         stdout_println(LOG_DEBUG, "[+] 定时爬去任务断开成功.");
-
         stdout_println(LOG_INFO, String.format("[-] %s Unloaded ...", this.extensionName));
     }
 }

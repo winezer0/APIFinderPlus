@@ -24,13 +24,13 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 public class IProxyScanner implements IProxyListener {
     private int totalRequestCount = 0;  //记录所有经过插件的请求数量
+    private static final int MaxRespBodyLen = 200000; //最大支持存储的响应 比特长度
 
-    private static final int MaxRespBodyLen = 200000; //最大支持处理的响应
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
-    public static RecordHashMap urlPathRecordMap = new RecordHashMap(); //记录已加入待分析记录的URL Path Dir
+    public static RecordHashMap urlAutoRecordMap = new RecordHashMap(); //记录正在扫描列表的URL
 
     public static ThreadPoolExecutor executorService = null;
-    static ScheduledExecutorService monitorExecutor;
+    public static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
     public IProxyScanner() {
@@ -39,7 +39,7 @@ public class IProxyScanner implements IProxyListener {
         int coreCount = Math.min(availableProcessors, 16);
         int maxPoolSize = coreCount * 2;
 
-        // 高性能模式
+        // 高性能模式  //控制ScheduledExecutorService中任务的执行频率或周期。
         monitorExecutorServiceNumberOfIntervals = (availableProcessors > 6) ? 1 : monitorExecutorServiceNumberOfIntervals;
         long keepAliveTime = 60L;
 
@@ -47,16 +47,19 @@ public class IProxyScanner implements IProxyListener {
         BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(10000);
 
         executorService = new ThreadPoolExecutor(
-                coreCount,
-                maxPoolSize,
-                keepAliveTime,
+                coreCount,  //CorePoolSize 线程池中始终保持运行的线程数
+                maxPoolSize, //线程池中的活动线程达到coreCount并且还有任务等待执行时 线程池可以扩展到的最大线程数
+                keepAliveTime, //如果线程池中的线程数超过coreCount，那么超出的线程将在60秒内被终止，除非它们在这段时间内获得新任务。
                 TimeUnit.SECONDS,
-                workQueue,
-                Executors.defaultThreadFactory(),
-                new ThreadPoolExecutor.AbortPolicy() // 当任务太多时抛出异常，可以根据需要调整策略
+                workQueue, //BlockingQueue，用于保存等待执行的任务。当线程池中的线程数达到maxPoolSize时，新的任务会被放入队列中等待执行。
+                Executors.defaultThreadFactory(), //创建新线程。默认的工厂会创建具有默认优先级的守护线程。
+                new ThreadPoolExecutor.AbortPolicy()
+                // 当workQueue满了且线程数达到maxPoolSize时，线程池会使用AbortPolicy来处理额外的任务 即抛出RejectedExecutionException。
+                // 可以根据需要替换为其他的策略，如CallerRunsPolicy（调用者运行），DiscardPolicy（丢弃任务），或DiscardOldestPolicy（丢弃队列中最老的任务）。
         );
         stdout_println(LOG_INFO,"[+] run executorService maxPoolSize: " + coreCount + " ~ " + maxPoolSize + ", monitorExecutorServiceNumberOfIntervals: " + monitorExecutorServiceNumberOfIntervals);
 
+        //使用单一的后台线程来执行所有周期性或定时任务。这通常用于那些不需要并行处理的定时任务，例如监控、定期日志记录等。
         monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 
         startDatabaseMonitor();
@@ -71,7 +74,7 @@ public class IProxyScanner implements IProxyListener {
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            String respStatusCodeString = String.valueOf(msgInfo.getRespStatusCode());
+            String statusCode = String.valueOf(msgInfo.getRespStatusCode());
 
             //看URL识别是否报错 不记录报错情况
             if (msgInfo.getUrlInfo().getNoParamUrl() == null){
@@ -91,25 +94,14 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            //更新所有有响应的主动访问请求URL记录到数据库中
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    //记录请求记录到数据库中（记录所有请求）
+                    //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                }
-            });
-
-            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    if(urlPathRecordMap.get(msgInfo.getUrlInfo().getNoFileUrl()) <= 0
-                            && isEqualsOneKey(respStatusCodeString, CONF_NEED_RECORD_STATUS, true)
-                            && !msgInfo.getUrlInfo().getPath().equals("/")){
+                    //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
+                    if(isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, true) && !msgInfo.getUrlInfo().getPath().equals("/")){
                         RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
-                        urlPathRecordMap.add(msgInfo.getUrlInfo().getNoFileUrl());
-                        //stdout_println(LOG_DEBUG, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getRespStatusCode()));
                     }
                 }
             });
@@ -122,7 +114,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
-            if (respStatusCodeString.startsWith("3") || respStatusCodeString.startsWith("4")){
+            if (statusCode.startsWith("3") || statusCode.startsWith("4")){
                 //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
@@ -133,12 +125,8 @@ public class IProxyScanner implements IProxyListener {
                 public void run() {
                     //判断URL是否已经扫描过
                     if (urlScanRecordMap.get(msgInfo.getMsgHash()) <= 0) {
-                        //防止响应体过大
-                        byte[] respBytes = msgInfo.getRespBytes().length > MaxRespBodyLen ? Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen) : msgInfo.getRespBytes();
-                        msgInfo.setRespBytes(respBytes);
                         //加入请求列表
                         insertOrUpdateReqDataAndReqMsgData(msgInfo,"Proxy");
-
                         //放到后面,确保已经记录数据,不然会被过滤掉
                         urlScanRecordMap.add(msgInfo.getMsgHash());
                     }
@@ -169,6 +157,12 @@ public class IProxyScanner implements IProxyListener {
      * @param reqSource
      */
     private void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
+        //防止响应体过大
+        if (msgInfo.getRespBytes().length > MaxRespBodyLen){
+            byte[] respBytes = Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen);
+            msgInfo.setRespBytes(respBytes);
+        }
+
         //存储请求体|响应体数据
         int msgDataIndex = ReqMsgDataTable.insertOrUpdateMsgData(msgInfo);
         if (msgDataIndex > 0){
@@ -261,30 +255,66 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //Todo: 增加自动递归查询功能 未完成
-                    if (ConfigPanel.recursiveIsSelected()){
-                        //获取一个没访问的URL
+                    // 增加自动递归查询功能
+                    if (ConfigPanel.recursiveIsSelected() && executorService.getActiveCount() < 2){
+                        //获取一个未访问URL列表
                         UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
                         if (unVisitedUrlsModel != null){
                             //获取URL
                             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
-                            //将这些URl标记为已访问
-                            //TODO 暂时注释
-                            // RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
-                            //后台循环访问这些URL,并将响应体加入数据库
-                            //请求URL有了,请求头还没有
+
+                            //将这些URl标记为已访问 不然涉及的更新的问题很多
+                            //RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
+
                             //获取这个MsgHash对应的请求体和响应体
                             String msgHash = unVisitedUrlsModel.getMsgHash();
                             ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
-                            for (String reqUrl:unvisitedUrls){
-                                stdout_println(LOG_DEBUG, String.format("开始递归请求URL: %s", reqUrl));
-                                //获取请求头
-                                HelperPlus helperPlus = new HelperPlus(getHelpers());
-                                List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
-                                //发起HTTP请求
-                                BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
-                                return;
-                            }
+                            //获取请求头
+                            HelperPlus helperPlus = new HelperPlus(getHelpers());
+                            List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+                            //记录准备加入的请求
+                            executorService.submit(new Runnable() {
+                                @Override
+                                public void run() {
+                                    for (String reqUrl:unvisitedUrls){
+                                        if (urlAutoRecordMap.get(reqUrl) <= 0){
+                                            //记录已访问的URL
+                                            urlAutoRecordMap.add(reqUrl); //防止循环扫描
+                                            RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
+
+                                            stdout_println(LOG_INFO, String.format("[*] Auto Access URL: %s", reqUrl));
+
+                                            try {
+                                                //发起HTTP请求
+                                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                                                if (requestResponse != null) {
+                                                    executorService.submit(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
+                                                            //更新所有有响应的主动访问请求URL记录到数据库中
+                                                            RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
+                                                            if(isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true) && !msgInfo.getUrlInfo().getPath().equals("/")){
+                                                                RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
+                                                            }
+                                                            //加入请求分析列表
+                                                            if (msgInfo.getRespInfo().getRespLength()>0)
+                                                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
+
+                                                            //放到后面,确保已经记录数据,不然会被过滤掉
+                                                            urlScanRecordMap.add(msgInfo.getMsgHash());
+                                                        }
+                                                    });
+                                                }
+                                                Thread.sleep(500);
+                                            } catch (InterruptedException e) {
+                                                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                }});
                         }
                     }
                 } catch (Exception e) {
@@ -359,9 +389,9 @@ public class IProxyScanner implements IProxyListener {
 
                         //更新动态的URL数据
                         int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModel(dynamicUrlsModel);
-                        if (apiDataIndex > 0)
-                            stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]",
-                                    newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
+                        //if (apiDataIndex > 0)
+                        // stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]",
+                        // newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
                         AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);

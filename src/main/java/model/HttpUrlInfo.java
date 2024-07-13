@@ -14,6 +14,7 @@ public class HttpUrlInfo {
     private String host = null;
     private int port = -1;
     private String hostPort = null;
+    private String hostPortUsual = null;
 
     private String rootDomain = null;
     private String path = null;
@@ -39,8 +40,7 @@ public class HttpUrlInfo {
             //主机 (host)：如 www.example.com
             host = urlObj.getHost();
             //端口 (port)：如 80 或 443（默认情况下，如果未指定，http 默认为 80，https 默认为 443） 同时 检查reqPort为-1的情况
-            port = urlObj.getPort() == -1 ? urlObj.getDefaultPort() : urlObj.getPort();
-
+            port = urlObj.getPort() < 0 ? urlObj.getDefaultPort() : urlObj.getPort();
             //路径 (path)：如 /path/to/resource
             path = urlObj.getPath();
             //查询参数 (query)：如 ?key=value&anotherKey=anotherValue
@@ -53,6 +53,7 @@ public class HttpUrlInfo {
             ext = parseUrlExtStrict(rawUrl);
             //添加个HostPort对象 //www.baidu.com:8080
             hostPort = String.format("%s:%s", host, port);
+
             //获取前缀URL // http://www.baidu.com
             prefixUrl = String.format("%s://%s", proto, hostPort);
             //获取主域名 baidu.com
@@ -63,6 +64,10 @@ public class HttpUrlInfo {
             noParamUrl = new URL(proto, host, port, path).toString();
             //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
             noFileUrl = new URL(proto, host, port, pathDir).toString();
+
+            //获取没有默认端口的请求头
+            hostPortUsual = removeHostDefaultPort(hostPort,host,port);
+
             //格式化URL 不显示默认端口
             rawUrl = removeUrlDefaultPort(rawUrl);
             noParamUrl = removeUrlDefaultPort(noParamUrl);
@@ -196,6 +201,10 @@ public class HttpUrlInfo {
         return ref;
     }
 
+    public String getHostPortUsual() {
+        return hostPortUsual;
+    }
+
     /**
      * 1.remove default port(80\443) from the url
      * 2.add default path(/) to the url,if it's empty
@@ -214,9 +223,9 @@ public class HttpUrlInfo {
             int port = url.getPort(); //不包含端口时返回-1
             String path = url.getPath();
 
-            if ((port == 80 && proto.equalsIgnoreCase("http")) ||
-                    (port == 443 && proto.equalsIgnoreCase("https"))||
-                    port == -1
+            if (port < 0 ||
+                    (port == 80 && proto.equalsIgnoreCase("http")) ||
+                    (port == 443 && proto.equalsIgnoreCase("https"))
             ) {
                 String oldHost = url.getHost() + ":" + url.getPort();
                 urlString = urlString.replaceFirst(oldHost, host);
@@ -232,6 +241,17 @@ public class HttpUrlInfo {
             return urlString;
         }
     }
+
+
+    private String removeHostDefaultPort(String hostPort, String host, int port) {
+            if (port < 0
+                    || (port == 80 && proto.equalsIgnoreCase("http"))
+                    || (port == 443 && proto.equalsIgnoreCase("https"))){
+                return host;
+            }
+            return hostPort;
+    }
+
 
     /**
      * 1、这个函数的目的是：在【浏览器URL】的基础上，加上默认端口。

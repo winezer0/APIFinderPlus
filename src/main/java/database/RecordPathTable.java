@@ -35,7 +35,8 @@ public class RecordPathTable {
         String selectSql = ("SELECT id FROM tableName WHERE req_hash = ?;")
                 .replace("tableName", tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql))
+        {
             // 检查记录是否存在
             stmt.setString(1, recordPathModel.getReqHash());
             ResultSet rs = stmt.executeQuery();

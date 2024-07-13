@@ -44,6 +44,7 @@ public class ReqDataTable {
             if (rs.next()) {
                 // 记录存在，忽略操作
                 //stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
+                return 0;
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
@@ -110,7 +111,7 @@ public class ReqDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch And Mark Req Data To Analysis: %s", e.getMessage()));
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetch And Mark Req Data Index To Analysis: %s", e.getMessage()));
         }
 
         return msgDataIndex;

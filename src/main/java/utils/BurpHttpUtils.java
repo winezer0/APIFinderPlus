@@ -9,74 +9,110 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-import static utils.BurpPrintUtils.stderr_println;
-import static utils.BurpPrintUtils.stdout_println;
+import static burp.BurpExtender.getHelpers;
+import static utils.BurpPrintUtils.*;
 
 
 public class BurpHttpUtils {
-    public static int MaxResponseContentLength = 500000;
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
     private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 
-    public static void makeHttpRequestForGet(String reqUrl, List<String> referReqHeaders) {
-        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
+    public static IHttpRequestResponse makeHttpRequestForGet(String reqUrl, List<String> referReqHeaders) {
+        //构建HTTP请求体
+        byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders);
 
         // 创建IHttpService对象
         IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
 
+//        //分析当前创建的请求 判断生成是否一致
+//        IRequestInfo requestInfo = helpers.analyzeRequest(httpService, requestBytes);
+//        if (reqUrl.length() != requestInfo.getUrl().toString().length()) {
+//            stdout_println(String.format("实际访问的URL和目标访问的URL不一致"));
+//            stdout_println(String.format("目标URL:%s -> \n实际URL: %s \nHOST头:%s",
+//                    reqUrl,
+//                    requestInfo.getUrl().toString(),
+//                    new HelperPlus(helpers).getHeaderLine(true, requestBytes, "HOST")
+//            ));
+//        }
+
+        //发送HTTP请求
+        IHttpRequestResponse requestResponse = null;
+        try {
+            requestResponse = callbacks.makeHttpRequest(httpService, requestBytes);
+        } catch (Exception e){
+            stderr_println(LOG_DEBUG, String.format("获取HTTP响应失败:%s ->%s", reqUrl, e.getMessage()));
+        }
+        return requestResponse;
+    }
+
+    /**
+     * 输入URl 构建 GET 请求体 再修改新增请求头(忽略host替换)
+     * @param reqUrl
+     * @param referReqHeaders
+     * @return
+     */
+    private static byte[] genGetRequestBytes(String reqUrl, List<String> referReqHeaders) {
         //编写函数 实现 基于请求体 替换 URL
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
         // 构造GET请求的字节数组
         String baseRequest = "GET %s HTTP/1.1\r\n" +
-                "Host: 1.1.1.1\r\n" +
+                "Host: %s\r\n" +
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36\r\n" +
                 "\r\n";
-        //baseRequest = String.format(baseRequest, urlInfo.getReqPath(), urlInfo.getReqHostPort());
-        baseRequest = String.format(baseRequest, urlInfo.getFullPath());
+        //补充数据
+        baseRequest = String.format(baseRequest, urlInfo.getFullPath(), urlInfo.getHostPortUsual());
         byte[] requestBytes = baseRequest.getBytes();
 
-        //更新请求头
+        //基于请求头列表 更新 requestBytes 中的 请求头
         HelperPlus helperPlus = new HelperPlus(helpers);
         for (String referReqHeader : referReqHeaders){
-            if (true){
+            if (!referReqHeader.toLowerCase().contains("host:")){
                 // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
                 requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, referReqHeader);
             }
         }
-
-        IRequestInfo requestInfo = helpers.analyzeRequest(httpService, requestBytes);
-        stdout_println(String.format("目标URL:%s -> \n实际URL: %s + \n参数: %s  \n请求头:%s",
-                reqUrl,
-                requestInfo.getUrl().toString(),
-                requestInfo.getParameters(),
-                requestInfo.getHeaders()
-        ));
-
-
-
-        //发送HTTP请求
-        IHttpRequestResponse requestResponse = callbacks.makeHttpRequest(httpService, requestBytes);
-
-        // 空检查
-        if (requestResponse == null || requestResponse.getResponse() == null) {
-            throw new IllegalStateException("Request failed, no response received.");
-        }
-
-        //处理响应体
-        byte[] response = requestResponse.getResponse();
-        if (response != null) {
-            String responseStr = helpers.bytesToString(response);
-            System.out.println(String.format("Request URL [%s] Received response:\n%s",
-                    reqUrl, responseStr.substring(Math.min(20,responseStr.length()))));
-        } else {
-            System.out.println(String.format("Request URL [%s] Received response: null",
-                    reqUrl));
-        }
+        return requestBytes;
     }
 
+    /**
+     * 直接替换一个请求体的 URL 部分 其他部分保留
+     */
+    public static byte[] replaceReqBytesFirstLine(byte[] originalRequest, String newUrl) {
+        IExtensionHelpers helpers = getHelpers();
+        HelperPlus helperPlus = new HelperPlus(helpers);
+        HttpUrlInfo urlInfo = new HttpUrlInfo(newUrl);
+
+        //获取原始请求体的首行 第一个\r\n 的 offset
+        byte[] firstLineBytes = getFirstLineBytes(originalRequest);
+
+        //删除 originalRequest 的 0 到 offset 部分
+        byte[] noFirstLineReqBytes = "\r\n".getBytes();
+        int crlfIndex = firstLineBytes.length;
+        try {
+            // 删除旧的首行，保留请求体
+            noFirstLineReqBytes = Arrays.copyOfRange(originalRequest, crlfIndex, originalRequest.length);
+        }catch (Exception e){
+            stderr_println(LOG_ERROR, String.format("请求体构建出错 Error:%s", e.getMessage()));
+        }
+
+        //根据 newUrl 生成新的 首行 Byte[]
+        String method = helperPlus.getMethod(originalRequest);
+        String newFirstLine = String.format("%s %s HTTP/1.1", method, urlInfo.getFullPath());
+        byte[] newFirstLineBytes = helpers.stringToBytes(newFirstLine);
+
+        //将新的首行 byte 拼接到 新的 originalRequest 上
+        byte[] newReqBytes = concatenateByteArrays(newFirstLineBytes, noFirstLineReqBytes);
+
+        //修改Host头部分
+        newReqBytes = helperPlus.addOrUpdateHeader(true, newReqBytes, "Host", urlInfo.getHostPort());
+
+        return newReqBytes;
+    }
 
     /**
      * 实现Gzip数据的解压
@@ -126,20 +162,26 @@ public class BurpHttpUtils {
         return result;
     }
 
+    /**
+     * 基于URL生成一个HTTP请求服务对象
+     */
     public static IHttpService getHttpService(String url){
-        try {
-            URL urlObj = new URL(url);
-            //获取请求协议
-            String protocol = urlObj.getProtocol();
-            //从URL中获取请求host
-            String host = urlObj.getHost();
-            //从URL中获取请求Port
-            int port = urlObj.getPort();
-            return helpers.buildHttpService(host, port, protocol);
-        } catch (MalformedURLException e) {
-            stderr_println(String.format("URL格式不正确: %s -> %s", url, e.getMessage()));
-            return null;
-        }
+        HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+        IHttpService HttpService = helpers.buildHttpService(urlInfo.getHost(), urlInfo.getPort(), urlInfo.getProto());
+        return HttpService;
+    }
+
+    /**
+     * 获取HTTP请求的第一行（请求行） 没有解决第一行不是首行的问题
+     * @return
+     */
+    public static byte[] getFirstLineBytes(byte[] request) {
+        String requestStr = helpers.bytesToString(request);
+        int firstLineEnd = requestStr.indexOf("\r\n");
+        if (firstLineEnd == -1) firstLineEnd = requestStr.indexOf("\n");
+        String firstLine = firstLineEnd != -1 ? requestStr.substring(0, firstLineEnd) : requestStr;
+        byte[] firstLineBytes = helpers.stringToBytes(firstLine);
+        return firstLineBytes;
     }
 
 }

@@ -48,16 +48,6 @@ public class DBService {
                 e.printStackTrace();
             }
 
-/* 把WAL模式设置放在链接字符串更加方便
-            // Write-Ahead Logging (WAL) 模式，提供更好的并发性能
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute("PRAGMA journal_mode = WAL");
-            } catch (SQLException e) {
-                stderr_println(String.format("[!] set journal_mode error. -> %s", e.getMessage()));
-                e.printStackTrace();
-            }
-*/
-
             stdout_println(LOG_INFO, "[+] SQLite database connection initialized successfully. ");
         } catch (ClassNotFoundException e) {
             stderr_println(String.format("[!] JDBC driver not found. -> %s", e.getMessage()));
