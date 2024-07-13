@@ -75,7 +75,7 @@ public class RecordPathTable {
 
     //插入一条路径记录 复用
     public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
-        RecordPathModel recordPathModel = new RecordPathModel( msgInfo.getUrlInfo(), msgInfo.getRespStatusCode());
+        RecordPathModel recordPathModel = new RecordPathModel(msgInfo.getUrlInfo(), msgInfo.getRespStatusCode());
         return insertOrUpdateSuccessUrl(recordPathModel);
     }
 
