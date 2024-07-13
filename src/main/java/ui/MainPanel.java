@@ -685,7 +685,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         apiDataModels = UnionTableSql.fetchTableLineDataIsNull();
                         break;
                     case "显示全部内容":
-                        apiDataModels = UnionTableSql.fetchTableLineDataAll();
                     default:
                         apiDataModels = UnionTableSql.fetchTableLineDataAll();
                         break;
