@@ -22,11 +22,10 @@ public class ConfigPanel extends JPanel {
     // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
-    public static JToggleButton autoRefreshButton;
-    public static JLabel autoRefreshText;
-
-    public static JTextField searchField;
-
+    public static JToggleButton recursiveButton; //递归开关按钮状态
+    public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
+    public static JLabel autoRefreshText; //自动刷新按钮显示的文本
+    public static JTextField searchField; //URl搜索框显
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
     public ConfigPanel() {
@@ -171,13 +170,13 @@ public class ConfigPanel extends JPanel {
         refreshButton.setToolTipText("点击刷新表格");
 
         // 开关 是否开启对提取URL进行发起请求
-        JToggleButton toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        toggleButton.setPreferredSize(new Dimension(50, 24));
-        toggleButton.setBorder(null);  // 设置无边框
-        toggleButton.setFocusPainted(false);  // 移除焦点边框
-        toggleButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        toggleButton.setToolTipText("是否开启对提取URL进行发起请求");
+        recursiveButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        recursiveButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        recursiveButton.setPreferredSize(new Dimension(50, 24));
+        recursiveButton.setBorder(null);  // 设置无边框
+        recursiveButton.setFocusPainted(false);  // 移除焦点边框
+        recursiveButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        recursiveButton.setToolTipText("是否开启对提取URL进行发起请求");
 
         // 刷新按钮按钮
         autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
@@ -202,7 +201,7 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(refreshButton, gbc_buttons);
         // 在 FilterPanel 中添加 toggleButton
         gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
-        FilterPanel.add(toggleButton, gbc_buttons);
+        FilterPanel.add(recursiveButton, gbc_buttons);
         gbc_buttons.gridx = 11; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshButton, gbc_buttons);
         gbc_buttons.gridx = 12; // 将横坐标位置移动到下一个单元格
@@ -457,4 +456,9 @@ public class ConfigPanel extends JPanel {
         // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
         return autoRefreshButton.isSelected();
     }
+
+    public static boolean recursiveIsSelected(){
+        return recursiveButton.isSelected();
+    }
+
 }
