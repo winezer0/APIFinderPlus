@@ -739,8 +739,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             } else {
                 DBService.clearModelTableData();
             }
-
-
             // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

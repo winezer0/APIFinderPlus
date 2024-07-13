@@ -12,8 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
-import static utils.BurpPrintUtils.stderr_println;
-import static utils.BurpPrintUtils.stdout_println;
+import static utils.BurpPrintUtils.*;
 
 public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;   //记录所有加入到URL的请求
@@ -417,6 +416,7 @@ public class ConfigPanel extends JPanel {
                     @Override
                     protected Void doInBackground() throws Exception {
                         BurpSitemapUtils.addSiteMapUrlsToRecord(false);
+                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Path Table End.");
                         return null;
                     }
                 }.execute();
@@ -431,6 +431,7 @@ public class ConfigPanel extends JPanel {
                     @Override
                     protected Void doInBackground() throws Exception {
                         BurpSitemapUtils.addSiteMapUrlsToRecord(true);
+                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Url Table End.");
                         return null;
                     }
                 }.execute();
