@@ -1,77 +1,68 @@
 package utils;
 
-import burp.BurpExtender;
-import burp.IHttpRequestResponse;
-import burp.IHttpService;
+import burp.*;
+import model.HttpUrlInfo;
+import utilbox.HelperPlus;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
+
+import static utils.BurpPrintUtils.stderr_println;
 
 
 public class BurpHttpUtils {
     public static int MaxResponseContentLength = 500000;
+    private static IExtensionHelpers helpers = BurpExtender.getHelpers();
+    private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 
-    public static Map<String, Object> makeGetRequest(Map<String, Object> pathDataModel) {
-        Map<String, Object> onePathData = (Map<String, Object>) pathDataModel.get("path_data");
-        onePathData.put("path", pathDataModel.get("path"));
-        onePathData.put("url", pathDataModel.get("url"));
-        // 解析URL
-        String host = (String) onePathData.get("host");
-        // 使用Number作为中间类型，以应对可能不同的数字类型
-        Number portNumber = (Number) onePathData.get("port");
-        int port = portNumber.intValue();
-        String protocol = (String) onePathData.get("protocol");
-        String path = (String) onePathData.get("path");
+    public static void makeHttpRequestForGet(String reqUrl, List<String> referReqHeaders) {
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
+
         // 创建IHttpService对象
-        IHttpService httpService = BurpExtender.getHelpers().buildHttpService(host, port, protocol);
+        IHttpService iHttpService = BurpHttpUtils.getHttpService(reqUrl);
 
         // 构造GET请求的字节数组
-        String request = "GET " + path + " HTTP/1.1\r\n" +
-                "Host: " + host + "\r\n" +
-                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36" + "\r\n" +
+        String baseRequest = "GET /%s HTTP/1.1\r\n" +
+                "Host: %s\r\n" +
+                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36\r\n" +
                 "\r\n";
-        byte[] requestBytes = request.getBytes();
+        baseRequest = String.format(baseRequest, urlInfo.getReqPath(), urlInfo.getReqHostPort());
+        byte[] requestBytes = baseRequest.getBytes();
 
-        // 初始化返回数据结构
-        onePathData.put("method", "GET");
-        onePathData.put("time", new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
-
-        IHttpRequestResponse requestResponse = null;
-
-        try {
-            // 发起请求
-            requestResponse = BurpExtender.getCallbacks().makeHttpRequest(httpService, requestBytes);
-            // 空检查
-            if (requestResponse == null || requestResponse.getResponse() == null) {
-                throw new IllegalStateException("Request failed, no response received.");
+        //更新请求头
+        HelperPlus helperPlus = new HelperPlus(helpers);
+        for (String referReqHeader : referReqHeaders){
+            if (!referReqHeader.toLowerCase().contains("host: ") && !referReqHeader.contains("HTTP/1.1")){
+                requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, referReqHeader);
             }
-
-            // 获取响应字节
-            byte[] responseBytes = requestResponse.getResponse();
-            responseBytes = responseBytes.length  > MaxResponseContentLength ? Arrays.copyOf(responseBytes, MaxResponseContentLength) : responseBytes;
-            String statusCode = String.valueOf(BurpExtender.getCallbacks().getHelpers().analyzeResponse(responseBytes).getStatusCode());
-
-            // 添加请求和响应数据到返回数据结构
-            onePathData.put("requests", Base64.getEncoder().encodeToString(requestBytes));
-            onePathData.put("response", Base64.getEncoder().encodeToString(responseBytes));
-            onePathData.put("status", statusCode);
-        } catch (Exception e) {
-            // 异常处理，记录错误信息
-            onePathData.put("status", "请求报错");
-            onePathData.put("requests", Base64.getEncoder().encodeToString(requestBytes));
-            onePathData.put("response", Base64.getEncoder().encodeToString(e.getMessage().getBytes()));
         }
 
-        return onePathData;
+        //发送HTTP请求
+        IHttpRequestResponse requestResponse = callbacks.makeHttpRequest(iHttpService, requestBytes);
 
+        // 空检查
+        if (requestResponse == null || requestResponse.getResponse() == null) {
+            throw new IllegalStateException("Request failed, no response received.");
+        }
+
+        //处理响应体
+        byte[] response = requestResponse.getResponse();
+        if (response != null) {
+            String responseStr = helpers.bytesToString(response);
+            System.out.println(String.format("Request URL [%s] Received response:\n%s",
+                    reqUrl, responseStr.substring(Math.min(20,responseStr.length()))));
+        } else {
+            System.out.println(String.format("Request URL [%s] Received response: null",
+                    reqUrl));
+        }
     }
+
 
     /**
      * 实现Gzip数据的解压
@@ -120,4 +111,21 @@ public class BurpHttpUtils {
         }
         return result;
     }
+
+    public static IHttpService getHttpService(String url){
+        try {
+            URL urlObj = new URL(url);
+            //获取请求协议
+            String protocol = urlObj.getProtocol();
+            //从URL中获取请求host
+            String host = urlObj.getHost();
+            //从URL中获取请求Port
+            int port = urlObj.getPort();
+            return helpers.buildHttpService(host, port, protocol);
+        } catch (MalformedURLException e) {
+            stderr_println(String.format("URL格式不正确: %s -> %s", url, e.getMessage()));
+            return null;
+        }
+    }
+
 }
