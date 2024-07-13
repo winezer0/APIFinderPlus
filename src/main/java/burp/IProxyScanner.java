@@ -5,6 +5,8 @@ import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
 import ui.ConfigPanel;
+import utilbox.HelperPlus;
+import utils.BurpHttpUtils;
 import utils.CastUtils;
 import utils.AnalyseInfoUtils;
 import utils.PathTreeUtils;
@@ -259,8 +261,31 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //todo: 增加自动递归查询功能
-
+                    //Todo: 增加自动递归查询功能 未完成
+                    if (ConfigPanel.recursiveIsSelected()){
+                        //获取一个没访问的URL
+                        UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
+                        if (unVisitedUrlsModel != null){
+                            //获取URL
+                            List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+                            //将这些URl标记为已访问
+                            RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
+                            //后台循环访问这些URL,并将响应体加入数据库
+                            //请求URL有了,请求头还没有
+                            //获取这个MsgHash对应的请求体和响应体
+                            String msgHash = unVisitedUrlsModel.getMsgHash();
+                            ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+                            for (String reqUrl:unvisitedUrls){
+                                stdout_println(LOG_DEBUG, String.format("开始递归请求URL: %s", reqUrl));
+                                //获取请求头
+                                HelperPlus helperPlus = new HelperPlus(getHelpers());
+                                List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+                                //发起HTTP请求
+                                BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                                return;
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();
