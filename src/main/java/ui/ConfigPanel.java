@@ -416,12 +416,7 @@ public class ConfigPanel extends JPanel {
                 new SwingWorker<Void, Void>() {
                     @Override
                     protected Void doInBackground() throws Exception {
-                        if (BurpSitemapUtils.firstAddSiteMapUrlsToRecordPath){
-                            BurpSitemapUtils.addSiteMapUrlsToRecord(false);
-                            BurpSitemapUtils.firstAddSiteMapUrlsToRecordPath = false;
-                        } else {
-                            stdout_println("This function [firstAddSiteMapUrlsToRecordPath] only can run once !!!");
-                        }
+                        BurpSitemapUtils.addSiteMapUrlsToRecord(false);
                         return null;
                     }
                 }.execute();
@@ -435,12 +430,7 @@ public class ConfigPanel extends JPanel {
                 new SwingWorker<Void, Void>() {
                     @Override
                     protected Void doInBackground() throws Exception {
-                        if (BurpSitemapUtils.firstAddSiteMapUrlsToRecordUrl) {
-                            BurpSitemapUtils.addSiteMapUrlsToRecord(true);
-                            BurpSitemapUtils.firstAddSiteMapUrlsToRecordUrl = false;
-                        } else {
-                            stdout_println("This function [firstAddSiteMapUrlsToRecordUrl] only can run once !!!");
-                        }
+                        BurpSitemapUtils.addSiteMapUrlsToRecord(true);
                         return null;
                     }
                 }.execute();

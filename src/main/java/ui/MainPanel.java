@@ -3,6 +3,7 @@ package ui;
 import burp.*;
 import database.*;
 import model.*;
+import utils.BurpSitemapUtils;
 import utils.CastUtils;
 import utils.UiUtils;
 
@@ -716,6 +717,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }.execute();
     }
 
+
     /**
      * 清理所有数据
      */
@@ -732,7 +734,12 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 //            ConfigPanel.jsCrawledCount.setText("0/0");
 
             //清空数据库内容
-            if (clearAllTable) DBService.clearAllTableData(); else DBService.clearModelTableData();
+            if (clearAllTable) {
+                DBService.clearAllTableData();
+            } else {
+                DBService.clearModelTableData();
+            }
+
 
             // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {

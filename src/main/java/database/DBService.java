@@ -96,10 +96,11 @@ public class DBService {
 
     //获取一个数据库语句
     public Connection getNewConn() throws SQLException {
-        //解决 [SQLITE_BUSY] The database file is locked (database is locked) 错误
+        String connectionStringWithWal = CONNECTION_STRING + "?journal_mode=WAL";
+        //勉强解决 [SQLITE_BUSY] The database file is locked (database is locked) 错误
         SQLiteConfig config = new SQLiteConfig();
-        config.setBusyTimeout(1000); // 设置超时时间，单位是毫秒
-        return DriverManager.getConnection(CONNECTION_STRING, config.toProperties());
+        config.setBusyTimeout(5000); // 设置超时时间，单位是毫秒
+        return DriverManager.getConnection(connectionStringWithWal, config.toProperties());
     }
 
     // 关闭数据库连接的方法
@@ -143,10 +144,10 @@ public class DBService {
      * 清空所有表的数据
      */
     public static void clearAllTableData(){
+        clearModelTableData();
         clearTable(PathTreeTable.tableName);
         clearTable(RecordPathTable.tableName);
         clearTable(RecordUrlTable.tableName);
-        clearModelTableData();
     }
 
 

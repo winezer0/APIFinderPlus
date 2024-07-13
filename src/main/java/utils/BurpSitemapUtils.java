@@ -22,9 +22,6 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class BurpSitemapUtils {
-    public static boolean firstAddSiteMapUrlsToRecordPath = true;
-    public static boolean firstAddSiteMapUrlsToRecordUrl = true;
-
     /**
      * 添加 SiteMap 中 所有有关的URL到 RecordPath 或 RecordUrl 表
      */

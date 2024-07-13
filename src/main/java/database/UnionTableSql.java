@@ -129,7 +129,7 @@ public class UnionTableSql {
         int rowsAffected = -1;
 
         // 获取当前所有记录的数据
-        String deleteSQL = ("DELETE FROM table1 WHERE id IN (" +
+        String deleteSQL = ("DELETE FROM tableName1 WHERE id IN (" +
                 "SELECT A.id FROM tableName1 A LEFT JOIN tableName2 B ON A.msg_hash=B.msg_hash " +
                 "WHERE (find_url_num IS NULL AND find_path_num IS NULL AND find_info_num IS NULL) " +
                 "OR (find_url_num < 1 AND find_path_num < 1 AND find_info_num < 1));")
@@ -138,9 +138,9 @@ public class UnionTableSql {
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             rowsAffected = stmt.executeUpdate();
-            stdout_println(String.format(String.format("[-] table [%s] cleared Useless Data [%s] line.", ReqDataTable.tableName, rowsAffected)));
+            stdout_println(LOG_DEBUG, String.format(String.format("[-] table [%s] cleared Useless Data [%s] line.", ReqDataTable.tableName, rowsAffected)));
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error clear Useless Data On Table [%s] -> Error:[%s]", ReqDataTable.tableName, e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error clear Useless Data On Table [%s] -> Error:[%s]", ReqDataTable.tableName, e.getMessage()));
             e.printStackTrace();
         }
 

@@ -18,32 +18,26 @@ public class RecordPathTable {
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
             .replace("tableName", tableName)
-            + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
-
-            + " req_proto TEXT NOT NULL,\n"
-            + " req_host_port TEXT NOT NULL,\n"
-            + " req_path_dir TEXT NOT NULL,\n"
-            + " resp_status_code TEXT NOT NULL, \n"
-
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
+            + "req_hash TEXT UNIQUE, \n"  // 添加一列 req_hash 作为 req_proto req_host_port req_path_dir resp_status_code 的 特征值
+            + "req_proto TEXT NOT NULL,\n"
+            + "req_host_port TEXT NOT NULL,\n"
+            + "req_path_dir TEXT NOT NULL,\n"
+            + "resp_status_code TEXT NOT NULL, \n"
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'"
             .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
-
             + ");";
 
 
     //插入一条路径记录
-    public static synchronized int insertOrUpdateSuccessUrl(String reqProto, String reqHostPort, String reqPathDir, int respStatusCode) {
+    public static synchronized int insertOrUpdateSuccessUrl(RecordPathModel recordPathModel) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String selectSql = ("SELECT id FROM tableName WHERE req_proto = ? AND req_host_port = ? AND req_path_dir = ? AND resp_status_code = ?")
+        String selectSql = ("SELECT id FROM tableName WHERE req_hash = ?;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
             // 检查记录是否存在
-            stmt.setString(1, reqProto);
-            stmt.setString(2, reqHostPort);
-            stmt.setString(3, reqPathDir);
-            stmt.setInt(4, respStatusCode);
-
+            stmt.setString(1, recordPathModel.getReqHash());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
@@ -51,13 +45,14 @@ public class RecordPathTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?)"
+                String insertSql = "INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash) VALUES (?, ?, ?, ?, ?);"
                         .replace("tableName", tableName);
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, reqProto);
-                    insertStmt.setString(2, reqHostPort);
-                    insertStmt.setString(3, reqPathDir);
-                    insertStmt.setInt(4, respStatusCode);
+                    insertStmt.setString(1, recordPathModel.getReqProto());
+                    insertStmt.setString(2, recordPathModel.getReqHostPort());
+                    insertStmt.setString(3, recordPathModel.getReqPathDir());
+                    insertStmt.setInt(4, recordPathModel.getRespStatusCode());
+                    insertStmt.setString(5, recordPathModel.getReqHash());
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -69,7 +64,7 @@ public class RecordPathTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error inserting or updating table [%s] [%s %s %s %s]-> Error:[%s]", tableName, reqProto, reqHostPort, reqPathDir, respStatusCode, e.getMessage()));
+            stderr_println(String.format("[-] Error inserting or updating table -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -79,20 +74,14 @@ public class RecordPathTable {
 
     //插入一条路径记录 复用
     public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
-        String reqProto = msgInfo.getUrlInfo().getReqProto();
-        String reqHostPort = msgInfo.getUrlInfo().getReqHostPort();
-        String reqPathDir = msgInfo.getUrlInfo().getReqPathDir();
-        int respStatusCode = msgInfo.getRespStatusCode();
-        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
+        RecordPathModel recordPathModel = new RecordPathModel( msgInfo.getUrlInfo(), msgInfo.getRespStatusCode());
+        return insertOrUpdateSuccessUrl(recordPathModel);
     }
 
     //插入一条路径记录 复用
     public static synchronized int insertOrUpdateSuccessUrl(String reqUrl, int respStatusCode) {
-        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
-        String reqProto = urlInfo.getReqProto();
-        String reqHostPort = urlInfo.getReqHostPort();
-        String reqPathDir = urlInfo.getReqPathDir();
-        return insertOrUpdateSuccessUrl(reqProto, reqHostPort, reqPathDir, respStatusCode);
+        RecordPathModel recordPathModel = new RecordPathModel(new HttpUrlInfo(reqUrl), respStatusCode );
+        return insertOrUpdateSuccessUrl(recordPathModel);
     }
 
 
@@ -180,8 +169,8 @@ public class RecordPathTable {
     public static int[] batchInsertOrUpdateSuccessUrl(List<RecordPathModel> recordPathModels) {
         int[] generatedIds = null;
 
-        String insertSql = ("INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code) VALUES (?, ?, ?, ?) " +
-                "ON CONFLICT(req_proto, req_host_port, req_path_dir, resp_status_code) DO NOTHING")
+        String insertSql = ("INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT(req_hash) DO NOTHING")
                 .replace("tableName", tableName);
 
         //ON CONFLICT(req_proto, req_host_port, req_path_dir, resp_status_code) DO NOTHING
@@ -191,11 +180,12 @@ public class RecordPathTable {
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
             conn.setAutoCommit(false); // 开启事务处理
             for (RecordPathModel record : recordPathModels) {
-                    insertStmt.setString(1, record.getReqProto());
-                    insertStmt.setString(2, record.getReqHostPort());
-                    insertStmt.setString(3, record.getReqPathDir());
-                    insertStmt.setInt(4, record.getRespStatusCode());
-                    insertStmt.addBatch(); // 添加到批处理
+                insertStmt.setString(1, record.getReqProto());
+                insertStmt.setString(2, record.getReqHostPort());
+                insertStmt.setString(3, record.getReqPathDir());
+                insertStmt.setInt(4, record.getRespStatusCode());
+                insertStmt.setString(5, record.getReqHash());
+                insertStmt.addBatch(); // 添加到批处理
                 }
                 generatedIds = insertStmt.executeBatch();
                 conn.commit(); // 提交事务
