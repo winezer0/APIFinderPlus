@@ -30,7 +30,7 @@ public class RecordPathTable {
 
 
     //插入一条路径记录
-    public static synchronized int insertOrUpdateSuccessUrl(RecordPathModel recordPathModel) {
+    public static synchronized int insertOrUpdateSuccessUrlPath(RecordPathModel recordPathModel) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String selectSql = ("SELECT id FROM tableName WHERE req_hash = ?;")
                 .replace("tableName", tableName);
@@ -74,15 +74,15 @@ public class RecordPathTable {
 
 
     //插入一条路径记录 复用
-    public static synchronized int insertOrUpdateSuccessUrl(HttpMsgInfo msgInfo) {
+    public static synchronized int insertOrUpdateSuccessUrlPath(HttpMsgInfo msgInfo) {
         RecordPathModel recordPathModel = new RecordPathModel(msgInfo.getUrlInfo(), msgInfo.getRespStatusCode());
-        return insertOrUpdateSuccessUrl(recordPathModel);
+        return insertOrUpdateSuccessUrlPath(recordPathModel);
     }
 
     //插入一条路径记录 复用
-    public static synchronized int insertOrUpdateSuccessUrl(String reqUrl, int respStatusCode) {
+    public static synchronized int insertOrUpdateSuccessUrlPath(String reqUrl, int respStatusCode) {
         RecordPathModel recordPathModel = new RecordPathModel(new HttpUrlInfo(reqUrl), respStatusCode );
-        return insertOrUpdateSuccessUrl(recordPathModel);
+        return insertOrUpdateSuccessUrlPath(recordPathModel);
     }
 
 

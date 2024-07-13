@@ -14,8 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static burp.BurpExtender.*;
-import static utils.BurpPrintUtils.stderr_println;
+import static burp.BurpExtender.CONF_BLACK_URL_EXT;
+import static burp.BurpExtender.CONF_NEED_RECORD_STATUS;
+import static utils.BurpPrintUtils.*;
 import static utils.ElementUtils.isEqualsOneKey;
 
 
@@ -58,8 +59,9 @@ public class BurpSitemapUtils {
                                 }
                             } else {
                                 //插入路径 仅保留200 403等有效目录
-                                if(isEqualsOneKey(String.valueOf(respStatusCode), CONF_NEED_RECORD_STATUS, true)){
-                                    RecordPathTable.insertOrUpdateSuccessUrl(reqBaseUrl, respStatusCode);
+                                if(isEqualsOneKey(String.valueOf(respStatusCode), CONF_NEED_RECORD_STATUS, false)){
+                                    RecordPathTable.insertOrUpdateSuccessUrlPath(reqBaseUrl, respStatusCode);
+                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqBaseUrl));
                                 }
                             }
                         } catch (Exception e){

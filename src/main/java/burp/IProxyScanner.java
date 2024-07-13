@@ -33,6 +33,8 @@ public class IProxyScanner implements IProxyListener {
     public static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
+    public static boolean autoRecordPath = false; //是否自动记录PATH
+
     public IProxyScanner() {
         // 获取操作系统内核数量
         int availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -99,9 +101,13 @@ public class IProxyScanner implements IProxyListener {
                 public void run() {
                     //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                    //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
-                    if(isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, true) && !msgInfo.getUrlInfo().getPath().equals("/")){
-                        RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
+
+                    //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
+                    if(IProxyScanner.autoRecordPath
+                            && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
+                            && !msgInfo.getUrlInfo().getPath().equals("/")){
+                        RecordPathTable.insertOrUpdateSuccessUrlPath(msgInfo);
+                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
                     }
                 }
             });
@@ -202,15 +208,17 @@ public class IProxyScanner implements IProxyListener {
                             AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
 
                             //存入分析结果
-                            if(!analyseResult.getInfoList().isEmpty() || !analyseResult.getPathList().isEmpty() || !analyseResult.getUrlList().isEmpty()){
+                            if(!analyseResult.getInfoList().isEmpty()
+                                    || !analyseResult.getPathList().isEmpty()
+                                    || !analyseResult.getUrlList().isEmpty()){
                                 //将初次分析结果写入数据库
                                 int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
                                     stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrl(), msgInfo.getMsgHash()));
                                 }
 
-                                //将爬取到的 URL 加入到 RecordPathTable
-                                RecordPathTable.batchInsertOrUpdateSuccessUrl(analyseResult.getUrlList(), 299);
+                                //将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 还是得访问一边再说
+                                //if (IProxyScanner.autoRecordPath){ RecordPathTable.batchInsertOrUpdateSuccessUrl(analyseResult.getUrlList(), 299); }
                             }
                         }
                         return;
@@ -294,10 +302,15 @@ public class IProxyScanner implements IProxyListener {
                                                             HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
                                                             //更新所有有响应的主动访问请求URL记录到数据库中
                                                             RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
-                                                            if(isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, true) && !msgInfo.getUrlInfo().getPath().equals("/")){
-                                                                RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
+
+                                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
+                                                            if(IProxyScanner.autoRecordPath
+                                                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
+                                                                    && !msgInfo.getUrlInfo().getPath().equals("/")){
+                                                                RecordPathTable.insertOrUpdateSuccessUrlPath(msgInfo);
+                                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
                                                             }
+
                                                             //加入请求分析列表
                                                             if (msgInfo.getRespInfo().getRespLength()>0)
                                                                 insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
