@@ -302,18 +302,44 @@ public class AnalyseResultTable {
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    UnVisitedUrlsModel jsonObj = new UnVisitedUrlsModel(
+                    UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(
                             rs.getInt("id"),
                             rs.getString("req_url"),
                             rs.getString("unvisited_url")
                     );
-                    list.add(jsonObj);
+                    list.add(unVisitedUrlsModel);
                 }
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error fetch All UnVisited Urls: %s", e.getMessage()));
         }
         return list;
+    }
+
+    /**
+     * 获取 一个 未访问URl 对象 (unvisited_url_num > 0)
+     * @return
+     */
+    public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls( ) {
+        UnVisitedUrlsModel unVisitedUrlsModel = null;
+
+        String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC Limit 1;")
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    unVisitedUrlsModel = new UnVisitedUrlsModel(
+                            rs.getInt("id"),
+                            rs.getString("req_url"),
+                            rs.getString("unvisited_url")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch All UnVisited Urls: %s", e.getMessage()));
+        }
+        return unVisitedUrlsModel;
     }
 
     /**
