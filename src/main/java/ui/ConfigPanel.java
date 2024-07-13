@@ -218,10 +218,10 @@ public class ConfigPanel extends JPanel {
 
         // 全部按钮
         choicesComboBox = new JComboBox<>(new String[]{
-                "显示全部内容",
                 "显示有效内容",
                 "显示敏感内容",
                 "显示未访问路径",
+                "显示全部内容",
                 "显示无效内容",
         });
         GridBagConstraints gbc_btnall = new GridBagConstraints();
