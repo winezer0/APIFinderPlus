@@ -64,6 +64,7 @@ public class AnalyseInfo {
 
         //返回 AnalyseInfoResultModel 结果数据
         AnalyseResultModel analyseResult = new AnalyseResultModel(
+                msgInfo.getRespBytes().length,
                 findInfoList,
                 findUrlList,
                 findPathList,
