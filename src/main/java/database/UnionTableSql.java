@@ -1,12 +1,16 @@
 package database;
 
 import model.FindPathModel;
+import model.HttpUrlInfo;
 import model.TableLineDataModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
@@ -146,5 +150,85 @@ public class UnionTableSql {
         }
 
         return rowsAffected;
+    }
+
+
+    /**
+     * 基于 host 列表 同时删除多个 行
+     */
+    public static synchronized int deleteDataByHosts(List<String> reqHostPortList, String tableName) {
+        if (reqHostPortList.isEmpty()) return 0;
+
+        int totalRowsAffected = 0;
+
+        // 构建SQL语句，使用占位符 ? 来代表每个ID
+        String deleteSQL = "DELETE FROM tableName WHERE req_host_port IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(reqHostPortList.size()))
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+
+            // 设置SQL语句中的参数值
+            int index = 1;
+            for (String reqHostPort : reqHostPortList) {
+                stmt.setString(index++, reqHostPort);
+            }
+
+            // 执行删除操作
+            totalRowsAffected = stmt.executeUpdate();
+
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error deleting Data By reqHostPortList On Table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return totalRowsAffected;
+    }
+
+    public static synchronized int deleteDataByUrlToHosts(List<String> urlList, String tableName) {
+        //获取所有URL的HOST列表
+        Set<String> set = new HashSet<>();
+        for (String url: urlList){
+            HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+            set.add(urlInfo.getHostPort());
+        }
+        ArrayList<String> reqHostPortList = new ArrayList<>(set);
+
+        if (reqHostPortList.isEmpty()) return 0;
+        return deleteDataByHosts(reqHostPortList,  tableName);
+    }
+
+    /**
+     * 基于 id 列表 同时删除多个 行
+     * @param ids
+     * @return
+     */
+    public static synchronized int deleteDataByIds(List<Integer> ids, String tableName) {
+        if (ids.isEmpty()) return 0;
+
+        int totalRowsAffected = 0;
+
+        // 构建SQL语句，使用占位符 ? 来代表每个ID
+        String deleteSQL = "DELETE FROM tableName WHERE id IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()))
+                .replace("tableName", tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+
+            // 设置SQL语句中的参数值
+            int index = 1;
+            for (Integer id : ids) {
+                stmt.setInt(index++, id);
+            }
+
+            // 执行删除操作
+            totalRowsAffected = stmt.executeUpdate();
+
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error deleting Data By Ids On Table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return totalRowsAffected;
     }
 }

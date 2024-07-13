@@ -6,13 +6,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
 public class ReqDataTable {
     //数据表名称
-    static String tableName = "REQ_DATA";
+    public static String tableName = "REQ_DATA";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName ("
@@ -186,35 +185,4 @@ public class ReqDataTable {
         return rowsAffected;
     }
 
-    /**
-     * 基于 id 列表 同时删除多个 行
-     * @param ids
-     * @return
-     */
-    public static synchronized int deleteReqDataByIds(List<Integer> ids) {
-        int totalRowsAffected = 0;
-
-        // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM tableName WHERE id IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()))
-                .replace("tableName", tableName);
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
-
-            // 设置SQL语句中的参数值
-            int index = 1;
-            for (Integer id : ids) {
-                stmt.setInt(index++, id);
-            }
-
-            // 执行删除操作
-            totalRowsAffected = stmt.executeUpdate();
-
-        } catch (Exception e) {
-            stderr_println(String.format("[-] Error deleting Data By Ids On Table [%s] -> Error:[%s]", tableName, e.getMessage()));
-            e.printStackTrace();
-        }
-
-        return totalRowsAffected;
-    }
 }

@@ -12,7 +12,7 @@ import static utils.BurpPrintUtils.*;
 
 public class ReqMsgDataTable {
     //数据表名称
-    static String tableName = "REQ_MSG_DATA";
+    public static String tableName = "REQ_MSG_DATA";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"

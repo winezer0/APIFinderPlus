@@ -15,7 +15,7 @@ import static utils.BurpPrintUtils.*;
 
 public class AnalyseResultTable {
     //数据表名称
-    static String tableName = "ANALYSE_RESULT";
+    public static String tableName = "ANALYSE_RESULT";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"

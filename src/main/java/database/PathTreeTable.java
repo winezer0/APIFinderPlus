@@ -5,6 +5,7 @@ import model.PathTreeModel;
 
 import java.sql.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static utils.PathTreeUtils.deepMergeJsonTree;
@@ -12,7 +13,7 @@ import static utils.BurpPrintUtils.*;
 
 public class PathTreeTable {
     //数据表名称
-    static String tableName = "PATH_TREE";
+    public static String tableName = "PATH_TREE";
 
     //创建 基于 record_urls 生成的每个域名的 路径结构 树
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
@@ -153,4 +154,5 @@ public class PathTreeTable {
 
         return set;
     }
+
 }

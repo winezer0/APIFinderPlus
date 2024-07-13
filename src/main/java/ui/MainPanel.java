@@ -196,14 +196,15 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem IgnoreUnVisitedItem = new JMenuItem("写入未访问", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
         IgnoreUnVisitedItem.setToolTipText("当访问URL后依然无法过滤时使用");
 
-        //JMenuItem setUnImportantItem = new JMenuItem("误报", UiUtils.getImageIcon("/icon/setUnImportantItemIcon.png", 15, 15));
-        //JMenuItem customizeItem = new JMenuItem("自定义父路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
-        //JMenuItem insertNewPathItem = new JMenuItem("自定义路径扫描", UiUtils.getImageIcon("/icon/insertNewPathIcon.png", 15, 15));
+        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH到PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
         popupMenu.add(ClearUnVisitedItem);
         popupMenu.add(IgnoreUnVisitedItem);
+        popupMenu.add(addUrlPathToRecordPathItem);
+        popupMenu.add(removeHostFromPathTreeItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -260,7 +261,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                ReqDataTable.deleteReqDataByIds(ids);
+                                UnionTableSql.deleteDataByIds(ids, ReqDataTable.tableName);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -361,6 +362,53 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             }
                         }.execute();
 
+                    }
+                }
+            }
+        });
+
+        // 添加 addUrlPathToRecordPathItem 事件监听器
+        addUrlPathToRecordPathItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                RecordPathTable.batchInsertOrUpdateSuccessUrl(urlList, 299);
+                                refreshTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        // 添加 removeHostFromPathTreeItem 事件监听器
+        removeHostFromPathTreeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel>=0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                UnionTableSql.deleteDataByUrlToHosts(urlList, PathTreeTable.tableName);
+                                UnionTableSql.deleteDataByUrlToHosts(urlList, RecordPathTable.tableName);
+                                refreshTableModel(false);
+                                return null;
+                            }
+                        }.execute();
                     }
                 }
             }
