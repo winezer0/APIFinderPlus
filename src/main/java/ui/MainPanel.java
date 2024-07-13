@@ -121,8 +121,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 "msg_hash",
                 "req_url",
                 "req_method",
-                "resp_status_code",
-                "req_source",
+                "resp_status",
+                "resp_length",
                 "find_url_num",
                 "find_path_num",
                 "find_info_num",
@@ -131,6 +131,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 "unvisited_url_num",
                 "run_status",
                 "basic_path_num",
+                "req_source"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -375,8 +376,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         tableSetColumnMaxWidth(0, 50);
         tableSetColumnMaxWidth(1, 100);
         tableSetColumnMinWidth(2, 300);
-        tableSetColumnMinWidth(11, 50);
-        tableSetColumnMinWidth(12, 50);
+//        tableSetColumnMinWidth(11, 50);
+//        tableSetColumnMinWidth(12, 50);
     }
 
     /**
@@ -389,10 +390,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
         leftRenderer.setHorizontalAlignment(JLabel.LEFT);
 
-        List<Integer> leftColumns = Arrays.asList(0, 1, 2, 7, 8, 9, 10, 11, 12);
+        List<Integer> leftColumns = Arrays.asList(0, 1, 2);
         tableSetColumnRenders(leftColumns, leftRenderer);
 
-        List<Integer> centerColumns = Arrays.asList(3, 4, 5, 6);
+        List<Integer> centerColumns = Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
         tableSetColumnRenders(centerColumns, centerRenderer);
 
     }

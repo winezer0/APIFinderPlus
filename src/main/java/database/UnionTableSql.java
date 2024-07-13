@@ -63,7 +63,8 @@ public class UnionTableSql {
                             rs.getInt("path_to_url_num"),
                             rs.getInt("unvisited_url_num"),
                             rs.getString("run_status"),
-                            rs.getInt("basic_path_num")
+                            rs.getInt("basic_path_num"),
+                            rs.getInt("resp_length")
                     );
                     apiDataModels.add(apiDataModel);
                 }
@@ -75,7 +76,7 @@ public class UnionTableSql {
     }
 
     private static String genSqlByWhereCondition(String WhereCondition){
-        String selectSQL = ("SELECT A.id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status," +
+        String selectSQL = ("SELECT A.id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status,A.resp_length," +
                 "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
                 "from tableName1 A LEFT JOIN tableName2 B ON A.msg_hash = B.msg_hash $WHERE$ order by A.id;")
                 .replace("tableName1", ReqDataTable.tableName)

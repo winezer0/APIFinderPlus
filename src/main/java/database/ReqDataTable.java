@@ -21,10 +21,12 @@ public class ReqDataTable {
             + "msg_hash TEXT UNIQUE,"  //作为实际的消息独立标记
             + "req_url TEXT NOT NULL,"
             + "req_method TEXT NOT NULL,"
-            + "resp_status_code TEXT NOT NULL,"
+
+            + "resp_status_code INTEGER NOT NULL,"
+            + "resp_length INTEGER NOT NULL," //响应长度
+
             + "msg_data_index INTEGER NOT NULL,"
             + "req_source TEXT NOT NULL,"   //请求来源
-
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'".replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
 
             + ");";
@@ -48,8 +50,8 @@ public class ReqDataTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)")
+                        "msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source, resp_length) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)")
                         .replace("tableName", tableName);
 
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -59,6 +61,7 @@ public class ReqDataTable {
                     insertStmt.setInt(4, msgInfo.getRespStatusCode());
                     insertStmt.setInt(5, msgDataIndex);
                     insertStmt.setString(6, reqSource);
+                    insertStmt.setInt(7, msgInfo.getRespBytes().length);
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -162,7 +165,6 @@ public class ReqDataTable {
         }
         return count;
     }
-
 
 
     //获取没有数据的行,备用,用于后续删除数据
