@@ -6,7 +6,9 @@ import model.HttpUrlInfo;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
@@ -118,7 +120,7 @@ public class RecordUrlTable {
 
     //基于host获取获取所有访问过的URL
     public static synchronized List<String> fetchAllAccessedUrls(String reqHostPort) {
-        List<String> uniqueURLs = new ArrayList<>();
+        Set<String> uniqueURLs = new HashSet<>();
 
         String selectSql = "SELECT req_url FROM tableName WHERE req_host_port = ?;"
                 .replace("tableName", tableName);
@@ -133,10 +135,11 @@ public class RecordUrlTable {
             }
 
     } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch All Accessed Url On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error fetch All Accessed Url By reqHostPort On table [%s] -> Error:[%s]", tableName, e.getMessage()));
             e.printStackTrace();
         }
-        return uniqueURLs;
+
+        return new ArrayList<>(uniqueURLs);
     }
 
 
