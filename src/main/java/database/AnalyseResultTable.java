@@ -296,7 +296,7 @@ public class AnalyseResultTable {
     public static synchronized List<UnVisitedUrlsModel> fetchAllUnVisitedUrls( ){
         List<UnVisitedUrlsModel> list = new ArrayList<>();
 
-        String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
+        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -304,6 +304,7 @@ public class AnalyseResultTable {
                 while (rs.next()) {
                     UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(
                             rs.getInt("id"),
+                            rs.getString("msg_hash"),
                             rs.getString("req_url"),
                             rs.getString("unvisited_url")
                     );
@@ -323,7 +324,7 @@ public class AnalyseResultTable {
     public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls( ) {
         UnVisitedUrlsModel unVisitedUrlsModel = null;
 
-        String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC Limit 1;")
+        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC Limit 1;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -331,6 +332,7 @@ public class AnalyseResultTable {
                 if (rs.next()) {
                     unVisitedUrlsModel = new UnVisitedUrlsModel(
                             rs.getInt("id"),
+                            rs.getString("msg_hash"),
                             rs.getString("req_url"),
                             rs.getString("unvisited_url")
                     );
@@ -420,17 +422,18 @@ public class AnalyseResultTable {
      * 实现 基于 msgHash 获取 unvisitedUrls
      */
     public static synchronized UnVisitedUrlsModel fetchUnVisitedUrlsByMsgHash(String msgHash) {
-        UnVisitedUrlsModel jsonObj = null;
+        UnVisitedUrlsModel unVisitedUrlsModel = null;
 
-        String selectSQL = ("SELECT id, req_url, unvisited_url FROM tableName WHERE msg_hash = ?;")
+        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE msg_hash = ?;")
                 .replace("tableName", tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    jsonObj = new UnVisitedUrlsModel(
+                    unVisitedUrlsModel = new UnVisitedUrlsModel(
                             rs.getInt("id"),
+                            rs.getString("msg_hash"),
                             rs.getString("req_url"),
                             rs.getString("unvisited_url")
                     );
@@ -439,7 +442,7 @@ public class AnalyseResultTable {
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error fetch UnVisited Urls By MsgHash: %s", e.getMessage()));
         }
-        return jsonObj;
+        return unVisitedUrlsModel;
     }
 
     /**
@@ -448,7 +451,7 @@ public class AnalyseResultTable {
     public static synchronized List<UnVisitedUrlsModel> fetchUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
         List<UnVisitedUrlsModel> unVisitedUrlsModels = new ArrayList<>();
 
-        String selectSQL = "SELECT id, req_url, unvisited_url FROM tableName WHERE msg_hash IN $buildInParameterList$;"
+        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE msg_hash IN $buildInParameterList$;"
                 .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()))
                 .replace("tableName", tableName);
 
@@ -463,6 +466,7 @@ public class AnalyseResultTable {
                 while (rs.next()) {
                     UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(
                             rs.getInt("id"),
+                            rs.getString("msg_hash"),
                             rs.getString("req_url"),
                             rs.getString("unvisited_url")
                     );
