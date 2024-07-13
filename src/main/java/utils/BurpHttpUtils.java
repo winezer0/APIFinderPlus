@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 import static utils.BurpPrintUtils.stderr_println;
+import static utils.BurpPrintUtils.stdout_println;
 
 
 public class BurpHttpUtils {
@@ -25,26 +26,39 @@ public class BurpHttpUtils {
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         // 创建IHttpService对象
-        IHttpService iHttpService = BurpHttpUtils.getHttpService(reqUrl);
+        IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
 
+        //编写函数 实现 基于请求体 替换 URL
         // 构造GET请求的字节数组
-        String baseRequest = "GET /%s HTTP/1.1\r\n" +
-                "Host: %s\r\n" +
+        String baseRequest = "GET %s HTTP/1.1\r\n" +
+                "Host: 1.1.1.1\r\n" +
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36\r\n" +
                 "\r\n";
-        baseRequest = String.format(baseRequest, urlInfo.getReqPath(), urlInfo.getReqHostPort());
+        //baseRequest = String.format(baseRequest, urlInfo.getReqPath(), urlInfo.getReqHostPort());
+        baseRequest = String.format(baseRequest, urlInfo.getFullPath());
         byte[] requestBytes = baseRequest.getBytes();
 
         //更新请求头
         HelperPlus helperPlus = new HelperPlus(helpers);
         for (String referReqHeader : referReqHeaders){
-            if (!referReqHeader.toLowerCase().contains("host: ") && !referReqHeader.contains("HTTP/1.1")){
+            if (true){
+                // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
                 requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, referReqHeader);
             }
         }
 
+        IRequestInfo requestInfo = helpers.analyzeRequest(httpService, requestBytes);
+        stdout_println(String.format("目标URL:%s -> \n实际URL: %s + \n参数: %s  \n请求头:%s",
+                reqUrl,
+                requestInfo.getUrl().toString(),
+                requestInfo.getParameters(),
+                requestInfo.getHeaders()
+        ));
+
+
+
         //发送HTTP请求
-        IHttpRequestResponse requestResponse = callbacks.makeHttpRequest(iHttpService, requestBytes);
+        IHttpRequestResponse requestResponse = callbacks.makeHttpRequest(httpService, requestBytes);
 
         // 空检查
         if (requestResponse == null || requestResponse.getResponse() == null) {

@@ -2,7 +2,6 @@ package utils;
 
 import burp.BurpExtender;
 import burp.IHttpRequestResponse;
-import burp.IProxyScanner;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
 import database.PathTreeTable;
@@ -82,14 +81,14 @@ public class BurpSitemapUtils {
         for (IHttpRequestResponse requestResponse : httpRequestResponses) {
             HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
 
-            if (msgInfo.getUrlInfo().getReqHostPort().contains("-1")){
-                stderr_println(String.format("重大错误!!! URL %s 获取的 reqHostPort 没有合法的端口号 %s",msgInfo.getUrlInfo().getReqBaseUrl(), msgInfo.getUrlInfo().getReqHostPort()));
+            if (msgInfo.getUrlInfo().getHostPort().contains("-1")){
+                stderr_println(String.format("重大错误!!! URL %s 获取的 reqHostPort 没有合法的端口号 %s",msgInfo.getUrlInfo().getNoParamUrl(), msgInfo.getUrlInfo().getHostPort()));
             }
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getReqBaseUrl());
-            jsonObject.put(Constants.REQ_HOST_PORT, msgInfo.getUrlInfo().getReqHostPort());
-            jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getReqPathExt());
+            jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getNoParamUrl());
+            jsonObject.put(Constants.REQ_HOST_PORT, msgInfo.getUrlInfo().getHostPort());
+            jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getExt());
             jsonObject.put(Constants.RESP_STATUS_CODE, msgInfo.getRespStatusCode());
             JsonStringSet.add(jsonObject.toJSONString());
         }

@@ -197,7 +197,7 @@ public class AnalyseUriFilter {
 
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {
-            String url = new HttpUrlInfo(urlStr).getReqUrl();
+            String url = new HttpUrlInfo(urlStr).getRawUrl();
             list.add(url);
         }
         return list;

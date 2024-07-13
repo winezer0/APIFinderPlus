@@ -120,7 +120,7 @@ public class CastUtils {
      */
     public static String stringJsonArrayFormat(String jsonArrayString) {
         if (jsonArrayString == null || jsonArrayString.length()<=2 )
-            return "-";
+            return "";
 
         // 解析JSON数组
         JSONArray jsonArray = toJsonArray(jsonArrayString);
@@ -160,7 +160,7 @@ public class CastUtils {
      */
     public static String infoJsonArrayFormatHtml(String jsonArrayString) {
         if (jsonArrayString == null || jsonArrayString.length()<=2 )
-            return "-";
+            return "";
 
         JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
         StringBuilder formattedResult = new StringBuilder();

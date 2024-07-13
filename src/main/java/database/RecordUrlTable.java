@@ -59,15 +59,15 @@ public class RecordUrlTable {
     //插入访问的URl 复用
     public static synchronized int insertOrUpdateAccessedUrl(HttpMsgInfo msgInfo) {
         return insertOrUpdateAccessedUrl(
-                msgInfo.getUrlInfo().getReqUrl(),
-                msgInfo.getUrlInfo().getReqHostPort() ,
+                msgInfo.getUrlInfo().getRawUrl(),
+                msgInfo.getUrlInfo().getHostPort() ,
                 msgInfo.getRespStatusCode());
     }
 
 
     //插入访问的URl 复用
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl, int respStatusCode) {
-        String reqHostPort = new HttpUrlInfo(reqUrl).getReqHostPort();
+        String reqHostPort = new HttpUrlInfo(reqUrl).getHostPort();
         return insertOrUpdateAccessedUrl(reqUrl, reqHostPort, respStatusCode);
     }
 
@@ -110,7 +110,7 @@ public class RecordUrlTable {
     public static synchronized int[] batchInsertOrUpdateAccessedUrls(List<String> accessedUrls, int respStatusCode){
         List<AccessedUrlInfo> accessedUrlInfos = new ArrayList<>();
         for (String reqUrl : accessedUrls){
-            String reqHostPort = new HttpUrlInfo(reqUrl).getReqHostPort();
+            String reqHostPort = new HttpUrlInfo(reqUrl).getHostPort();
             AccessedUrlInfo accessedUrlInfo = new AccessedUrlInfo(reqUrl, reqHostPort,respStatusCode);
             accessedUrlInfos.add(accessedUrlInfo);
         }

@@ -74,20 +74,20 @@ public class IProxyScanner implements IProxyListener {
             String respStatusCodeString = String.valueOf(msgInfo.getRespStatusCode());
 
             //看URL识别是否报错 不记录报错情况
-            if (msgInfo.getUrlInfo().getReqBaseUrl() == null ||msgInfo.getUrlInfo().getReqBaseUrl().equals("-")){
-                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
+            if (msgInfo.getUrlInfo().getNoParamUrl() == null){
+                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getRawUrl());
                 return;
             }
 
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
-            if(isContainOneKey(msgInfo.getUrlInfo().getReqHost(), CONF_BLACK_URL_HOSTS, false)){
-                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
+            if(isContainOneKey(msgInfo.getUrlInfo().getHost(), CONF_BLACK_URL_HOSTS, false)){
+                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getRawUrl());
                 return;
             }
 
             //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getReqUrl());
+                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getRawUrl());
                 return;
             }
 
@@ -104,19 +104,19 @@ public class IProxyScanner implements IProxyListener {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    if(urlPathRecordMap.get(msgInfo.getUrlInfo().getReqBaseDir()) <= 0
+                    if(urlPathRecordMap.get(msgInfo.getUrlInfo().getNoFileUrl()) <= 0
                             && isEqualsOneKey(respStatusCodeString, CONF_NEED_RECORD_STATUS, true)
-                            && !msgInfo.getUrlInfo().getReqPath().equals("/")){
+                            && !msgInfo.getUrlInfo().getPath().equals("/")){
                         RecordPathTable.insertOrUpdateSuccessUrl(msgInfo);
-                        urlPathRecordMap.add(msgInfo.getUrlInfo().getReqBaseDir());
+                        urlPathRecordMap.add(msgInfo.getUrlInfo().getNoFileUrl());
                         //stdout_println(LOG_DEBUG, String.format("[+] Record ReqBasePath: %s -> %s", msgInfo.getUrlInfo().getReqBaseDir(), msgInfo.getRespStatusCode()));
                     }
                 }
             });
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
-            if(isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), CONF_BLACK_URL_EXT, false) ||
-                    isContainOneKey(msgInfo.getUrlInfo().getReqPath(), CONF_BLACK_URL_PATH, false)){
+            if(isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false) ||
+                    isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)){
                 //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
@@ -149,8 +149,8 @@ public class IProxyScanner implements IProxyListener {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
 
             //看URL识别是否报错
-            if (msgInfo.getUrlInfo().getReqBaseUrl() == null || msgInfo.getUrlInfo().getReqBaseUrl().equals("-")
-            ) return;
+            if (msgInfo.getUrlInfo().getNoParamUrl() == null)
+                return;
 
             //记录所有主动访问请求记录到数据库中
             executorService.submit(new Runnable() {
@@ -176,7 +176,7 @@ public class IProxyScanner implements IProxyListener {
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
                 stdout_println(LOG_INFO, String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
-                        msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash(), reqSource));
+                        msgInfo.getUrlInfo().getRawUrl(), msgInfo.getMsgHash(), reqSource));
         }
     }
 
@@ -212,7 +212,7 @@ public class IProxyScanner implements IProxyListener {
                                 //将初次分析结果写入数据库
                                 int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
-                                    stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), msgInfo.getMsgHash()));
+                                    stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrl(), msgInfo.getMsgHash()));
                                 }
 
                                 //将爬取到的 URL 加入到 RecordPathTable
@@ -269,7 +269,8 @@ public class IProxyScanner implements IProxyListener {
                             //获取URL
                             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
                             //将这些URl标记为已访问
-                            RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
+                            //TODO 暂时注释
+                            // RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
                             //后台循环访问这些URL,并将响应体加入数据库
                             //请求URL有了,请求头还没有
                             //获取这个MsgHash对应的请求体和响应体
@@ -322,7 +323,7 @@ public class IProxyScanner implements IProxyListener {
                     && !currPathTree.isEmpty() && !currPathTree.getJSONObject("ROOT").isEmpty()) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
-                String reqBaseUrl = new HttpUrlInfo(reqUrl).getReqBaseUrl();
+                String reqBaseUrl = new HttpUrlInfo(reqUrl).getNoParamUrl();
 
                 for (Object findPath: findPathArray){
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);

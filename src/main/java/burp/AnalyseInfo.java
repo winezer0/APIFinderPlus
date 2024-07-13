@@ -38,8 +38,8 @@ public class AnalyseInfo {
         Set<String> findUriSet = findUriInfoByRegular(msgInfo);
         Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
 
-        String reqUrl = msgInfo.getUrlInfo().getReqUrl();
-        String reqPath = msgInfo.getUrlInfo().getReqPath();
+        String reqUrl = msgInfo.getUrlInfo().getRawUrl();
+        String reqPath = msgInfo.getUrlInfo().getPath();
 
         //采集 URL 处理
         List<String> findUrlList = urlOrPathMap.get(URL_KEY);
@@ -147,12 +147,12 @@ public class AnalyseInfo {
             HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
             //过滤自身包含的URL (包含说明相同) //功能测试通过
-            urlList = AnalyseUriFilter.filterUriBySelfContain(urlInfo.getReqUrl(), urlList);
+            urlList = AnalyseUriFilter.filterUriBySelfContain(urlInfo.getRawUrl(), urlList);
             //stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的URL:%s", urlList.size()));
 
             //仅保留主域名相关URL
             if (onlyScopeDomain){
-                urlList = AnalyseUriFilter.filterUrlByMainHost(urlInfo.getReqRootDomain(), urlList);
+                urlList = AnalyseUriFilter.filterUrlByMainHost(urlInfo.getRootDomain(), urlList);
                 //stdout_println(LOG_DEBUG, String.format("[*] 过滤非主域名URL:%s", urlList.size()));
             }
         }
@@ -181,7 +181,7 @@ public class AnalyseInfo {
             String locationText;
             switch (rule.getLocation()) {
                 case "urlPath":
-                    locationText = msgInfo.getUrlInfo().getReqPath();
+                    locationText = msgInfo.getUrlInfo().getPath();
                     break;
                 case "body":
                     locationText = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
@@ -255,12 +255,12 @@ public class AnalyseInfo {
         respBody = AnalyseInfoUtils.SubString(respBody, MAX_HANDLE_SIZE);
 
         // 针对html页面提取 直接的URL 已完成
-        Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(msgInfo.getUrlInfo().getReqUrl(), respBody);
+        Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(msgInfo.getUrlInfo().getRawUrl(), respBody);
         //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUrl.size()));
         allUriSet.addAll(extractUrl);
 
         // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
-        if (isEqualsOneKey(msgInfo.getUrlInfo().getReqPathExt(), BurpExtender.CONF_EXTRACT_SUFFIX, true)
+        if (isEqualsOneKey(msgInfo.getUrlInfo().getExt(), BurpExtender.CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getRespInfo().getInferredMimeType().contains("script")) {
             Set<String> extractUri = AnalyseInfoUtils.extractUriFromJs(respBody);
             //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUri.size()));

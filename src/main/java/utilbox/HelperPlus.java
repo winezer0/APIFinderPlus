@@ -5,10 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,6 +52,19 @@ public class HelperPlus {
 
     public HelperPlus(IExtensionHelpers helpers) {
         HelperPlus.helpers = helpers;
+    }
+
+    /**
+     * 获取HTTP请求的第一行（请求行） 没有解决第一行不是首行的问题
+     */
+    public String getFirstLine(byte[] request) {
+        String requestStr = helpers.bytesToString(request);
+
+        int firstLineEnd = requestStr.indexOf("\r\n");
+        if (firstLineEnd == -1) firstLineEnd = requestStr.indexOf("\n");
+
+        String firstLine = firstLineEnd != -1 ? requestStr.substring(0, firstLineEnd) : requestStr;
+        return firstLine;
     }
 
     /**

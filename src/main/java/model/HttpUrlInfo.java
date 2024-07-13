@@ -9,76 +9,105 @@ import static utils.BurpPrintUtils.stderr_println;
 
 //创建一个类用于存储 URL解析结果的类
 public class HttpUrlInfo {
-    private String reqUrl;
-    private String reqProto = null;
-    private String reqHost = null;
-    private String reqHostPort = null;
-    private String reqPrefix = null;
-    private String reqRootDomain = null;
-    private int reqPort = -1;
-    private String reqPath = null;
-    private String reqPathDir = null;
+    private String rawUrl;
+    private String proto = null;
+    private String host = null;
+    private int port = -1;
+    private String hostPort = null;
 
-    private String reqPathExt = null;
-    private String reqBaseUrl = "-";
-    private String reqBaseDir = "-";
+    private String rootDomain = null;
+    private String path = null;
+    private String pathDir = null;
+    private String fullPath = null;
+    private String query = null;
+    private String ref = null;
+
+    private String ext = null;
+
+    private String prefixUrl = null;
+    private String noParamUrl = null;
+    private String noFileUrl = null;
 
     public HttpUrlInfo(String requestUrl){
-        reqUrl = requestUrl;
+        rawUrl = requestUrl;
         //基于URL获取其他请求信息
         try {
-            URL urlObj = new URL(reqUrl);
-            //获取请求协议
-            reqProto = urlObj.getProtocol();
-            //从URL中获取请求host
-            reqHost = urlObj.getHost();
-            //从URL中获取请求Port 同时 检查reqPort为-1的情况
-            reqPort = urlObj.getPort() == -1 ? urlObj.getDefaultPort() : urlObj.getPort();
-            //添加个HostPort对象
-            reqHostPort = String.format("%s:%s", reqHost, reqPort);
-            //获取前缀对象
-            reqPrefix = String.format("%s://%s", reqProto, reqHostPort);
-            //获取请求路径
-            reqPath = urlObj.getPath();
-            //解析请求文件的后缀
-            reqPathExt = parseUrlExt(reqUrl);
-            //获取主域名
-            reqRootDomain = DomainUtils.getRootDomain(reqHost);
-            //获取请求路径的目录部分
-            reqPathDir = parseReqPathDir(reqPath);
+            URL urlObj = new URL(rawUrl);
+            //协议 (protocol)：如 http 或 https
+            proto = urlObj.getProtocol();  //协议 (protocol)：如 http 或 https
 
-            // 构造基本URL，不包含查询参数
-            reqBaseUrl = new URL(reqProto, reqHost, reqPort, reqPath).toString();
-            //构造基本URL, 不包含请求文件
-            reqBaseDir = new URL(reqProto, reqHost, reqPort, reqPathDir).toString();
+            //主机 (host)：如 www.example.com
+            host = urlObj.getHost();
+            //端口 (port)：如 80 或 443（默认情况下，如果未指定，http 默认为 80，https 默认为 443） 同时 检查reqPort为-1的情况
+            port = urlObj.getPort() == -1 ? urlObj.getDefaultPort() : urlObj.getPort();
 
+            //路径 (path)：如 /path/to/resource
+            path = urlObj.getPath();
+            //查询参数 (query)：如 ?key=value&anotherKey=anotherValue
+            query = urlObj.getQuery();
+            //片段标识符 (fragment)：如 #section1
+            ref = urlObj.getRef();
+            //获取带有参数的完整Path 不带http信息 /path/to/resource?key=value#section1
+            fullPath = genFullPath();
+            //解析请求文件的后缀 php html
+            ext = parseUrlExtStrict(rawUrl);
+            //添加个HostPort对象 //www.baidu.com:8080
+            hostPort = String.format("%s:%s", host, port);
+            //获取前缀URL // http://www.baidu.com
+            prefixUrl = String.format("%s://%s", proto, hostPort);
+            //获取主域名 baidu.com
+            rootDomain = DomainUtils.getRootDomain(host);
+            //获取请求路径的目录部分 /path/to/
+            pathDir = parseReqPathDir(path);
+            // 重新构造基本URL，不包含查询参数 http://www.baidu.com/path/to/resource
+            noParamUrl = new URL(proto, host, port, path).toString();
+            //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
+            noFileUrl = new URL(proto, host, port, pathDir).toString();
             //格式化URL 不显示默认端口
-            reqUrl = removeUrlDefaultPort(reqUrl);
-            reqBaseUrl = removeUrlDefaultPort(reqBaseUrl);
-            reqBaseDir = removeUrlDefaultPort(reqBaseDir);
+            rawUrl = removeUrlDefaultPort(rawUrl);
+            noParamUrl = removeUrlDefaultPort(noParamUrl);
+            noFileUrl = removeUrlDefaultPort(noFileUrl);
 
             //格式化URL 显示默认端口 //可能存在缺陷,无法处理那种
             //reqUrl = addUrlDefaultPort(reqUrl);
         } catch (MalformedURLException e) {
-            stderr_println(String.format("Invalid URL: %s -> Error: %s", reqUrl, e.getMessage()));
+            stderr_println(String.format("Invalid URL: %s -> Error: %s", rawUrl, e.getMessage()));
             e.printStackTrace();
         }
     }
 
+    private String genFullPath() {
+        StringBuilder fullPart = new StringBuilder(path);
+        if (query != null && !query.isEmpty()) {
+            fullPart.append("?").append(query);
+        }
+        if (ref != null && !ref.isEmpty()) {
+            fullPart.append("#").append(ref);
+        }
+        return fullPart.toString();
+    }
+
     /**
-     * 从URL解析请求后缀
+     * 从URL解析请求后缀 严格模式 处理 # 和 ?
      * @param url
      * @return
      */
-    private String parseUrlExt(String url) {
+    private String parseUrlExtStrict(String url) {
         int queryIndex = url.indexOf('?');
         int fragmentIndex = url.indexOf('#');
 
+        int endIndex = -1;
         // 计算有效部分的结束索引
-        int endIndex = Math.min(url.length(), Math.max(queryIndex, fragmentIndex));
+        if (queryIndex > 0 && fragmentIndex >0){
+            endIndex = Math.min(queryIndex, fragmentIndex);
+        } else if (queryIndex > 0 || fragmentIndex >0){
+            endIndex = Math.max(queryIndex, fragmentIndex);
+        } else {
+            endIndex = url.length();
+        }
 
-        // 如果查询参数或片段标识符存在，截取有效部分；否则使用整个URL
-        String pureUrl = url.substring(0, endIndex > -1 ? endIndex : url.length());
+        // 截取有效部分；否则使用整个URL
+        String pureUrl = url.substring(0, endIndex);
 
         // 查找最后一个`.`的位置
         int lastDotIndex = pureUrl.lastIndexOf('.');
@@ -106,52 +135,65 @@ public class HttpUrlInfo {
         return "/";
     }
 
-    public String getReqUrl() {
-        return reqUrl;
+    public String getRawUrl() {
+        return rawUrl;
     }
 
-    public String getReqProto() {
-        return reqProto;
+    public String getProto() {
+        return proto;
     }
 
-    public String getReqHost() {
-        return reqHost;
+    public String getHost() {
+        return host;
     }
 
-    public String getReqHostPort() {
-        return reqHostPort;
+    public String getHostPort() {
+        return hostPort;
     }
 
-    public String getReqPrefix() {
-        return reqPrefix;
+    public String getPrefixUrl() {
+        return prefixUrl;
     }
 
-    public String getReqRootDomain() {
-        return reqRootDomain;
+    public String getRootDomain() {
+        return rootDomain;
     }
 
-    public int getReqPort() {
-        return reqPort;
+    public int getPort() {
+        return port;
     }
 
-    public String getReqPath() {
-        return reqPath;
+    public String getPath() {
+        return path;
     }
 
-    public String getReqPathDir() {
-        return reqPathDir;
+    public String getPathDir() {
+        return pathDir;
     }
 
-    public String getReqPathExt() {
-        return reqPathExt;
+    public String getExt() {
+        return ext;
     }
 
-    public String getReqBaseUrl() {
-        return reqBaseUrl;
+    public String getNoParamUrl() {
+        return noParamUrl;
     }
 
-    public String getReqBaseDir() {
-        return reqBaseDir;
+    public String getNoFileUrl() {
+        return noFileUrl;
+    }
+
+
+    public String getFullPath() {
+        return fullPath;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public String getRef() {
+        return ref;
     }
 
     /**

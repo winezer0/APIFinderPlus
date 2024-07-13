@@ -203,9 +203,9 @@ public class RecordPathTable {
         for (String findUrl: findUrls){
             HttpUrlInfo urlInfo = new HttpUrlInfo(findUrl);
             RecordPathModel recordPathModel = new RecordPathModel(
-                    urlInfo.getReqProto(),
-                    urlInfo.getReqHostPort(),
-                    urlInfo.getReqPathDir(),
+                    urlInfo.getProto(),
+                    urlInfo.getHostPort(),
+                    urlInfo.getPathDir(),
                     respStatusCode
             );
             recordPathModels.add(recordPathModel);
