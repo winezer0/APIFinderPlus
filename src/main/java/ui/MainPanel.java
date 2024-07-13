@@ -3,7 +3,7 @@ package ui;
 import burp.*;
 import database.*;
 import model.*;
-import utils.BurpSitemapUtils;
+import utils.BurpHttpUtils;
 import utils.CastUtils;
 import utils.UiUtils;
 
@@ -623,7 +623,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         responseData = msgData.getRespBytes();
 
         //显示在UI中
-        iHttpService = UiUtils.getIHttpService(requestUrl);
+        iHttpService = BurpHttpUtils.getHttpService(requestUrl);
         requestTextEditor.setMessage(requestsData, true);
         responseTextEditor.setMessage(responseData, false);
 
