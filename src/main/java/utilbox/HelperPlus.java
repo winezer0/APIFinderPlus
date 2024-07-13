@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 
 public class HelperPlus {
     private static IExtensionHelpers helpers;
-    private final static String Header_Spliter = ":";
+    private final static String Header_Split = ":";
     private final static String Header_Connector = ": ";//contains space
 
     public HelperPlus(IExtensionHelpers helpers) {
@@ -133,7 +133,7 @@ public class HelperPlus {
      */
     public static List<String> addOrUpdateHeader(List<String> headers, String headerLine) {
         if (headerLine.contains(":")) {
-            String[] parts = headerLine.split(Header_Spliter, 2);
+            String[] parts = headerLine.split(Header_Split, 2);
             if (parts.length == 2) {
                 String headerName = parts[0].trim();
                 String headerValue = parts[1].trim();
@@ -151,7 +151,7 @@ public class HelperPlus {
         while (iterator.hasNext()) {
             String header = iterator.next();
             if (header.contains(":")) {
-                String[] parts = header.split(Header_Spliter, 2);//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
+                String[] parts = header.split(Header_Split, 2);//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
                 if (parts.length == 2) {
                     String headerNameOrigin = parts[0].trim();
                     if (headerNameOrigin.equalsIgnoreCase(headerName)) {
@@ -231,7 +231,7 @@ public class HelperPlus {
         Iterator<String> it = headers.iterator();
         while (it.hasNext()) {
             String header = it.next();
-            String headerName = header.split(Header_Spliter, 2)[0].trim();
+            String headerName = header.split(Header_Split, 2)[0].trim();
             if (headerNameOrHeaderLine.length() >= headerName.length()) {
                 //至少要匹配head头
                 if (header.toLowerCase().startsWith(headerNameOrHeaderLine.toLowerCase().trim())) {
@@ -277,7 +277,7 @@ public class HelperPlus {
         if (null == headers || headerName == null) return null;
         for (String header : headers) {
             if (header.contains(":")) {
-                String[] parts = header.split(Header_Spliter, 2);
+                String[] parts = header.split(Header_Split, 2);
                 if (parts.length == 2) {
                     String headerNameOrigin = parts[0].trim();
                     if (headerNameOrigin.equalsIgnoreCase(headerName)) {
@@ -313,7 +313,7 @@ public class HelperPlus {
         if (null == headers || headerName == null) return null;
         for (String header : headers) {
             if (header.contains(":")) {
-                String[] parts = header.split(Header_Spliter, 2);
+                String[] parts = header.split(Header_Split, 2);
                 if (parts.length == 2) {
                     String headerNameOrigin = parts[0].trim();
                     String headerValue = parts[1].trim();
