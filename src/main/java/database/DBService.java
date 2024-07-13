@@ -129,22 +129,38 @@ public class DBService {
     /**
      * 清空常用表的数据
      */
-    public static void clearModelTableData(){
+    public static void clearModelTables(){
        clearTable(AnalyseResultTable.tableName);
        clearTable(ReqDataTable.tableName);
        clearTable(ReqMsgDataTable.tableName);
     }
 
+
     /**
-     * 清空所有表的数据
+     * 清空记录表的数据
      */
-    public static void clearAllTableData(){
-        clearModelTableData();
+    public static void clearRecordTables(){
         clearTable(PathTreeTable.tableName);
         clearTable(RecordPathTable.tableName);
         clearTable(RecordUrlTable.tableName);
     }
 
+
+    /**
+     * 清空所有表的数据
+     */
+    public static void clearAllTables(){
+        clearModelTables();
+        clearRecordTables();
+    }
+
+
+    /**
+     * 清空已访问URL表
+     */
+    public static void clearRecordUrlTable(){
+        clearTable(RecordUrlTable.tableName);
+    }
 
     /**
      * 构建一个函数,实现根据参数列表数量自动拼接 IN (?,?,?)语句

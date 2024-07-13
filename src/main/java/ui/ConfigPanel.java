@@ -1,5 +1,6 @@
 package ui;
 
+import database.DBService;
 import database.UnionTableSql;
 import utils.BurpSitemapUtils;
 import utils.UiUtils;
@@ -275,6 +276,15 @@ public class ConfigPanel extends JPanel {
         clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearModelTableData);
 
+        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据");
+        clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearRecordTableData);
+
+        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录");
+        clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearRecordUrlTableData);
+
+
         JMenuItem clearAllTableData = new JMenuItem("清除所有数据");
         clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearAllTableData);
@@ -402,6 +412,25 @@ public class ConfigPanel extends JPanel {
                 setAutoRefreshButtonTrue();
             }
         });
+
+        // 清除记录URL PATH TREE 数据
+        clearRecordTableData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DBService.clearRecordTables();
+                setAutoRefreshButtonTrue();
+            }
+        });
+
+        // 清除记录URL数据
+        clearRecordUrlTableData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DBService.clearRecordUrlTable();
+                setAutoRefreshButtonTrue();
+            }
+        });
+
 
         // 为 功能 菜单项 加载站点地图到PATH记录 添加 Action Listener
         loadSitemapToRecordPath.addActionListener(new ActionListener() {

@@ -734,9 +734,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             //清空数据库内容
             if (clearAllTable) {
-                DBService.clearAllTableData();
+                DBService.clearAllTables();
             } else {
-                DBService.clearModelTableData();
+                DBService.clearModelTables();
             }
             // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {
