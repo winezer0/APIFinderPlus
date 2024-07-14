@@ -825,17 +825,30 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         System.gc();
     }
 
+
+    private void updateUnVisitedUrls() {
+        updateUnVisitedUrls(false, null);
+    }
     /**
      * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
      */
-    private void updateUnVisitedUrls() {
+    private void updateUnVisitedUrls(boolean updateAllUnVisitedUrls, List<String> msgHashList) {
         // 使用SwingWorker来处理数据更新，避免阻塞EDT
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 // 获取所有未访问URl 注意需要大于0
-                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
-                if (unVisitedUrlsModels.size() > 0){
+                List<UnVisitedUrlsModel> unVisitedUrlsModels = null;
+
+                if (updateAllUnVisitedUrls) {
+                    //更新所有的结果
+                    unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
+                }else {
+                    //仅更新指定 msgHash 对应的未访问URL
+                    unVisitedUrlsModels = AnalyseResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
+                }
+
+                if (unVisitedUrlsModels.size() > 0) {
                     // 获取所有 已经被访问过得URL列表
                     //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
                     //获取所有由reqHash组成的字符串
@@ -847,9 +860,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         //List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
 
                         List<String> newUnVisitedUrls = new ArrayList<>();
-                        for (String url:rawUnVisitedUrls){
+                        for (String url : rawUnVisitedUrls) {
                             String urlHash = CastUtils.calcCRC32(url);
-                            if (!accessedUrlHashes.contains(urlHash)){
+                            if (!accessedUrlHashes.contains(urlHash)) {
                                 newUnVisitedUrls.add(url);
                             }
                         }
@@ -861,7 +874,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         // 执行更新插入数据操作
                         try {
                             AnalyseResultTable.updateUnVisitedUrlsById(urlsModel);
-                        } catch (Exception ex){
+                        } catch (Exception ex) {
                             stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                         }
                     }
