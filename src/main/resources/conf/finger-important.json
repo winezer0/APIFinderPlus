@@ -35,6 +35,28 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
+        "testphp.vulnweb.com"
+      ],
+      "type": "CONF_NOT_AUTO_RECORD",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "testphp.vulnweb.com"
+      ],
+      "type": "CONF_NOT_AUTO_RECURSE",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
         "jquery.js"
       ],
       "type": "CONF_BLACK_URL_PATH",
