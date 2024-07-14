@@ -253,4 +253,33 @@ public class UnionTableSql {
         }
         return count;
     }
+
+
+    /**
+     * 获取任意表的任意列的字符串拼接
+     * @param tableName
+     * @param columnName
+     * @return
+     */
+    public static synchronized List<String> fetchAndConcatenateURLs(String tableName, String columnName) {
+        List<String> concatenatedURLs = new ArrayList<>();
+
+        String concatSQL = "SELECT GROUP_CONCAT(columnName,',') AS concatenated_urls FROM tableName"
+                .replace("columnName",columnName)
+                .replace("tableName",tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn();
+             PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                concatenatedURLs.add(rs.getString("concatenated_urls"));
+            }
+
+        } catch (Exception e) {
+            System.err.println(String.format("[-] Error fetching and concatenating URLs: %s", e.getMessage()));
+            e.printStackTrace();
+        }
+        return concatenatedURLs;
+    }
+
 }
