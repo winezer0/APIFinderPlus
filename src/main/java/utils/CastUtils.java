@@ -2,6 +2,7 @@ package utils;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import model.HttpUrlInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -227,4 +228,36 @@ public class CastUtils {
         // 转换回List并返回
         return new ArrayList<>(uniqueSet);
     }
+
+    /**
+     * 合并新旧列表并去重返回
+     * @param newUrlList 新的URL列表 （会自动提取RootUrl）
+     * @param rawList 原始的配置文件列表
+     * @return
+     */
+     public static List<String> addRootUrlToList(List<String> newUrlList, List<String> rawList) {
+        //0、获取所有rootUrl
+        Set<String> rootUrlSet = new HashSet<>();
+        for (String url: newUrlList){
+            HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+            rootUrlSet.add(urlInfo.getRootUrlUsual());
+        }
+        //1、加入到黑名单列表
+        //合并原来的列表
+        rootUrlSet.addAll(rawList);
+
+        return new ArrayList<>(rootUrlSet);
+    }
+
+    public static List<String> getRootUrlList(List<String> newUrlList) {
+        //0、获取所有rootUrl
+        Set<String> rootUrlSet = new HashSet<>();
+        for (String url: newUrlList){
+            HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+            rootUrlSet.add(urlInfo.getRootUrlUsual());
+        }
+        return new ArrayList<>(rootUrlSet);
+    }
+
+
 }

@@ -1,9 +1,7 @@
 package ui;
 
-import database.DBService;
-import database.RecordPathTable;
-import database.RecordUrlTable;
-import database.UnionTableSql;
+import burp.BurpExtender;
+import database.*;
 import utils.BurpSitemapUtils;
 import utils.CastUtils;
 import utils.UiUtils;
@@ -374,6 +372,14 @@ public class ConfigPanel extends JPanel {
     private JPopupMenu createMoreMenuWithAction() {
         JPopupMenu moreMenu = new JPopupMenu("功能");
 
+        JMenuItem addRootUrlToAllowListen = new JMenuItem("添加到RootUrl白名单");
+        addRootUrlToAllowListen.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addRootUrlToAllowListen);
+
+        JMenuItem addRootUrlToBlackUrlRoot = new JMenuItem("添加到RootUrl黑名单");
+        addRootUrlToBlackUrlRoot.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addRootUrlToBlackUrlRoot);
+
         JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
         addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
         moreMenu.add(addUrlToRecordPath);
@@ -507,6 +513,21 @@ public class ConfigPanel extends JPanel {
             }
         });
 
+        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
+        addRootUrlToAllowListen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                creatTextDialogForAddRecord("添加到RootUrl白名单", "addRootUrlToAllowListen");
+            }
+        });
+
+        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
+        addRootUrlToBlackUrlRoot.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                creatTextDialogForAddRecord("添加到RootUrl黑名单", "addRootUrlToBlackUrlRoot");
+            }
+        });
         return moreMenu;
     }
 
@@ -583,6 +604,22 @@ public class ConfigPanel extends JPanel {
                                     break;
                                 case "addUrlToRecordPath":
                                     RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                                    break;
+                                case "addRootUrlToAllowListen":
+                                    BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
+                                    FingerConfigTab.saveConfigToDefaultJson();
+                                    break;
+                                case "addRootUrlToBlackUrlRoot":
+                                    //1、修改配置文件
+                                    BurpExtender.CONF_BLACK_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_BLACK_URL_ROOT);
+                                    FingerConfigTab.saveConfigToDefaultJson();
+                                    //2、删除 Root URL 对应的 结果数据
+                                    java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);
+                                    int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
+                                    int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseResultTable.tableName);
+                                    stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
+                                    //3、刷新表格
+                                    MainPanel.getInstance().refreshTableModel(false);
                                     break;
                             }
                             return null;

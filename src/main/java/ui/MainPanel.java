@@ -541,16 +541,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //0、获取所有rootUrl
-                                Set<String> rootUrlSet = new HashSet<>();
-                                for (String url:urlList){
-                                    HttpUrlInfo urlInfo = new HttpUrlInfo(url);
-                                    rootUrlSet.add(urlInfo.getRootUrlUsual());
-                                }
-                                //1、加入到黑名单列表
-                                //合并原来的列表
-                                rootUrlSet.addAll(BurpExtender.CONF_NOT_AUTO_RECURSE);
-                                BurpExtender.CONF_NOT_AUTO_RECURSE = new ArrayList<>(rootUrlSet);
-                                //保存Json
+                                BurpExtender.CONF_NOT_AUTO_RECURSE = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_NOT_AUTO_RECURSE);
                                 FingerConfigTab.saveConfigToDefaultJson();
                                 return null;
                             }
@@ -573,16 +564,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                //0、获取所有rootUrl
-                                Set<String> rootUrlSet = new HashSet<>();
-                                for (String url:urlList){
-                                    HttpUrlInfo urlInfo = new HttpUrlInfo(url);
-                                    rootUrlSet.add(urlInfo.getRootUrlUsual());
-                                }
-                                //1、加入到黑名单列表
-                                //合并原来的列表
-                                rootUrlSet.addAll(BurpExtender.CONF_WHITE_URL_ROOT);
-                                BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(rootUrlSet);
+                                BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
                                 //保存Json
                                 FingerConfigTab.saveConfigToDefaultJson();
                                 return null;
@@ -996,7 +978,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         // 调用刷新表格的方法
         try{
-            instance.refreshTableModel(checkAutoRefreshButtonStatus);
+            MainPanel.getInstance().refreshTableModel(checkAutoRefreshButtonStatus);
         } catch (Exception ep){
             stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
         }
