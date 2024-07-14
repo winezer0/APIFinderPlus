@@ -113,7 +113,8 @@ public class RecordPathTable {
         List<RecordPathDirsModel> recordPathModels = new ArrayList<>();
 
         //1、标记需要处理的数据 更新状态为解析中
-        String updateMarkSQL1 = "UPDATE "+ tableName +" SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);";
+        String updateMarkSQL1 = "UPDATE "+ tableName +" SET run_status = ?" +
+                " WHERE id in (SELECT id FROM "+ tableName +" WHERE run_status = ?);";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement Stmt1 = conn.prepareStatement(updateMarkSQL1);){
             Stmt1.setString(1, Constants.ANALYSE_ING);
@@ -142,7 +143,8 @@ public class RecordPathTable {
                     }
 
                     //3、更新 解析中 对应的状态为解析完成
-                    String updateMarkSQL2 = "UPDATE "+ tableName +" SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);";
+                    String updateMarkSQL2 = "UPDATE "+ tableName +" SET run_status = ?" +
+                            " WHERE id in (SELECT id FROM " + tableName + " WHERE run_status = ?);";
 
                     try (PreparedStatement updateMarkSQL2Stmt = conn.prepareStatement(updateMarkSQL2)){
                         updateMarkSQL2Stmt.setString(1, Constants.ANALYSE_END);

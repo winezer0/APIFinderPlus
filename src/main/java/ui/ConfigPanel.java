@@ -30,6 +30,8 @@ public class ConfigPanel extends JPanel {
     public static JTextField searchField; //URl搜索框显
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
+    private String inputTextInDialog = null; //创建一个成员变量存储对话框输入的数据
+
     public ConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
         //GridBagLayout 允许以网格形式布局容器中的组件，同时为每个组件提供独立的定位和大小控制，非常适用于需要复杂布局设计的GUI界面。
@@ -134,7 +136,6 @@ public class ConfigPanel extends JPanel {
         gbc_lbAnalysisEndCount.gridx = 5;
         gbc_lbAnalysisEndCount.gridy = 0;
         FilterPanel.add(lbAnalysisEndCount, gbc_lbAnalysisEndCount);
-
 
         // 添加填充以在左侧占位
         Component horizontalBlank = Box.createHorizontalGlue(); //创建一个水平组件
@@ -258,36 +259,7 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(moreButton, gbc_btnMore);
 
         // 功能按钮 弹出选项
-        JPopupMenu moreMenu = new JPopupMenu("功能");
-
-        JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
-        loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
-        moreMenu.add(loadSitemapToRecordPath);
-
-        JMenuItem loadSitemapToRecordUrl = new JMenuItem("加载SiteMap到Url记录");
-        loadSitemapToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
-        moreMenu.add(loadSitemapToRecordUrl);
-
-        JMenuItem clearUselessData = new JMenuItem("清除无用数据");
-        clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearUselessData);
-
-        JMenuItem clearModelTableData = new JMenuItem("清除表格数据");
-        clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearModelTableData);
-
-        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据");
-        clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearRecordTableData);
-
-        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录");
-        clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearRecordUrlTableData);
-
-
-        JMenuItem clearAllTableData = new JMenuItem("清除所有数据");
-        clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearAllTableData);
+        JPopupMenu moreMenu = genMoreMenuWithAction();
 
         // 自动刷新按钮监听事件
         autoRefreshButton.addActionListener(new ActionListener() {
@@ -382,6 +354,43 @@ public class ConfigPanel extends JPanel {
                 moreMenu.show(e.getComponent(), e.getX(), e.getY());
             }
         });
+ }
+
+    private JPopupMenu genMoreMenuWithAction() {
+        JPopupMenu moreMenu = new JPopupMenu("功能");
+
+        JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
+        loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
+        moreMenu.add(loadSitemapToRecordPath);
+
+        JMenuItem loadSitemapToRecordUrl = new JMenuItem("加载SiteMap到Url记录");
+        loadSitemapToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
+        moreMenu.add(loadSitemapToRecordUrl);
+
+        JMenuItem clearUselessData = new JMenuItem("清除无用数据");
+        clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearUselessData);
+
+        JMenuItem clearModelTableData = new JMenuItem("清除表格数据");
+        clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearModelTableData);
+
+        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据");
+        clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearRecordTableData);
+
+        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录");
+        clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearRecordUrlTableData);
+
+
+        JMenuItem clearAllTableData = new JMenuItem("清除所有数据");
+        clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+        moreMenu.add(clearAllTableData);
+
+        JMenuItem addPathToRecordPath = new JMenuItem("添加有效PATH");
+        addPathToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addPathToRecordPath);
 
         // 为 功能 菜单项 清除无用数据 添加 Action Listener
         clearUselessData.addActionListener(new ActionListener() {
@@ -462,7 +471,98 @@ public class ConfigPanel extends JPanel {
             }
         });
 
- }
+        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
+        addPathToRecordPath.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new SwingWorker<Void, Void>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        //创建一个文本输入框 并 获取对应的值
+                        creatTextDialog("添加有效PATH至PATH记录");
+                        if (inputTextInDialog != null && !inputTextInDialog.isEmpty()){
+                            System.out.println(String.format("Add Custom Urls To Record Url Table End. %s", inputTextInDialog));
+                            stdout_println(LOG_DEBUG, "Add Custom Urls To Record Url Table End.");
+                        }
+                        return null;
+                    }
+                }.execute();
+            }
+        });
+
+        return moreMenu;
+    }
+
+
+    /**
+     * 创建对话框 输入数据
+     */
+    private void creatTextDialog(String title) {
+        // 每次打开对话框先清空数据
+        inputTextInDialog = null;
+
+        //创建一个对话框,便于输入url数据
+        JDialog dialog = new JDialog();
+        dialog.setTitle(title);
+        dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
+        // 添加g第一行提示
+        JLabel urlJLabel = new JLabel("输入有效数据:");
+        constraints.gridx = 0; // 第1列
+        constraints.gridy = 0; // 第1行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(urlJLabel, constraints);
+
+        JTextArea customParentPathArea = new JTextArea(5, 20);
+        customParentPathArea.setText(
+                "http://xxx.xxx.xxx/xxx/xxx" + "\r\n" +
+                "http://xxx.xxx.xxx/xxx/xxx"
+        );
+        customParentPathArea.setLineWrap(true); // 自动换行
+        customParentPathArea.setWrapStyleWord(true); //断行不断字
+        constraints.gridy = 1; // 第2行
+        constraints.gridx = 0; // 第1列
+        dialog.add(new JScrollPane(customParentPathArea), constraints); // 添加滚动条
+
+        // 添加按钮面板
+        JPanel buttonPanel = new JPanel();
+        JButton confirmButton = new JButton("确认");
+        JButton cancelButton = new JButton("取消");
+        buttonPanel.add(confirmButton);
+        buttonPanel.add(cancelButton);
+
+        // 取消按钮事件
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose(); // 关闭对话框
+            }
+        });
+
+        // 确认按钮事件
+        confirmButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 处理自定义父路径逻辑
+                // 获取用户输入的自定义父路径
+                inputTextInDialog = customParentPathArea.getText();
+                dialog.dispose(); // 关闭对话框
+            }
+        });
+
+        constraints.gridx = 0; // 第一列
+        constraints.gridy = 2; // 第三行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(buttonPanel, constraints);
+
+        dialog.pack(); // 调整对话框大小以适应其子组件
+        dialog.setLocationRelativeTo(null); // 居中显示
+        dialog.setVisible(true); // 显示对话框
+
+    }
 
     public static void setAutoRefreshButtonTrue(){
         autoRefreshButton.setSelected(false);
