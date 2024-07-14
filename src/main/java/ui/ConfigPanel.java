@@ -496,7 +496,7 @@ public class ConfigPanel extends JPanel {
     /**
      * 创建加入URL和PATh表的对话框函数
      * @param title
-     * @param addToUrl
+     * @param RecordType 分支类型
      */
     private void creatTextDialogForAddRecord(String title, String RecordType) {
         //创建一个对话框,便于输入url数据
