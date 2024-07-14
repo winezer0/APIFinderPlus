@@ -201,18 +201,23 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH到PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
-        JMenuItem addRootUrlToBlackItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
 
+        JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        JMenuItem addRootUrlToNotAutoRecurse = new JMenuItem("添加到递归扫描黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
+
+        popupMenu.add(accessUnVisitedItem);
+        popupMenu.add(updateUnVisitedItem);
         popupMenu.add(ClearUnVisitedItem);
         popupMenu.add(IgnoreUnVisitedItem);
+
         popupMenu.add(addUrlPathToRecordPathItem);
         popupMenu.add(removeHostFromPathTreeItem);
-        popupMenu.add(updateUnVisitedItem);
-        popupMenu.add(addRootUrlToBlackItem);
-        popupMenu.add(accessUnVisitedItem);
+
+        popupMenu.add(addRootUrlToBlackUrlRootItem);
+        popupMenu.add(addRootUrlToNotAutoRecurse);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -446,8 +451,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
-        // 添加 addRootUrlToBlackItem 事件监听器
-        addRootUrlToBlackItem.addActionListener(new ActionListener() {
+        // 添加 addRootUrlToBlackUrlRootItem 事件监听器
+        addRootUrlToBlackUrlRootItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
@@ -460,7 +465,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //0、获取所有rootUrl
-                                Set<String> rootUrlSet = new HashSet<String>();
+                                Set<String> rootUrlSet = new HashSet<>();
                                 for (String url:urlList){
                                     HttpUrlInfo urlInfo = new HttpUrlInfo(url);
                                     rootUrlSet.add(urlInfo.getRootUrlUsual());
@@ -515,6 +520,39 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             }
                         }.execute();
 
+                    }
+                }
+            }
+        });
+
+        // 添加 addRootUrlToNotAuroRecurse 事件监听器
+        addRootUrlToNotAutoRecurse.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel>=0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //0、获取所有rootUrl
+                                Set<String> rootUrlSet = new HashSet<>();
+                                for (String url:urlList){
+                                    HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+                                    rootUrlSet.add(urlInfo.getRootUrlUsual());
+                                }
+                                //1、加入到黑名单列表
+                                //合并原来的列表
+                                rootUrlSet.addAll(BurpExtender.CONF_NOT_AUTO_RECURSE);
+                                BurpExtender.CONF_NOT_AUTO_RECURSE = new ArrayList<>(rootUrlSet);
+                                //保存Json
+                                FingerConfigTab.saveConfigToDefaultJson();
+                                return null;
+                            }
+                        }.execute();
                     }
                 }
             }
