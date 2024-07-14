@@ -77,35 +77,5 @@ public class RespInfoCompareModel {
         return fieldMap;
     }
 
-    /**
-     * 实际用来对比的模型数据
-     * @param responses
-     * @return
-     */
-    public static Map<String, Object> findCommonFieldValues(List<RespInfoCompareModel> responses) {
-        if (responses == null || responses.size() <= 1) {
-            return Collections.emptyMap();
-        }
-
-        // 获取第一个对象的字段映射，用于参考
-        Map<String, Object> referenceFields = responses.get(0).getAllFieldsAsMap();
-        Map<String, Object> commonFields = new HashMap<>();
-
-        // 遍历所有字段
-        for (Map.Entry<String, Object> entry : referenceFields.entrySet()) {
-            String fieldName = entry.getKey();
-            Object fieldValue = entry.getValue();
-
-            // 检查所有对象的该字段是否具有相同的值
-            boolean allMatch = responses.stream()
-                    .allMatch(response -> fieldValue.equals(response.getAllFieldsAsMap().get(fieldName)));
-
-            if (allMatch) {
-                commonFields.put(fieldName, fieldValue);
-            }
-        }
-
-        return commonFields;
-    }
 
 }

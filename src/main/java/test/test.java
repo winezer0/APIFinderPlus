@@ -1,5 +1,7 @@
 package test;
 
+import utils.RespInfoCompareUtils;
+
 import java.util.*;
 
 public class test {
@@ -40,7 +42,7 @@ public class test {
         responses.add(resp2);
         responses.add(resp3);
 
-        Map<String, Object> commonFields = RespInfoCompareModel.findCommonFieldValues(responses);
+        Map<String, Object> commonFields = RespInfoCompareUtils.findCommonFieldValues(responses);
         System.out.println("Common Fields: " + commonFields);
     }
 }

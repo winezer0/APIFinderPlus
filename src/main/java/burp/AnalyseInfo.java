@@ -261,7 +261,7 @@ public class AnalyseInfo {
         allUriSet.addAll(extractUrl);
 
         // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
-        if (isEqualsOneKey(msgInfo.getUrlInfo().getExt(), BurpExtender.CONF_EXTRACT_SUFFIX, true)
+        if (isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), BurpExtender.CONF_EXTRACT_SUFFIX, true)
                 || msgInfo.getRespInfo().getInferredMimeType().contains("script")) {
             Set<String> extractUri = AnalyseInfoUtils.extractUriFromJs(respBody);
             //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUri.size()));

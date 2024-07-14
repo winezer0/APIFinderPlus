@@ -206,7 +206,7 @@ public class AnalyseInfoUtils {
      * @return
      */
     public static String removeSymbol(String extractUri){
-        if (extractUri != null || extractUri != "")
+        if (extractUri != null && !extractUri.isEmpty())
             extractUri = extractUri
                     .replaceAll("\"", "")
                     .replaceAll("'", "")
@@ -224,7 +224,7 @@ public class AnalyseInfoUtils {
      * @return 解码后的字符串
      */
     public static String decodeHtml(String htmlEncodedString) {
-        if (htmlEncodedString != null || htmlEncodedString != "")
+        if (htmlEncodedString != null || !htmlEncodedString.isEmpty())
             htmlEncodedString = StringEscapeUtils.unescapeHtml4(htmlEncodedString);
         return htmlEncodedString;
     }
@@ -260,7 +260,7 @@ public class AnalyseInfoUtils {
         List<String> urlList = new ArrayList<>();
         for(String path : pathList){
             String newUrl = concatUrlAddPath(reqUrl, path);
-            if (newUrl != null && newUrl.trim() != "")
+            if (newUrl != null && !newUrl.trim().isEmpty())
                 urlList.add(newUrl);
         }
         return urlList;

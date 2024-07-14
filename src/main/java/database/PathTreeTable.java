@@ -50,7 +50,7 @@ public class PathTreeTable {
                 newBasicPathNum = Math.max(0, oldBasicPathNum) + Math.max(0, newBasicPathNum);
 
                 //合并新旧Json树
-                if (oldPathTree != null && oldPathTree != ""){
+                if (oldPathTree != null && !oldPathTree.isEmpty()){
                     JSONObject oldTree = JSONObject.parse(oldPathTree);
                     newPathTree = deepMergeJsonTree(oldTree, newPathTree);
                 }

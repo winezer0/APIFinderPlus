@@ -90,7 +90,7 @@ public class BurpSitemapUtils {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getNoParamUrlUsual());
             jsonObject.put(Constants.REQ_HOST_PORT, msgInfo.getUrlInfo().getHostPort());
-            jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getExt());
+            jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getSuffix());
             jsonObject.put(Constants.RESP_STATUS_CODE, msgInfo.getRespStatusCode());
             JsonStringSet.add(jsonObject.toJSONString());
         }

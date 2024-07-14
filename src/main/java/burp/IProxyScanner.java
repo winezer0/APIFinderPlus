@@ -7,10 +7,7 @@ import model.*;
 import test.RespInfoCompareModel;
 import ui.ConfigPanel;
 import utilbox.HelperPlus;
-import utils.BurpHttpUtils;
-import utils.CastUtils;
-import utils.AnalyseInfoUtils;
-import utils.PathTreeUtils;
+import utils.*;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -33,7 +30,7 @@ public class IProxyScanner implements IProxyListener {
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
     //存储每个host的对比对象
-    private static Map<String, JSONObject> compareMap = new HashMap<>();
+    private static Map<String, Map> compareMap = new HashMap<>();
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -77,6 +74,7 @@ public class IProxyScanner implements IProxyListener {
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
             String statusCode = String.valueOf(msgInfo.getRespStatusCode());
+            String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
 
             //看URL识别是否报错 不记录报错情况
             if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null){
@@ -85,12 +83,12 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //如果白名单开启,对于其他URL直接忽略
-            if (!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)){
+            if (!isContainOneKey(reqRootUrl, CONF_WHITE_URL_ROOT, true)){
                 return;
             }
 
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
-            if(isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)){
+            if(isContainOneKey(reqRootUrl, CONF_BLACK_URL_ROOT, false)){
                 stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
                 return;
             }
@@ -101,9 +99,34 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            //TODO 测试功能,生成响应对比对象
             RespInfoCompareModel respJsonModel = new RespInfoCompareModel(msgInfo.getRespInfo());
-            System.out.println(String.format("响应生成Json字符串:\n%s", respJsonModel.toJSONString()));
+            stdout_println(String.format("响应生成Json字符串:\n%s", respJsonModel.toJSONString()));
+
+            if (!compareMap.containsKey(reqRootUrl)){
+                System.out.println("暂未存在对应主机的动态筛选条件 即将生成动态筛选条件");
+                compareMap.put(reqRootUrl, new HashMap<String, Object>());
+                //TODO 测试功能,生成响应对比对象
+                if (!"/".equalsIgnoreCase(msgInfo.getUrlInfo().getPath())){
+                    stdout_println(String.format("开始生成动态筛选条件 From URL: %s %s",
+                            msgInfo.getUrlInfo().getRawUrlUsual(),
+                            msgInfo.getUrlInfo().getPath()));
+
+                    GenerateDynamicFilterJson(msgInfo);
+                }
+            } else {
+               Map respJsonCompare =  compareMap.get(reqRootUrl);
+               if (respJsonCompare.isEmpty()){
+                   stdout_println("动态筛选条件暂未完成,需要等待");
+               } else {
+                   stdout_println("动态筛选条件已完成,开始判断是否加入PATH");
+                   //TODO 动态筛选函数
+                   if(RespInfoCompareUtils.respJsonIsNotAllow(respJsonModel,respJsonCompare)){
+                       stdout_println("判断完毕, 应该加入PATH");
+                       stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
+                   }
+               }
+            }
+
 
             if(ConfigPanel.autoRecordPathIsOpen()
                     && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
@@ -121,7 +144,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
-            if(isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false) ||
+            if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false) ||
                     isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)){
                 //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
@@ -162,7 +185,7 @@ public class IProxyScanner implements IProxyListener {
             if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null
                     ||!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)
                     ||isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)
-                    ||isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false)
+                    ||isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
                     ||isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)
             ){
                 return;
@@ -177,6 +200,44 @@ public class IProxyScanner implements IProxyListener {
                 }
             });
         }
+    }
+
+    private void GenerateDynamicFilterJson(HttpMsgInfo msgInfo) {
+        //获取当前的URL 生成几个测试URL
+        String rootUrl = msgInfo.getUrlInfo().getRootUrlUsual();   //当前请求 http://xxx.com/
+        String pathDir = msgInfo.getUrlInfo().getPathDir();  //当前请求目录  /user/
+        String path = msgInfo.getUrlInfo().getPath();   //当前请求文件路径  /user/login
+        String suffix = msgInfo.getUrlInfo().getSuffix();   //当前请求文件后缀  /user/login
+
+        stdout_println(String.format("rootUrl:%s\npathDir:%s\npath:%s\nsuffix:%s\n",
+                rootUrl,pathDir,path,suffix
+                ) );
+        //生成测试路径
+        List<String> testUrlList = new ArrayList<>();
+        String testUrl;
+        String random1 = RespInfoCompareUtils.getRandomStr(8);
+        String random2 = RespInfoCompareUtils.getRandomStr(8);
+        //1、随机目录随机文件 当前后缀
+        if (!suffix.isEmpty()){
+            testUrl =  rootUrl + random1 + "/" + random2 + '.' + suffix;
+        } else {
+            testUrl =  rootUrl + random1 + "/" + random2;
+        }
+        testUrlList.add(testUrl);
+
+        //2、当前目录 随机文件
+        if (!suffix.isEmpty()){
+            testUrl =  rootUrl + pathDir + "/" +  random1  + '.' + suffix;
+        } else {
+            testUrl =  rootUrl + pathDir + "/" +  random1;
+        }
+        testUrlList.add(testUrl);
+
+        //3、随机目录，当前路径
+        testUrl = rootUrl + random1 + '/' + path;
+        testUrlList.add(testUrl);
+
+        System.out.println(String.format("生成的测试URL:%s", testUrlList));
     }
 
 

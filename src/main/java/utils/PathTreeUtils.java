@@ -269,7 +269,7 @@ public class PathTreeUtils {
     public static List<String> filterBlankPath(List<String> uriPathList) {
         List list = new ArrayList<String>();
         for (String path: uriPathList){
-            if (path != null && path.trim() != "" && path.trim() != "/")
+            if (path != null && !path.trim().isEmpty() &&  !"/".equals(path.trim()))
                 list.add(path);
         }
         return list;
