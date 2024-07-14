@@ -472,11 +472,12 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                                 //保存Json
                                 FingerConfigTab.autoSaveConfigJson();
 
+/*
                                 //2、删除对应的 结果数据 //TODO 不完善 应该用 HOST删除,但是没有HOST列
                                 UnionTableSql.deleteDataByMsgHashList(msgHashList, ReqDataTable.tableName);
                                 UnionTableSql.deleteDataByMsgHashList(msgHashList, AnalyseResultTable.tableName);
-
                                 refreshTableModel(false);
+*/
                                 return null;
                             }
                         }.execute();
