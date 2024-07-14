@@ -203,7 +203,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
 
         JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
-        JMenuItem addRootUrlToNotAutoRecurse = new JMenuItem("添加到递归扫描黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到递归扫描黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -217,7 +218,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(removeHostFromPathTreeItem);
 
         popupMenu.add(addRootUrlToBlackUrlRootItem);
-        popupMenu.add(addRootUrlToNotAutoRecurse);
+        popupMenu.add(addRootUrlToNotAutoRecurseItem);
+        popupMenu.add(addRootUrlToAllowListenItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -526,7 +528,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 addRootUrlToNotAuroRecurse 事件监听器
-        addRootUrlToNotAutoRecurse.addActionListener(new ActionListener() {
+        addRootUrlToNotAutoRecurseItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
@@ -558,6 +560,38 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
+        // 添加 addRootUrlToNotAuroRecurse 事件监听器
+        addRootUrlToAllowListenItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel>=0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //0、获取所有rootUrl
+                                Set<String> rootUrlSet = new HashSet<>();
+                                for (String url:urlList){
+                                    HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+                                    rootUrlSet.add(urlInfo.getRootUrlUsual());
+                                }
+                                //1、加入到黑名单列表
+                                //合并原来的列表
+                                rootUrlSet.addAll(BurpExtender.CONF_WHITE_URL_ROOT);
+                                BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(rootUrlSet);
+                                //保存Json
+                                FingerConfigTab.saveConfigToDefaultJson();
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
     }
 
 

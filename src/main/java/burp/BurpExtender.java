@@ -53,6 +53,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     public static List<FingerPrintRule> fingerprintRules;
 
     //一些需要被排除|允许的情况
+    public static List<String> CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅保留的白名单主机,为空时忽略
+
     public static List<String> CONF_NEED_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
 
     public static List<String> CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
@@ -123,6 +125,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static void setActionByRuleInfo(FingerPrintRule rule) {
         switch (rule.getType()) {
+            case "CONF_WHITE_URL_ROOT":
+                CONF_WHITE_URL_ROOT.addAll(rule.getKeyword());
+                break;
             case "CONF_NEED_RECORD_STATUS":
                 CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
                 break;

@@ -82,6 +82,11 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
+            //如果白名单开启,对于其他URL直接忽略
+            if (!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)){
+                return;
+            }
+
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
             if(isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)){
                 stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
@@ -147,8 +152,9 @@ public class IProxyScanner implements IProxyListener {
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
 
-            //看URL识别是否报错 //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
+            //看URL识别是否报错 //如果白名单开启, //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
             if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null
+                    ||!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)
                     ||isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)
                     ||isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false)
                     ||isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)

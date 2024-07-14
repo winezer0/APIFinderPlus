@@ -4,6 +4,16 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
+      ],
+      "type": "CONF_WHITE_URL_ROOT",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
         "200",
         "403"
       ],
