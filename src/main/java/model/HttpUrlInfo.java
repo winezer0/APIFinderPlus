@@ -240,6 +240,10 @@ public class HttpUrlInfo {
         return urlToPath;
     }
 
+    public String getRootUrlSimple() {
+        return rootUrlSimple;
+    }
+
     /**
      * 1.remove default port(80\443) from the url
      * 2.add default path(/) to the url,if it's empty
@@ -277,7 +281,6 @@ public class HttpUrlInfo {
         }
     }
 
-
     private String removeHostDefaultPort(String hostPort, String host, int port) {
             if (port < 0
                     || (port == 80 && proto.equalsIgnoreCase("http"))
@@ -286,7 +289,6 @@ public class HttpUrlInfo {
             }
             return hostPort;
     }
-
 
     /**
      * 1、这个函数的目的是：在【浏览器URL】的基础上，加上默认端口。
@@ -324,5 +326,6 @@ public class HttpUrlInfo {
             return urlStr;
         }
     }
+
 }
 

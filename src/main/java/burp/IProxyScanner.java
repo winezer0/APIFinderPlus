@@ -203,7 +203,7 @@ public class IProxyScanner implements IProxyListener {
 
     private void GenerateDynamicFilterJson(HttpMsgInfo msgInfo) {
         //获取当前的URL 生成几个测试URL
-        String rootUrl = msgInfo.getUrlInfo().getRootUrlUsual();   //当前请求 http://xxx.com/
+        String rootUrl = msgInfo.getUrlInfo().getRootUrlSimple();   //当前请求 http://xxx.com/
         String pathDir = msgInfo.getUrlInfo().getPathToDir();  //当前请求目录  /user/
         String path = msgInfo.getUrlInfo().getPathToFile();   //当前请求文件路径  /user/login
         String suffix = msgInfo.getUrlInfo().getSuffix();   //当前请求文件后缀  /user/login
@@ -216,6 +216,11 @@ public class IProxyScanner implements IProxyListener {
         String testUrl;
         String random1 = RespInfoCompareUtils.getRandomStr(8);
         String random2 = RespInfoCompareUtils.getRandomStr(8);
+        //生成的测试URL:
+        // http://testphp.vulnweb.com/8y6f7F1l/9KjY8hAO.php  OK
+        // http://testphp.vulnweb.com//AJAX//8y6f7F1l.php  OK
+        // http://testphp.vulnweb.com/8y6f7F1l//AJAX/index.php NOOK
+
         //1、随机目录随机文件 当前后缀
         if (!suffix.isEmpty()){
             testUrl =  rootUrl + random1 + "/" + random2 + '.' + suffix;
