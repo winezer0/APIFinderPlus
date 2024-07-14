@@ -146,12 +146,12 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
         // 刷新按钮按钮
-        JToggleButton refreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton2.png", 24, 24));
-        refreshButton.setPreferredSize(new Dimension(30, 30));
-        refreshButton.setBorder(null);  // 设置无边框
-        refreshButton.setFocusPainted(false);  // 移除焦点边框
-        refreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        refreshButton.setToolTipText("点击强制刷新表格");
+        JToggleButton clickRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton2.png", 24, 24));
+        clickRefreshButton.setPreferredSize(new Dimension(30, 30));
+        clickRefreshButton.setBorder(null);  // 设置无边框
+        clickRefreshButton.setFocusPainted(false);  // 移除焦点边框
+        clickRefreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        clickRefreshButton.setToolTipText("点击强制刷新表格");
 
         // 开关 是否开启自动刷新未访问URL
         refreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
@@ -192,7 +192,7 @@ public class ConfigPanel extends JPanel {
 
         // 在 FilterPanel 中添加 refreshButton
         gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
-        FilterPanel.add(refreshButton, gbc_buttons);
+        FilterPanel.add(clickRefreshButton, gbc_buttons);
         // 在 FilterPanel 中添加 refreshUnvisitedButton
         gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
         FilterPanel.add(refreshUnvisitedButton, gbc_buttons);
@@ -305,18 +305,18 @@ public class ConfigPanel extends JPanel {
         });
 
         // 手动刷新按钮监听事件
-        refreshButton.addActionListener(new ActionListener() {
+        clickRefreshButton.addActionListener(new ActionListener() {
             private boolean canClick = true;
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (canClick) {
                     canClick = false;
-                    ImageIcon originalIcon = (ImageIcon) refreshButton.getIcon();  // 保存原始图标
-                    String originalTip = refreshButton.getToolTipText();   // 保存原始批注
+                    ImageIcon originalIcon = (ImageIcon) clickRefreshButton.getIcon();  // 保存原始图标
+                    String originalTip = clickRefreshButton.getToolTipText();   // 保存原始批注
 
                     // 更换为新图标
-                    refreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
+                    clickRefreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
 
                     //关键的代码
                     MainPanel.getInstance().refreshUnVisitedUrlsAndTableModel(false, true);
@@ -326,8 +326,8 @@ public class ConfigPanel extends JPanel {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             canClick = true;
-                            refreshButton.setIcon(originalIcon); // 恢复原始图标
-                            refreshButton.setToolTipText(originalTip); // 恢复原始批注
+                            clickRefreshButton.setIcon(originalIcon); // 恢复原始图标
+                            clickRefreshButton.setToolTipText(originalTip); // 恢复原始批注
                         }
                     });
                     timer.setRepeats(false);
