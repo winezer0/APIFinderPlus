@@ -2,6 +2,7 @@ package ui;
 
 import database.DBService;
 import database.RecordPathTable;
+import database.RecordUrlTable;
 import database.UnionTableSql;
 import utils.BurpSitemapUtils;
 import utils.CastUtils;
@@ -390,7 +391,7 @@ public class ConfigPanel extends JPanel {
         addPathToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
         moreMenu.add(addPathToRecordPath);
 
-        JMenuItem addUrlToRecordUrl = new JMenuItem("添加URL到访问记录");
+        JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
         addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
         moreMenu.add(addUrlToRecordUrl);
 
@@ -506,7 +507,7 @@ public class ConfigPanel extends JPanel {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
         // 添加第一行提示
-        JLabel urlJLabel = new JLabel("输入有效数据:");
+        JLabel urlJLabel = new JLabel("输入数据:");
         constraints.gridx = 0; // 第1列
         constraints.gridy = 0; // 第1行
         constraints.gridwidth = 2; // 占据两列的空间
@@ -633,7 +634,7 @@ public class ConfigPanel extends JPanel {
                     new SwingWorker<Void, Void>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                            RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                            RecordUrlTable.batchInsertOrUpdateAccessedUrls(urlList, 299);
                             return null;
                         }
                     }.execute();
