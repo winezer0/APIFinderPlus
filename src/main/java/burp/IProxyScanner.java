@@ -23,7 +23,7 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
-    private int totalRequestCount = 0;  //记录所有经过插件的请求数量
+    private static int totalRequestCount = 0;  //记录所有经过插件的请求数量
     private static final int MaxRespBodyLen = 200000; //最大支持存储的响应 比特长度
 
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
@@ -173,7 +173,7 @@ public class IProxyScanner implements IProxyListener {
      * @param msgInfo
      * @param reqSource
      */
-    private void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
+    private static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
         //防止响应体过大
         if (msgInfo.getRespBytes().length > MaxRespBodyLen){
             byte[] respBytes = Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen);
@@ -203,7 +203,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //定时清理URL记录表
-                    if (UnionTableSql.getTableCounts(RecordUrlTable.tableName)>500){
+                    if (UnionTableSql.getTableCounts(RecordUrlTable.tableName) > 500){
                         DBService.clearRecordUrlTable();
                         stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
                     }
@@ -234,7 +234,7 @@ public class IProxyScanner implements IProxyListener {
                                     stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                 }
 
-                                //TODO Check 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
+                                // 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
                                 if (ConfigPanel.autoRecordPathIsOpen() && !analyseResult.getUrlList().isEmpty()){
                                     List<String> shouldTrueUrlList = new ArrayList<>();
                                     for (String shouldTrueUrl:analyseResult.getUrlList()){
@@ -296,7 +296,7 @@ public class IProxyScanner implements IProxyListener {
                     if (ConfigPanel.recursiveIsOpen() && executorService.getActiveCount() < 2){
                         //获取一个未访问URL列表
                         UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
-                        accessUnVisitedUrlsModel(unVisitedUrlsModel);
+                        accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                     }
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
@@ -306,7 +306,12 @@ public class IProxyScanner implements IProxyListener {
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
     }
 
-    private void accessUnVisitedUrlsModel(UnVisitedUrlsModel unVisitedUrlsModel) {
+    /**
+     *  进行URl访问测试
+     * @param unVisitedUrlsModel 需要进行访问的URL数据
+     * @param ignoreBlackRecurseHost 是否不递归黑名单限制的域名
+     */
+    public static void accessUnVisitedUrlsModel(UnVisitedUrlsModel unVisitedUrlsModel, boolean ignoreBlackRecurseHost) {
         if (unVisitedUrlsModel != null){
             //获取URL
             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
@@ -335,9 +340,12 @@ public class IProxyScanner implements IProxyListener {
                             RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
 
                             //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
-                            if (!isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                            if (ignoreBlackRecurseHost && !isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
                                 continue;
                             }
+
+                            //记录总请求数增加
+                            totalRequestCount += 1;
 
                             try {
                                 //发起HTTP请求
@@ -377,6 +385,10 @@ public class IProxyScanner implements IProxyListener {
                             }
                         }
                     }
+
+                    //标记数据为空 如果很多都没扫描的话,就不要清理了,影响实际使用
+                    if (!ignoreBlackRecurseHost)
+                        AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
                 }});
         }
     }
