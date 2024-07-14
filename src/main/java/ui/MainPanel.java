@@ -192,12 +192,14 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
         JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-        JMenuItem ClearUnVisitedItem = new JMenuItem("清空未访问", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-        JMenuItem IgnoreUnVisitedItem = new JMenuItem("写入未访问", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
+        JMenuItem ClearUnVisitedItem = new JMenuItem("清空未访问URL列表", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        JMenuItem IgnoreUnVisitedItem = new JMenuItem("写入未访问URL列表", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
         IgnoreUnVisitedItem.setToolTipText("当访问URL后依然无法过滤时使用");
 
         JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH到PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+
+        JMenuItem updateUnVisitedItem = new JMenuItem("更新未访问URL列表", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -205,6 +207,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(IgnoreUnVisitedItem);
         popupMenu.add(addUrlPathToRecordPathItem);
         popupMenu.add(removeHostFromPathTreeItem);
+        popupMenu.add(updateUnVisitedItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -413,6 +416,30 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 }
             }
         });
+
+        // 添加 updateUnVisitedItem 事件监听器
+        updateUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashesAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                updateUnVisitedUrls(msgHashList);
+                                refreshTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+
+                    }
+                }
+            }
+        });
     }
 
 
@@ -597,7 +624,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
                     boolean updateUnVisited = ConfigPanel.refreshUnvisitedButton.isSelected();
-                    refreshUnVisitedUrlsAndTableModel(true, updateUnVisited, null);
+                    refreshAllUnVisitedUrlsAndTableUI(true, updateUnVisited);
                 }
             }
         });
@@ -802,23 +829,22 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
     /**
      * 刷新未访问的URL和数据表模型, 费内存的操作
-     * @param checkAutoRefresh 是否检查自动更新按钮的状态
-     * @param updateUnVisited 是否开启 updateUnVisitedUrls 函数的调用
-     * @param msgHashList updateUnVisitedUrls 目标列表, 为空 为Null时更新全部
+     * @param checkAutoRefreshButtonStatus 是否检查自动更新按钮的状态
+     * @param updateAllUnVisitedUrls 是否开启 updateUnVisitedUrls 函数的调用
      */
-    public void refreshUnVisitedUrlsAndTableModel(boolean checkAutoRefresh,boolean updateUnVisited, List<String> msgHashList) {
+    public void refreshAllUnVisitedUrlsAndTableUI(boolean checkAutoRefreshButtonStatus, boolean updateAllUnVisitedUrls) {
         // 调用更新未访问URL列的数据
-        if (updateUnVisited)
+        if (updateAllUnVisitedUrls)
             try{
                 //当添加进程还比较多的时候,暂时不进行响应数据处理
-                updateUnVisitedUrls(msgHashList);
+                updateAllUnVisitedUrls();
             } catch (Exception ep){
                 stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
             }
 
         // 调用刷新表格的方法
         try{
-            instance.refreshTableModel(checkAutoRefresh);
+            instance.refreshTableModel(checkAutoRefreshButtonStatus);
         } catch (Exception ep){
             stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
         }
@@ -827,8 +853,13 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         System.gc();
     }
 
+
+    private void updateAllUnVisitedUrls(){
+        updateUnVisitedUrls(null);
+    }
     /**
      * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
+     * @param msgHashList updateUnVisitedUrls 目标列表, 为空 为Null时更新全部
      */
     private void updateUnVisitedUrls(List<String> msgHashList) {
         // 使用SwingWorker来处理数据更新，避免阻塞EDT

@@ -319,7 +319,7 @@ public class ConfigPanel extends JPanel {
                     clickRefreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
 
                     //关键的代码
-                    MainPanel.getInstance().refreshUnVisitedUrlsAndTableModel(false, true, null);
+                    MainPanel.getInstance().refreshAllUnVisitedUrlsAndTableUI(false, true);
 
                     // 设置定时器，5秒后允许再次点击并恢复图标
                     Timer timer = new Timer(3000, new ActionListener() {
