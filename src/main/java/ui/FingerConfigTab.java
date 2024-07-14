@@ -890,7 +890,7 @@ public class FingerConfigTab extends JPanel {
         BurpExtender.CONF_NEED_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
         BurpExtender.CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
         BurpExtender.CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
-        BurpExtender.CONF_BLACK_URL_PREFIX = new ArrayList<>(); //不检查的URL域名
+        BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(); //不检查的URL域名
         BurpExtender.CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
         BurpExtender.CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
         BurpExtender.CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
@@ -904,7 +904,7 @@ public class FingerConfigTab extends JPanel {
         stdout_println("[+] CONF_NEED_RECORD_STATUS: " + BurpExtender.CONF_NEED_RECORD_STATUS);
         stdout_println("[+] CONF_BLACK_URL_EXT: " + BurpExtender.CONF_BLACK_URL_EXT);
         stdout_println("[+] CONF_BLACK_URL_PATH: " + BurpExtender.CONF_BLACK_URL_PATH);
-        stdout_println("[+] CONF_BLACK_URL_PREFIX: " + BurpExtender.CONF_BLACK_URL_PREFIX);
+        stdout_println("[+] CONF_BLACK_URL_ROOT: " + BurpExtender.CONF_BLACK_URL_ROOT);
         stdout_println("[+] CONF_BLACK_PATH_KEYS: " + BurpExtender.CONF_BLACK_PATH_KEYS);
         stdout_println("[+] CONF_BLACK_PATH_EQUALS: " + BurpExtender.CONF_BLACK_PATH_EQUALS);
         stdout_println("[+] CONF_EXTRACT_SUFFIX: " + BurpExtender.CONF_EXTRACT_SUFFIX);

@@ -74,7 +74,7 @@ public class AnalyseUriFilter {
         List<String> list = new ArrayList<>();
         for (String url : urls) {
             HttpUrlInfo urlInfo = new HttpUrlInfo(url);
-            if (!ElementUtils.isContainOneKey(urlInfo.getPrefixUrl(), blackHosts, false)) {
+            if (!ElementUtils.isContainOneKey(urlInfo.getRootUrl(), blackHosts, false)) {
                 list.add(url);
             }
         }

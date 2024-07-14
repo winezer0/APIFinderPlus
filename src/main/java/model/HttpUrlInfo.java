@@ -25,7 +25,7 @@ public class HttpUrlInfo {
 
     private String ext = null;
 
-    private String prefixUrl = null;
+    private String rootUrl = null;
     private String noParamUrl = null;
     private String noFileUrl = null;
 
@@ -55,7 +55,7 @@ public class HttpUrlInfo {
             hostPort = String.format("%s:%s", host, port);
 
             //获取前缀URL // http://www.baidu.com
-            prefixUrl = String.format("%s://%s", proto, hostPort);
+            rootUrl = String.format("%s://%s/", proto, hostPort);
             //获取主域名 baidu.com
             rootDomain = DomainUtils.getRootDomain(host);
             //获取请求路径的目录部分 /path/to/
@@ -156,8 +156,8 @@ public class HttpUrlInfo {
         return hostPort;
     }
 
-    public String getPrefixUrl() {
-        return prefixUrl;
+    public String getRootUrl() {
+        return rootUrl;
     }
 
     public String getRootDomain() {
