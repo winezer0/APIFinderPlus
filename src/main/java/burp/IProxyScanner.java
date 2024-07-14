@@ -96,21 +96,18 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
-                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-
-                    //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
-                    if(IProxyScanner.autoRecordPath
-                            && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
-                            && !msgInfo.getUrlInfo().getPath().equals("/")){
+            if(IProxyScanner.autoRecordPath
+                    && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
+                    && !msgInfo.getUrlInfo().getPath().equals("/")){
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
                         RecordPathTable.insertOrUpdateSuccessUrlPath(msgInfo);
                         stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
                     }
-                }
-            });
+                });
+            }
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
             if(isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false) ||
@@ -118,6 +115,14 @@ public class IProxyScanner implements IProxyListener {
                 //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
+
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
+                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                }
+            });
 
             // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
             if (statusCode.startsWith("3") || statusCode.startsWith("4")){
@@ -142,9 +147,14 @@ public class IProxyScanner implements IProxyListener {
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
 
-            //看URL识别是否报错
-            if (msgInfo.getUrlInfo().getNoParamUrl() == null)
+            //看URL识别是否报错 //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
+            if (msgInfo.getUrlInfo().getNoParamUrl() == null
+                    ||isContainOneKey(msgInfo.getUrlInfo().getHost(), CONF_BLACK_URL_HOSTS, false)
+                    ||isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false)
+                    ||isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)
+            ){
                 return;
+            }
 
             //记录所有主动访问请求记录到数据库中
             executorService.submit(new Runnable() {
