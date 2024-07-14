@@ -7,13 +7,11 @@ import utilbox.HelperPlus;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+import static burp.BurpExtender.CONF_BLACK_URL_HOSTS;
 import static burp.BurpExtender.getHelpers;
 import static utils.BurpPrintUtils.*;
 
@@ -23,29 +21,34 @@ public class BurpHttpUtils {
     private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 
     public static IHttpRequestResponse makeHttpRequestForGet(String reqUrl, List<String> referReqHeaders) {
-        //构建HTTP请求体
-        byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders);
+        HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         // 创建IHttpService对象
         IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
+        //构建HTTP请求体
+        byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders, true);
 
-//        //分析当前创建的请求 判断生成是否一致
-//        IRequestInfo requestInfo = helpers.analyzeRequest(httpService, requestBytes);
-//        if (reqUrl.length() != requestInfo.getUrl().toString().length()) {
-//            stdout_println(String.format("实际访问的URL和目标访问的URL不一致"));
-//            stdout_println(String.format("目标URL:%s -> \n实际URL: %s \nHOST头:%s",
-//                    reqUrl,
-//                    requestInfo.getUrl().toString(),
-//                    new HelperPlus(helpers).getHeaderLine(true, requestBytes, "HOST")
-//            ));
-//        }
+        //分析当前创建的请求 判断生成是否一致
+        String reqBytesHost = new HelperPlus(helpers).getHeaderValueOf(true, requestBytes, "HOST");
+        String reqBytesUrl = new HelperPlus(helpers).getFullURL(httpService, requestBytes).toString();
+        if (!urlInfo.getHostPort().contains(reqBytesHost)) {
+            stdout_println(LOG_DEBUG, String.format(
+                    "注意:实际访问的URL和目标访问的URL不一致\n" +
+                            "目标HOST头:%s URL:%s -> 实际HOST头:%s URL:%s", urlInfo.getHostPort(), reqUrl, reqBytesHost, reqBytesUrl));
+        }
 
         //发送HTTP请求
         IHttpRequestResponse requestResponse = null;
         try {
             requestResponse = callbacks.makeHttpRequest(httpService, requestBytes);
         } catch (Exception e){
-            stderr_println(LOG_DEBUG, String.format("获取HTTP响应失败:%s ->%s", reqUrl, e.getMessage()));
+            if (e.getMessage().contains("UnknownHostException")){
+                //主机不存活,直接加入黑名单host
+                CONF_BLACK_URL_HOSTS.add(urlInfo.getHostPortUsual());
+                stderr_println(LOG_DEBUG, String.format("黑名单Host添加:%s ->%s", reqUrl, urlInfo.getHostPortUsual()));
+            } else {
+                stderr_println(LOG_DEBUG, String.format("获取HTTP响应失败:%s ->%s", reqUrl, e.getMessage()));
+            }
         }
         return requestResponse;
     }
@@ -56,7 +59,7 @@ public class BurpHttpUtils {
      * @param referReqHeaders
      * @return
      */
-    private static byte[] genGetRequestBytes(String reqUrl, List<String> referReqHeaders) {
+    private static byte[] genGetRequestBytes(String reqUrl, List<String> referReqHeaders, boolean addHeader) {
         //编写函数 实现 基于请求体 替换 URL
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
         // 构造GET请求的字节数组
@@ -69,13 +72,16 @@ public class BurpHttpUtils {
         byte[] requestBytes = baseRequest.getBytes();
 
         //基于请求头列表 更新 requestBytes 中的 请求头
-        HelperPlus helperPlus = new HelperPlus(helpers);
-        for (String referReqHeader : referReqHeaders){
-            if (!referReqHeader.toLowerCase().contains("host:")){
-                // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
-                requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, referReqHeader);
+        if (addHeader){
+            HelperPlus helperPlus = new HelperPlus(helpers);
+            for (String referReqHeader : referReqHeaders){
+                if (!referReqHeader.toLowerCase().contains("host:")){
+                    // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
+                    requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, referReqHeader);
+                }
             }
         }
+
         return requestBytes;
     }
 
