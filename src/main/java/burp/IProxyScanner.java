@@ -327,19 +327,21 @@ public class IProxyScanner implements IProxyListener {
                 @Override
                 public void run() {
                     for (String reqUrl:unvisitedUrls){
-                        //不递归扫描黑名单内的主机 //TODO 存在缺陷, 每次都会获取到这个目标 导致无法忽略正常扫描
-                        if (!isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
-                            continue;
-                        }
-
                         if (urlAutoRecordMap.get(reqUrl) <= 0){
                             //记录已访问的URL
                             urlAutoRecordMap.add(reqUrl); //防止循环扫描
+
+                            //TODO Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
                             RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
-                            stdout_println(LOG_INFO, String.format("[*] Auto Access URL: %s", reqUrl));
+
+                            //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
+                            if (!isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                                continue;
+                            }
 
                             try {
                                 //发起HTTP请求
+                                stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
                                 IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
                                 if (requestResponse != null) {
                                     executorService.submit(new Runnable() {
