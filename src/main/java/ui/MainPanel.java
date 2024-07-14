@@ -200,6 +200,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
 
         JMenuItem updateUnVisitedItem = new JMenuItem("更新未访问URL列表", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
+        JMenuItem addRootUrlToBlackItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -208,6 +209,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(addUrlPathToRecordPathItem);
         popupMenu.add(removeHostFromPathTreeItem);
         popupMenu.add(updateUnVisitedItem);
+        popupMenu.add(addRootUrlToBlackItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -298,7 +300,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //多行选定模式
                 if (listSelectionModel == ListSelectionModel.MULTIPLE_INTERVAL_SELECTION) {
                     int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashesAtActualRows(table, selectedRows);
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -340,7 +342,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //多行选定模式
                 if (listSelectionModel == ListSelectionModel.MULTIPLE_INTERVAL_SELECTION) {
                     int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashesAtActualRows(table, selectedRows);
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -424,7 +426,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
                     int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashesAtActualRows(table, selectedRows);
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -440,6 +442,49 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 }
             }
         });
+
+        // 添加 removeHostFromPathTreeItem 事件监听器
+        addRootUrlToBlackItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel>=0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //1、加入到黑名单列表
+                                Set<String> rootUrlSet = new HashSet<String>();
+                                for (String url:urlList){
+                                    HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+                                    rootUrlSet.add(urlInfo.getRootUrl());
+                                }
+                                //合并原来的列表
+                                rootUrlSet.addAll( BurpExtender.CONF_BLACK_URL_ROOT);
+                                BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(rootUrlSet);
+                                //不合并原来的列表
+                                //BurpExtender.CONF_BLACK_URL_ROOT.addAll(rootUrlSet);
+
+                                //保存Json
+                                FingerConfigTab.autoSaveConfigJson();
+
+                                //2、删除对应的 结果数据 //TODO 不完善 应该用 HOST删除,但是没有HOST列
+                                UnionTableSql.deleteDataByMsgHashList(msgHashList, ReqDataTable.tableName);
+                                UnionTableSql.deleteDataByMsgHashList(msgHashList, AnalyseResultTable.tableName);
+
+                                refreshTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
     }
 
 

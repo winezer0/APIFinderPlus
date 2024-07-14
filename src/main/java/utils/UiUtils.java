@@ -141,7 +141,7 @@ public class UiUtils {
     /**
      * 批量获取所有行列表相关的 MsgHash 列表
      */
-    public static List<String> getMsgHashesAtActualRows(JTable table, int[] selectedRows) {
+    public static List<String> getMsgHashListAtActualRows(JTable table, int[] selectedRows) {
         List<String> msgHashList = new ArrayList<>();
         if (selectedRows.length > 0){
             // 遍历所有选定的行

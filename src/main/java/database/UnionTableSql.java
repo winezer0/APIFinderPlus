@@ -165,11 +165,31 @@ public class UnionTableSql {
                 .replace("$buildInParamList$", DBService.buildInParamList(reqHostPortList.size()))
                 .replace("tableName", tableName);
 
+        return runDeleteSql(deleteSQL, reqHostPortList, tableName);
+    }
+
+    /**
+     * 基于 msgHash 列表 同时删除多个 行
+     */
+    public static synchronized int deleteDataByMsgHashList(List<String> msgHashList, String tableName) {
+        if (msgHashList.isEmpty()) return 0;
+
+        // 构建SQL语句，使用占位符 ? 来代表每个ID
+        String deleteSQL = "DELETE FROM tableName WHERE msg_hash IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()))
+                .replace("tableName", tableName);
+
+        return runDeleteSql(deleteSQL, msgHashList, tableName);
+    }
+
+    private static int runDeleteSql(String deleteSQL, List<String> msgHashList, String tableName) {
+        int totalRowsAffected = 0;
+
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
 
             // 设置SQL语句中的参数值
             int index = 1;
-            for (String reqHostPort : reqHostPortList) {
+            for (String reqHostPort : msgHashList) {
                 stmt.setString(index++, reqHostPort);
             }
 

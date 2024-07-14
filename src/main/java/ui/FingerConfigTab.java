@@ -571,6 +571,23 @@ public class FingerConfigTab extends JPanel {
         add(new JScrollPane(ruleTable), BorderLayout.CENTER);
     }
 
+
+    public static void autoSaveConfigJson() {
+        List<FingerPrintRule> rulesToExport = BurpExtender.fingerprintRules;
+        // 创建一个新的 FingerPrintRulesWrapper 并设置 fingerprint 列表
+        FingerPrintRulesWrapper wrapper = new FingerPrintRulesWrapper();
+        wrapper.setFingerprint(rulesToExport);
+
+        // 将 wrapper 对象转换为 JSON 格式
+        String json = JSON.toJSONString(wrapper, JSONWriter.Feature.PrettyFormat);
+        try {
+            // 使用UTF-8编码写入文件
+            BurpFileUtils.writeToPluginPathFile(BurpExtender.configName, json);
+        } catch (IOException ex) {
+            stderr_println(LOG_ERROR, "自动保存规则文件出错...");
+        }
+    }
+
     //设置规则表格的表样式和点击动作
     private void setRuleTableStyle(JTable ruleTable) {
         CenterRenderer centerRenderer = new CenterRenderer();
