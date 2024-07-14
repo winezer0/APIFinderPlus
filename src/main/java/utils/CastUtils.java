@@ -3,7 +3,9 @@ package utils;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.zip.CRC32;
 
 public class CastUtils {
     /**
@@ -192,5 +194,16 @@ public class CastUtils {
         }
 
         return formattedResult.toString();
+    }
+
+    public static String calcCRC32(String string) {
+        // 使用 UTF-8 编码将字符串转换为字节数组
+        byte[] inputBytes = string.getBytes(StandardCharsets.UTF_8);
+        // 初始化CRC32对象
+        CRC32 crc32 = new CRC32();
+        // 更新CRC值
+        crc32.update(inputBytes, 0, inputBytes.length);
+        // 将计算后的CRC32值转换为十六进制字符串并返回
+        return Long.toHexString(crc32.getValue()).toLowerCase();
     }
 }

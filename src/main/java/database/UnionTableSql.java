@@ -45,7 +45,6 @@ public class UnionTableSql {
         return findPathModel;
     }
 
-
     //联合 获取所有行数据
     public static synchronized ArrayList<TableLineDataModel> fetchTableLineDataBySQl(String selectSQL){
         ArrayList<TableLineDataModel> apiDataModels = new ArrayList<>();
@@ -261,8 +260,8 @@ public class UnionTableSql {
      * @param columnName
      * @return
      */
-    public static synchronized List<String> fetchAndConcatenateURLs(String tableName, String columnName) {
-        List<String> concatenatedURLs = new ArrayList<>();
+    public static synchronized String fetchConcatColumnToString(String tableName, String columnName) {
+        String concatenatedURLs = null;
 
         String concatSQL = "SELECT GROUP_CONCAT(columnName,',') AS concatenated_urls FROM tableName"
                 .replace("columnName",columnName)
@@ -270,8 +269,8 @@ public class UnionTableSql {
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
             ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                concatenatedURLs.add(rs.getString("concatenated_urls"));
+            if (rs.next()) {
+                concatenatedURLs = rs.getString("concatenated_urls");
             }
 
         } catch (Exception e) {
