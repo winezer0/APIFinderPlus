@@ -26,7 +26,7 @@
         ".github.com",
         ".githubusercontent.com"
       ],
-      "type": "CONF_BLACK_URL_HOSTS",
+      "type": "CONF_BLACK_URL_ROOT",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high"
