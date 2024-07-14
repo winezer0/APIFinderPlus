@@ -14,8 +14,7 @@ public class ReqDataTable {
     public static String tableName = "REQ_DATA";
 
     //创建用于存储 需要处理的URL的原始请求响应
-    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName ("
-            .replace("tableName", tableName)
+    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS "+ tableName +" ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "msg_hash TEXT UNIQUE,"  //作为实际的消息独立标记
             + "req_url TEXT NOT NULL,"
@@ -35,8 +34,7 @@ public class ReqDataTable {
     public static synchronized int insertOrUpdateReqData(HttpMsgInfo msgInfo, int msgDataIndex, String reqSource) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? ;"
-                .replace("tableName", tableName);
+        String checkSql = "SELECT id FROM  "+ tableName +"  WHERE msg_hash = ? ;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
@@ -48,10 +46,9 @@ public class ReqDataTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source, resp_length) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)")
-                        .replace("tableName", tableName);
+                String insertSql = "INSERT INTO  "+ tableName +
+                        " (msg_hash, req_url, req_method, resp_status_code, msg_data_index, req_source, resp_length)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
@@ -86,8 +83,7 @@ public class ReqDataTable {
         int msgDataIndex = -1;
 
         // 首先选取一条记录的 msg_data_index
-        String selectSQL = "SELECT msg_data_index FROM tableName WHERE run_status = ? LIMIT 1;"
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT msg_data_index FROM "+ tableName +" WHERE run_status = ? LIMIT 1;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, Constants.ANALYSE_WAIT );
@@ -100,8 +96,7 @@ public class ReqDataTable {
                     return selectedMsgDataIndex;
 
                 //更新索引对应的数据
-                String updateSQL = "UPDATE tableName SET run_status = ? WHERE msg_data_index = ?;"
-                        .replace("tableName", tableName);
+                String updateSQL = "UPDATE "+ tableName +" SET run_status = ? WHERE msg_data_index = ?;";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(updateSQL)) {
                     stmt2.setString(1, Constants.ANALYSE_ING);
@@ -127,8 +122,7 @@ public class ReqDataTable {
     public static synchronized int getReqDataCountWhereStatusIsEnd() {
         int count = 0;
 
-        String selectSQL = "SELECT COUNT(*) FROM tableName WHERE run_status != ?;"
-                .replace("tableName",tableName);
+        String selectSQL = "SELECT COUNT(*) FROM "+ tableName + "  WHERE run_status != ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)){
             stmt.setString(1, Constants.ANALYSE_WAIT);
@@ -148,8 +142,7 @@ public class ReqDataTable {
         int rowsAffected = -1;
 
         // 获取当前所有记录的数据
-        String deleteSQL = ("DELETE FROM tableName WHERE id = ?;")
-                .replace("tableName", tableName);
+        String deleteSQL = "DELETE FROM  "+ tableName +" WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             stmt.setInt(1, id);

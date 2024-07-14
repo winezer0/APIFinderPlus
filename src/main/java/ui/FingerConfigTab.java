@@ -396,17 +396,7 @@ public class FingerConfigTab extends JPanel {
         exportItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<FingerPrintRule> rulesToExport = BurpExtender.fingerprintRules;
-
-                // 创建一个新的 FingerPrintRulesWrapper 并设置 fingerprint 列表
-                FingerPrintRulesWrapper wrapper = new FingerPrintRulesWrapper();
-                wrapper.setFingerprint(rulesToExport);
-
-                // 将 wrapper 对象转换为 JSON 格式
-                //Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                //String json = gson.toJson(wrapper);
-                // 将 wrapper 对象转换为格式化的JSON字符串
-                String json = JSON.toJSONString(wrapper, JSONWriter.Feature.PrettyFormat);
+                String json = currentConfigToJsonString();
                 // 输出或进一步处理转换后的JSON字符串
                 System.out.println(json);
 
@@ -540,14 +530,7 @@ public class FingerConfigTab extends JPanel {
         saveItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<FingerPrintRule> rulesToExport = BurpExtender.fingerprintRules;
-
-                // 创建一个新的 FingerPrintRulesWrapper 并设置 fingerprint 列表
-                FingerPrintRulesWrapper wrapper = new FingerPrintRulesWrapper();
-                wrapper.setFingerprint(rulesToExport);
-
-                // 将 wrapper 对象转换为 JSON 格式
-                String json = JSON.toJSONString(wrapper, JSONWriter.Feature.PrettyFormat);
+                String json = currentConfigToJsonString();
                 try {
                     // 使用UTF-8编码写入文件
                     BurpFileUtils.writeToPluginPathFile(BurpExtender.configName, json);
@@ -572,7 +555,21 @@ public class FingerConfigTab extends JPanel {
     }
 
 
-    public static void autoSaveConfigJson() {
+    /**
+     * 保存指纹的函数,不进行弹框提示
+     */
+    public static void saveConfigToDefaultJson() {
+        String json = currentConfigToJsonString();
+        try {
+            // 使用UTF-8编码写入文件
+            BurpFileUtils.writeToPluginPathFile(BurpExtender.configName, json);
+            stdout_println(LOG_ERROR, "更新保存规则文件完成...");
+        } catch (IOException e) {
+            stderr_println(LOG_ERROR, String.format("更新保存规则文件异常...%s", e.getMessage()));
+        }
+    }
+
+    private static String currentConfigToJsonString() {
         List<FingerPrintRule> rulesToExport = BurpExtender.fingerprintRules;
         // 创建一个新的 FingerPrintRulesWrapper 并设置 fingerprint 列表
         FingerPrintRulesWrapper wrapper = new FingerPrintRulesWrapper();
@@ -580,12 +577,7 @@ public class FingerConfigTab extends JPanel {
 
         // 将 wrapper 对象转换为 JSON 格式
         String json = JSON.toJSONString(wrapper, JSONWriter.Feature.PrettyFormat);
-        try {
-            // 使用UTF-8编码写入文件
-            BurpFileUtils.writeToPluginPathFile(BurpExtender.configName, json);
-        } catch (IOException ex) {
-            stderr_println(LOG_ERROR, "自动保存规则文件出错...");
-        }
+        return json;
     }
 
     //设置规则表格的表样式和点击动作

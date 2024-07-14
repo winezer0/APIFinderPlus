@@ -116,8 +116,7 @@ public class DBService {
      */
     private static void clearTable(String tableName) {
         // 用 DELETE 语句来清空表
-        String deleteSql = "DELETE FROM tableName;"
-                .replace("tableName", tableName);
+        String deleteSql = "DELETE FROM "+ tableName +" ;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
             stmt.executeUpdate();
             stdout_println(String.format("[-] table [%s] has been cleared.", tableName));

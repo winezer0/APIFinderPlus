@@ -7,6 +7,7 @@ import model.TableLineDataModel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,10 +22,10 @@ public class UnionTableSql {
 
         // 首先选取一条记录的ID 状态是已经分析完毕,并且 当前 PathTree 的 基本路径数量 大于 生成分析数据时的 基本路径数量
         String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
-                "From tableName1 A LEFT JOIN tableName2 B ON A.req_host_port = B.req_host_port " +
+                "From $tableName1$ A LEFT JOIN $tableName2$ B ON A.req_host_port = B.req_host_port " +
                 "WHERE A.run_status = ? AND B.basic_path_num > A.basic_path_num Limit 1;")
-                .replace("tableName1", AnalyseResultTable.tableName)
-                .replace("tableName2", PathTreeTable.tableName);
+                .replace("$tableName1$", AnalyseResultTable.tableName)
+                .replace("$tableName2$", PathTreeTable.tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, Constants.ANALYSE_ING);
@@ -81,9 +82,9 @@ public class UnionTableSql {
     private static String genSqlByWhereCondition(String WhereCondition){
         String selectSQL = ("SELECT A.id,A.msg_hash,A.req_url,A.req_method,A.resp_status_code,A.req_source,A.run_status,A.resp_length," +
                 "B.find_url_num,B.find_path_num,B.find_info_num,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
-                "from tableName1 A LEFT JOIN tableName2 B ON A.msg_hash = B.msg_hash $WHERE$ order by A.id;")
-                .replace("tableName1", ReqDataTable.tableName)
-                .replace("tableName2", AnalyseResultTable.tableName);
+                "from $tableName1$ A LEFT JOIN $tableName2$ B ON A.msg_hash = B.msg_hash $WHERE$ order by A.id;")
+                .replace("$tableName1$", ReqDataTable.tableName)
+                .replace("$tableName2$", AnalyseResultTable.tableName);
 
         if (WhereCondition == null) WhereCondition="";
 
@@ -161,9 +162,8 @@ public class UnionTableSql {
         int totalRowsAffected = 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM tableName WHERE req_host_port IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(reqHostPortList.size()))
-                .replace("tableName", tableName);
+        String deleteSQL = "DELETE FROM "+ tableName +"  WHERE req_host_port IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(reqHostPortList.size()));
 
         return runDeleteSql(deleteSQL, reqHostPortList, tableName);
     }
@@ -175,9 +175,8 @@ public class UnionTableSql {
         if (msgHashList.isEmpty()) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM tableName WHERE msg_hash IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()))
-                .replace("tableName", tableName);
+        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
         return runDeleteSql(deleteSQL, msgHashList, tableName);
     }
@@ -228,9 +227,8 @@ public class UnionTableSql {
         int totalRowsAffected = 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM tableName WHERE id IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()))
-                .replace("tableName", tableName);
+        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE id IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
 
@@ -258,8 +256,7 @@ public class UnionTableSql {
     public static synchronized int getTableCounts(String tableName) {
         int count = 0;
 
-        String selectSQL = "SELECT COUNT(*) FROM tableName;"
-                .replace("tableName",tableName);
+        String selectSQL = "SELECT COUNT(*) FROM  "+ tableName +" ;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);
              ResultSet rs = stmt.executeQuery()) {
@@ -273,7 +270,6 @@ public class UnionTableSql {
         return count;
     }
 
-
     /**
      * 获取任意表的任意列的字符串拼接
      * @param tableName
@@ -283,9 +279,8 @@ public class UnionTableSql {
     public static synchronized String fetchConcatColumnToString(String tableName, String columnName) {
         String concatenatedURLs = null;
 
-        String concatSQL = "SELECT GROUP_CONCAT(columnName,',') AS concatenated_urls FROM tableName"
-                .replace("columnName",columnName)
-                .replace("tableName",tableName);
+        String concatSQL = "SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +";"
+                .replace("$columnName$",columnName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
             ResultSet rs = stmt.executeQuery();
@@ -300,4 +295,53 @@ public class UnionTableSql {
         return concatenatedURLs;
     }
 
+    /**
+     * 基于 url前缀 列表 删除行
+     */
+    public static synchronized int deleteDataByRootUr(String rootUrl, String tableName) {
+        if (rootUrl.isEmpty()) return 0;
+
+        int totalRowsAffected = 0;
+
+        // 构建SQL语句，使用占位符 ? 来代表每个ID
+        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE req_url like ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+            // 执行删除操作
+            stmt.setString(1, rootUrl+"%");
+            totalRowsAffected= stmt.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error deleting Data By rootUrl On Table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return totalRowsAffected;
+    }
+
+    public static synchronized int batchDeleteDataByRootUrlList(List<String> rootUrlList, String tableName) {
+        if (rootUrlList.isEmpty()) return 0;
+
+        int totalRowsAffected = 0;
+        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE req_url LIKE ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+            // 开启批处理
+            conn.setAutoCommit(false);
+            // 遍历rootUrlList，为每个rootUrl准备并添加到批处理队列
+            for (String rootUrl : rootUrlList) {
+                stmt.setString(1, rootUrl + "%");
+                stmt.addBatch();
+            }
+            // 执行批处理
+            int[] rowsAffected = stmt.executeBatch();
+            conn.commit();
+            // 计算受影响的总行数
+            for (int row : rowsAffected) {
+                totalRowsAffected += row;
+            }
+        } catch (Exception e) {
+            System.err.println(String.format("Error deleting data by rootUrlList on table [%s]: %s", tableName, e.getMessage()));
+        }
+
+        return totalRowsAffected;
+    }
 }

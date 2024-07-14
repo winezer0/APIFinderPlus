@@ -18,8 +18,7 @@ public class AnalyseResultTable {
     public static String tableName = "ANALYSE_RESULT";
 
     //创建用于存储 需要处理的URL的原始请求响应
-    static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS tableName (\n"
-            .replace("tableName", tableName)
+    static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS "+ tableName +" (\n"
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + " msg_hash TEXT UNIQUE,\n"  //请求Hash信息
             + " req_url TEXT NOT NULL,\n"  //请求URL
@@ -58,8 +57,7 @@ public class AnalyseResultTable {
      */
     public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResultModel analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String selectSql = "SELECT id FROM tableName WHERE msg_hash = ?;"
-                .replace("tableName", tableName);
+        String selectSql = "SELECT id FROM "+ tableName +" WHERE msg_hash = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt1 = conn.prepareStatement(selectSql)) {
             // 检查记录是否存在
@@ -71,11 +69,10 @@ public class AnalyseResultTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = ("INSERT INTO tableName (" +
-                        "msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num, " +
-                        "find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                        .replace("tableName", tableName) ;
+                String insertSql = "INSERT INTO "+ tableName +"" +
+                        " (msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num," +
+                        " find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, msgInfo.getMsgHash());
@@ -130,8 +127,7 @@ public class AnalyseResultTable {
     public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
         TableTabDataModel tabDataModel = null;
 
-        String selectSQL = ("SELECT * FROM tableName WHERE msg_hash = ?;")
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT * FROM "+ tableName +" WHERE msg_hash = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, msgHash);
@@ -163,8 +159,7 @@ public class AnalyseResultTable {
         FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-        String selectSQL = "SELECT * FROM tableName WHERE find_path_num > 0 and run_status = ? LIMIT 1;"
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT * FROM " + tableName + " WHERE find_path_num > 0 and run_status = ? LIMIT 1;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, Constants.ANALYSE_WAIT);
@@ -178,8 +173,7 @@ public class AnalyseResultTable {
                     );
 
                     //更新索引对应的数据
-                    String updateSQL = "UPDATE tableName SET run_status = ? WHERE id = ?;"
-                            .replace("tableName", tableName);
+                    String updateSQL = "UPDATE "+ tableName +" SET run_status = ? WHERE id = ?;";
 
                     try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                         updateStatement.setString(1, Constants.ANALYSE_ING);
@@ -202,8 +196,7 @@ public class AnalyseResultTable {
     public static synchronized DynamicUrlsModel fetchDynamicUrlsDataById(int id){
         DynamicUrlsModel dynamicUrlsModel = null;
 
-        String selectSQL = "SELECT id,path_to_url,unvisited_url,basic_path_num FROM tableName WHERE id = ?;"
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT id,path_to_url,unvisited_url,basic_path_num FROM  "+ tableName +" WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setInt(1, id);
@@ -232,8 +225,7 @@ public class AnalyseResultTable {
     public static synchronized int updateDynamicUrlsBasicNum(int id, int basicPathNum){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String updateSQL = "UPDATE tableName SET basic_path_num = ? WHERE id = ?;"
-                .replace("tableName", tableName);
+        String updateSQL = "UPDATE "+ tableName +"  SET basic_path_num = ? WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
@@ -260,11 +252,9 @@ public class AnalyseResultTable {
     public static synchronized int updateDynamicUrlsModel(DynamicUrlsModel dynamicUrlModel){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String updateSQL = ("UPDATE tableName SET " +
-                "path_to_url = ?, path_to_url_num = ?, " +
-                "unvisited_url = ?, unvisited_url_num = ?, " +
-                "basic_path_num = ? WHERE id = ?;")
-                .replace("tableName", tableName);
+        String updateSQL = "UPDATE "+ tableName + " " +
+                "SET path_to_url = ?, path_to_url_num = ?,  unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ? " +
+                "WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
@@ -296,8 +286,7 @@ public class AnalyseResultTable {
     public static synchronized List<UnVisitedUrlsModel> fetchAllUnVisitedUrls( ){
         List<UnVisitedUrlsModel> list = new ArrayList<>();
 
-        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE unvisited_url_num > 0 ORDER BY id ASC;")
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM  "+ tableName + " WHERE unvisited_url_num > 0 ORDER BY id ASC;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
@@ -324,9 +313,8 @@ public class AnalyseResultTable {
     public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls( ) {
         UnVisitedUrlsModel unVisitedUrlsModel = null;
 
-        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName " +
-                "WHERE unvisited_url_num > 0 ORDER BY unvisited_url_num DESC Limit 1;")
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +
+                " WHERE unvisited_url_num > 0 ORDER BY unvisited_url_num DESC Limit 1;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
@@ -353,8 +341,7 @@ public class AnalyseResultTable {
     public static synchronized int updateUnVisitedUrlsById(UnVisitedUrlsModel unVisitedUrlsModel) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;"
-                .replace("tableName", tableName);
+        String updateSQL = "UPDATE " + tableName +"  SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             stmt.setString(1, CastUtils.toJson(unVisitedUrlsModel.getUnvisitedUrls()));
@@ -373,8 +360,7 @@ public class AnalyseResultTable {
     public static synchronized int clearUnVisitedUrlsByMsgHash(String msgHash) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash = ?;"
-                .replace("tableName", tableName);
+        String updateSQL = "UPDATE "+ tableName +"  SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             JSONArray emptyArray = new JSONArray();
@@ -394,9 +380,8 @@ public class AnalyseResultTable {
         int totalRowsAffected = 0;
 
         // 构建SQL语句
-        String updateSQL = "UPDATE tableName SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash IN $buildInParamList$"
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()))
-                .replace("tableName", tableName);
+        String updateSQL = "UPDATE "+ tableName + " SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash IN $buildInParamList$"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             // 设置第一个参数为JSON数组的toJSONString()
@@ -425,8 +410,7 @@ public class AnalyseResultTable {
     public static synchronized UnVisitedUrlsModel fetchUnVisitedUrlsByMsgHash(String msgHash) {
         UnVisitedUrlsModel unVisitedUrlsModel = null;
 
-        String selectSQL = ("SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE msg_hash = ?;")
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, msgHash);
@@ -452,9 +436,8 @@ public class AnalyseResultTable {
     public static synchronized List<UnVisitedUrlsModel> fetchUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
         List<UnVisitedUrlsModel> unVisitedUrlsModels = new ArrayList<>();
 
-        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM tableName WHERE msg_hash IN $buildInParameterList$;"
-                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()))
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
+                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn();
              PreparedStatement stmt = conn.prepareStatement(selectSQL)) {

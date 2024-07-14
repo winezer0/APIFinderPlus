@@ -15,8 +15,7 @@ public class ReqMsgDataTable {
     public static String tableName = "REQ_MSG_DATA";
 
     //创建用于存储 需要处理的URL的原始请求响应
-    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
-            .replace("tableName", tableName)
+    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS "+ tableName +" (\n"
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + " msg_hash TEXT UNIQUE,\n"
             + " req_url TEXT NOT NULL,\n"
@@ -27,8 +26,7 @@ public class ReqMsgDataTable {
     //插入数据库
     public static synchronized int insertOrUpdateMsgData(HttpMsgInfo msgInfo) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String checkSql = "SELECT id FROM tableName WHERE msg_hash = ? "
-                .replace("tableName", tableName);
+        String checkSql = "SELECT id FROM "+ tableName +"  WHERE msg_hash = ? ;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(checkSql)) {
             // 检查记录是否存在
@@ -40,8 +38,9 @@ public class ReqMsgDataTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (msg_hash, req_url, req_bytes, resp_bytes) VALUES (?, ?, ?, ?)"
-                        .replace("tableName", tableName);
+                String insertSql = "INSERT INTO "+ tableName +
+                        " (msg_hash, req_url, req_bytes, resp_bytes)" +
+                        " VALUES (?, ?, ?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
                     insertStmt.setString(2, msgInfo.getUrlInfo().getRawUrl());
@@ -72,8 +71,7 @@ public class ReqMsgDataTable {
     public static synchronized ReqMsgDataModel fetchMsgDataById(Integer msgDataIndex){
         ReqMsgDataModel msgData = null;
 
-        String sql = "SELECT * FROM tableName WHERE id = ?;"
-                .replace("tableName", tableName);
+        String sql = "SELECT * FROM "+ tableName +" WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, msgDataIndex);
@@ -101,8 +99,7 @@ public class ReqMsgDataTable {
     public static synchronized ReqMsgDataModel fetchMsgDataByMsgHash(String msgHash){
         ReqMsgDataModel msgData = null;
 
-        String sql = "SELECT * FROM tableName WHERE msg_hash = ?;"
-                .replace("tableName", tableName);
+        String sql = "SELECT * FROM "+ tableName + "  WHERE msg_hash = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, msgHash);

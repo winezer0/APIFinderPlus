@@ -19,8 +19,7 @@ public class RecordUrlTable {
     public static String urlHashName = "url_hash";
 
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
-    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
-            .replace("tableName", tableName)
+    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS  "+ tableName +"  (\n"
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
             + "url_hash TEXT UNIQUE,\n"
             + "req_host_port TEXT NOT NULL,\n"
@@ -32,10 +31,10 @@ public class RecordUrlTable {
     //插入访问的URl
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl,String reqHostPort, int respStatusCode, String urlHash) {
         int generatedId = -1;
-        String upsertSql = ("INSERT INTO tableName (req_url, req_host_port, resp_status_code, url_hash) "
-                + "VALUES (?,?, ?, ?)  " +
-                "ON CONFLICT(url_hash) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
-                .replace("tableName", tableName);
+        String upsertSql = "INSERT INTO "+ tableName +
+                " (req_url, req_host_port, resp_status_code, url_hash)" +
+                " VALUES (?,?, ?, ?)" +
+                " ON CONFLICT(url_hash) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -82,10 +81,10 @@ public class RecordUrlTable {
     public static synchronized int[] batchInsertOrUpdateAccessedUrls(List<AccessedUrlInfo> accessedUrlInfos) {
         int[] generatedIds = null;
 
-        String upsertSql = ("INSERT INTO tableName (req_url, req_host_port, resp_status_code, url_hash) "
-                + "VALUES (?, ?, ?, ?) "
-                + "ON CONFLICT(url_hash) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;")
-                .replace("tableName", tableName);
+        String upsertSql = "INSERT INTO "+ tableName +
+                " (req_url, req_host_port, resp_status_code, url_hash)" +
+                " VALUES (?, ?, ?, ?)" +
+                " ON CONFLICT(url_hash) DO UPDATE SET resp_status_code = EXCLUDED.resp_status_code;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(upsertSql, Statement.RETURN_GENERATED_KEYS)) {
             // 添加到批处理队列
@@ -130,8 +129,7 @@ public class RecordUrlTable {
     public static synchronized List<String> fetchAllAccessedUrls(String reqHostPort) {
         Set<String> uniqueURLs = new HashSet<>();
 
-        String selectSql = "SELECT req_url FROM tableName WHERE req_host_port = ?;"
-                .replace("tableName", tableName);
+        String selectSql = "SELECT req_url FROM "+ tableName +"  WHERE req_host_port = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
             // 获取所有的URL
@@ -155,8 +153,7 @@ public class RecordUrlTable {
     public static synchronized List<String> fetchAllAccessedUrls() {
         List<String> uniqueURLs = new ArrayList<>();
 
-        String selectSql = "SELECT req_url FROM tableName;"
-                .replace("tableName", tableName);
+        String selectSql = "SELECT req_url FROM "+ tableName +" ;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
             // 获取所有的URL

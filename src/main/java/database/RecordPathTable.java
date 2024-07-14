@@ -16,8 +16,7 @@ public class RecordPathTable {
     public static String tableName = "RECORD_PATH";
 
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
-    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS tableName (\n"
-            .replace("tableName", tableName)
+    static String creatTableSQL = "CREATE TABLE IF NOT EXISTS "+ tableName +" (\n"
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
             + "req_hash TEXT UNIQUE, \n"  // 添加一列 req_hash 作为 req_proto req_host_port req_path_dir resp_status_code 的 特征值
             + "req_proto TEXT NOT NULL,\n"
@@ -32,8 +31,7 @@ public class RecordPathTable {
     //插入一条路径记录
     public static synchronized int insertOrUpdateSuccessUrlPath(RecordPathModel recordPathModel) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-        String selectSql = ("SELECT id FROM tableName WHERE req_hash = ?;")
-                .replace("tableName", tableName);
+        String selectSql = "SELECT id FROM "+ tableName +" WHERE req_hash = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql))
         {
@@ -46,8 +44,9 @@ public class RecordPathTable {
                 return 0;
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash) VALUES (?, ?, ?, ?, ?);"
-                        .replace("tableName", tableName);
+                String insertSql = "INSERT INTO "+ tableName +
+                        " (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash)" +
+                        " VALUES (?, ?, ?, ?, ?);";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, recordPathModel.getReqProto());
                     insertStmt.setString(2, recordPathModel.getReqHostPort());
@@ -91,8 +90,7 @@ public class RecordPathTable {
         // 考虑开启事务
         int dataIndex = -1;
 
-        String selectSQL = "SELECT id FROM tableName WHERE run_status = ? LIMIT 1;"
-                .replace("tableName", tableName);
+        String selectSQL = "SELECT id FROM "+ tableName + " WHERE run_status = ? LIMIT 1;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, Constants.ANALYSE_WAIT);
@@ -115,8 +113,7 @@ public class RecordPathTable {
         List<RecordPathDirsModel> recordPathModels = new ArrayList<>();
 
         //1、标记需要处理的数据 更新状态为解析中
-        String updateMarkSQL1 = ("UPDATE tableName SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);")
-                .replace("tableName", tableName);
+        String updateMarkSQL1 = "UPDATE "+ tableName +" SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement Stmt1 = conn.prepareStatement(updateMarkSQL1);){
             Stmt1.setString(1, Constants.ANALYSE_ING);
@@ -125,9 +122,8 @@ public class RecordPathTable {
             int affectedRows = Stmt1.executeUpdate();
             if (affectedRows > 0) {
                 //2、获取 解析中 状态的 Host、数据、ID列表
-                String selectSQL = ("SELECT req_proto,req_host_port,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
-                        "FROM tableName WHERE run_status == ? GROUP BY req_proto,req_host_port;")
-                        .replace("tableName", tableName);
+                String selectSQL = "SELECT req_proto,req_host_port,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
+                        "FROM "+ tableName +" WHERE run_status == ? GROUP BY req_proto,req_host_port;";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(selectSQL)){
                     stmt2.setString(1, Constants.SPLIT_SYMBOL);
@@ -146,8 +142,7 @@ public class RecordPathTable {
                     }
 
                     //3、更新 解析中 对应的状态为解析完成
-                    String updateMarkSQL2 = "UPDATE tableName SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);"
-                            .replace("tableName", tableName);
+                    String updateMarkSQL2 = "UPDATE "+ tableName +" SET run_status = ? WHERE id in (SELECT id FROM tableName WHERE run_status = ?);";
 
                     try (PreparedStatement updateMarkSQL2Stmt = conn.prepareStatement(updateMarkSQL2)){
                         updateMarkSQL2Stmt.setString(1, Constants.ANALYSE_END);
@@ -170,9 +165,10 @@ public class RecordPathTable {
     public static int[] batchInsertOrUpdateSuccessUrl(List<RecordPathModel> recordPathModels) {
         int[] generatedIds = null;
 
-        String insertSql = ("INSERT INTO tableName (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash) VALUES (?, ?, ?, ?, ?) " +
-                "ON CONFLICT(req_hash) DO NOTHING")
-                .replace("tableName", tableName);
+        String insertSql = "INSERT INTO "+ tableName +
+                " (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash)" +
+                " VALUES (?, ?, ?, ?, ?)" +
+                " ON CONFLICT(req_hash) DO NOTHING";
 
         //ON CONFLICT(req_proto, req_host_port, req_path_dir, resp_status_code) DO NOTHING
         // 这个语句的作用是在尝试向表中插入一条记录时，如果发现有与之冲突的唯一约束

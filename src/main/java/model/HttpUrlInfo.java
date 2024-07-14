@@ -24,8 +24,8 @@ public class HttpUrlInfo {
     private String ref = null;
 
     private String ext = null;
-
     private String rootUrl = null;
+    private String rootUrlUsual = null;
     private String noParamUrl = null;
     private String noFileUrl = null;
 
@@ -51,11 +51,12 @@ public class HttpUrlInfo {
             fullPath = genFullPath();
             //解析请求文件的后缀 php html
             ext = parseUrlExtStrict(rawUrl);
-            //添加个HostPort对象 //www.baidu.com:8080
-            hostPort = String.format("%s:%s", host, port);
 
-            //获取前缀URL // http://www.baidu.com
-            rootUrl = String.format("%s://%s/", proto, hostPort);
+            //添加个HostPort对象 www.baidu.com:80 | www.baidu.com:8080
+            hostPort = String.format("%s:%s", host, port);
+            //获取没有默认端口的请求头 www.baidu.com | www.baidu.com:8080
+            hostPortUsual = removeHostDefaultPort(hostPort,host,port);
+
             //获取主域名 baidu.com
             rootDomain = DomainUtils.getRootDomain(host);
             //获取请求路径的目录部分 /path/to/
@@ -65,8 +66,10 @@ public class HttpUrlInfo {
             //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
             noFileUrl = new URL(proto, host, port, pathDir).toString();
 
-            //获取没有默认端口的请求头
-            hostPortUsual = removeHostDefaultPort(hostPort,host,port);
+            //获取前缀URL // http://www.baidu.com:80/
+            rootUrl = String.format("%s://%s/", proto, hostPort);
+            //获取前缀URL // http://www.baidu.com/
+            rootUrlUsual = String.format("%s://%s/", proto, hostPortUsual);
 
             //格式化URL 不显示默认端口
             rawUrl = removeUrlDefaultPort(rawUrl);
@@ -154,6 +157,10 @@ public class HttpUrlInfo {
 
     public String getHostPort() {
         return hostPort;
+    }
+
+    public String getRootUrlUsual() {
+        return rootUrlUsual;
     }
 
     public String getRootUrl() {

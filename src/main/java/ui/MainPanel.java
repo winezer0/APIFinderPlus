@@ -451,33 +451,35 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 if (listSelectionModel>=0) {
                     int[] selectedRows = table.getSelectedRows();
                     List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                //1、加入到黑名单列表
+                                //0、获取所有rootUrl
                                 Set<String> rootUrlSet = new HashSet<String>();
                                 for (String url:urlList){
                                     HttpUrlInfo urlInfo = new HttpUrlInfo(url);
-                                    rootUrlSet.add(urlInfo.getRootUrl());
+                                    rootUrlSet.add(urlInfo.getRootUrlUsual());
                                 }
+                                ArrayList<String> rootUrlList = new ArrayList<>(rootUrlSet);
+
+                                //1、加入到黑名单列表
                                 //合并原来的列表
-                                rootUrlSet.addAll( BurpExtender.CONF_BLACK_URL_ROOT);
+                                rootUrlSet.addAll(BurpExtender.CONF_BLACK_URL_ROOT);
                                 BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(rootUrlSet);
                                 //不合并原来的列表
                                 //BurpExtender.CONF_BLACK_URL_ROOT.addAll(rootUrlSet);
-
                                 //保存Json
-                                FingerConfigTab.autoSaveConfigJson();
+                                FingerConfigTab.saveConfigToDefaultJson();
 
-/*
-                                //2、删除对应的 结果数据 //TODO 不完善 应该用 HOST删除,但是没有HOST列
-                                UnionTableSql.deleteDataByMsgHashList(msgHashList, ReqDataTable.tableName);
-                                UnionTableSql.deleteDataByMsgHashList(msgHashList, AnalyseResultTable.tableName);
+                                //2、删除 Root URL 对应的 结果数据
+                                int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
+                                int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseResultTable.tableName);
+                                stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
+
+                                //3、刷新表格
                                 refreshTableModel(false);
-*/
                                 return null;
                             }
                         }.execute();
