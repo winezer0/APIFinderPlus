@@ -196,6 +196,9 @@ public class CastUtils {
         return formattedResult.toString();
     }
 
+    /**
+     * 字符串转 CRC32
+     */
     public static String calcCRC32(String string) {
         // 使用 UTF-8 编码将字符串转换为字节数组
         byte[] inputBytes = string.getBytes(StandardCharsets.UTF_8);
@@ -205,5 +208,23 @@ public class CastUtils {
         crc32.update(inputBytes, 0, inputBytes.length);
         // 将计算后的CRC32值转换为十六进制字符串并返回
         return Long.toHexString(crc32.getValue()).toLowerCase();
+    }
+
+
+    /**
+     * 字符串转列表
+     * @param text
+     * @return
+     */
+    public static List<String> getUniqueLines(String text, String split) {
+        if (text == null || text.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 分割字符串
+        String[] lines = text.split(split);
+        // 转换为Set以去除重复项
+        Set<String> uniqueSet = new LinkedHashSet<>(Arrays.asList(lines));
+        // 转换回List并返回
+        return new ArrayList<>(uniqueSet);
     }
 }
