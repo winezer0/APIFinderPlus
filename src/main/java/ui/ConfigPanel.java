@@ -374,6 +374,14 @@ public class ConfigPanel extends JPanel {
     private JPopupMenu createMoreMenuWithAction() {
         JPopupMenu moreMenu = new JPopupMenu("功能");
 
+        JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
+        addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addUrlToRecordPath);
+
+        JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
+        addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addUrlToRecordUrl);
+
         JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
         loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
         moreMenu.add(loadSitemapToRecordPath);
@@ -403,13 +411,6 @@ public class ConfigPanel extends JPanel {
         clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearAllTableData);
 
-        JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
-        addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addUrlToRecordPath);
-
-        JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
-        addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addUrlToRecordUrl);
 
         // 为 功能 菜单项 清除无用数据 添加 Action Listener
         clearUselessData.addActionListener(new ActionListener() {
