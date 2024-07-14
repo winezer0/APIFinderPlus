@@ -38,7 +38,7 @@ public class AnalyseInfo {
         Set<String> findUriSet = findUriInfoByRegular(msgInfo);
         Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
 
-        String reqUrl = msgInfo.getUrlInfo().getRawUrl();
+        String reqUrl = msgInfo.getUrlInfo().getRawUrlUsual();
         String reqPath = msgInfo.getUrlInfo().getPath();
 
         //采集 URL 处理
@@ -147,7 +147,7 @@ public class AnalyseInfo {
             HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
             //过滤自身包含的URL (包含说明相同) //功能测试通过
-            urlList = AnalyseUriFilter.filterUriBySelfContain(urlInfo.getRawUrl(), urlList);
+            urlList = AnalyseUriFilter.filterUriBySelfContain(urlInfo.getRawUrlUsual(), urlList);
             //stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的URL:%s", urlList.size()));
 
             //仅保留主域名相关URL
@@ -255,7 +255,7 @@ public class AnalyseInfo {
         respBody = AnalyseInfoUtils.SubString(respBody, MAX_HANDLE_SIZE);
 
         // 针对html页面提取 直接的URL 已完成
-        Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(msgInfo.getUrlInfo().getRawUrl(), respBody);
+        Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(msgInfo.getUrlInfo().getRawUrlUsual(), respBody);
         //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUrl.size()));
         allUriSet.addAll(extractUrl);
 

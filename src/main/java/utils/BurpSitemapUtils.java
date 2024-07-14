@@ -84,11 +84,11 @@ public class BurpSitemapUtils {
             HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
 
             if (msgInfo.getUrlInfo().getHostPort().contains("-1")){
-                stderr_println(String.format("重大错误!!! URL %s 获取的 reqHostPort 没有合法的端口号 %s",msgInfo.getUrlInfo().getNoParamUrl(), msgInfo.getUrlInfo().getHostPort()));
+                stderr_println(String.format("重大错误!!! URL %s 获取的 reqHostPort 没有合法的端口号 %s",msgInfo.getUrlInfo().getNoParamUrlUsual(), msgInfo.getUrlInfo().getHostPort()));
             }
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getNoParamUrl());
+            jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getNoParamUrlUsual());
             jsonObject.put(Constants.REQ_HOST_PORT, msgInfo.getUrlInfo().getHostPort());
             jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getExt());
             jsonObject.put(Constants.RESP_STATUS_CODE, msgInfo.getRespStatusCode());

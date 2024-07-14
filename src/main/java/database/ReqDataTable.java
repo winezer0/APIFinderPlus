@@ -52,7 +52,7 @@ public class ReqDataTable {
 
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     insertStmt.setString(1, msgInfo.getMsgHash());
-                    insertStmt.setString(2, msgInfo.getUrlInfo().getRawUrl());
+                    insertStmt.setString(2, msgInfo.getUrlInfo().getRawUrlUsual());
                     insertStmt.setString(3, msgInfo.getReqMethod());
                     insertStmt.setInt(4, msgInfo.getRespStatusCode());
                     insertStmt.setInt(5, msgDataIndex);

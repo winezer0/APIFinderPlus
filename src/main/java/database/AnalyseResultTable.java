@@ -65,7 +65,7 @@ public class AnalyseResultTable {
             ResultSet rs = stmt1.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getRawUrl(), msgInfo.getMsgHash()));
+                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
@@ -76,7 +76,7 @@ public class AnalyseResultTable {
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, msgInfo.getMsgHash());
-                    stmt2.setString(2, msgInfo.getUrlInfo().getRawUrl());
+                    stmt2.setString(2, msgInfo.getUrlInfo().getRawUrlUsual());
                     stmt2.setString(3, msgInfo.getUrlInfo().getHostPort());
 
                     stmt2.setString(4, CastUtils.toJson(analyseInfo.getUrlList()));

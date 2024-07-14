@@ -37,9 +37,9 @@ public class AnalyseUriFilter {
         if (matchList == null || matchList.isEmpty()) return matchList;
 
         List<String> newList = new ArrayList<>();
-        for (String s : matchList){
-            if(!ElementUtils.isContainOneKey(s, blackPathKeys, false)){
-                newList.add(s);
+        for (String path : matchList){
+            if(!ElementUtils.isContainOneKey(path, blackPathKeys, false)){
+                newList.add(path);
             }
         }
         return newList;
@@ -190,7 +190,7 @@ public class AnalyseUriFilter {
 
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {
-            String url = new HttpUrlInfo(urlStr).getRawUrl();
+            String url = new HttpUrlInfo(urlStr).getRawUrlUsual();
             list.add(url);
         }
         return list;

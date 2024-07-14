@@ -65,10 +65,10 @@ public class RecordUrlTable {
     //插入访问的URl 复用
     public static synchronized int insertOrUpdateAccessedUrl(HttpMsgInfo msgInfo) {
         return insertOrUpdateAccessedUrl(
-                msgInfo.getUrlInfo().getRawUrl(),
+                msgInfo.getUrlInfo().getRawUrlUsual(),
                 msgInfo.getUrlInfo().getHostPort(),
                 msgInfo.getRespStatusCode(),
-                CastUtils.calcCRC32(msgInfo.getUrlInfo().getRawUrl())
+                CastUtils.calcCRC32(msgInfo.getUrlInfo().getRawUrlUsual())
         );
     }
 

@@ -77,32 +77,34 @@ public class IProxyScanner implements IProxyListener {
             String statusCode = String.valueOf(msgInfo.getRespStatusCode());
 
             //看URL识别是否报错 不记录报错情况
-            if (msgInfo.getUrlInfo().getNoParamUrl() == null){
-                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getRawUrl());
+            if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null){
+                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
                 return;
             }
 
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
             if(isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)){
-                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getRawUrl());
+                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
                 return;
             }
 
             //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getRawUrl());
+                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getRawUrlUsual());
                 return;
             }
 
             if(ConfigPanel.autoRecordPathIsOpen()
                     && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
-                    && !msgInfo.getUrlInfo().getPath().equals("/")){
+                    && !msgInfo.getUrlInfo().getPath().equals("/")
+                    && !isContainOneKey(msgInfo.getUrlInfo().getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
+            ){
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
                         //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
                         RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
+                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
                     }
                 });
             }
@@ -146,7 +148,7 @@ public class IProxyScanner implements IProxyListener {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
 
             //看URL识别是否报错 //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
-            if (msgInfo.getUrlInfo().getNoParamUrl() == null
+            if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null
                     ||isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)
                     ||isEqualsOneKey(msgInfo.getUrlInfo().getExt(), CONF_BLACK_URL_EXT, false)
                     ||isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)
@@ -185,7 +187,7 @@ public class IProxyScanner implements IProxyListener {
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
                 stdout_println(LOG_INFO, String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
-                        msgInfo.getUrlInfo().getRawUrl(), msgInfo.getMsgHash(), reqSource));
+                        msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash(), reqSource));
         }
     }
 
@@ -229,7 +231,7 @@ public class IProxyScanner implements IProxyListener {
                                 //将初次分析结果写入数据库
                                 int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
-                                    stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrl(), msgInfo.getMsgHash()));
+                                    stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                 }
 
                                 //将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 还是得访问一边再说
@@ -286,25 +288,32 @@ public class IProxyScanner implements IProxyListener {
                             //获取URL
                             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
 
+
                             //将这些URl标记为已访问 不然涉及的更新的问题很多
                             //RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
 
                             //获取这个MsgHash对应的请求体和响应体
                             String msgHash = unVisitedUrlsModel.getMsgHash();
                             ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+
                             //获取请求头
                             HelperPlus helperPlus = new HelperPlus(getHelpers());
                             List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+
                             //记录准备加入的请求
                             executorService.submit(new Runnable() {
                                 @Override
                                 public void run() {
                                     for (String reqUrl:unvisitedUrls){
+                                        //不递归扫描黑名单内的主机 //TODO 存在缺陷, 每次都会获取到这个目标 导致无法忽略正常扫描
+                                        if (!isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                                            continue;
+                                        }
+
                                         if (urlAutoRecordMap.get(reqUrl) <= 0){
                                             //记录已访问的URL
                                             urlAutoRecordMap.add(reqUrl); //防止循环扫描
                                             RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
-
                                             stdout_println(LOG_INFO, String.format("[*] Auto Access URL: %s", reqUrl));
 
                                             try {
@@ -321,9 +330,11 @@ public class IProxyScanner implements IProxyListener {
                                                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
                                                             if(ConfigPanel.autoRecordPathIsOpen()
                                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
-                                                                    && !msgInfo.getUrlInfo().getPath().equals("/")){
+                                                                    && !msgInfo.getUrlInfo().getPath().equals("/")
+                                                                    && !isContainOneKey(msgInfo.getUrlInfo().getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
+                                                            ){
                                                                 RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
+                                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
                                                             }
 
                                                             //加入请求分析列表
@@ -381,7 +392,7 @@ public class IProxyScanner implements IProxyListener {
                     && !currPathTree.isEmpty() && !currPathTree.getJSONObject("ROOT").isEmpty()) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
-                String reqBaseUrl = new HttpUrlInfo(reqUrl).getNoParamUrl();
+                String reqBaseUrl = new HttpUrlInfo(reqUrl).getNoParamUrlUsual();
 
                 for (Object findPath: findPathArray){
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);

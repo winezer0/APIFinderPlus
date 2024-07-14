@@ -10,6 +10,7 @@ import static utils.BurpPrintUtils.stderr_println;
 //创建一个类用于存储 URL解析结果的类
 public class HttpUrlInfo {
     private String rawUrl;
+    private String rawUrlUsual;
     private String proto = null;
     private String host = null;
     private int port = -1;
@@ -26,6 +27,8 @@ public class HttpUrlInfo {
     private String ext = null;
     private String rootUrl = null;
     private String rootUrlUsual = null;
+    private String noParamUrlUsual = null;
+    private String noFileUrlUsual = null;
     private String noParamUrl = null;
     private String noFileUrl = null;
 
@@ -72,9 +75,9 @@ public class HttpUrlInfo {
             rootUrlUsual = String.format("%s://%s/", proto, hostPortUsual);
 
             //格式化URL 不显示默认端口
-            rawUrl = removeUrlDefaultPort(rawUrl);
-            noParamUrl = removeUrlDefaultPort(noParamUrl);
-            noFileUrl = removeUrlDefaultPort(noFileUrl);
+            rawUrlUsual = removeUrlDefaultPort(rawUrl);
+            noParamUrlUsual = removeUrlDefaultPort(noParamUrl);
+            noFileUrlUsual = removeUrlDefaultPort(noFileUrl);
 
             //格式化URL 显示默认端口 //可能存在缺陷,无法处理那种
             //reqUrl = addUrlDefaultPort(reqUrl);
@@ -143,8 +146,8 @@ public class HttpUrlInfo {
         return "/";
     }
 
-    public String getRawUrl() {
-        return rawUrl;
+    public String getRawUrlUsual() {
+        return rawUrlUsual;
     }
 
     public String getProto() {
@@ -187,12 +190,12 @@ public class HttpUrlInfo {
         return ext;
     }
 
-    public String getNoParamUrl() {
-        return noParamUrl;
+    public String getNoParamUrlUsual() {
+        return noParamUrlUsual;
     }
 
-    public String getNoFileUrl() {
-        return noFileUrl;
+    public String getNoFileUrlUsual() {
+        return noFileUrlUsual;
     }
 
 

@@ -468,8 +468,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                                 //合并原来的列表
                                 rootUrlSet.addAll(BurpExtender.CONF_BLACK_URL_ROOT);
                                 BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(rootUrlSet);
-                                //不合并原来的列表
-                                //BurpExtender.CONF_BLACK_URL_ROOT.addAll(rootUrlSet);
                                 //保存Json
                                 FingerConfigTab.saveConfigToDefaultJson();
 

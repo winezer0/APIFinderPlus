@@ -93,7 +93,7 @@ public class HttpMsgInfo {
      * @return
      */
     private String calcMsgHash() {
-        return calcCRC32(String.format("%s|%s|%s|%s", urlInfo.getNoParamUrl(), reqMethod, respStatusCode, respInfo.getBodyLenVague()));
+        return calcCRC32(String.format("%s|%s|%s|%s", urlInfo.getNoParamUrlUsual(), reqMethod, respStatusCode, respInfo.getBodyLenVague()));
     }
 
     /**
