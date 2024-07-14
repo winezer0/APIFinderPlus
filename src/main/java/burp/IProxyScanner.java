@@ -191,6 +191,12 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6)
                         return;
 
+                    //定时清理URL记录表
+                    if (UnionTableSql.getTableCounts(RecordUrlTable.tableName)>500){
+                        DBService.clearRecordUrlTable();
+                        stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
+                    }
+
                     //任务1、获取需要解析的响应体数据并进行解析响
                     int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
                     if (needHandledReqDataId > 0){
