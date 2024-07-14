@@ -224,7 +224,7 @@ public class AnalyseInfoUtils {
      * @return 解码后的字符串
      */
     public static String decodeHtml(String htmlEncodedString) {
-        if (htmlEncodedString != null || !htmlEncodedString.isEmpty())
+        if (htmlEncodedString != null && !htmlEncodedString.isEmpty())
             htmlEncodedString = StringEscapeUtils.unescapeHtml4(htmlEncodedString);
         return htmlEncodedString;
     }
