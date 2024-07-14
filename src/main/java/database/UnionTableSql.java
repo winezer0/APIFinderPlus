@@ -231,4 +231,26 @@ public class UnionTableSql {
 
         return totalRowsAffected;
     }
+
+    /**
+     * 统计所有已加入到数据库的URL的数量
+     * @return
+     */
+    public static synchronized int getTableCounts(String tableName) {
+        int count = 0;
+
+        String selectSQL = "SELECT COUNT(*) FROM tableName;"
+                .replace("tableName",tableName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("Counts Table [%s] Error: %s",tableName, e.getMessage() ));
+        }
+        return count;
+    }
 }

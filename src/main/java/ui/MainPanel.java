@@ -870,7 +870,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             return;
 
         //设置已加入数据库的数量
-        ConfigPanel.lbTaskerCount.setText(String.valueOf(ReqDataTable.getReqDataCountUnConditional()));
+        ConfigPanel.lbTaskerCount.setText(String.valueOf(UnionTableSql.getTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
         ConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
