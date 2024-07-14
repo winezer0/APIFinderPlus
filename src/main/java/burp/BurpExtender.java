@@ -57,7 +57,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static List<String> CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
     public static List<String> CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
-    public static List<String> CONF_BLACK_URL_HOSTS = new ArrayList<>(); //不检查的URL域名
+    public static List<String> CONF_BLACK_URL_PREFIX = new ArrayList<>(); //不检查的URL前缀 关键字
 
     public static List<String> CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
     public static List<String> CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
@@ -125,8 +125,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                 CONF_NEED_RECORD_STATUS.addAll(rule.getKeyword());
                 break;
 
-            case "CONF_BLACK_URL_HOSTS":
-                CONF_BLACK_URL_HOSTS.addAll(rule.getKeyword());
+            case "CONF_BLACK_URL_PREFIX":
+                CONF_BLACK_URL_PREFIX.addAll(rule.getKeyword());
                 break;
             case "CONF_BLACK_URL_PATH":
                 CONF_BLACK_URL_PATH.addAll(rule.getKeyword());

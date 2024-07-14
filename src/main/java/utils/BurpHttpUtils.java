@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import static burp.BurpExtender.CONF_BLACK_URL_HOSTS;
+import static burp.BurpExtender.CONF_BLACK_URL_PREFIX;
 import static burp.BurpExtender.getHelpers;
 import static utils.BurpPrintUtils.*;
 
@@ -43,8 +43,8 @@ public class BurpHttpUtils {
             requestResponse = callbacks.makeHttpRequest(httpService, requestBytes);
         } catch (Exception e){
             if (e.getMessage().contains("UnknownHostException")){
-                //主机不存活,直接加入黑名单host
-                CONF_BLACK_URL_HOSTS.add(urlInfo.getHostPortUsual());
+                //主机不存活,直接加入黑名单host 加入最短的HOST即可
+                CONF_BLACK_URL_PREFIX.add(urlInfo.getHostPortUsual());
                 stderr_println(LOG_DEBUG, String.format("黑名单Host添加:%s ->%s", reqUrl, urlInfo.getHostPortUsual()));
             } else {
                 stderr_println(LOG_DEBUG, String.format("获取HTTP响应失败:%s ->%s", reqUrl, e.getMessage()));

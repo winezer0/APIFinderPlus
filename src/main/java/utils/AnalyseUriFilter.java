@@ -72,17 +72,10 @@ public class AnalyseUriFilter {
         if (blackHosts==null || blackHosts.isEmpty()||urls==null||urls.isEmpty()) return urls;
 
         List<String> list = new ArrayList<>();
-        for (String urlStr : urls) {
-            try {
-                URL url = new URL(urlStr);
-                String host = url.getHost();
-                if (!ElementUtils.isContainOneKey(host, blackHosts, false)) {
-                    list.add(urlStr);
-                }else {
-                    //stdout_println(LOG_DEBUG, String.format("[*] Black Hosts Filter: %s", urlStr));
-                }
-            } catch (MalformedURLException e) {
-                stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", urlStr, e.getMessage()));
+        for (String url : urls) {
+            HttpUrlInfo urlInfo = new HttpUrlInfo(url);
+            if (!ElementUtils.isContainOneKey(urlInfo.getPrefixUrl(), blackHosts, false)) {
+                list.add(url);
             }
         }
         return list;

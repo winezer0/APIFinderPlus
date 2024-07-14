@@ -131,7 +131,7 @@ public class AnalyseInfo {
         urlList = AnalyseUriFilter.formatUrls(urlList);
 
         //过滤黑名单host
-        urlList = AnalyseUriFilter.filterBlackHosts(urlList, BurpExtender.CONF_BLACK_URL_HOSTS);
+        urlList = AnalyseUriFilter.filterBlackHosts(urlList, BurpExtender.CONF_BLACK_URL_PREFIX);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单主机:%s", urlList.size()));
 
         //过滤黑名单Path
