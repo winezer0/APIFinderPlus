@@ -390,6 +390,10 @@ public class ConfigPanel extends JPanel {
         addPathToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
         moreMenu.add(addPathToRecordPath);
 
+        JMenuItem addUrlToRecordUrl = new JMenuItem("添加URL到访问记录");
+        addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addUrlToRecordUrl);
+
         // 为 功能 菜单项 清除无用数据 添加 Action Listener
         clearUselessData.addActionListener(new ActionListener() {
             @Override
@@ -477,6 +481,14 @@ public class ConfigPanel extends JPanel {
             }
         });
 
+        // 为 功能 菜单项 输入URL列表到数据框 从而加入到 URL记录
+        addUrlToRecordUrl.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                creatTextDialogForAddRecordUrl();
+            }
+        });
+
         return moreMenu;
     }
 
@@ -495,6 +507,81 @@ public class ConfigPanel extends JPanel {
         constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
         // 添加第一行提示
         JLabel urlJLabel = new JLabel("输入有效数据:");
+        constraints.gridx = 0; // 第1列
+        constraints.gridy = 0; // 第1行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(urlJLabel, constraints);
+
+        JTextArea customParentPathArea = new JTextArea(5, 20);
+        customParentPathArea.setText("");
+        customParentPathArea.setLineWrap(true); // 自动换行
+        customParentPathArea.setWrapStyleWord(true); //断行不断字
+        constraints.gridy = 1; // 第2行
+        constraints.gridx = 0; // 第1列
+        dialog.add(new JScrollPane(customParentPathArea), constraints); // 添加滚动条
+
+        // 添加按钮面板
+        JPanel buttonPanel = new JPanel();
+        JButton confirmButton = new JButton("确认");
+        JButton cancelButton = new JButton("取消");
+        buttonPanel.add(confirmButton);
+        buttonPanel.add(cancelButton);
+
+        constraints.gridx = 0; // 第一列
+        constraints.gridy = 2; // 第三行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(buttonPanel, constraints);
+
+        dialog.pack(); // 调整对话框大小以适应其子组件
+        dialog.setLocationRelativeTo(null); // 居中显示
+        dialog.setVisible(true); // 显示对话框
+
+        // 取消按钮事件
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose(); // 关闭对话框
+            }
+        });
+
+        // 确认按钮事件
+        confirmButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 获取用户输入
+                String inputText = customParentPathArea.getText();
+                dialog.dispose(); // 关闭对话框
+                //调用新的动作
+                java.util.List<String> urlList = CastUtils.getUniqueLines(inputText);
+                if (!urlList.isEmpty()){
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                            return null;
+                        }
+                    }.execute();
+                }
+            }
+        });
+    }
+
+
+    /**
+     * 创建对话框 输入数据 然后加入URL列表中
+     */
+    private void creatTextDialogForAddRecordUrl() {
+        //创建一个对话框,便于输入url数据
+        JDialog dialog = new JDialog();
+        dialog.setTitle("添加URL至已访问URL记录");
+        dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
+        // 添加第一行提示
+        JLabel urlJLabel = new JLabel("输入数据:");
         constraints.gridx = 0; // 第1列
         constraints.gridy = 0; // 第1行
         constraints.gridwidth = 2; // 占据两列的空间
