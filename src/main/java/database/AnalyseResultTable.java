@@ -252,9 +252,10 @@ public class AnalyseResultTable {
     public static synchronized int updateDynamicUrlsModel(DynamicUrlsModel dynamicUrlModel){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
-        String updateSQL = "UPDATE "+ tableName + " " +
-                "SET path_to_url = ?, path_to_url_num = ?,  unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ? " +
-                "WHERE id = ?;";
+        String updateSQL = "UPDATE "+ tableName +
+                " SET path_to_url = ?, path_to_url_num = ?," +
+                " unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ?" +
+                " WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
@@ -380,7 +381,7 @@ public class AnalyseResultTable {
         int totalRowsAffected = 0;
 
         // 构建SQL语句
-        String updateSQL = "UPDATE "+ tableName + " SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash IN $buildInParamList$"
+        String updateSQL = "UPDATE "+ tableName + " SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
