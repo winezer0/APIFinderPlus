@@ -596,7 +596,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    refreshUnVisitedUrlsAndTableModel(true, ConfigPanel.refreshUnvisitedButton.isSelected());
+                    boolean updateUnVisited = ConfigPanel.refreshUnvisitedButton.isSelected();
+                    refreshUnVisitedUrlsAndTableModel(true, updateUnVisited, null);
                 }
             }
         });
@@ -801,22 +802,23 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
     /**
      * 刷新未访问的URL和数据表模型, 费内存的操作
-     * @param checkAutoRefreshButtonStatus 是否检查自动更新按钮的状态
-     * @param updateUnVisitedUrlsStatus 是否开启 updateUnVisitedUrls 函数的调用
+     * @param checkAutoRefresh 是否检查自动更新按钮的状态
+     * @param updateUnVisited 是否开启 updateUnVisitedUrls 函数的调用
+     * @param msgHashList updateUnVisitedUrls 目标列表, 为空 为Null时更新全部
      */
-    public void refreshUnVisitedUrlsAndTableModel(boolean checkAutoRefreshButtonStatus,boolean updateUnVisitedUrlsStatus) {
+    public void refreshUnVisitedUrlsAndTableModel(boolean checkAutoRefresh,boolean updateUnVisited, List<String> msgHashList) {
         // 调用更新未访问URL列的数据
-        if (updateUnVisitedUrlsStatus)
+        if (updateUnVisited)
             try{
                 //当添加进程还比较多的时候,暂时不进行响应数据处理
-                updateUnVisitedUrls();
+                updateUnVisitedUrls(msgHashList);
             } catch (Exception ep){
                 stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
             }
 
         // 调用刷新表格的方法
         try{
-            instance.refreshTableModel(checkAutoRefreshButtonStatus);
+            instance.refreshTableModel(checkAutoRefresh);
         } catch (Exception ep){
             stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
         }
@@ -825,22 +827,17 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         System.gc();
     }
 
-
-    private void updateUnVisitedUrls() {
-        updateUnVisitedUrls(false, null);
-    }
     /**
      * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
      */
-    private void updateUnVisitedUrls(boolean updateAllUnVisitedUrls, List<String> msgHashList) {
+    private void updateUnVisitedUrls(List<String> msgHashList) {
         // 使用SwingWorker来处理数据更新，避免阻塞EDT
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 // 获取所有未访问URl 注意需要大于0
-                List<UnVisitedUrlsModel> unVisitedUrlsModels = null;
-
-                if (updateAllUnVisitedUrls) {
+                List<UnVisitedUrlsModel> unVisitedUrlsModels;
+                if (msgHashList == null || msgHashList.isEmpty()) {
                     //更新所有的结果
                     unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
                 }else {
