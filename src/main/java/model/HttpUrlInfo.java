@@ -19,12 +19,13 @@ public class HttpUrlInfo {
 
     private String rootDomain = null;
     private String path = null;
+    private String file = null;
     private String pathDir = null;
     private String fullPath = null;
     private String query = null;
     private String ref = null;
 
-    private String ext = null;
+    private String suffix = null;
     private String rootUrl = null;
     private String rootUrlUsual = null;
     private String noParamUrlUsual = null;
@@ -46,6 +47,8 @@ public class HttpUrlInfo {
             port = urlObj.getPort() < 0 ? urlObj.getDefaultPort() : urlObj.getPort();
             //路径 (path)：如 /path/to/resource
             path = urlObj.getPath();
+            //文件 resource
+            file = urlObj.getFile();
             //查询参数 (query)：如 ?key=value&anotherKey=anotherValue
             query = urlObj.getQuery();
             //片段标识符 (fragment)：如 #section1
@@ -53,7 +56,7 @@ public class HttpUrlInfo {
             //获取带有参数的完整Path 不带http信息 /path/to/resource?key=value#section1
             fullPath = genFullPath();
             //解析请求文件的后缀 php html
-            ext = parseUrlExtStrict(rawUrl);
+            suffix = parseUrlExtStrict(path); //严重错误,域名中是有.符号的,因此不能直接截断域名
 
             //添加个HostPort对象 www.baidu.com:80 | www.baidu.com:8080
             hostPort = String.format("%s:%s", host, port);
@@ -186,8 +189,8 @@ public class HttpUrlInfo {
         return pathDir;
     }
 
-    public String getExt() {
-        return ext;
+    public String getSuffix() {
+        return suffix;
     }
 
     public String getNoParamUrlUsual() {
@@ -197,7 +200,6 @@ public class HttpUrlInfo {
     public String getNoFileUrlUsual() {
         return noFileUrlUsual;
     }
-
 
     public String getFullPath() {
         return fullPath;
@@ -213,6 +215,22 @@ public class HttpUrlInfo {
 
     public String getHostPortUsual() {
         return hostPortUsual;
+    }
+
+    public String getRawUrl() {
+        return rawUrl;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public String getNoParamUrl() {
+        return noParamUrl;
+    }
+
+    public String getNoFileUrl() {
+        return noFileUrl;
     }
 
     /**
