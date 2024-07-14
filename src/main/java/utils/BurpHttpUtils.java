@@ -68,7 +68,7 @@ public class BurpHttpUtils {
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36\r\n" +
                 "\r\n";
         //补充数据
-        baseRequest = String.format(baseRequest, urlInfo.getFullPath(), urlInfo.getHostPortUsual());
+        baseRequest = String.format(baseRequest, urlInfo.getPathToEnd(), urlInfo.getHostPortUsual());
         byte[] requestBytes = baseRequest.getBytes();
 
         //基于请求头列表 更新 requestBytes 中的 请求头
@@ -108,7 +108,7 @@ public class BurpHttpUtils {
 
         //根据 newUrl 生成新的 首行 Byte[]
         String method = helperPlus.getMethod(originalRequest);
-        String newFirstLine = String.format("%s %s HTTP/1.1", method, urlInfo.getFullPath());
+        String newFirstLine = String.format("%s %s HTTP/1.1", method, urlInfo.getPathToEnd());
         byte[] newFirstLineBytes = helpers.stringToBytes(newFirstLine);
 
         //将新的首行 byte 拼接到 新的 originalRequest 上

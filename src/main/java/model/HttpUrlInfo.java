@@ -14,24 +14,28 @@ public class HttpUrlInfo {
     private String proto = null;
     private String host = null;
     private int port = -1;
-    private String hostPort = null;
-    private String hostPortUsual = null;
-
-    private String rootDomain = null;
-    private String path = null;
     private String file = null;
-    private String pathDir = null;
-    private String fullPath = null;
     private String query = null;
     private String ref = null;
 
+    private String hostPort = null;
+    private String hostPortUsual = null;
+
+    private String pathToFile = null;
+    private String pathToDir = null;
+    private String pathToEnd = null;
+
     private String suffix = null;
+    private String rootDomain = null;
+
     private String rootUrl = null;
     private String rootUrlUsual = null;
-    private String noParamUrlUsual = null;
-    private String noFileUrlUsual = null;
-    private String noParamUrl = null;
-    private String noFileUrl = null;
+    private String rootUrlSimple = null;
+
+    private String urlToFile = null;
+    private String urlToPath = null;
+    private String urlToFileUsual = null;
+    private String urlToPathUsual = null;
 
     public HttpUrlInfo(String requestUrl){
         rawUrl = requestUrl;
@@ -40,58 +44,61 @@ public class HttpUrlInfo {
             URL urlObj = new URL(rawUrl);
             //协议 (protocol)：如 http 或 https
             proto = urlObj.getProtocol();  //协议 (protocol)：如 http 或 https
-
             //主机 (host)：如 www.example.com
             host = urlObj.getHost();
             //端口 (port)：如 80 或 443（默认情况下，如果未指定，http 默认为 80，https 默认为 443） 同时 检查reqPort为-1的情况
             port = urlObj.getPort() < 0 ? urlObj.getDefaultPort() : urlObj.getPort();
-            //路径 (path)：如 /path/to/resource
-            path = urlObj.getPath();
             //文件 resource
             file = urlObj.getFile();
             //查询参数 (query)：如 ?key=value&anotherKey=anotherValue
             query = urlObj.getQuery();
             //片段标识符 (fragment)：如 #section1
             ref = urlObj.getRef();
-            //获取带有参数的完整Path 不带http信息 /path/to/resource?key=value#section1
-            fullPath = genFullPath();
-            //解析请求文件的后缀 php html
-            suffix = parseUrlExtStrict(path); //严重错误,域名中是有.符号的,因此不能直接截断域名
+
+            //路径 (path)：如 /path/to/resource
+            pathToFile = urlObj.getPath();
 
             //添加个HostPort对象 www.baidu.com:80 | www.baidu.com:8080
             hostPort = String.format("%s:%s", host, port);
             //获取没有默认端口的请求头 www.baidu.com | www.baidu.com:8080
             hostPortUsual = removeHostDefaultPort(hostPort,host,port);
 
-            //获取主域名 baidu.com
-            rootDomain = DomainUtils.getRootDomain(host);
-            //获取请求路径的目录部分 /path/to/
-            pathDir = parseReqPathDir(path);
-            // 重新构造基本URL，不包含查询参数 http://www.baidu.com/path/to/resource
-            noParamUrl = new URL(proto, host, port, path).toString();
-            //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
-            noFileUrl = new URL(proto, host, port, pathDir).toString();
-
             //获取前缀URL // http://www.baidu.com:80/
             rootUrl = String.format("%s://%s/", proto, hostPort);
             //获取前缀URL // http://www.baidu.com/
             rootUrlUsual = String.format("%s://%s/", proto, hostPortUsual);
+            //获取前缀URL // http://www.baidu.com
+            rootUrlSimple = String.format("%s://%s", proto, hostPortUsual);
+
+            // 重新构造基本URL，不包含查询参数 http://www.baidu.com/path/to/resource
+            urlToFile = new URL(proto, host, port, pathToFile).toString();
+            //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
+            urlToPath = new URL(proto, host, port, pathToDir).toString();
+
+            //解析请求文件的后缀 php html
+            suffix = parseUrlExtStrict(pathToFile); //严重错误,域名中是有.符号的,因此不能直接截断域名
+
+            //获取主域名 baidu.com
+            rootDomain = DomainUtils.getRootDomain(host);
+
+            //获取带有参数的完整Path 不带http信息 /path/to/resource?key=value#section1
+            pathToEnd = genFullPath(pathToFile, query, ref);
+
+            //获取请求路径的目录部分 /path/to/
+            pathToDir = parseReqPathDir(pathToFile);
 
             //格式化URL 不显示默认端口
             rawUrlUsual = removeUrlDefaultPort(rawUrl);
-            noParamUrlUsual = removeUrlDefaultPort(noParamUrl);
-            noFileUrlUsual = removeUrlDefaultPort(noFileUrl);
-
-            //格式化URL 显示默认端口 //可能存在缺陷,无法处理那种
-            //reqUrl = addUrlDefaultPort(reqUrl);
+            urlToFileUsual = removeUrlDefaultPort(urlToFile);
+            urlToPathUsual = removeUrlDefaultPort(urlToPath);
         } catch (MalformedURLException e) {
             stderr_println(String.format("Invalid URL: %s -> Error: %s", rawUrl, e.getMessage()));
             e.printStackTrace();
         }
     }
 
-    private String genFullPath() {
-        StringBuilder fullPart = new StringBuilder(path);
+    private String genFullPath(String pathToFile,String query,String ref) {
+        StringBuilder fullPart = new StringBuilder(pathToFile);
         if (query != null && !query.isEmpty()) {
             fullPart.append("?").append(query);
         }
@@ -181,28 +188,28 @@ public class HttpUrlInfo {
         return port;
     }
 
-    public String getPath() {
-        return path;
+    public String getPathToFile() {
+        return pathToFile;
     }
 
-    public String getPathDir() {
-        return pathDir;
+    public String getPathToDir() {
+        return pathToDir;
     }
 
     public String getSuffix() {
         return suffix;
     }
 
-    public String getNoParamUrlUsual() {
-        return noParamUrlUsual;
+    public String getUrlToFileUsual() {
+        return urlToFileUsual;
     }
 
-    public String getNoFileUrlUsual() {
-        return noFileUrlUsual;
+    public String getUrlToPathUsual() {
+        return urlToPathUsual;
     }
 
-    public String getFullPath() {
-        return fullPath;
+    public String getPathToEnd() {
+        return pathToEnd;
     }
 
     public String getQuery() {
@@ -225,12 +232,12 @@ public class HttpUrlInfo {
         return file;
     }
 
-    public String getNoParamUrl() {
-        return noParamUrl;
+    public String getUrlToFile() {
+        return urlToFile;
     }
 
-    public String getNoFileUrl() {
-        return noFileUrl;
+    public String getUrlToPath() {
+        return urlToPath;
     }
 
     /**

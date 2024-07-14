@@ -201,7 +201,7 @@ public class RecordPathTable {
             RecordPathModel recordPathModel = new RecordPathModel(
                     urlInfo.getProto(),
                     urlInfo.getHostPort(),
-                    urlInfo.getPathDir(),
+                    urlInfo.getPathToDir(),
                     respStatusCode
             );
             recordPathModels.add(recordPathModel);

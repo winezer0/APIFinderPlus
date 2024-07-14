@@ -21,7 +21,7 @@ public class RecordPathModel {
     public RecordPathModel(HttpUrlInfo urlInfo, int respStatusCode) {
         this.reqProto = urlInfo.getProto();
         this.reqHostPort = urlInfo.getHostPort();
-        this.reqPathDir = urlInfo.getPathDir();
+        this.reqPathDir = urlInfo.getPathToDir();
         this.respStatusCode = respStatusCode;
         this.reqHash = getCalcCRC32();
     }

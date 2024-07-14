@@ -40,7 +40,7 @@ public class AnalyseInfo {
         Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
 
         String reqUrl = msgInfo.getUrlInfo().getRawUrlUsual();
-        String reqPath = msgInfo.getUrlInfo().getPath();
+        String reqPath = msgInfo.getUrlInfo().getPathToFile();
 
         //采集 URL 处理
         List<String> findUrlList = urlOrPathMap.get(URL_KEY);
@@ -182,7 +182,7 @@ public class AnalyseInfo {
             String locationText;
             switch (rule.getLocation()) {
                 case "urlPath":
-                    locationText = msgInfo.getUrlInfo().getPath();
+                    locationText = msgInfo.getUrlInfo().getPathToFile();
                     break;
                 case "body":
                     locationText = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);

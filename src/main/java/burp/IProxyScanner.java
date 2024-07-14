@@ -77,7 +77,7 @@ public class IProxyScanner implements IProxyListener {
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
 
             //看URL识别是否报错 不记录报错情况
-            if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null){
+            if (msgInfo.getUrlInfo().getUrlToFileUsual() == null){
                 stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
                 return;
             }
@@ -104,13 +104,12 @@ public class IProxyScanner implements IProxyListener {
 
             if (!compareMap.containsKey(reqRootUrl)){
                 System.out.println("暂未存在对应主机的动态筛选条件 即将生成动态筛选条件");
-                compareMap.put(reqRootUrl, new HashMap<String, Object>());
                 //TODO 测试功能,生成响应对比对象
-                if (!"/".equalsIgnoreCase(msgInfo.getUrlInfo().getPath())){
+                if (!"/".equalsIgnoreCase(msgInfo.getUrlInfo().getPathToFile())){
                     stdout_println(String.format("开始生成动态筛选条件 From URL: %s %s",
                             msgInfo.getUrlInfo().getRawUrlUsual(),
-                            msgInfo.getUrlInfo().getPath()));
-
+                            msgInfo.getUrlInfo().getPathToFile()));
+                    compareMap.put(reqRootUrl, new HashMap<String, Object>());
                     GenerateDynamicFilterJson(msgInfo);
                 }
             } else {
@@ -122,7 +121,7 @@ public class IProxyScanner implements IProxyListener {
                    //TODO 动态筛选函数
                    if(RespInfoCompareUtils.respJsonIsNotAllow(respJsonModel,respJsonCompare)){
                        stdout_println("判断完毕, 应该加入PATH");
-                       stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
+                       stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                    }
                }
             }
@@ -130,22 +129,22 @@ public class IProxyScanner implements IProxyListener {
 
             if(ConfigPanel.autoRecordPathIsOpen()
                     && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
-                    && !msgInfo.getUrlInfo().getPath().equals("/")
-                    && !isContainOneKey(msgInfo.getUrlInfo().getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
+                    && !msgInfo.getUrlInfo().getPathToFile().equals("/")
+                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
             ){
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
                         //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
                         RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
+                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                     }
                 });
             }
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
             if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false) ||
-                    isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)){
+                    isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false)){
                 //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
                 return;
             }
@@ -182,11 +181,11 @@ public class IProxyScanner implements IProxyListener {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
 
             //看URL识别是否报错 //如果白名单开启, //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
-            if (msgInfo.getUrlInfo().getNoParamUrlUsual() == null
+            if (msgInfo.getUrlInfo().getUrlToFileUsual() == null
                     ||!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)
                     ||isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)
                     ||isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
-                    ||isContainOneKey(msgInfo.getUrlInfo().getPath(), CONF_BLACK_URL_PATH, false)
+                    ||isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false)
             ){
                 return;
             }
@@ -205,8 +204,8 @@ public class IProxyScanner implements IProxyListener {
     private void GenerateDynamicFilterJson(HttpMsgInfo msgInfo) {
         //获取当前的URL 生成几个测试URL
         String rootUrl = msgInfo.getUrlInfo().getRootUrlUsual();   //当前请求 http://xxx.com/
-        String pathDir = msgInfo.getUrlInfo().getPathDir();  //当前请求目录  /user/
-        String path = msgInfo.getUrlInfo().getPath();   //当前请求文件路径  /user/login
+        String pathDir = msgInfo.getUrlInfo().getPathToDir();  //当前请求目录  /user/
+        String path = msgInfo.getUrlInfo().getPathToFile();   //当前请求文件路径  /user/login
         String suffix = msgInfo.getUrlInfo().getSuffix();   //当前请求文件后缀  /user/login
 
         stdout_println(String.format("rootUrl:%s\npathDir:%s\npath:%s\nsuffix:%s\n",
@@ -227,9 +226,9 @@ public class IProxyScanner implements IProxyListener {
 
         //2、当前目录 随机文件
         if (!suffix.isEmpty()){
-            testUrl =  rootUrl + pathDir + "/" +  random1  + '.' + suffix;
+            testUrl =  rootUrl + pathDir +  random1  + '.' + suffix;
         } else {
-            testUrl =  rootUrl + pathDir + "/" +  random1;
+            testUrl =  rootUrl + pathDir +  random1;
         }
         testUrlList.add(testUrl);
 
@@ -312,8 +311,8 @@ public class IProxyScanner implements IProxyListener {
                                     List<String> shouldTrueUrlList = new ArrayList<>();
                                     for (String shouldTrueUrl:analyseResult.getUrlList()){
                                         HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
-                                        if (!isContainOneKey(urlInfo.getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
-                                                && !urlInfo.getPath().equals("/")
+                                        if (!isContainOneKey(urlInfo.getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+                                                && !urlInfo.getPathToFile().equals("/")
                                         ){
                                             shouldTrueUrlList.add(shouldTrueUrl);
                                         }
@@ -435,11 +434,11 @@ public class IProxyScanner implements IProxyListener {
                                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
                                             if(ConfigPanel.autoRecordPathIsOpen()
                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
-                                                    && !msgInfo.getUrlInfo().getPath().equals("/")
-                                                    && !isContainOneKey(msgInfo.getUrlInfo().getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
+                                                    && !msgInfo.getUrlInfo().getPathToFile().equals("/")
+                                                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
                                             ){
                                                 RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
+                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                                             }
 
                                             //加入请求分析列表
@@ -494,7 +493,7 @@ public class IProxyScanner implements IProxyListener {
                     && !currPathTree.isEmpty() && !currPathTree.getJSONObject("ROOT").isEmpty()) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
-                String reqBaseUrl = new HttpUrlInfo(reqUrl).getNoParamUrlUsual();
+                String reqBaseUrl = new HttpUrlInfo(reqUrl).getUrlToFileUsual();
 
                 for (Object findPath: findPathArray){
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);
