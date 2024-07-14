@@ -234,8 +234,20 @@ public class IProxyScanner implements IProxyListener {
                                     stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                 }
 
-                                //将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 还是得访问一边再说
-                                //if (IProxyScanner.autoRecordPath){ RecordPathTable.batchInsertOrUpdateSuccessUrl(analyseResult.getUrlList(), 299); }
+                                //TODO Check 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
+                                if (ConfigPanel.autoRecordPathIsOpen() && !analyseResult.getUrlList().isEmpty()){
+                                    List<String> shouldTrueUrlList = new ArrayList<>();
+                                    for (String shouldTrueUrl:analyseResult.getUrlList()){
+                                        HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
+                                        if (!isContainOneKey(urlInfo.getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
+                                                && !urlInfo.getPath().equals("/")
+                                        ){
+                                            shouldTrueUrlList.add(shouldTrueUrl);
+                                        }
+                                    }
+                                    if (!shouldTrueUrlList.isEmpty())
+                                        RecordPathTable.batchInsertOrUpdateRecordPath(shouldTrueUrlList, 299);
+                                }
                             }
                         }
                         return;
@@ -284,77 +296,7 @@ public class IProxyScanner implements IProxyListener {
                     if (ConfigPanel.recursiveIsOpen() && executorService.getActiveCount() < 2){
                         //获取一个未访问URL列表
                         UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
-                        if (unVisitedUrlsModel != null){
-                            //获取URL
-                            List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
-
-
-                            //将这些URl标记为已访问 不然涉及的更新的问题很多
-                            //RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
-
-                            //获取这个MsgHash对应的请求体和响应体
-                            String msgHash = unVisitedUrlsModel.getMsgHash();
-                            ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
-
-                            //获取请求头
-                            HelperPlus helperPlus = new HelperPlus(getHelpers());
-                            List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
-
-                            //记录准备加入的请求
-                            executorService.submit(new Runnable() {
-                                @Override
-                                public void run() {
-                                    for (String reqUrl:unvisitedUrls){
-                                        //不递归扫描黑名单内的主机 //TODO 存在缺陷, 每次都会获取到这个目标 导致无法忽略正常扫描
-                                        if (!isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
-                                            continue;
-                                        }
-
-                                        if (urlAutoRecordMap.get(reqUrl) <= 0){
-                                            //记录已访问的URL
-                                            urlAutoRecordMap.add(reqUrl); //防止循环扫描
-                                            RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
-                                            stdout_println(LOG_INFO, String.format("[*] Auto Access URL: %s", reqUrl));
-
-                                            try {
-                                                //发起HTTP请求
-                                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
-                                                if (requestResponse != null) {
-                                                    executorService.submit(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
-                                                            //更新所有有响应的主动访问请求URL记录到数据库中
-                                                            RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-
-                                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
-                                                            if(ConfigPanel.autoRecordPathIsOpen()
-                                                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
-                                                                    && !msgInfo.getUrlInfo().getPath().equals("/")
-                                                                    && !isContainOneKey(msgInfo.getUrlInfo().getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
-                                                            ){
-                                                                RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
-                                                            }
-
-                                                            //加入请求分析列表
-                                                            if (msgInfo.getRespInfo().getRespLength()>0)
-                                                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
-
-                                                            //放到后面,确保已经记录数据,不然会被过滤掉
-                                                            urlScanRecordMap.add(msgInfo.getMsgHash());
-                                                        }
-                                                    });
-                                                }
-                                                Thread.sleep(500);
-                                            } catch (InterruptedException e) {
-                                                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    }
-                                }});
-                        }
+                        accessUnVisitedUrlsModel(unVisitedUrlsModel);
                     }
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
@@ -362,6 +304,79 @@ public class IProxyScanner implements IProxyListener {
                 }
             });
         }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
+    }
+
+    private void accessUnVisitedUrlsModel(UnVisitedUrlsModel unVisitedUrlsModel) {
+        if (unVisitedUrlsModel != null){
+            //获取URL
+            List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+
+            //将这些URl标记为已访问 不然涉及的更新的问题很多 //TODO 不能标记,标记后问题很多
+            //RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
+
+            //获取这个MsgHash对应的请求体和响应体
+            String msgHash = unVisitedUrlsModel.getMsgHash();
+            ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+
+            //获取请求头
+            HelperPlus helperPlus = new HelperPlus(getHelpers());
+            List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+
+            //记录准备加入的请求
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (String reqUrl:unvisitedUrls){
+                        //不递归扫描黑名单内的主机 //TODO 存在缺陷, 每次都会获取到这个目标 导致无法忽略正常扫描
+                        if (!isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                            continue;
+                        }
+
+                        if (urlAutoRecordMap.get(reqUrl) <= 0){
+                            //记录已访问的URL
+                            urlAutoRecordMap.add(reqUrl); //防止循环扫描
+                            RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
+                            stdout_println(LOG_INFO, String.format("[*] Auto Access URL: %s", reqUrl));
+
+                            try {
+                                //发起HTTP请求
+                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                                if (requestResponse != null) {
+                                    executorService.submit(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
+                                            //更新所有有响应的主动访问请求URL记录到数据库中
+                                            RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+
+                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
+                                            if(ConfigPanel.autoRecordPathIsOpen()
+                                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
+                                                    && !msgInfo.getUrlInfo().getPath().equals("/")
+                                                    && !isContainOneKey(msgInfo.getUrlInfo().getNoParamUrlUsual(), CONF_NOT_AUTO_RECORD, false)
+                                            ){
+                                                RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrlUsual()));
+                                            }
+
+                                            //加入请求分析列表
+                                            if (msgInfo.getRespInfo().getRespLength()>0)
+                                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
+
+                                            //放到后面,确保已经记录数据,不然会被过滤掉
+                                            urlScanRecordMap.add(msgInfo.getMsgHash());
+                                        }
+                                    });
+                                }
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }});
+        }
     }
 
     /**

@@ -311,7 +311,7 @@ public class AnalyseResultTable {
      * 获取 一个 未访问URl 对象 (unvisited_url_num > 0)
      * @return
      */
-    public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls( ) {
+    public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls() {
         UnVisitedUrlsModel unVisitedUrlsModel = null;
 
         String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +
