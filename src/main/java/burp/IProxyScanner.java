@@ -103,7 +103,7 @@ public class IProxyScanner implements IProxyListener {
                     @Override
                     public void run() {
                         //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
-                        RecordPathTable.insertOrUpdateSuccessUrlPath(msgInfo);
+                        RecordPathTable.insertOrUpdateRecordPath(msgInfo);
                         stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
                     }
                 });
@@ -280,7 +280,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     // 增加自动递归查询功能
-                    if (ConfigPanel.recursiveIsSelected() && executorService.getActiveCount() < 2){
+                    if (ConfigPanel.recursiveIsOpen() && executorService.getActiveCount() < 2){
                         //获取一个未访问URL列表
                         UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
                         if (unVisitedUrlsModel != null){
@@ -323,7 +323,7 @@ public class IProxyScanner implements IProxyListener {
                                                             if(IProxyScanner.autoRecordPath
                                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
                                                                     && !msgInfo.getUrlInfo().getPath().equals("/")){
-                                                                RecordPathTable.insertOrUpdateSuccessUrlPath(msgInfo);
+                                                                RecordPathTable.insertOrUpdateRecordPath(msgInfo);
                                                                 stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getNoFileUrl()));
                                                             }
 

@@ -60,7 +60,7 @@ public class BurpSitemapUtils {
                             } else {
                                 //插入路径 仅保留200 403等有效目录
                                 if(isEqualsOneKey(String.valueOf(respStatusCode), CONF_NEED_RECORD_STATUS, false)){
-                                    RecordPathTable.insertOrUpdateSuccessUrlPath(reqBaseUrl, respStatusCode);
+                                    RecordPathTable.insertOrUpdateRecordPath(reqBaseUrl, respStatusCode);
                                     stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqBaseUrl));
                                 }
                             }

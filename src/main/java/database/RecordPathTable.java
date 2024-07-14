@@ -29,7 +29,7 @@ public class RecordPathTable {
 
 
     //插入一条路径记录
-    public static synchronized int insertOrUpdateSuccessUrlPath(RecordPathModel recordPathModel) {
+    public static synchronized int insertOrUpdateRecordPath(RecordPathModel recordPathModel) {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String selectSql = "SELECT id FROM "+ tableName +" WHERE req_hash = ?;";
 
@@ -71,19 +71,17 @@ public class RecordPathTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-
     //插入一条路径记录 复用
-    public static synchronized int insertOrUpdateSuccessUrlPath(HttpMsgInfo msgInfo) {
+    public static synchronized int insertOrUpdateRecordPath(HttpMsgInfo msgInfo) {
         RecordPathModel recordPathModel = new RecordPathModel(msgInfo.getUrlInfo(), msgInfo.getRespStatusCode());
-        return insertOrUpdateSuccessUrlPath(recordPathModel);
+        return insertOrUpdateRecordPath(recordPathModel);
     }
 
     //插入一条路径记录 复用
-    public static synchronized int insertOrUpdateSuccessUrlPath(String reqUrl, int respStatusCode) {
+    public static synchronized int insertOrUpdateRecordPath(String reqUrl, int respStatusCode) {
         RecordPathModel recordPathModel = new RecordPathModel(new HttpUrlInfo(reqUrl), respStatusCode );
-        return insertOrUpdateSuccessUrlPath(recordPathModel);
+        return insertOrUpdateRecordPath(recordPathModel);
     }
-
 
     //判断是否存在需要处理的URL
     public static synchronized int fetchUnhandledRecordPathId(){
@@ -105,7 +103,6 @@ public class RecordPathTable {
 
         return dataIndex;
     }
-
 
     //获取所有需要处理的URl数据，并且标记
     public static synchronized List<RecordPathDirsModel> fetchAllNotAddToTreeRecords() {
@@ -163,8 +160,8 @@ public class RecordPathTable {
         return recordPathModels;
     }
 
-
-    public static int[] batchInsertOrUpdateSuccessUrl(List<RecordPathModel> recordPathModels) {
+    //批量插入 recordPathModels
+    public static int[] batchInsertOrUpdateRecordPath(List<RecordPathModel> recordPathModels) {
         int[] generatedIds = null;
 
         String insertSql = "INSERT INTO "+ tableName +
@@ -196,7 +193,7 @@ public class RecordPathTable {
     }
 
     //简单复用 实现批量插入
-    public static int[] batchInsertOrUpdateSuccessUrl(List<String> findUrls, int respStatusCode) {
+    public static int[] batchInsertOrUpdateRecordPath(List<String> findUrls, int respStatusCode) {
         List<RecordPathModel> recordPathModels = new ArrayList<>();
 
         for (String findUrl: findUrls){
@@ -210,7 +207,7 @@ public class RecordPathTable {
             recordPathModels.add(recordPathModel);
         }
 
-        return batchInsertOrUpdateSuccessUrl(recordPathModels);
+        return batchInsertOrUpdateRecordPath(recordPathModels);
     }
 
 

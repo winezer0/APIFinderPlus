@@ -112,7 +112,7 @@ public class UiUtils {
      * 批量获取所有行列表相关的 Id 列表
      */
     public static List<Integer> getIdsAtActualRows(JTable table, int[] selectedRows) {
-        java.util.List<Integer> ids = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
         if (selectedRows.length > 0) {
             for (int selectedRow : selectedRows) {
                 if (selectedRow != -1){
@@ -127,7 +127,7 @@ public class UiUtils {
      * 批量获取所有行列表相关的 URl 列表
      */
     public static List<String> getUrlsAtActualRows(JTable table, int[] selectedRows) {
-        java.util.List<String> urls = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
         if (selectedRows.length > 0){
             // 遍历所有选定的行
             for (int selectedRow : selectedRows) {

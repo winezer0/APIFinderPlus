@@ -1,8 +1,10 @@
 package ui;
 
 import database.DBService;
+import database.RecordPathTable;
 import database.UnionTableSql;
 import utils.BurpSitemapUtils;
+import utils.CastUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -29,8 +31,6 @@ public class ConfigPanel extends JPanel {
     public static JLabel autoRefreshText; //自动刷新按钮显示的文本
     public static JTextField searchField; //URl搜索框显
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
-
-    private String inputTextInDialog = null; //创建一个成员变量存储对话框输入的数据
 
     public ConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -174,8 +174,8 @@ public class ConfigPanel extends JPanel {
         recursiveButton.setToolTipText("自动测试未访问URL");
 
         // 刷新按钮按钮
-        autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
-        autoRefreshButton.setSelectedIcon(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
+        autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
+        autoRefreshButton.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
         autoRefreshButton.setPreferredSize(new Dimension(30, 30));
         autoRefreshButton.setBorder(null);  // 设置无边框
         autoRefreshButton.setFocusPainted(false);  // 移除焦点边框
@@ -266,11 +266,9 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
-                if (autoRefreshButton.isSelected()) {
-                    // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
+                if (!autoRefreshButton.isSelected()) {
                     autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 } else {
-                    // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
                     autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
                 }
             }
@@ -333,7 +331,7 @@ public class ConfigPanel extends JPanel {
                 String searchText = searchField.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
-                setAutoRefreshButtonFalse();
+                setAutoRefreshClose();
             }
         });
 
@@ -344,7 +342,7 @@ public class ConfigPanel extends JPanel {
                 String searchText = searchField.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
-                setAutoRefreshButtonFalse();
+                setAutoRefreshClose();
             }
         });
 
@@ -398,7 +396,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的无效数据
                 UnionTableSql.clearUselessData();
-                setAutoRefreshButtonTrue();
+                setAutoRefreshOpen();
             }
         });
 
@@ -408,7 +406,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
                 MainPanel.clearModelData(false);
-                setAutoRefreshButtonTrue();
+                setAutoRefreshOpen();
             }
         });
 
@@ -418,7 +416,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
                 MainPanel.clearModelData(true);
-                setAutoRefreshButtonTrue();
+                setAutoRefreshOpen();
             }
         });
 
@@ -427,7 +425,7 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DBService.clearRecordTables();
-                setAutoRefreshButtonTrue();
+                setAutoRefreshOpen();
             }
         });
 
@@ -436,7 +434,7 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DBService.clearRecordUrlTable();
-                setAutoRefreshButtonTrue();
+                setAutoRefreshOpen();
             }
         });
 
@@ -475,18 +473,7 @@ public class ConfigPanel extends JPanel {
         addPathToRecordPath.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SwingWorker<Void, Void>() {
-                    @Override
-                    protected Void doInBackground() throws Exception {
-                        //创建一个文本输入框 并 获取对应的值
-                        creatTextDialog("添加有效PATH至PATH记录");
-                        if (inputTextInDialog != null && !inputTextInDialog.isEmpty()){
-                            System.out.println(String.format("Add Custom Urls To Record Url Table End. %s", inputTextInDialog));
-                            stdout_println(LOG_DEBUG, "Add Custom Urls To Record Url Table End.");
-                        }
-                        return null;
-                    }
-                }.execute();
+                creatTextDialogForAddRecordPath();
             }
         });
 
@@ -495,21 +482,18 @@ public class ConfigPanel extends JPanel {
 
 
     /**
-     * 创建对话框 输入数据
+     * 创建对话框 输入数据 然后加入URL列表中
      */
-    private void creatTextDialog(String title) {
-        // 每次打开对话框先清空数据
-        inputTextInDialog = null;
-
+    private void creatTextDialogForAddRecordPath() {
         //创建一个对话框,便于输入url数据
         JDialog dialog = new JDialog();
-        dialog.setTitle(title);
+        dialog.setTitle("添加有效PATH至PATH记录");
         dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
-        // 添加g第一行提示
+        // 添加第一行提示
         JLabel urlJLabel = new JLabel("输入有效数据:");
         constraints.gridx = 0; // 第1列
         constraints.gridy = 0; // 第1行
@@ -517,10 +501,7 @@ public class ConfigPanel extends JPanel {
         dialog.add(urlJLabel, constraints);
 
         JTextArea customParentPathArea = new JTextArea(5, 20);
-        customParentPathArea.setText(
-                "http://xxx.xxx.xxx/xxx/xxx" + "\r\n" +
-                "http://xxx.xxx.xxx/xxx/xxx"
-        );
+        customParentPathArea.setText("");
         customParentPathArea.setLineWrap(true); // 自动换行
         customParentPathArea.setWrapStyleWord(true); //断行不断字
         constraints.gridy = 1; // 第2行
@@ -534,6 +515,15 @@ public class ConfigPanel extends JPanel {
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
+        constraints.gridx = 0; // 第一列
+        constraints.gridy = 2; // 第三行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(buttonPanel, constraints);
+
+        dialog.pack(); // 调整对话框大小以适应其子组件
+        dialog.setLocationRelativeTo(null); // 居中显示
+        dialog.setVisible(true); // 显示对话框
+
         // 取消按钮事件
         cancelButton.addActionListener(new ActionListener() {
             @Override
@@ -546,43 +536,43 @@ public class ConfigPanel extends JPanel {
         confirmButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 处理自定义父路径逻辑
-                // 获取用户输入的自定义父路径
-                inputTextInDialog = customParentPathArea.getText();
+                // 获取用户输入
+                String inputText = customParentPathArea.getText();
                 dialog.dispose(); // 关闭对话框
+                //调用新的动作
+                java.util.List<String> urlList = CastUtils.getUniqueLines(inputText);
+                if (!urlList.isEmpty()){
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                            return null;
+                        }
+                    }.execute();
+                }
             }
         });
-
-        constraints.gridx = 0; // 第一列
-        constraints.gridy = 2; // 第三行
-        constraints.gridwidth = 2; // 占据两列的空间
-        dialog.add(buttonPanel, constraints);
-
-        dialog.pack(); // 调整对话框大小以适应其子组件
-        dialog.setLocationRelativeTo(null); // 居中显示
-        dialog.setVisible(true); // 显示对话框
-
     }
 
-    public static void setAutoRefreshButtonTrue(){
-        autoRefreshButton.setSelected(false);
+    public static void setAutoRefreshOpen(){
+        autoRefreshButton.setSelected(true);
         autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
     }
 
-    public static void setAutoRefreshButtonFalse(){
-        autoRefreshButton.setSelected(true);
+    public static void setAutoRefreshClose(){
+        autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
         MainPanel.operationStartTime = LocalDateTime.now();
     }
 
-    public static boolean getAutoRefreshButtonStatus(){
-        // 检查按钮的选中状态
-        // 如果按钮被选中，意味着刷新功能被激活，我们将文本设置为 "暂停刷新中"
-        // 如果按钮没有被选中，意味着刷新功能没有被激活，我们将文本设置为 "自动刷新"
+    public static boolean autoRefreshIsOpen(){
+        // 如果按钮被选中，意味着刷新功能被激活
         return autoRefreshButton.isSelected();
     }
 
-    public static boolean recursiveIsSelected(){
+    public static boolean recursiveIsOpen(){
+        // 如果按钮被选中，意味着递归扫描被激活
         return recursiveButton.isSelected();
     }
 

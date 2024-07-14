@@ -213,15 +213,15 @@ public class CastUtils {
 
     /**
      * 字符串转列表
-     * @param text
-     * @return
      */
-    public static List<String> getUniqueLines(String text, String split) {
+    public static List<String> getUniqueLines(String text) {
         if (text == null || text.isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
+        //自动处理换行符
+        text = text.replace("\r\n","\n");
         // 分割字符串
-        String[] lines = text.split(split);
+        String[] lines = text.split("\n");
         // 转换为Set以去除重复项
         Set<String> uniqueSet = new LinkedHashSet<>(Arrays.asList(lines));
         // 转换回List并返回

@@ -385,7 +385,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                RecordPathTable.batchInsertOrUpdateSuccessUrl(urlList, 299);
+                                RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -513,10 +513,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
         leftRenderer.setHorizontalAlignment(JLabel.LEFT);
 
-        List<Integer> leftColumns = Arrays.asList(0, 1, 2);
+        List<Integer> leftColumns = Arrays.asList(0, 1, 2, 3, 4, 5, 12, 13, 14);
         tableSetColumnRenders(leftColumns, leftRenderer);
 
-        List<Integer> centerColumns = Arrays.asList(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+        List<Integer> centerColumns = Arrays.asList(6, 7, 8, 9, 10, 11);
         tableSetColumnRenders(centerColumns, centerRenderer);
 
     }
@@ -974,9 +974,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         ConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (checkAutoRefreshButtonStatus && ConfigPanel.getAutoRefreshButtonStatus()) {
+        if (checkAutoRefreshButtonStatus && !ConfigPanel.autoRefreshIsOpen()) {
             if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                ConfigPanel.setAutoRefreshButtonTrue();
+                ConfigPanel.setAutoRefreshOpen();
             }
             return;
         }
