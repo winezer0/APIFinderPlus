@@ -369,24 +369,24 @@ public class ConfigPanel extends JPanel {
         clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearUselessData);
 
-        JMenuItem clearModelTableData = new JMenuItem("清除表格数据");
+        JMenuItem clearModelTableData = new JMenuItem("清除表格数据表");
         clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearModelTableData);
 
-        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据");
+        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据表");
         clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearRecordTableData);
 
-        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录");
+        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录表");
         clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearRecordUrlTableData);
 
 
-        JMenuItem clearAllTableData = new JMenuItem("清除所有数据");
+        JMenuItem clearAllTableData = new JMenuItem("清空所有数据表");
         clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearAllTableData);
 
-        JMenuItem addPathToRecordPath = new JMenuItem("添加有效PATH");
+        JMenuItem addPathToRecordPath = new JMenuItem("添加有效PATH到PathTree");
         addPathToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
         moreMenu.add(addPathToRecordPath);
 
