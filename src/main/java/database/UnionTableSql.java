@@ -134,12 +134,12 @@ public class UnionTableSql {
         int rowsAffected = -1;
 
         // 获取当前所有记录的数据
-        String deleteSQL = ("DELETE FROM tableName1 WHERE id IN (" +
-                "SELECT A.id FROM tableName1 A LEFT JOIN tableName2 B ON A.msg_hash=B.msg_hash " +
+        String deleteSQL = ("DELETE FROM $tableName1$ WHERE id IN (" +
+                "SELECT A.id FROM $tableName1$ A LEFT JOIN $tableName2$ B ON A.msg_hash=B.msg_hash " +
                 "WHERE (find_url_num IS NULL AND find_path_num IS NULL AND find_info_num IS NULL) " +
                 "OR (find_url_num < 1 AND find_path_num < 1 AND find_info_num < 1));")
-                .replace("tableName1", ReqDataTable.tableName)
-                .replace("tableName2", AnalyseResultTable.tableName);
+                .replace("$tableName1$", ReqDataTable.tableName)
+                .replace("$tableName2$", AnalyseResultTable.tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             rowsAffected = stmt.executeUpdate();
