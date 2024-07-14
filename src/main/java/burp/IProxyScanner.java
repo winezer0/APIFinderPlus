@@ -33,8 +33,6 @@ public class IProxyScanner implements IProxyListener {
     public static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
-    public static boolean autoRecordPath = false; //是否自动记录PATH
-
     public IProxyScanner() {
         // 获取操作系统内核数量
         int availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -96,7 +94,7 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            if(IProxyScanner.autoRecordPath
+            if(ConfigPanel.autoRecordPathIsOpen()
                     && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
                     && !msgInfo.getUrlInfo().getPath().equals("/")){
                 executorService.submit(new Runnable() {
@@ -166,6 +164,7 @@ public class IProxyScanner implements IProxyListener {
             });
         }
     }
+
 
     /**
      * 合并添加请求数据和请求信息为一个函数
@@ -320,7 +319,7 @@ public class IProxyScanner implements IProxyListener {
                                                             RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
 
                                                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
-                                                            if(IProxyScanner.autoRecordPath
+                                                            if(ConfigPanel.autoRecordPathIsOpen()
                                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
                                                                     && !msgInfo.getUrlInfo().getPath().equals("/")){
                                                                 RecordPathTable.insertOrUpdateRecordPath(msgInfo);

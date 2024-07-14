@@ -26,6 +26,7 @@ public class ConfigPanel extends JPanel {
     // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
+    public static JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
     public static JToggleButton refreshUnvisitedButton; //自动刷新未访问URL的按钮
     public static JToggleButton recursiveButton; //递归开关按钮状态
     public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
@@ -155,6 +156,15 @@ public class ConfigPanel extends JPanel {
         clickRefreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
         clickRefreshButton.setToolTipText("点击强制刷新表格");
 
+        // 开关 是否开启自动记录PATH
+        autoRecordPathButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        autoRecordPathButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        autoRecordPathButton.setPreferredSize(new Dimension(50, 24));
+        autoRecordPathButton.setBorder(null);  // 设置无边框
+        autoRecordPathButton.setFocusPainted(false);  // 移除焦点边框
+        autoRecordPathButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoRecordPathButton.setToolTipText("自动保存有效请求PATH");
+
         // 开关 是否开启自动刷新未访问URL
         refreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
         refreshUnvisitedButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
@@ -193,8 +203,13 @@ public class ConfigPanel extends JPanel {
         gbc_buttons.fill = GridBagConstraints.NONE; // 不填充
 
         // 在 FilterPanel 中添加 refreshButton
-        gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 9; // 设置按钮的横坐标位置
         FilterPanel.add(clickRefreshButton, gbc_buttons);
+
+        // 在 FilterPanel 中添加 autoRecordPathButton
+        gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
+        FilterPanel.add(autoRecordPathButton, gbc_buttons);
+
         // 在 FilterPanel 中添加 refreshUnvisitedButton
         gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
         FilterPanel.add(refreshUnvisitedButton, gbc_buttons);
@@ -260,7 +275,7 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(moreButton, gbc_btnMore);
 
         // 功能按钮 弹出选项
-        JPopupMenu moreMenu = genMoreMenuWithAction();
+        JPopupMenu moreMenu = createMoreMenuWithAction();
 
         // 自动刷新按钮监听事件
         autoRefreshButton.addActionListener(new ActionListener() {
@@ -355,7 +370,8 @@ public class ConfigPanel extends JPanel {
         });
  }
 
-    private JPopupMenu genMoreMenuWithAction() {
+    //创建功能按钮内容和对应事件
+    private JPopupMenu createMoreMenuWithAction() {
         JPopupMenu moreMenu = new JPopupMenu("功能");
 
         JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
@@ -576,26 +592,32 @@ public class ConfigPanel extends JPanel {
         });
     }
 
-
+    //设置打开自动刷新
     public static void setAutoRefreshOpen(){
         autoRefreshButton.setSelected(true);
         autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
     }
 
+    //设置关闭自动刷新
     public static void setAutoRefreshClose(){
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
         MainPanel.operationStartTime = LocalDateTime.now();
     }
 
+    //是否开启自动刷新功能
     public static boolean autoRefreshIsOpen(){
-        // 如果按钮被选中，意味着刷新功能被激活
         return autoRefreshButton.isSelected();
     }
 
+    //是否开启自动递归扫描未访问URL
     public static boolean recursiveIsOpen(){
-        // 如果按钮被选中，意味着递归扫描被激活
         return recursiveButton.isSelected();
+    }
+
+    //是否开启自动保存请求路径
+    public static boolean autoRecordPathIsOpen() {
+        return ConfigPanel.autoRecordPathButton.isSelected();
     }
 
 }
