@@ -268,15 +268,14 @@ public class UnionTableSql {
                 .replace("columnName",columnName)
                 .replace("tableName",tableName);
 
-        try (Connection conn = DBService.getInstance().getNewConn();
-             PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 concatenatedURLs.add(rs.getString("concatenated_urls"));
             }
 
         } catch (Exception e) {
-            System.err.println(String.format("[-] Error fetching and concatenating URLs: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching and concatenating URLs: %s", e.getMessage()));
             e.printStackTrace();
         }
         return concatenatedURLs;
