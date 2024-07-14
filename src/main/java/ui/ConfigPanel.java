@@ -387,9 +387,9 @@ public class ConfigPanel extends JPanel {
         clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
         moreMenu.add(clearAllTableData);
 
-        JMenuItem addPathToRecordPath = new JMenuItem("添加有效PATH到PathTree");
-        addPathToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addPathToRecordPath);
+        JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
+        addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+        moreMenu.add(addUrlToRecordPath);
 
         JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
         addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
@@ -475,10 +475,10 @@ public class ConfigPanel extends JPanel {
         });
 
         // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-        addPathToRecordPath.addActionListener(new ActionListener() {
+        addUrlToRecordPath.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                creatTextDialogForAddRecord("添加有效PATH至PATH记录", false);
+                creatTextDialogForAddRecord("添加有效PATH至PATH记录", "addUrlToRecordPath");
             }
         });
 
@@ -486,14 +486,19 @@ public class ConfigPanel extends JPanel {
         addUrlToRecordUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                creatTextDialogForAddRecord("添加URL至已访问URL记录",true);
+                creatTextDialogForAddRecord("添加URL至已访问URL记录", "addUrlToRecordUrl");
             }
         });
 
         return moreMenu;
     }
 
-    private void creatTextDialogForAddRecord(String title, boolean addToUrl) {
+    /**
+     * 创建加入URL和PATh表的对话框函数
+     * @param title
+     * @param addToUrl
+     */
+    private void creatTextDialogForAddRecord(String title, String RecordType) {
         //创建一个对话框,便于输入url数据
         JDialog dialog = new JDialog();
         dialog.setTitle(title);
@@ -542,7 +547,6 @@ public class ConfigPanel extends JPanel {
         });
 
         // 不同的 确认按钮动作
-        // 确认按钮事件
         confirmButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -556,10 +560,14 @@ public class ConfigPanel extends JPanel {
                     new SwingWorker<Void, Void>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                            if (addToUrl)
-                                RecordUrlTable.batchInsertOrUpdateAccessedUrls(urlList, 299);
-                            else
-                                RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                            switch (RecordType){
+                                case "addUrlToRecordUrl":
+                                    RecordUrlTable.batchInsertOrUpdateAccessedUrls(urlList, 299);
+                                    break;
+                                case "addUrlToRecordPath":
+                                    RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                                    break;
+                            }
                             return null;
                         }
                     }.execute();
@@ -567,7 +575,6 @@ public class ConfigPanel extends JPanel {
             }
         });
     }
-
 
 
     public static void setAutoRefreshOpen(){
