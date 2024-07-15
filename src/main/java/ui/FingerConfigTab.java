@@ -8,16 +8,14 @@ import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.ButtonRenderer;
 import ui.FingerTabRender.CenterRenderer;
 import ui.FingerTabRender.HeaderIconTypeRenderer;
+import ui.FingerTabRender.LeftRenderer;
 import utils.BurpFileUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -583,29 +581,43 @@ public class FingerConfigTab extends JPanel {
     //设置规则表格的表样式和点击动作
     private void setRuleTableStyle(JTable ruleTable) {
         CenterRenderer centerRenderer = new CenterRenderer();
-        int maxColumnWidth = 200;
-        int cmsColumnWidth = 180;
-        ruleTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(0).setPreferredWidth(100);
-        ruleTable.getColumnModel().getColumn(0).setMaxWidth(maxColumnWidth);
-        ruleTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(1).setPreferredWidth(100);
-        ruleTable.getColumnModel().getColumn(1).setMaxWidth(maxColumnWidth);
+
+        LeftRenderer leftRenderer = new LeftRenderer();
+
+        int minColumnWidth = 100;
+        ruleTable.getColumnModel().getColumn(0).setCellRenderer(leftRenderer);
+        ruleTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        ruleTable.getColumnModel().getColumn(0).setMaxWidth(50);
+
+        ruleTable.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);
+        ruleTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        ruleTable.getColumnModel().getColumn(1).setMaxWidth(300);
+
+        ruleTable.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
+        ruleTable.getColumnModel().getColumn(2).setPreferredWidth(200);
+        ruleTable.getColumnModel().getColumn(2).setMaxWidth(300);
+
         ruleTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(3).setPreferredWidth(cmsColumnWidth);
-        ruleTable.getColumnModel().getColumn(3).setMaxWidth(cmsColumnWidth);
+        ruleTable.getColumnModel().getColumn(3).setPreferredWidth(minColumnWidth);
+        ruleTable.getColumnModel().getColumn(3).setMaxWidth(minColumnWidth);
+
         ruleTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(4).setPreferredWidth(100);
-        ruleTable.getColumnModel().getColumn(4).setMaxWidth(maxColumnWidth);
+        ruleTable.getColumnModel().getColumn(4).setPreferredWidth(minColumnWidth);
+        ruleTable.getColumnModel().getColumn(4).setMaxWidth(minColumnWidth);
+
         ruleTable.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(5).setPreferredWidth(100);
-        ruleTable.getColumnModel().getColumn(5).setMaxWidth(maxColumnWidth);
+        ruleTable.getColumnModel().getColumn(5).setPreferredWidth(minColumnWidth);
+        ruleTable.getColumnModel().getColumn(5).setMaxWidth(minColumnWidth);
+
         ruleTable.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(6).setPreferredWidth(maxColumnWidth);
-        ruleTable.getColumnModel().getColumn(6).setMaxWidth(maxColumnWidth);
-        ruleTable.getColumnModel().getColumn(7).setCellRenderer(centerRenderer);
+        ruleTable.getColumnModel().getColumn(6).setPreferredWidth(minColumnWidth);
+        ruleTable.getColumnModel().getColumn(6).setMaxWidth(minColumnWidth);
+
+        ruleTable.getColumnModel().getColumn(7).setCellRenderer(leftRenderer);
+        ruleTable.getColumnModel().getColumn(7).setPreferredWidth(300);
+
         // 设置操作列的宽度以适应两个按钮
-        int actionColumnWidth = 80;  // 假设每个按钮宽度为70，中间间隔10
+        int actionColumnWidth = 100;  // 假设每个按钮宽度为70，中间间隔10
         ruleTable.getColumnModel().getColumn(8).setPreferredWidth(actionColumnWidth);
         ruleTable.getColumnModel().getColumn(8).setMaxWidth(actionColumnWidth);
         ruleTable.getColumnModel().getColumn(8).setCellRenderer(new ButtonRenderer());
