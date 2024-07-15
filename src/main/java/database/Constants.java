@@ -17,4 +17,6 @@ public class Constants {
     public static final String REQ_BASE_URL = "REQ_BASE_URL";
     public static final String REQ_PATH_EXT = "REQ_PATH_EXT";
     public static final String REQ_PROTO = "REQ_PROTO";
+
+    public static final String RULE_CONF_PREFIX = "CONF_"; //配置文件中 配置规则的开头
 }

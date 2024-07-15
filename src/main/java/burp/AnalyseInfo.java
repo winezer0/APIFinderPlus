@@ -1,6 +1,7 @@
 package burp;
 
 import com.alibaba.fastjson2.JSONObject;
+import database.Constants;
 import model.AnalyseResultModel;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
@@ -173,7 +174,7 @@ public class AnalyseInfo {
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
             //忽略关闭的选项 // 过滤掉配置选项
-            if (!rule.getIsOpen() || rule.getType().contains("CONF_")){
+            if (!rule.getIsOpen() || rule.getType().contains(Constants.RULE_CONF_PREFIX)){
                 continue;
             }
 

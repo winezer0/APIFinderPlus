@@ -3,6 +3,7 @@ package ui;
 import burp.BurpExtender;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
+import database.Constants;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.ButtonRenderer;
@@ -41,7 +42,7 @@ public class FingerConfigTab extends JPanel {
     private JComboBox<String> searchMethodField, locationField, typeField, accuracyFiled;
 
     public static List<Integer> tableToModelIndexMap = new ArrayList<>();
-    public Set<String> uniqueTypes = new HashSet<>();
+    public Set<String> uniqueTypes = new LinkedHashSet<>();
 
     public static final String String_All_Type = "全部类型";
 
@@ -953,10 +954,32 @@ public class FingerConfigTab extends JPanel {
         locationField.setSelectedItem("body"); // 默认选中 "body"
     }
 
+    /**
+     * 过滤新增指纹允许的类型不包含 配置规则
+     * @param types
+     * @return
+     */
+    private String[] filterConfItems(String[] types) {
+        List<String> confItems = new ArrayList<>();
+
+        // 遍历数组并检查每个元素
+        for (String type : types) {
+            if (!type.startsWith(Constants.RULE_CONF_PREFIX)) {
+                // 如果元素以"CONF_"开头，则不添加到confItems列表中
+                confItems.add(type);
+            }
+        }
+        // 将过滤后的List转换为数组并返回
+        return confItems.toArray(new String[0]);
+    }
+
     // 创建或更新typeField下拉框的方法
     public void updateTypeField() {
         // 将集合转换为数组
         String[] defaultTypes = uniqueTypes.toArray(new String[0]);
+        //排除配置规则
+        defaultTypes = filterConfItems(defaultTypes);
+
         // 如果typeField已经存在，那么更新它的模型
         if (typeField != null) {
             typeField.setModel(new DefaultComboBoxModel<>(defaultTypes));
