@@ -203,13 +203,13 @@ public class IProxyScanner implements IProxyListener {
 
     private void GenerateDynamicFilterJson(HttpMsgInfo msgInfo) {
         //获取当前的URL 生成几个测试URL
-        String rootUrl = msgInfo.getUrlInfo().getRootUrlSimple();   //当前请求 http://xxx.com/
-        String pathDir = msgInfo.getUrlInfo().getPathToDir();  //当前请求目录  /user/
-        String path = msgInfo.getUrlInfo().getPathToFile();   //当前请求文件路径  /user/login
+        String rootUrlSimple = msgInfo.getUrlInfo().getRootUrlSimple();   //当前请求 http://xxx.com/
+        String pathToDir = msgInfo.getUrlInfo().getPathToDir();  //当前请求目录  /user/
+        String pathToFile = msgInfo.getUrlInfo().getPathToFile();   //当前请求文件路径  /user/login
         String suffix = msgInfo.getUrlInfo().getSuffix();   //当前请求文件后缀  /user/login
 
         stdout_println(String.format("rootUrl:%s\npathDir:%s\npath:%s\nsuffix:%s\n",
-                rootUrl,pathDir,path,suffix
+                rootUrlSimple,pathToDir,pathToFile,suffix
                 ) );
         //生成测试路径
         List<String> testUrlList = new ArrayList<>();
@@ -223,22 +223,22 @@ public class IProxyScanner implements IProxyListener {
 
         //1、随机目录随机文件 当前后缀
         if (!suffix.isEmpty()){
-            testUrl =  rootUrl + random1 + "/" + random2 + '.' + suffix;
+            testUrl =  rootUrlSimple + '/' + random1 + "/" + random2 + '.' + suffix;
         } else {
-            testUrl =  rootUrl + random1 + "/" + random2;
+            testUrl =  rootUrlSimple + '/' + random1 + "/" + random2;
         }
         testUrlList.add(testUrl);
 
         //2、当前目录 随机文件
         if (!suffix.isEmpty()){
-            testUrl =  rootUrl + pathDir +  random1  + '.' + suffix;
+            testUrl =  rootUrlSimple +  pathToDir +  random1  + '.' + suffix;
         } else {
-            testUrl =  rootUrl + pathDir +  random1;
+            testUrl =  rootUrlSimple +  pathToDir +  random1;
         }
         testUrlList.add(testUrl);
 
         //3、随机目录，当前路径
-        testUrl = rootUrl + random1 + '/' + path;
+        testUrl = rootUrlSimple + '/'  + random1 + pathToFile;
         testUrlList.add(testUrl);
 
         System.out.println(String.format("生成的测试URL:%s", testUrlList));
