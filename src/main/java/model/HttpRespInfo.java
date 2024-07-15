@@ -17,6 +17,7 @@ public class HttpRespInfo {
     private String statedMimeType = "";
     private int bodyOffset = -1;
 
+
     HttpRespInfo(byte[] responseBytes) {
         if (responseBytes == null || responseBytes.length <= 0){
             // Warning: That response body is empty !!!
@@ -89,5 +90,9 @@ public class HttpRespInfo {
 
     public int getBodyOffset() {
         return bodyOffset;
+    }
+
+    public byte[] getRespBytes() {
+        return respBytes;
     }
 }
