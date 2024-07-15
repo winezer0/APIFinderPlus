@@ -6,10 +6,10 @@ public class test {
     public static void main(String[] args) {
         System.out.println("HELLO");
 
-        List<RespInfoComparisonModel> responses = new ArrayList<>();
+        List<RespInfoCompareModel> responses = new ArrayList<>();
 
         // 假设我们有以下响应信息
-        RespInfoComparisonModel resp1 = new RespInfoComparisonModel(
+        RespInfoCompareModel resp1 = new RespInfoCompareModel(
                 200,
                 1024,
                 2048,
@@ -18,7 +18,7 @@ public class test {
                 "redirect1"
         );
 
-        RespInfoComparisonModel resp2 = new RespInfoComparisonModel(
+        RespInfoCompareModel resp2 = new RespInfoCompareModel(
                 200,
                 1024,
                 2048,
@@ -27,7 +27,7 @@ public class test {
                 "redirect1"
         );
 
-        RespInfoComparisonModel resp3 = new RespInfoComparisonModel(
+        RespInfoCompareModel resp3 = new RespInfoCompareModel(
                 404,
                 2048,
                 4096,
@@ -40,7 +40,7 @@ public class test {
         responses.add(resp2);
         responses.add(resp3);
 
-        Map<String, Object> commonFields = RespInfoComparisonModel.findCommonFieldValues(responses);
+        Map<String, Object> commonFields = RespInfoCompareModel.findCommonFieldValues(responses);
         System.out.println("Common Fields: " + commonFields);
     }
 }

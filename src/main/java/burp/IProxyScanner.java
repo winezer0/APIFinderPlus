@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
+import test.RespInfoCompareModel;
 import ui.ConfigPanel;
 import utilbox.HelperPlus;
 import utils.BurpHttpUtils;
@@ -11,9 +12,7 @@ import utils.CastUtils;
 import utils.AnalyseInfoUtils;
 import utils.PathTreeUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
@@ -32,6 +31,9 @@ public class IProxyScanner implements IProxyListener {
     public static ThreadPoolExecutor executorService = null;
     public static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
+
+    //存储每个host的对比对象
+    private static Map<String, JSONObject> compareMap = new HashMap<>();
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -98,6 +100,10 @@ public class IProxyScanner implements IProxyListener {
                 stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getRawUrlUsual());
                 return;
             }
+
+            //TODO 测试功能,生成响应对比对象
+            RespInfoCompareModel respJsonModel = new RespInfoCompareModel(msgInfo.getRespInfo());
+            System.out.println(String.format("响应生成Json字符串:\n%s", respJsonModel.toJSONString()));
 
             if(ConfigPanel.autoRecordPathIsOpen()
                     && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
