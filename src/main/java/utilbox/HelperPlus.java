@@ -50,6 +50,10 @@ public class HelperPlus {
     private final static String Header_Split = ":";
     private final static String Header_Connector = ": ";//contains space
 
+    public HelperPlus() {
+       helpers = BurpExtender.getHelpers();
+    }
+
     public HelperPlus(IExtensionHelpers helpers) {
         HelperPlus.helpers = helpers;
     }
