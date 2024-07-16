@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
-import test.RespCompareModel;
+import model.RespFieldsModel;
 import ui.ConfigPanel;
 import utilbox.HelperPlus;
 import utils.*;
@@ -24,15 +24,16 @@ public class IProxyScanner implements IProxyListener {
     private static int totalRequestCount = 0;  //记录所有经过插件的请求数量
     private static final int MaxRespBodyLen = 200000; //最大支持存储的响应 比特长度
 
-    public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL Hash
-    public static RecordHashMap urlAutoRecordMap = new RecordHashMap(); //记录正在扫描列表的URL
+    public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL 防止重复扫描
 
     public static ThreadPoolExecutor executorService = null;
     public static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
     //存储每个host的对比对象
-    private static Map<String, Map> compareMap = new HashMap<>();
+    private static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
+    private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
+    private static boolean enhanceRecordPath = true; //是否启用增强的path过滤模式
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -77,10 +78,11 @@ public class IProxyScanner implements IProxyListener {
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
             String statusCode = String.valueOf(msgInfo.getRespStatusCode());
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
+            String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
             //看URL识别是否报错 不记录报错情况
             if (msgInfo.getUrlInfo().getUrlToFileUsual() == null){
-                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
+                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + rawUrlUsual);
                 return;
             }
 
@@ -91,48 +93,14 @@ public class IProxyScanner implements IProxyListener {
 
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
             if(isContainOneKey(reqRootUrl, CONF_BLACK_URL_ROOT, false)){
-                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + msgInfo.getUrlInfo().getRawUrlUsual());
+                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + rawUrlUsual);
                 return;
             }
 
             //判断是否是正常的响应 不记录无响应情况
             if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + msgInfo.getUrlInfo().getRawUrlUsual());
+                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + rawUrlUsual);
                 return;
-            }
-
-            RespCompareModel respModel = new RespCompareModel(msgInfo.getRespInfo());
-            //stdout_println(String.format("响应生成Json字符串:\n%s", respModel.toJSONString()));
-
-            if (!compareMap.containsKey(reqRootUrl)){
-                System.out.println("暂未存在对应主机的动态筛选条件 即将生成动态筛选条件");
-                //TODO 测试功能,生成响应对比对象
-                if (!"/".equals(msgInfo.getUrlInfo().getPathToDir())){
-                    stdout_println(String.format("开始生成动态筛选条件 From URL: %s %s",
-                            msgInfo.getUrlInfo().getRawUrlUsual(),
-                            msgInfo.getUrlInfo().getPathToFile()));
-                    compareMap.put(reqRootUrl, null);
-
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            GenerateDynamicFilterMap(msgInfo);
-                        }
-                    });
-
-                }
-            } else {
-                Map filterFields =  compareMap.get(reqRootUrl);
-               if (filterFields == null){
-                   //stdout_println("动态筛选条件暂未完成,需要等待");
-               } else {
-                   stdout_println("动态筛选条件已完成,开始判断是否加入PATH");
-                   //TODO 动态筛选函数
-                   if(RespCompareUtils.respJsonIsNotAllow(respModel,filterFields)){
-                       stdout_println("判断完毕, 应该加入PATH");
-                       stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
-                   }
-               }
             }
 
 
@@ -144,9 +112,13 @@ public class IProxyScanner implements IProxyListener {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
-                        RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                        if (enhanceRecordPath){
+                            enhanceRecordPathFilter(msgInfo);
+                        } else {
+                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
+                            RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+                            stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                        }
                     }
                 });
             }
@@ -177,11 +149,11 @@ public class IProxyScanner implements IProxyListener {
                 @Override
                 public void run() {
                     //判断URL是否已经扫描过
-                    if (urlScanRecordMap.get(msgInfo.getMsgHash()) <= 0) {
+                    if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
                         //加入请求列表
                         insertOrUpdateReqDataAndReqMsgData(msgInfo,"Proxy");
                         //放到后面,确保已经记录数据,不然会被过滤掉
-                        urlScanRecordMap.add(msgInfo.getMsgHash());
+                        urlScanRecordMap.add(rawUrlUsual);
                     }
                 }
             });
@@ -210,18 +182,50 @@ public class IProxyScanner implements IProxyListener {
         }
     }
 
-    private void GenerateDynamicFilterMap(HttpMsgInfo msgInfo) {
+    private void enhanceRecordPathFilter(HttpMsgInfo msgInfo) {
+        String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
+        String reqUrlToFile = msgInfo.getUrlInfo().getUrlToFileUsual();
+
+        //首先转换为响应Map
+        Map<String, Object> respFieldsMap = new RespFieldsModel(msgInfo.getRespInfo()).getAllFieldsAsMap();
+        if (!urlCompareMap.containsKey(reqRootUrl)){
+            //存储未进行对比的目标,后续通过定时任务再进行对比
+            notCompareMap.put(reqUrlToFile, respFieldsMap);
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
+                    if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
+                        urlCompareMap.put(reqRootUrl, null);
+                        GenerateDynamicFilterMap(reqRootUrl, msgInfo);
+                    }
+                }
+            });
+        } else {
+            Map<String, Object> currentFilterMap = urlCompareMap.get(reqRootUrl);
+            if (currentFilterMap == null){
+                //存储未进行对比的目标,后续通过定时任务再进行对比
+                notCompareMap.put(reqUrlToFile, respFieldsMap);
+            } else {
+                //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
+                if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
+                    stdout_println("判断完毕, 应该加入PATH");
+                    RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                }
+            }
+        }
+    }
+
+    private void GenerateDynamicFilterMap(String rootUrl,HttpMsgInfo msgInfo) {
         //生成测试路径
-        List<String> testUrlList = RespCompareUtils.generateTestUrls(msgInfo.getUrlInfo());
+        List<String> testUrlList = RespFieldCompareutils.generateTestUrls(msgInfo.getUrlInfo());
         System.out.println(String.format("生成的测试URL:%s", testUrlList));
         //进行URL请求 并获取 respInfoJson
-
         //获取请求头
         HelperPlus helperPlus = HelperPlus.getInstance();
         List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
-
-        List<RespCompareModel> respCompareModelList = new ArrayList<>();
-
+        List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
         //记录准备加入的请求
         for (String reqUrl:testUrlList){
             try {
@@ -230,10 +234,9 @@ public class IProxyScanner implements IProxyListener {
                 IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
                 if (requestResponse != null){
                     HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
-                    RespCompareModel respCompareModel = new RespCompareModel(newMsgInfo.getRespInfo());
-                    respCompareModelList.add(respCompareModel);
+                    RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
+                    FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
                     stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
-
                 }
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -242,18 +245,14 @@ public class IProxyScanner implements IProxyListener {
             }
         }
         Map<String, Object> filterModel = new HashMap<>();
-        stdout_println(LOG_INFO, String.format("开始 生成域名: %s 的动态过滤条件: %s -> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel), JSON.toJSON(respCompareModelList) ));
-        if (!respCompareModelList.isEmpty()) {
-            System.out.println(String.format("正在 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
-            filterModel = RespCompareUtils.findCommonFieldValues(respCompareModelList);
-            System.out.println(String.format("成功 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+        if (!FieldValuesMapList.isEmpty()) {
+            filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
+            System.out.println(String.format("生成域名: %s 的动态过滤条件 成功: %s", rootUrl, JSON.toJSON(filterModel)));
         }else {
-            System.out.println(String.format("失败 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+            System.out.println(String.format("生成域名: %s 的动态过滤条件 失败: %s", rootUrl, JSON.toJSON(filterModel)));
         }
-
-        compareMap.put(msgInfo.getUrlInfo().getRootUrlUsual(), filterModel);
+        urlCompareMap.put(rootUrl, filterModel);
     }
-
 
     /**
      * 合并添加请求数据和请求信息为一个函数
@@ -293,6 +292,28 @@ public class IProxyScanner implements IProxyListener {
                     if (UnionTableSql.getTableCounts(RecordUrlTable.tableName) > 500){
                         DBService.clearRecordUrlTable();
                         stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
+                    }
+
+                    //TODO 测试 实现循环清空未分析的目标
+                    if (enhanceRecordPath && isNotEmptyObj(notCompareMap)){
+                        // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
+                        ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
+                        // 遍历键的列表
+                        for (String reqUrl : keys) {
+                            Map<String,Object> respFieldsMap = notCompareMap.get(reqUrl);
+                            String rootUrl = new HttpUrlInfo(reqUrl).getRootUrlUsual();
+                            Map<String, Object> currentFilterMap = urlCompareMap.get(rootUrl);
+
+                            if (currentFilterMap != null){
+                                if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
+                                    stdout_println("判断完毕, 应该加入PATH");
+                                    int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
+                                    RecordPathTable.insertOrUpdateRecordPath(reqUrl,setStatusCode );
+                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqUrl));
+                                }
+                                notCompareMap.remove(reqUrl);
+                            }
+                        }
                     }
 
                     //任务1、获取需要解析的响应体数据并进行解析响
@@ -419,9 +440,10 @@ public class IProxyScanner implements IProxyListener {
                 @Override
                 public void run() {
                     for (String reqUrl:unvisitedUrls){
-                        if (urlAutoRecordMap.get(reqUrl) <= 0){
+                        String rawUrlUsual = new HttpUrlInfo(reqUrl).getRawUrlUsual();
+                        if (urlScanRecordMap.get(rawUrlUsual) <= 0){
                             //记录已访问的URL
-                            urlAutoRecordMap.add(reqUrl); //防止循环扫描
+                            urlScanRecordMap.add(rawUrlUsual); //防止循环扫描
 
                             //TODO Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
                             RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
@@ -461,7 +483,7 @@ public class IProxyScanner implements IProxyListener {
                                                 insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
 
                                             //放到后面,确保已经记录数据,不然会被过滤掉
-                                            urlScanRecordMap.add(msgInfo.getMsgHash());
+                                            urlScanRecordMap.add(msgInfo.getUrlInfo().getRawUrlUsual());
                                         }
                                     });
                                 }

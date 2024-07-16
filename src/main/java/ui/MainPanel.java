@@ -936,7 +936,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
             //清空记录变量的内容
             IProxyScanner.urlScanRecordMap = new RecordHashMap();
-            IProxyScanner.urlAutoRecordMap = new RecordHashMap();
 
             ConfigPanel.lbRequestCount.setText("0");
             ConfigPanel.lbTaskerCount.setText("0");

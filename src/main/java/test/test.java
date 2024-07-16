@@ -1,6 +1,7 @@
 package test;
 
-import utils.RespCompareUtils;
+import model.RespFieldsModel;
+import utils.RespFieldCompareutils;
 
 import java.util.*;
 
@@ -8,10 +9,10 @@ public class test {
     public static void main(String[] args) {
         System.out.println("HELLO");
 
-        List<RespCompareModel> responses = new ArrayList<>();
+        List<Map<String, Object>> fieldsMapList = new ArrayList<>();
 
         // 假设我们有以下响应信息
-        RespCompareModel resp1 = new RespCompareModel(
+        RespFieldsModel resp1 = new RespFieldsModel(
                 200,
                 1024,
                 2048,
@@ -20,7 +21,7 @@ public class test {
                 "redirect1"
         );
 
-        RespCompareModel resp2 = new RespCompareModel(
+        RespFieldsModel resp2 = new RespFieldsModel(
                 200,
                 1024,
                 2048,
@@ -29,7 +30,7 @@ public class test {
                 "redirect1"
         );
 
-        RespCompareModel resp3 = new RespCompareModel(
+        RespFieldsModel resp3 = new RespFieldsModel(
                 404,
                 2048,
                 4096,
@@ -38,11 +39,11 @@ public class test {
                 "redirect1"
         );
 
-        responses.add(resp1);
-        responses.add(resp2);
-        responses.add(resp3);
+        fieldsMapList.add(resp1.getAllFieldsAsMap());
+        fieldsMapList.add(resp2.getAllFieldsAsMap());
+        fieldsMapList.add(resp3.getAllFieldsAsMap());
 
-        Map<String, Object> commonFields = RespCompareUtils.findCommonFieldValues(responses);
+        Map<String, Object> commonFields = RespFieldCompareutils.findMapsSameFieldValue(fieldsMapList);
         System.out.println("Common Fields: " + commonFields);
     }
 }
