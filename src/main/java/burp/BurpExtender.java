@@ -9,6 +9,7 @@ import ui.MainPanel;
 import ui.Tags;
 import utils.BurpFileUtils;
 import utils.BurpPrintUtils;
+import utils.CastUtils;
 
 import javax.swing.*;
 import java.io.PrintWriter;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
-import static utils.CastUtils.isNotEmptyStr;
+import static utils.CastUtils.isNotEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
@@ -90,7 +91,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             // 读取配置文件参数
             String configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName);
             // 加载配置规则
-            if(isNotEmptyStr(configJson)){
+            if(CastUtils.isNotEmptyObj(configJson)){
                 // 使用Fastjson的parseObject方法将JSON字符串转换为Rule对象
                 FingerPrintRulesWrapper rulesWrapper = JSON.parseObject(configJson, FingerPrintRulesWrapper.class);
                 fingerprintRules = rulesWrapper.getFingerprint();

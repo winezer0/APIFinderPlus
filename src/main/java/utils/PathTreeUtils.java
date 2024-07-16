@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static utils.CastUtils.isNotEmptyStr;
+import static utils.CastUtils.isNotEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 
 public class PathTreeUtils {
@@ -272,7 +272,7 @@ public class PathTreeUtils {
     public static List<String> filterBlankPath(List<String> uriPathList) {
         List list = new ArrayList<String>();
         for (String path: uriPathList){
-            if (isNotEmptyStr(path) &&  !"/".equals(path.trim()))
+            if (CastUtils.isNotEmptyObj(path) &&  !"/".equals(path.trim()))
                 list.add(path);
         }
         return list;

@@ -296,20 +296,6 @@ public class CastUtils {
     }
 
     /**
-     * 判断字符串是否为null||为空
-     */
-    private static boolean isEmptyString(String string){
-        return string == null || string.trim().isEmpty();
-    }
-
-    /**
-     * 判断字符串是否不为null||为空
-     */
-    public static boolean isNotEmptyStr(String string){
-        return !isEmptyString(string);
-    }
-
-    /**
      * 判断字符串|集合|Map类型 是否为null||为空
      */
     private static boolean isEmptyObj(Object obj) {

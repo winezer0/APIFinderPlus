@@ -1,12 +1,14 @@
 package model;
 
 import utilbox.DomainUtils;
+import utils.CastUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import static utils.BurpPrintUtils.stderr_println;
-import static utils.CastUtils.isNotEmptyStr;
+import static utils.CastUtils.isNotEmptyObj;
+import static utils.CastUtils.isNotEmptyObj;
 
 //创建一个类用于存储 URL解析结果的类
 public class HttpUrlInfo {
@@ -71,7 +73,7 @@ public class HttpUrlInfo {
             //解析请求文件的后缀 php html
             suffix = parseUrlExtStrict(file); //严重错误,域名中是有.符号的,因此不能直接截断域名
             //解析请求文件的后缀 .php .html
-            suffixUsual = suffix.isEmpty()? suffix:  "." + suffix;
+            suffixUsual = isNotEmptyObj(suffix)? "." + suffix : suffix;
 
             //获取主域名 baidu.com
             rootDomain = DomainUtils.getRootDomain(host);
@@ -102,10 +104,10 @@ public class HttpUrlInfo {
      */
     private String genFullPath(String pathToFile,String query,String ref) {
         StringBuilder fullPart = new StringBuilder(pathToFile);
-        if (isNotEmptyStr(query)) {
+        if (CastUtils.isNotEmptyObj(query)) {
             fullPart.append("?").append(query);
         }
-        if (isNotEmptyStr(ref)) {
+        if (CastUtils.isNotEmptyObj(ref)) {
             fullPart.append("#").append(ref);
         }
         return fullPart.toString();
@@ -116,7 +118,7 @@ public class HttpUrlInfo {
      */
     private String parseUrlExtStrict(String path) {
         //忽略为空的情况
-        if (path == null || path.isEmpty()) return "";
+        if (!isNotEmptyObj(path)) return "";
 
         int queryIndex = path.indexOf('?');
         int fragmentIndex = path.indexOf('#');
