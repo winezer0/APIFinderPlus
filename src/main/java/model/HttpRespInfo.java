@@ -3,6 +3,7 @@ package model;
 import burp.BurpExtender;
 import burp.IExtensionHelpers;
 import burp.IResponseInfo;
+import utils.CastUtils;
 
 import java.util.Arrays;
 
@@ -16,6 +17,7 @@ public class HttpRespInfo {
     private String inferredMimeType = "";
     private String statedMimeType = "";
     private int bodyOffset = -1;
+    private String respTitle = "";
 
 
     HttpRespInfo(byte[] responseBytes) {
@@ -38,8 +40,9 @@ public class HttpRespInfo {
         bodyOffset = responseInfo.getBodyOffset();
         bodyLength = getBodyBytes().length;
         //大致的响应长度
-        bodyLenVague = bodyLength /200;
-
+        bodyLenVague = bodyLength / 200;
+        //响应文本标题
+        respTitle = CastUtils.parseTextTitle(respBytes);
     }
 
 
@@ -94,5 +97,9 @@ public class HttpRespInfo {
 
     public byte[] getRespBytes() {
         return respBytes;
+    }
+
+    public String getRespTitle() {
+        return respTitle;
     }
 }

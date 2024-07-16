@@ -31,7 +31,7 @@ public class RespFieldsModel {
         this.statusCode = respInfo.getStatusCode();
         this.respLength = respInfo.getRespLength();
         this.respBodyLength = respInfo.getBodyLength();
-        this.respTextTitle =CastUtils.parseTextTitle(respInfo.getBodyBytes());
+        this.respTextTitle = respInfo.getRespTitle();
         this.respRedirectUrl = CastUtils.parseRespRedirectUrl(respInfo.getHeaderBytes());
         this.respHashContent = CastUtils.calcCRC32(respInfo.getBodyBytes());
     }
