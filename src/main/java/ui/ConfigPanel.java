@@ -23,7 +23,7 @@ public class ConfigPanel extends JPanel {
     public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
 
     private static JComboBox<String> choicesComboBox;   //数据表显示快速选择框
-    public static JTextField urlSearchBox;                 //URl搜索框
+    private static JTextField urlSearchBox;                 //URl搜索框
 
     private static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
     private static JLabel autoRefreshText; //自动刷新按钮显示的文本
