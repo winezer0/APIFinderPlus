@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
 import model.RespFieldsModel;
+import org.checkerframework.checker.units.qual.N;
 import ui.ConfigPanel;
 import utilbox.HelperPlus;
 import utils.*;
@@ -14,6 +15,7 @@ import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
@@ -391,28 +393,33 @@ public class IProxyScanner implements IProxyListener {
             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
 
             //获取这个MsgHash对应的请求体和响应体
+            List<String> referHeaders = null;
+            //TODO 由于修改了响应体大小, 导致 msgHash 不正确了,导致无法获取请求头,需要优化解决该问题
             String msgHash = unVisitedUrlsModel.getMsgHash();
             ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
-
-            //获取请求头作为参考数据
-            HelperPlus helperPlus = HelperPlus.getInstance();
-            List<String> referHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+            if (isEmptyObj(reqMsgDataModel)){
+                stderr_println(LOG_ERROR, String.format("fetch MsgData By MsgHash is NuLL: [%s]", msgHash));
+            }else {
+                //获取请求头作为参考数据
+                HelperPlus helperPlus = HelperPlus.getInstance();
+                referHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+            }
 
             //记录准备加入的请求
+            List<String> finalReferHeaders = referHeaders;
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     for (String reqUrl:unvisitedUrls){
-                        String rawUrlUsual = new HttpUrlInfo(reqUrl).getRawUrlUsual();
-                        if (urlScanRecordMap.get(rawUrlUsual) <= 0){
+                        if (urlScanRecordMap.get(reqUrl) <= 0){
                             //记录已访问的URL
-                            urlScanRecordMap.add(rawUrlUsual); //防止循环扫描
+                            urlScanRecordMap.add(reqUrl); //防止循环扫描
 
                             // Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
                             RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
 
                             //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
-                            if (ignoreBlackRecurseHost && !isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                            if (ignoreBlackRecurseHost && isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
                                 continue;
                             }
 
@@ -422,7 +429,7 @@ public class IProxyScanner implements IProxyListener {
                             try {
                                 //发起HTTP请求
                                 stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
-                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, referHeaders);
+                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, finalReferHeaders);
                                 if (requestResponse != null) {
                                     executorService.submit(new Runnable() {
                                         @Override
@@ -481,7 +488,7 @@ public class IProxyScanner implements IProxyListener {
             //如果 PATH TREE都没有添加过, pathTreeModel 就是空的
             if (pathTreeModel == null){
                 //如果 PATH TREE 不应该是空的,因为任务二已经添加过了,
-                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [id:%s host:%s url:%s findPath:%s] 对应的 PathTree 失败!!! 请检查数据库内容!!!",id, reqHostPort, reqUrl, findPathArray.size()));
+                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [id:%s host:%s url:%s findPath:%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!",id, reqHostPort, reqUrl, findPathArray.size()));
                 return;
             }
 
