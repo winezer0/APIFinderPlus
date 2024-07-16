@@ -267,7 +267,7 @@ public class ConfigPanel extends JPanel {
         autoRefreshButton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
 
         // 刷新文本
-        autoRefreshText = new JLabel(String.format("自动每%s秒刷新表格中", timerDelay));
+        autoRefreshText = new JLabel(String.format("暂停每%s秒刷新表格", timerDelay));
 
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
