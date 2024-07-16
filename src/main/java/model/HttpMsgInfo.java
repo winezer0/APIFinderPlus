@@ -5,6 +5,8 @@ import burp.*;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.CRC32;
 
+import static utils.CastUtils.isNotEmptyStr;
+
 //创建一个类用于存储 代理 流量的解析结果
 public class HttpMsgInfo {
     private static final IExtensionHelpers helpers = BurpExtender.getHelpers();
@@ -85,7 +87,7 @@ public class HttpMsgInfo {
         //响应码是常用的
         respStatusCode =  respInfo.getStatusCode();
         //请求响应信息的简单hash值 因为中间可能截断了超大的响应体 , 因此最好手动传入 msgHash
-        msgHash = (msgInfoHash != null && !msgInfoHash.isEmpty()) ? msgInfoHash : calcMsgHash();
+        msgHash = (isNotEmptyStr(msgHash)) ? msgInfoHash : calcMsgHash();
     }
 
     /**

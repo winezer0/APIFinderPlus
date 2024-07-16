@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyStr;
+import static utils.CastUtils.isNotEmptyObj;
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     private static IBurpExtenderCallbacks callbacks;
@@ -88,12 +90,12 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             // 读取配置文件参数
             String configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName);
             // 加载配置规则
-            if(configJson != null && !configJson.isEmpty()){
+            if(isNotEmptyStr(configJson)){
                 // 使用Fastjson的parseObject方法将JSON字符串转换为Rule对象
                 FingerPrintRulesWrapper rulesWrapper = JSON.parseObject(configJson, FingerPrintRulesWrapper.class);
                 fingerprintRules = rulesWrapper.getFingerprint();
                 // 从规则json内获取黑名单设置 //此处后续可能需要修改,修改配置类型
-                if (fingerprintRules != null && !fingerprintRules.isEmpty()){
+                if (isNotEmptyObj(fingerprintRules)){
                     for (int i = 0 ; i < fingerprintRules.size(); i ++){
                         FingerPrintRule rule = fingerprintRules.get(i);
                         if (rule.getIsOpen()) {

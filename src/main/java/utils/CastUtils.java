@@ -14,8 +14,6 @@ import java.util.zip.CRC32;
 public class CastUtils {
     /**
      * 防止操作的list是null值
-     * @param list
-     * @return
      */
     private static List<String> fixedNullList(List<String> list) {
         if (list == null)  list = new ArrayList<>();
@@ -24,13 +22,16 @@ public class CastUtils {
 
     /**
      * 将任意类型的List转为Json字符串
-     * @param list
-     * @return
      */
-    public static String toJson(List<?> list){
-        if (list == null) list = new ArrayList<>();
-
+    public static String toJsonString(List<?> list){
         return com.alibaba.fastjson2.JSON.toJSONString(list);
+    }
+
+    /**
+     * 将任意类型转为Json字符串
+     */
+    public static String toJsonString(Object object){
+        return com.alibaba.fastjson2.JSON.toJSONString(object);
     }
 
     /**
@@ -84,8 +85,6 @@ public class CastUtils {
 
     /**
      * 将任意类型的 Json字符串 转为 JSONArray
-     * @param jsonString
-     * @return
      */
     public static JSONArray toJsonArray(String jsonString){
         if (jsonString == null)
@@ -97,8 +96,6 @@ public class CastUtils {
 
     /**
      * 将任意类型的 Json字符串 转为 Json 对象
-     * @param jsonString
-     * @return
      */
     public static JSONObject toJsonObject(String jsonString){
         if (jsonString == null)
@@ -110,8 +107,6 @@ public class CastUtils {
 
     /**
      * 将JsonArray 转为 List<String>
-     * @param array
-     * @return
      */
     public static List<String> toStringList(JSONArray array){
         if (array == null || array.isEmpty()) return new ArrayList<>();
@@ -121,8 +116,6 @@ public class CastUtils {
 
     /**
      * 格式化Json数据为可输出的状态
-     * @param jsonArrayString
-     * @return
      */
     public static String stringJsonArrayFormat(String jsonArrayString) {
         if (jsonArrayString == null || jsonArrayString.length()<=2 )
@@ -144,10 +137,6 @@ public class CastUtils {
 
     /**
      * 合并两个 List<String> 并去重
-     *
-     * @param listA 第一个列表
-     * @param listB 第二个列表
-     * @return 包含两个列表所有元素的新列表
      */
     public static List<String> listAddList(List<String> listA, List<String> listB) {
         listA = fixedNullList(listA);
@@ -161,8 +150,6 @@ public class CastUtils {
 
     /**
      * 格式化Json数据为可输出的状态
-     * @param jsonArrayString
-     * @return
      */
     public static String infoJsonArrayFormatHtml(String jsonArrayString) {
         if (jsonArrayString == null || jsonArrayString.length()<=2 )
@@ -271,14 +258,12 @@ public class CastUtils {
 
 
     /**
-     * 解析URL获取 302 URL
-     * @param headerBytes
-     * @return
+     * 解析 响应体 获取 302 URL
      */
     public static String parseRespRedirectUrl(byte[] headerBytes) {
         String redirectUrl = null;
         if (headerBytes.length>0) {
-            HelperPlus helperPlus = new HelperPlus();
+            HelperPlus helperPlus = HelperPlus.getInstance();
             redirectUrl = helperPlus.getHeaderValueOf(true, headerBytes, "Location");
         }
         return redirectUrl;
@@ -310,4 +295,40 @@ public class CastUtils {
         return title;
     }
 
+    /**
+     * 判断字符串是否为null||为空
+     */
+    private static boolean isEmptyString(String string){
+        return string == null || string.trim().isEmpty();
+    }
+
+    /**
+     * 判断字符串是否不为null||为空
+     */
+    public static boolean isNotEmptyStr(String string){
+        return !isEmptyString(string);
+    }
+
+    /**
+     * 判断字符串|集合|Map类型 是否为null||为空
+     */
+    private static boolean isEmptyObj(Object obj) {
+        if (obj == null) {
+            return true;
+        } else if (obj instanceof String && ((String) obj).trim().isEmpty()) {
+            return true;
+        } else if (obj instanceof Collection && ((Collection<?>) obj).isEmpty()) {
+            return true;
+        } else if (obj instanceof Map && ((Map<?, ?>) obj).isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断字符串|集合|Map类型 是否为null||为空
+     */
+    public static boolean isNotEmptyObj(Object obj) {
+        return !isEmptyObj(obj);
+    }
 }

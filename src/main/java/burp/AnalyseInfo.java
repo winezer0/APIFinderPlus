@@ -13,6 +13,7 @@ import utils.CastUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static utils.CastUtils.isNotEmptyStr;
 import static utils.ElementUtils.isContainAllKey;
 import static utils.ElementUtils.isEqualsOneKey;
 
@@ -143,7 +144,7 @@ public class AnalyseInfo {
         urlList = AnalyseUriFilter.filterBlackSuffixes(urlList, BurpExtender.CONF_BLACK_URL_EXT);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单后缀:%s", urlList.size()));
 
-        if (reqUrl != null && reqUrl.trim().length() > 0){
+        if (isNotEmptyStr(reqUrl)){
             //格式化为URL对象进行操作
             HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 

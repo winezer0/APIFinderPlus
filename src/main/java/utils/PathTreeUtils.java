@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static utils.CastUtils.isNotEmptyStr;
+import static utils.CastUtils.isNotEmptyObj;
+
 public class PathTreeUtils {
 
     /**
@@ -227,7 +230,7 @@ public class PathTreeUtils {
         // 返回最终的列表
         JSONArray findPaths = new JSONArray();
         
-        if (endNodePaths != null && !endNodePaths.isEmpty()){
+        if (isNotEmptyObj(endNodePaths)){
             for (JSONArray endNodePath : endNodePaths) {
                 // 确保每个元素都是字符串，因为String.join需要处理字符串数组
                 List<String> stringPath = new ArrayList<>();
@@ -250,7 +253,7 @@ public class PathTreeUtils {
     public static JSONObject createRootTree(List<String> uriPathList) {
         //存储数据
         JSONObject baseTree = new JSONObject();
-        if (uriPathList != null && !uriPathList.isEmpty()) {
+        if (isNotEmptyObj(uriPathList)) {
             //处理其他情况
             baseTree = createRootTree(uriPathList.get(0));
             for (int i = 1; i < uriPathList.size(); i++) {
@@ -269,7 +272,7 @@ public class PathTreeUtils {
     public static List<String> filterBlankPath(List<String> uriPathList) {
         List list = new ArrayList<String>();
         for (String path: uriPathList){
-            if (path != null && !path.trim().isEmpty() &&  !"/".equals(path.trim()))
+            if (isNotEmptyStr(path) &&  !"/".equals(path.trim()))
                 list.add(path);
         }
         return list;
@@ -286,7 +289,7 @@ public class PathTreeUtils {
         if (reqPathDirsToPaths.length > 0) {
             List<String> filterPaths = filterBlankPath(Arrays.asList(reqPathDirsToPaths));
             JSONObject newPathTree = createRootTree(filterPaths);
-            if (newPathTree != null && !newPathTree.isEmpty()){
+            if (isNotEmptyObj(newPathTree)){
                 pathTreeModel = new PathTreeModel(
                         recordPathModel.getReqProto(),
                         recordPathModel.getReqHostPort(),

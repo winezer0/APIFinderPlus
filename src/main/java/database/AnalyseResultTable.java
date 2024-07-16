@@ -79,19 +79,19 @@ public class AnalyseResultTable {
                     stmt2.setString(2, msgInfo.getUrlInfo().getRawUrlUsual());
                     stmt2.setString(3, msgInfo.getUrlInfo().getHostPort());
 
-                    stmt2.setString(4, CastUtils.toJson(analyseInfo.getUrlList()));
+                    stmt2.setString(4, CastUtils.toJsonString(analyseInfo.getUrlList()));
                     stmt2.setInt(5, analyseInfo.getUrlList().size());
 
-                    stmt2.setString(6, CastUtils.toJson(analyseInfo.getPathList()));
+                    stmt2.setString(6, CastUtils.toJsonString(analyseInfo.getPathList()));
                     stmt2.setInt(7, analyseInfo.getPathList().size());
 
-                    stmt2.setString(8, CastUtils.toJson(analyseInfo.getInfoList()));
+                    stmt2.setString(8, CastUtils.toJsonString(analyseInfo.getInfoList()));
                     stmt2.setInt(9, analyseInfo.getInfoList().size());
 
-                    stmt2.setString(10, CastUtils.toJson(analyseInfo.getApiList()));
+                    stmt2.setString(10, CastUtils.toJsonString(analyseInfo.getApiList()));
                     stmt2.setInt(11, analyseInfo.getApiList().size());
 
-                    stmt2.setString(12, CastUtils.toJson(analyseInfo.getUnvisitedUrl()));
+                    stmt2.setString(12, CastUtils.toJsonString(analyseInfo.getUnvisitedUrl()));
                     stmt2.setInt(13, analyseInfo.getUnvisitedUrl().size());
 
                     //在这个响应中没有找到 PATH 数据,就修改状态为无需解析
@@ -259,10 +259,10 @@ public class AnalyseResultTable {
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
-            stmt.setString(1, CastUtils.toJson(dynamicUrlModel.getPathToUrls()));
+            stmt.setString(1, CastUtils.toJsonString(dynamicUrlModel.getPathToUrls()));
             stmt.setInt(2, dynamicUrlModel.getPathToUrls().size());
 
-            stmt.setString(3, CastUtils.toJson(dynamicUrlModel.getUnvisitedUrls()));
+            stmt.setString(3, CastUtils.toJsonString(dynamicUrlModel.getUnvisitedUrls()));
             stmt.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
 
             stmt.setInt(5, dynamicUrlModel.getBasicPathNum());
@@ -345,7 +345,7 @@ public class AnalyseResultTable {
         String updateSQL = "UPDATE " + tableName +"  SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
-            stmt.setString(1, CastUtils.toJson(unVisitedUrlsModel.getUnvisitedUrls()));
+            stmt.setString(1, CastUtils.toJsonString(unVisitedUrlsModel.getUnvisitedUrls()));
             stmt.setInt(2, unVisitedUrlsModel.getUnvisitedUrls().size());
             stmt.setInt(3, unVisitedUrlsModel.getId());
             affectedRows = stmt.executeUpdate();

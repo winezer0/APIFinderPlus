@@ -1,10 +1,11 @@
 package burp;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
-import test.RespInfoCompareModel;
+import test.RespCompareModel;
 import ui.ConfigPanel;
 import utilbox.HelperPlus;
 import utils.*;
@@ -14,6 +15,7 @@ import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
 
@@ -99,8 +101,8 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            RespInfoCompareModel respJsonModel = new RespInfoCompareModel(msgInfo.getRespInfo());
-            stdout_println(String.format("响应生成Json字符串:\n%s", respJsonModel.toJSONString()));
+            RespCompareModel respModel = new RespCompareModel(msgInfo.getRespInfo());
+            stdout_println(String.format("响应生成Json字符串:\n%s", respModel.toJSONString()));
 
             if (!compareMap.containsKey(reqRootUrl)){
                 System.out.println("暂未存在对应主机的动态筛选条件 即将生成动态筛选条件");
@@ -109,17 +111,24 @@ public class IProxyScanner implements IProxyListener {
                     stdout_println(String.format("开始生成动态筛选条件 From URL: %s %s",
                             msgInfo.getUrlInfo().getRawUrlUsual(),
                             msgInfo.getUrlInfo().getPathToFile()));
-                    compareMap.put(reqRootUrl, new HashMap<String, Object>());
-                    GenerateDynamicFilterJson(msgInfo);
+                    compareMap.put(reqRootUrl, null);
+
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            GenerateDynamicFilterMap(msgInfo);
+                        }
+                    });
+
                 }
             } else {
-               Map respJsonCompare =  compareMap.get(reqRootUrl);
-               if (respJsonCompare.isEmpty()){
+                Map filterFields =  compareMap.get(reqRootUrl);
+               if (filterFields == null){
                    stdout_println("动态筛选条件暂未完成,需要等待");
                } else {
                    stdout_println("动态筛选条件已完成,开始判断是否加入PATH");
                    //TODO 动态筛选函数
-                   if(RespInfoCompareUtils.respJsonIsNotAllow(respJsonModel,respJsonCompare)){
+                   if(RespCompareUtils.respJsonIsNotAllow(respModel,filterFields)){
                        stdout_println("判断完毕, 应该加入PATH");
                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                    }
@@ -201,47 +210,42 @@ public class IProxyScanner implements IProxyListener {
         }
     }
 
-    private void GenerateDynamicFilterJson(HttpMsgInfo msgInfo) {
-        //获取当前的URL 生成几个测试URL
-        String rootUrlSimple = msgInfo.getUrlInfo().getRootUrlSimple();   //当前请求 http://xxx.com/
-        String pathToDir = msgInfo.getUrlInfo().getPathToDir();  //当前请求目录  /user/
-        String pathToFile = msgInfo.getUrlInfo().getPathToFile();   //当前请求文件路径  /user/login
-        String suffix = msgInfo.getUrlInfo().getSuffix();   //当前请求文件后缀  /user/login
-
-        stdout_println(String.format("rootUrl:%s\npathDir:%s\npath:%s\nsuffix:%s\n",
-                rootUrlSimple,pathToDir,pathToFile,suffix
-                ) );
+    private Map<String, Object> GenerateDynamicFilterMap(HttpMsgInfo msgInfo) {
         //生成测试路径
-        List<String> testUrlList = new ArrayList<>();
-        String testUrl;
-        String random1 = RespInfoCompareUtils.getRandomStr(8);
-        String random2 = RespInfoCompareUtils.getRandomStr(8);
-        //生成的测试URL:
-        // http://testphp.vulnweb.com/8y6f7F1l/9KjY8hAO.php  OK
-        // http://testphp.vulnweb.com//AJAX//8y6f7F1l.php  OK
-        // http://testphp.vulnweb.com/8y6f7F1l//AJAX/index.php NOOK
-
-        //1、随机目录随机文件 当前后缀
-        if (!suffix.isEmpty()){
-            testUrl =  rootUrlSimple + '/' + random1 + "/" + random2 + '.' + suffix;
-        } else {
-            testUrl =  rootUrlSimple + '/' + random1 + "/" + random2;
-        }
-        testUrlList.add(testUrl);
-
-        //2、当前目录 随机文件
-        if (!suffix.isEmpty()){
-            testUrl =  rootUrlSimple +  pathToDir +  random1  + '.' + suffix;
-        } else {
-            testUrl =  rootUrlSimple +  pathToDir +  random1;
-        }
-        testUrlList.add(testUrl);
-
-        //3、随机目录，当前路径
-        testUrl = rootUrlSimple + '/'  + random1 + pathToFile;
-        testUrlList.add(testUrl);
-
+        List<String> testUrlList = RespCompareUtils.generateTestUrls(msgInfo.getUrlInfo());
         System.out.println(String.format("生成的测试URL:%s", testUrlList));
+        //进行URL请求 并获取 respInfoJson
+
+        //获取请求头
+        HelperPlus helperPlus = HelperPlus.getInstance();
+        List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
+
+        List<RespCompareModel> respCompareModelList = new ArrayList<>();
+
+        //记录准备加入的请求
+        for (String reqUrl:testUrlList){
+            try {
+                //发起HTTP请求
+                stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
+                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                if (requestResponse != null){
+                    HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
+                    RespCompareModel respCompareModel = new RespCompareModel(newMsgInfo.getRespInfo());
+                    respCompareModelList.add(respCompareModel);
+                }
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
+                e.printStackTrace();
+            }
+        }
+
+        Map<String, Object> filterModel = new HashMap<>();
+        if (!respCompareModelList.isEmpty()) {
+            filterModel = RespCompareUtils.findCommonFieldValues(respCompareModelList);
+            stdout_println(LOG_INFO, String.format("成功生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+        }
+        return filterModel;
     }
 
 
@@ -401,7 +405,7 @@ public class IProxyScanner implements IProxyListener {
             ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
 
             //获取请求头
-            HelperPlus helperPlus = new HelperPlus(getHelpers());
+            HelperPlus helperPlus = HelperPlus.getInstance();
             List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
 
             //记录准备加入的请求
@@ -494,8 +498,7 @@ public class IProxyScanner implements IProxyListener {
             JSONObject currPathTree = pathTreeModel.getPathTree();
             // 基于根树和paths列表计算新的字典
             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-            if (findPathArray != null && !findPathArray.isEmpty() && currPathTree != null
-                    && !currPathTree.isEmpty() && !currPathTree.getJSONObject("ROOT").isEmpty()) {
+            if (isNotEmptyObj(findPathArray) && isNotEmptyObj(currPathTree) && !currPathTree.getJSONObject("ROOT").isEmpty()) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
                 String reqBaseUrl = new HttpUrlInfo(reqUrl).getUrlToFileUsual();
@@ -503,7 +506,7 @@ public class IProxyScanner implements IProxyListener {
                 for (Object findPath: findPathArray){
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);
                     //查询到结果就组合成URL,加到查询结果中
-                    if (nodePath != null && !nodePath.isEmpty()){
+                    if (isNotEmptyObj(nodePath)){
                         for (Object prefix:nodePath){
                             //组合URL、findNodePath、path
                             String prefixPath = (String) prefix;

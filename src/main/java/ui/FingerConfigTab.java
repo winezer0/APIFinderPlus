@@ -29,6 +29,7 @@ import java.util.*;
 
 import static burp.BurpExtender.setActionByRuleInfo;
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyObj;
 
 
 public class FingerConfigTab extends JPanel {
@@ -921,7 +922,7 @@ public class FingerConfigTab extends JPanel {
         BurpExtender.CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
         BurpExtender.CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
 
-        if (fingerprintRules != null && !fingerprintRules.isEmpty()){
+        if (isNotEmptyObj(fingerprintRules)){
             for (int i = 0 ; i < fingerprintRules.size(); i ++){
                 FingerPrintRule rule = fingerprintRules.get(i);
                 setActionByRuleInfo(rule);

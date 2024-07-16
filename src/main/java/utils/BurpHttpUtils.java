@@ -29,8 +29,9 @@ public class BurpHttpUtils {
         byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders, true);
 
         //分析当前创建的请求 判断生成是否一致
-        String reqBytesHost = new HelperPlus(helpers).getHeaderValueOf(true, requestBytes, "HOST");
-        String reqBytesUrl = new HelperPlus(helpers).getFullURL(httpService, requestBytes).toString();
+        HelperPlus helperPlus = HelperPlus.getInstance();
+        String reqBytesHost = helperPlus.getHeaderValueOf(true, requestBytes, "HOST");
+        String reqBytesUrl = helperPlus.getFullURL(httpService, requestBytes).toString();
         if (!urlInfo.getHostPort().contains(reqBytesHost)) {
             stdout_println(LOG_DEBUG, String.format(
                     "注意:实际访问的URL和目标访问的URL不一致\n" +
@@ -73,7 +74,7 @@ public class BurpHttpUtils {
 
         //基于请求头列表 更新 requestBytes 中的 请求头
         if (addHeader){
-            HelperPlus helperPlus = new HelperPlus(helpers);
+            HelperPlus helperPlus = HelperPlus.getInstance();
             for (String referReqHeader : referReqHeaders){
                 if (!referReqHeader.toLowerCase().contains("host:")){
                     // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
@@ -90,7 +91,7 @@ public class BurpHttpUtils {
      */
     public static byte[] replaceReqBytesFirstLine(byte[] originalRequest, String newUrl) {
         IExtensionHelpers helpers = getHelpers();
-        HelperPlus helperPlus = new HelperPlus(helpers);
+        HelperPlus helperPlus = HelperPlus.getInstance();
         HttpUrlInfo urlInfo = new HttpUrlInfo(newUrl);
 
         //获取原始请求体的首行 第一个\r\n 的 offset

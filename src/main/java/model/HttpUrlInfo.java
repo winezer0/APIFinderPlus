@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static utils.BurpPrintUtils.stderr_println;
+import static utils.CastUtils.isNotEmptyStr;
 
 //创建一个类用于存储 URL解析结果的类
 public class HttpUrlInfo {
@@ -26,6 +27,7 @@ public class HttpUrlInfo {
     private String pathToEnd = null;
 
     private String suffix = null;
+    private String suffixUsual = null;
     private String rootDomain = null;
 
     private String rootUrl = null;
@@ -55,14 +57,10 @@ public class HttpUrlInfo {
             //片段标识符 (fragment)：如 #section1
             ref = urlObj.getRef();
 
-            //路径 (path)：如 /path/to/resource
-            pathToFile = urlObj.getPath();
-
             //添加个HostPort对象 www.baidu.com:80 | www.baidu.com:8080
             hostPort = String.format("%s:%s", host, port);
             //获取没有默认端口的请求头 www.baidu.com | www.baidu.com:8080
             hostPortUsual = removeHostDefaultPort(hostPort,host,port);
-
             //获取前缀URL // http://www.baidu.com:80/
             rootUrl = String.format("%s://%s/", proto, hostPort);
             //获取前缀URL // http://www.baidu.com/
@@ -70,52 +68,58 @@ public class HttpUrlInfo {
             //获取前缀URL // http://www.baidu.com
             rootUrlSimple = String.format("%s://%s", proto, hostPortUsual);
 
-            // 重新构造基本URL，不包含查询参数 http://www.baidu.com/path/to/resource
-            urlToFile = new URL(proto, host, port, pathToFile).toString();
-            //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
-            urlToPath = new URL(proto, host, port, pathToDir).toString();
-
             //解析请求文件的后缀 php html
-            suffix = parseUrlExtStrict(pathToFile); //严重错误,域名中是有.符号的,因此不能直接截断域名
+            suffix = parseUrlExtStrict(file); //严重错误,域名中是有.符号的,因此不能直接截断域名
+            //解析请求文件的后缀 .php .html
+            suffixUsual = suffix.isEmpty()? suffix:  "." + suffix;
 
             //获取主域名 baidu.com
             rootDomain = DomainUtils.getRootDomain(host);
 
-            //获取带有参数的完整Path 不带http信息 /path/to/resource?key=value#section1
-            pathToEnd = genFullPath(pathToFile, query, ref);
-
+            //路径 (path)：如 /path/to/resource
+            pathToFile = urlObj.getPath();
+            // 重新构造基本URL，不包含查询参数 http://www.baidu.com/path/to/resource
+            urlToFile = new URL(proto, host, port, pathToFile).toString();
+            urlToFileUsual = removeUrlDefaultPort(urlToFile);
             //获取请求路径的目录部分 /path/to/
             pathToDir = parseReqPathDir(pathToFile);
-
+            //构造基本URL, 不包含请求文件 http://www.baidu.com/path/to/
+            urlToPath = new URL(proto, host, port, pathToDir).toString();
+            urlToPathUsual = removeUrlDefaultPort(urlToPath);
+            //获取带有参数的完整Path 不带http信息 /path/to/resource?key=value#section1
+            pathToEnd = genFullPath(pathToFile, query, ref);
             //格式化URL 不显示默认端口
             rawUrlUsual = removeUrlDefaultPort(rawUrl);
-            urlToFileUsual = removeUrlDefaultPort(urlToFile);
-            urlToPathUsual = removeUrlDefaultPort(urlToPath);
+
         } catch (MalformedURLException e) {
             stderr_println(String.format("Invalid URL: %s -> Error: %s", rawUrl, e.getMessage()));
             e.printStackTrace();
         }
     }
 
+    /**
+     * 拼接 Path路径、?查询字符串、#索引
+     */
     private String genFullPath(String pathToFile,String query,String ref) {
         StringBuilder fullPart = new StringBuilder(pathToFile);
-        if (query != null && !query.isEmpty()) {
+        if (isNotEmptyStr(query)) {
             fullPart.append("?").append(query);
         }
-        if (ref != null && !ref.isEmpty()) {
+        if (isNotEmptyStr(ref)) {
             fullPart.append("#").append(ref);
         }
         return fullPart.toString();
     }
 
     /**
-     * 从URL解析请求后缀 严格模式 处理 # 和 ?
-     * @param url
-     * @return
+     * 从 path 解析请求后缀 严格模式 处理 # 和 ?
      */
-    private String parseUrlExtStrict(String url) {
-        int queryIndex = url.indexOf('?');
-        int fragmentIndex = url.indexOf('#');
+    private String parseUrlExtStrict(String path) {
+        //忽略为空的情况
+        if (path == null || path.isEmpty()) return "";
+
+        int queryIndex = path.indexOf('?');
+        int fragmentIndex = path.indexOf('#');
 
         int endIndex = -1;
         // 计算有效部分的结束索引
@@ -124,11 +128,11 @@ public class HttpUrlInfo {
         } else if (queryIndex > 0 || fragmentIndex >0){
             endIndex = Math.max(queryIndex, fragmentIndex);
         } else {
-            endIndex = url.length();
+            endIndex = path.length();
         }
 
         // 截取有效部分；否则使用整个URL
-        String pureUrl = url.substring(0, endIndex);
+        String pureUrl = path.substring(0, endIndex);
 
         // 查找最后一个`.`的位置
         int lastDotIndex = pureUrl.lastIndexOf('.');
@@ -188,6 +192,14 @@ public class HttpUrlInfo {
         return port;
     }
 
+    public String getQuery() {
+        return query;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
     public String getPathToFile() {
         return pathToFile;
     }
@@ -200,6 +212,10 @@ public class HttpUrlInfo {
         return suffix;
     }
 
+    public String getSuffixUsual() {
+        return suffixUsual;
+    }
+
     public String getUrlToFileUsual() {
         return urlToFileUsual;
     }
@@ -210,14 +226,6 @@ public class HttpUrlInfo {
 
     public String getPathToEnd() {
         return pathToEnd;
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public String getRef() {
-        return ref;
     }
 
     public String getHostPortUsual() {

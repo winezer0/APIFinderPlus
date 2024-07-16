@@ -5,9 +5,9 @@ import model.PathTreeModel;
 
 import java.sql.*;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import static utils.CastUtils.isNotEmptyStr;
 import static utils.PathTreeUtils.deepMergeJsonTree;
 import static utils.BurpPrintUtils.*;
 
@@ -50,7 +50,7 @@ public class PathTreeTable {
                 newBasicPathNum = Math.max(0, oldBasicPathNum) + Math.max(0, newBasicPathNum);
 
                 //合并新旧Json树
-                if (oldPathTree != null && !oldPathTree.isEmpty()){
+                if (isNotEmptyStr(oldPathTree)){
                     JSONObject oldTree = JSONObject.parse(oldPathTree);
                     newPathTree = deepMergeJsonTree(oldTree, newPathTree);
                 }

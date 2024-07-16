@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyStr;
 import static utils.ElementUtils.isEqualsOneKey;
 
 public class AnalyseInfoUtils {
@@ -206,7 +207,7 @@ public class AnalyseInfoUtils {
      * @return
      */
     public static String removeSymbol(String extractUri){
-        if (extractUri != null && !extractUri.isEmpty())
+        if (isNotEmptyStr(extractUri))
             extractUri = extractUri
                     .replaceAll("\"", "")
                     .replaceAll("'", "")
@@ -224,7 +225,7 @@ public class AnalyseInfoUtils {
      * @return 解码后的字符串
      */
     public static String decodeHtml(String htmlEncodedString) {
-        if (htmlEncodedString != null && !htmlEncodedString.isEmpty())
+        if (isNotEmptyStr(htmlEncodedString))
             htmlEncodedString = StringEscapeUtils.unescapeHtml4(htmlEncodedString);
         return htmlEncodedString;
     }
@@ -260,7 +261,7 @@ public class AnalyseInfoUtils {
         List<String> urlList = new ArrayList<>();
         for(String path : pathList){
             String newUrl = concatUrlAddPath(reqUrl, path);
-            if (newUrl != null && !newUrl.trim().isEmpty())
+            if (isNotEmptyStr(newUrl))
                 urlList.add(newUrl);
         }
         return urlList;

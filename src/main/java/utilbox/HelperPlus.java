@@ -50,14 +50,31 @@ public class HelperPlus {
     private final static String Header_Split = ":";
     private final static String Header_Connector = ": ";//contains space
 
-    public HelperPlus() {
-       helpers = BurpExtender.getHelpers();
+    // 私有静态变量用于保存HelperPlus的唯一实例
+    private static volatile HelperPlus instance;
+
+    // 私有构造方法，防止外部直接实例化
+    private HelperPlus() {
+        this(BurpExtender.getHelpers());
     }
 
-    public HelperPlus(IExtensionHelpers helpers) {
-        HelperPlus.helpers = helpers;
+    // 允许传入IExtensionHelpers的构造方法，用于测试或特殊需求
+    private HelperPlus(IExtensionHelpers helpers) {
+        this.helpers = helpers;
     }
 
+    // 提供一个公共的静态方法来获取HelperPlus的实例
+    public static HelperPlus getInstance() {
+        // 双重检查锁定
+        if (instance == null) {
+            synchronized (HelperPlus.class) {
+                if (instance == null) {
+                    instance = new HelperPlus();
+                }
+            }
+        }
+        return instance;
+    }
     /**
      * 返回HTTP请求或响应的整个header头部分，与body相对应
      */
