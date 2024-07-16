@@ -235,8 +235,8 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认关闭本功能, 点击后应该作为开启配置
-                MainPanel.auroRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("auroRefreshUnvisitedIsOpen: %s", MainPanel.auroRefreshUnvisitedIsOpen));
+                MainPanel.autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("auroRefreshUnvisitedIsOpen: %s", MainPanel.autoRefreshUnvisitedIsOpen));
             }
         });
 
@@ -361,8 +361,10 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
                 if (autoRefreshButton.isSelected()) {
+                    MainPanel.autoRefreshIsOpen = autoRefreshButton.isSelected();
                     autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
                 } else {
+                    MainPanel.autoRefreshIsOpen = !autoRefreshButton.isSelected();
                     autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 }
             }
@@ -689,10 +691,5 @@ public class ConfigPanel extends JPanel {
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
         MainPanel.operationStartTime = LocalDateTime.now();
-    }
-
-    //是否开启自动刷新功能
-    public static boolean autoRefreshIsOpen(){
-        return autoRefreshButton.isSelected();
     }
 }

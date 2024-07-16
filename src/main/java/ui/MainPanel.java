@@ -48,7 +48,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
 
 
-    public static boolean auroRefreshUnvisitedIsOpen = false;
+    public static boolean autoRefreshUnvisitedIsOpen = false;
+    public static boolean autoRefreshIsOpen = false;
 
     public static MainPanel getInstance() {
         if (instance == null) {
@@ -760,7 +761,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    refreshAllUnVisitedUrlsAndTableUI(true, auroRefreshUnvisitedIsOpen);
+                    refreshAllUnVisitedUrlsAndTableUI(true, autoRefreshUnvisitedIsOpen);
                 }
             }
         });
@@ -1064,7 +1065,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         ConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (checkAutoRefreshButtonStatus && !ConfigPanel.autoRefreshIsOpen()) {
+        if (checkAutoRefreshButtonStatus && autoRefreshIsOpen) {
             if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
                 ConfigPanel.setAutoRefreshOpen();
             }
