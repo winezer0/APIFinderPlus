@@ -1,12 +1,9 @@
 package burp;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
-import model.RespFieldsModel;
-import org.checkerframework.checker.units.qual.N;
 import ui.ConfigPanel;
 import utilbox.HelperPlus;
 import utils.*;
@@ -302,7 +299,7 @@ public class IProxyScanner implements IProxyListener {
                             );
 
                             if (!msgData.getMsgHash().equals(msgInfo.getMsgHash())){
-                                stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash())));
+                                stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash()));
                             }
 
                             //进行数据分析
