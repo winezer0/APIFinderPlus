@@ -14,6 +14,7 @@ import java.util.zip.GZIPInputStream;
 import static burp.BurpExtender.CONF_BLACK_URL_ROOT;
 import static burp.BurpExtender.getHelpers;
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyObj;
 
 
 public class BurpHttpUtils {
@@ -26,7 +27,7 @@ public class BurpHttpUtils {
         // 创建IHttpService对象
         IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
         //构建HTTP请求体
-        byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders, true);
+        byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders, isNotEmptyObj(referReqHeaders));
 
         //分析当前创建的请求 判断生成是否一致
         HelperPlus helperPlus = HelperPlus.getInstance();
@@ -73,7 +74,7 @@ public class BurpHttpUtils {
         byte[] requestBytes = baseRequest.getBytes();
 
         //基于请求头列表 更新 requestBytes 中的 请求头
-        if (addHeader){
+        if (addHeader && isNotEmptyObj(referReqHeaders)){
             HelperPlus helperPlus = HelperPlus.getInstance();
             for (String referReqHeader : referReqHeaders){
                 if (!referReqHeader.toLowerCase().contains("host:")){
