@@ -396,9 +396,7 @@ public class FingerConfigTab extends JPanel {
         exportItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String json = currentConfigToJsonString();
-                // 输出或进一步处理转换后的JSON字符串
-                System.out.println(json);
+                String configToJson = currentConfigToJsonString();
 
                 // 弹出文件选择对话框，让用户选择保存位置
                 JFileChooser fileChooser = new JFileChooser();
@@ -414,7 +412,7 @@ public class FingerConfigTab extends JPanel {
                     }
 
                     try {
-                        BurpFileUtils.writeToFile(fileToSave, json);
+                        BurpFileUtils.writeToFile(fileToSave, configToJson);
                         JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已导出至: " + fileToSave.getAbsolutePath(), "导出成功", JOptionPane.INFORMATION_MESSAGE);
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(FingerConfigTab.this, "写入文件时发生错误: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);

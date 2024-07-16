@@ -66,7 +66,6 @@ public class RespFieldCompareutils {
         for (Map.Entry<String, Object> entry : filterRespCommonFields.entrySet()) {
             String fieldName = entry.getKey();
             Object fieldValue = entry.getValue();
-            System.out.println(String.format("正在检查 fieldName:%s -> %s", fieldName, fieldValue));
             if (isNotEmptyObj(fieldValue)) {
                 // 检查所有对象的该字段是否具有相同的值
                 Object currentFieldValue = currRespCommonFields.get(fieldName);
@@ -75,7 +74,6 @@ public class RespFieldCompareutils {
                 }
             }
         }
-        System.out.println("结束 findCommonFieldValues");
         return allMatch;
     }
 
@@ -88,7 +86,6 @@ public class RespFieldCompareutils {
         for (Map.Entry<String, Object> entry : filterRespCommonFields.entrySet()) {
             String fieldName = entry.getKey();
             Object fieldValue = entry.getValue();
-            System.out.println(String.format("正在检查 fieldName:%s -> %s", fieldName, fieldValue));
             if (isNotEmptyObj(fieldValue)) {
                 //检查所有对象的该字段是否 有一个是 具有相同的值
                 Object currentFieldValue = currRespCommonFields.get(fieldName);
@@ -98,7 +95,6 @@ public class RespFieldCompareutils {
                 }
             }
         }
-        System.out.println("结束 findCommonFieldValues");
         return allMatch;
     }
 

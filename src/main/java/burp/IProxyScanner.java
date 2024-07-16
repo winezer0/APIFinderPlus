@@ -221,7 +221,6 @@ public class IProxyScanner implements IProxyListener {
     private void GenerateDynamicFilterMap(String rootUrl,HttpMsgInfo msgInfo) {
         //生成测试路径
         List<String> testUrlList = RespFieldCompareutils.generateTestUrls(msgInfo.getUrlInfo());
-        System.out.println(String.format("生成的测试URL:%s", testUrlList));
         //进行URL请求 并获取 respInfoJson
         //获取请求头
         HelperPlus helperPlus = HelperPlus.getInstance();
@@ -237,7 +236,7 @@ public class IProxyScanner implements IProxyListener {
                     HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
                     RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
                     FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
-                    stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+                    //stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
                 }
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -248,9 +247,9 @@ public class IProxyScanner implements IProxyListener {
         Map<String, Object> filterModel = new HashMap<>();
         if (!FieldValuesMapList.isEmpty()) {
             filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
-            System.out.println(String.format("生成域名: %s 的动态过滤条件 成功: %s", rootUrl, JSON.toJSON(filterModel)));
+            stdout_println(LOG_INFO, String.format("[*] 生成的动态过滤条件成功: %s-> %s", rootUrl, JSON.toJSON(filterModel)));
         }else {
-            System.out.println(String.format("生成域名: %s 的动态过滤条件 失败: %s", rootUrl, JSON.toJSON(filterModel)));
+            stderr_println(LOG_ERROR, String.format("[!] 生成的动态过滤条件失败: %s-> %s", rootUrl, JSON.toJSON(filterModel)));
         }
         urlCompareMap.put(rootUrl, filterModel);
     }
