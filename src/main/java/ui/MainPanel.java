@@ -953,7 +953,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ConfigPanel.searchField.setText("");
+                    ConfigPanel.setSearchBoxText("");
                 }
             });
 
@@ -1073,7 +1073,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
 
         // 获取搜索框和搜索选项
-        final String searchText = ConfigPanel.searchField.getText();
+        final String searchText = ConfigPanel.getSearchBoxText();
         final String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
 
         // 使用SwingWorker来处理数据更新，避免阻塞EDT

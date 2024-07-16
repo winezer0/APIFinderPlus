@@ -26,8 +26,8 @@ public class ConfigPanel extends JPanel {
     public static JComboBox<String> choicesComboBox;
 
     public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
-    public static JLabel autoRefreshText; //自动刷新按钮显示的文本
-    public static JTextField searchField; //URl搜索框显
+    private static JLabel autoRefreshText; //自动刷新按钮显示的文本
+    public static JTextField searchBox; //URl搜索框显
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
     public ConfigPanel() {
@@ -322,14 +322,14 @@ public class ConfigPanel extends JPanel {
         gbc_btnall.gridy = 0;
         FilterPanel.add(choicesComboBox, gbc_btnall);
         // 检索框
-        searchField = new JTextField(15);
+        searchBox = new JTextField(15);
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
         gbc_btnSearchField.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
-        searchField.setToolTipText("搜索URL关键字");
-        FilterPanel.add(searchField, gbc_btnSearchField);
+        searchBox.setToolTipText("搜索URL关键字");
+        FilterPanel.add(searchBox, gbc_btnSearchField);
         // 检索按钮
         JButton searchButton = new JButton();
         searchButton.setIcon(UiUtils.getImageIcon("/icon/searchButton.png"));
@@ -376,7 +376,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try{
                     // 触发显示所有行事件
-                    String searchText = searchField.getText();
+                    String searchText = searchBox.getText();
                     if(searchText.isEmpty()){
                         searchText = "";
                     }
@@ -392,7 +392,7 @@ public class ConfigPanel extends JPanel {
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String searchText = searchField.getText();
+                String searchText = searchBox.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
@@ -400,10 +400,10 @@ public class ConfigPanel extends JPanel {
         });
 
         //搜索框的回车事件
-        searchField.addActionListener(new ActionListener() {
+        searchBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String searchText = searchField.getText();
+                String searchText = searchBox.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
@@ -691,5 +691,13 @@ public class ConfigPanel extends JPanel {
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
         MainPanel.operationStartTime = LocalDateTime.now();
+    }
+
+    public static String getSearchBoxText() {
+        return searchBox.getText();
+    }
+
+    public static void setSearchBoxText(String string) {
+        searchBox.setText(string);
     }
 }
