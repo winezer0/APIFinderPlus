@@ -28,21 +28,21 @@ public class BurpSitemapUtils {
         // 1、获取所有有关的 urlPrefix
         Set<String> urlPrefixes = PathTreeTable.fetchAllRecordPathUrlPrefix();
         for (String urlPrefix:urlPrefixes){
+            //插入一个标记,表明这个主机已经插入过滤
+            String insertedFlag = isRecordUrl ? urlPrefix + "/RecordUrl" : urlPrefix + "/RecordPath";
+            boolean flagIsNotInsert = RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, 999) > 0;
+
             //忽略导入禁止导入的主机的信息
             if (isContainOneKey(urlPrefix, CONF_NOT_AUTO_RECORD, false) || isContainOneKey(urlPrefix, CONF_BLACK_URL_ROOT, false )){
                 continue;
             }
 
             //获取URL相关的前缀
-            IHttpRequestResponse[] httpRequestResponses = BurpExtender.getCallbacks().getSiteMap(urlPrefix);
-
-            if (httpRequestResponses.length>0){
-                //插入一个标记,表明这个主机已经插入过滤
-                HttpMsgInfo msgInfo = new HttpMsgInfo(httpRequestResponses[0]);
-                String insertedFlag = isRecordUrl ? urlPrefix + "/RecordUrl" : urlPrefix + "/RecordPath";
-                if (RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, 999) > 0){
-                    for (IHttpRequestResponse requestResponse: httpRequestResponses){
-                        msgInfo = new HttpMsgInfo(requestResponse);
+            if (flagIsNotInsert){
+                IHttpRequestResponse[] httpRequestResponses = BurpExtender.getCallbacks().getSiteMap(urlPrefix);
+                if (httpRequestResponses.length>0){
+                        for (IHttpRequestResponse requestResponse: httpRequestResponses){
+                        HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
                         String reqBaseUrl = msgInfo.getUrlInfo().getUrlToFileUsual();
 
                         try {
