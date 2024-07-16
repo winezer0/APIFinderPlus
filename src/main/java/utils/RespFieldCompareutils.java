@@ -210,9 +210,9 @@ public class RespFieldCompareutils {
                 e.printStackTrace();
             }
         }
-        Map<String, Object> filterModel = new HashMap<>();
-        if (isNotEmptyObj(FieldValuesMapList)) {
-            filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
+        //生成过滤条件
+        Map<String, Object> filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
+        if (isNotEmptyObj(filterModel)) {
             stdout_println(LOG_INFO, String.format("[*] 生成的动态过滤条件成功: %s-> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
         }else {
             stderr_println(LOG_ERROR, String.format("[!] 生成的动态过滤条件失败: %s-> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
