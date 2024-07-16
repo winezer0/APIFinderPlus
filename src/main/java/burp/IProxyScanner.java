@@ -358,11 +358,14 @@ public class IProxyScanner implements IProxyListener {
                         FindPathModel findPathModel = AnalyseResultTable.fetchUnhandledPathData();
 
                         //如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
-                        if (findPathModel == null){
+                        if (isNotEmptyObj(findPathModel)){
                             findPathModel = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
+                            stdout_println(LOG_DEBUG,"[*]获取动态更新PATHTree进行重计算...");
+                        } else {
+                            stdout_println(LOG_DEBUG,"[*] 获取新增PATH数据进行URL计算...");
                         }
-
-                        if (findPathModel != null) {
+                        
+                        if (isNotEmptyObj(findPathModel)) {
                             pathsToUrlsByPathTree(findPathModel);
                             return;
                         }
