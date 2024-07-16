@@ -1,10 +1,17 @@
 package utils;
 
+import burp.IHttpRequestResponse;
+import com.alibaba.fastjson2.JSON;
+import model.HttpMsgInfo;
 import model.HttpUrlInfo;
+import model.RespFieldsModel;
+import utilbox.HelperPlus;
 
 import java.security.SecureRandom;
 import java.util.*;
 
+import static utils.BurpPrintUtils.*;
+import static utils.BurpPrintUtils.LOG_ERROR;
 import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 
@@ -116,7 +123,6 @@ public class RespFieldCompareutils {
         return testUrls;
     }
 
-
     /**
      * 生成随机字符串
      */
@@ -175,4 +181,44 @@ public class RespFieldCompareutils {
         urls.add(rootUrl + SLASH + rand2 + "." + suffix);
         return urls;
     }
+
+    /**
+     * 生成动态过滤信息
+     */
+    public static Map<String, Object> generateDynamicFilterMap(HttpMsgInfo msgInfo) {
+        //生成测试路径
+        List<String> testUrlList = RespFieldCompareutils.generateTestUrls(msgInfo.getUrlInfo());
+        //进行URL请求 并获取 respInfoJson
+        //获取请求头
+        HelperPlus helperPlus = HelperPlus.getInstance();
+        List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
+        List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
+        //记录准备加入的请求
+        for (String reqUrl:testUrlList){
+            try {
+                //发起HTTP请求
+                stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
+                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                if (requestResponse != null){
+                    HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
+                    RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
+                    FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
+                    //stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+                }
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
+                e.printStackTrace();
+            }
+        }
+        Map<String, Object> filterModel = new HashMap<>();
+        if (!FieldValuesMapList.isEmpty()) {
+            filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
+            stdout_println(LOG_INFO, String.format("[*] 生成的动态过滤条件成功: %s-> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+        }else {
+            stderr_println(LOG_ERROR, String.format("[!] 生成的动态过滤条件失败: %s-> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+        }
+        return filterModel;
+    }
+
 }

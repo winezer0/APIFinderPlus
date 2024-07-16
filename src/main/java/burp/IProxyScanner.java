@@ -1,6 +1,5 @@
 package burp;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
@@ -31,7 +30,7 @@ public class IProxyScanner implements IProxyListener {
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
     //存储每个host的对比对象
-    private static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
+    public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
     public static boolean dynamicPthFilterIsOpen = true; //是否启用增强的path过滤模式
     public static boolean autoRecordPathIsOpen  = true;//是否启用自动记录每个录得PATH
@@ -198,7 +197,8 @@ public class IProxyScanner implements IProxyListener {
                     //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
                     if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
                         urlCompareMap.put(reqRootUrl, null);
-                        GenerateDynamicFilterMap(reqRootUrl, msgInfo);
+                        Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                        urlCompareMap.put(reqRootUrl, filterModel);
                     }
                 }
             });
@@ -216,42 +216,6 @@ public class IProxyScanner implements IProxyListener {
                 }
             }
         }
-    }
-
-    private void GenerateDynamicFilterMap(String rootUrl,HttpMsgInfo msgInfo) {
-        //生成测试路径
-        List<String> testUrlList = RespFieldCompareutils.generateTestUrls(msgInfo.getUrlInfo());
-        //进行URL请求 并获取 respInfoJson
-        //获取请求头
-        HelperPlus helperPlus = HelperPlus.getInstance();
-        List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
-        List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
-        //记录准备加入的请求
-        for (String reqUrl:testUrlList){
-            try {
-                //发起HTTP请求
-                stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
-                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
-                if (requestResponse != null){
-                    HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
-                    RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
-                    FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
-                    //stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
-                }
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
-                e.printStackTrace();
-            }
-        }
-        Map<String, Object> filterModel = new HashMap<>();
-        if (!FieldValuesMapList.isEmpty()) {
-            filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
-            stdout_println(LOG_INFO, String.format("[*] 生成的动态过滤条件成功: %s-> %s", rootUrl, JSON.toJSON(filterModel)));
-        }else {
-            stderr_println(LOG_ERROR, String.format("[!] 生成的动态过滤条件失败: %s-> %s", rootUrl, JSON.toJSON(filterModel)));
-        }
-        urlCompareMap.put(rootUrl, filterModel);
     }
 
     /**

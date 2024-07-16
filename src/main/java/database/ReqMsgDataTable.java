@@ -124,7 +124,7 @@ public class ReqMsgDataTable {
     /**
      * 根据消息ID查询请求内容
      */
-    public static synchronized List<ReqMsgDataModel> batchFetchMsgDataByMsgHash(List<String> msgHashList){
+    public static synchronized List<ReqMsgDataModel> fetchMsgDataByMsgHashList(List<String> msgHashList){
         List<ReqMsgDataModel> reqMsgDataModelList = new ArrayList<>();
 
         String selectSQL = "SELECT * FROM "+ tableName + " WHERE msg_hash IN $buildInParameterList$;"

@@ -5,6 +5,7 @@ import database.*;
 import model.*;
 import utils.BurpHttpUtils;
 import utils.CastUtils;
+import utils.RespFieldCompareutils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -209,6 +210,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
         JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到递归扫描黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
         JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
+        JMenuItem genDynaPathFilterItem = new JMenuItem("基于URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -224,6 +226,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(addRootUrlToBlackUrlRootItem);
         popupMenu.add(addRootUrlToNotAutoRecurseItem);
         popupMenu.add(addRootUrlToAllowListenItem);
+        popupMenu.add(genDynaPathFilterItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -571,6 +574,41 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                                 BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
                                 //保存Json
                                 FingerConfigTab.saveConfigToDefaultJson();
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        // 添加 genDynaPathFilterItem 事件监听器
+        genDynaPathFilterItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //1、获取 msgHash 对应 请求数据
+                                List<ReqMsgDataModel> reqMsgDataModelList = ReqMsgDataTable.fetchMsgDataByMsgHashList(msgHashList);
+                                for (ReqMsgDataModel msgDataModel : reqMsgDataModelList){
+                                    //2、将请求数据组合成 MsgInfo
+                                    HttpMsgInfo msgInfo = new HttpMsgInfo(
+                                            msgDataModel.getReqUrl(),
+                                            msgDataModel.getReqBytes(),
+                                            msgDataModel.getRespBytes(),
+                                            msgDataModel.getMsgHash()
+                                    );
+                                    //3、进行动态过滤器生成
+                                    Map<String, Object> dynamicFilterMap = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                                    IProxyScanner.urlCompareMap.put(msgInfo.getUrlInfo().getRootUrlUsual(), dynamicFilterMap);
+                                }
                                 return null;
                             }
                         }.execute();
