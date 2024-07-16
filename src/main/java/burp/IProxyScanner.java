@@ -300,6 +300,11 @@ public class IProxyScanner implements IProxyListener {
                                     msgData.getRespBytes(),
                                     msgData.getMsgHash()
                             );
+
+                            if (!msgData.getMsgHash().equals(msgInfo.getMsgHash())){
+                                stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash())));
+                            }
+
                             //进行数据分析
                             AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
 
@@ -408,11 +413,10 @@ public class IProxyScanner implements IProxyListener {
 
             //获取这个MsgHash对应的请求体和响应体
             List<String> referHeaders = null;
-            //TODO 由于修改了响应体大小, 导致 msgHash 不正确了,导致无法获取请求头,需要优化解决该问题
             String msgHash = unVisitedUrlsModel.getMsgHash();
             ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
             if (isEmptyObj(reqMsgDataModel)){
-                stderr_println(LOG_ERROR, String.format("fetch MsgData By MsgHash is NuLL: [%s]", msgHash));
+                stderr_println(LOG_ERROR, String.format("[!] fetch MsgData By MsgHash is NuLL: [%s]", msgHash));
             }else {
                 //获取请求头作为参考数据
                 HelperPlus helperPlus = HelperPlus.getInstance();
