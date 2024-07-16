@@ -25,7 +25,6 @@ public class ConfigPanel extends JPanel {
     // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
-    public static JToggleButton recursiveButton; //递归开关按钮状态
     public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
     public static JLabel autoRefreshText; //自动刷新按钮显示的文本
     public static JTextField searchField; //URl搜索框显
@@ -236,19 +235,28 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认关闭本功能, 点击后应该作为开启配置
-                MainPanel.aurtRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("refreshUnvisite: %s", MainPanel.aurtRefreshUnvisitedIsOpen));
+                MainPanel.auroRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("auroRefreshUnvisitedIsOpen: %s", MainPanel.auroRefreshUnvisitedIsOpen));
             }
         });
 
         // 开关 是否开启对提取URL进行发起请求
-        recursiveButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        recursiveButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        recursiveButton.setPreferredSize(new Dimension(50, 24));
-        recursiveButton.setBorder(null);  // 设置无边框
-        recursiveButton.setFocusPainted(false);  // 移除焦点边框
-        recursiveButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        recursiveButton.setToolTipText("自动测试未访问URL");
+        JToggleButton autoRecursiveButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        autoRecursiveButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        autoRecursiveButton.setPreferredSize(new Dimension(50, 24));
+        autoRecursiveButton.setBorder(null);  // 设置无边框
+        autoRecursiveButton.setFocusPainted(false);  // 移除焦点边框
+        autoRecursiveButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoRecursiveButton.setToolTipText("自动测试未访问URL");
+
+        autoRecursiveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认关闭本功能, 点击后应该作为开启配置
+                IProxyScanner.autoRecursiveIsOpen = autoRecursiveButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("autoRecursiveIsOpen: %s", IProxyScanner.autoRecursiveIsOpen));
+            }
+        });
 
         // 刷新按钮按钮
         autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
@@ -285,7 +293,7 @@ public class ConfigPanel extends JPanel {
         FilterPanel.add(autoRefreshUnvisitedButton, gbc_buttons);
         // 在 FilterPanel 中添加 toggleButton
         gbc_buttons.gridx = 12; // 设置按钮的横坐标位置
-        FilterPanel.add(recursiveButton, gbc_buttons);
+        FilterPanel.add(autoRecursiveButton, gbc_buttons);
         gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshButton, gbc_buttons);
         gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
@@ -686,10 +694,5 @@ public class ConfigPanel extends JPanel {
     //是否开启自动刷新功能
     public static boolean autoRefreshIsOpen(){
         return autoRefreshButton.isSelected();
-    }
-
-    //是否开启自动递归扫描未访问URL
-    public static boolean recursiveIsOpen(){
-        return recursiveButton.isSelected();
     }
 }

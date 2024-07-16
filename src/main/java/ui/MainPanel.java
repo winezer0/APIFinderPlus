@@ -48,7 +48,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
 
 
-    public static boolean aurtRefreshUnvisitedIsOpen = false;
+    public static boolean auroRefreshUnvisitedIsOpen = false;
 
     public static MainPanel getInstance() {
         if (instance == null) {
@@ -760,7 +760,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    refreshAllUnVisitedUrlsAndTableUI(true, aurtRefreshUnvisitedIsOpen);
+                    refreshAllUnVisitedUrlsAndTableUI(true, auroRefreshUnvisitedIsOpen);
                 }
             }
         });

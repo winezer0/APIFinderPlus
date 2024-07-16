@@ -35,6 +35,7 @@ public class IProxyScanner implements IProxyListener {
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
     public static boolean dynamicPthFilterIsOpen = true; //是否启用增强的path过滤模式
     public static boolean autoRecordPathIsOpen  = true;//是否启用自动记录每个录得PATH
+    public static boolean autoRecursiveIsOpen = false; //是否进行递归URL扫描
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -401,7 +402,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     // 增加自动递归查询功能
-                    if (ConfigPanel.recursiveIsOpen() && executorService.getActiveCount() < 2){
+                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
                         //获取一个未访问URL列表
                         UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
                         accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
