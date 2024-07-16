@@ -2,6 +2,7 @@ package utils;
 
 import burp.BurpExtender;
 import burp.IHttpRequestResponse;
+import burp.IProxyScanner;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
 import database.PathTreeTable;
@@ -9,14 +10,12 @@ import database.RecordPathTable;
 import database.RecordUrlTable;
 import model.HttpMsgInfo;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static burp.BurpExtender.CONF_BLACK_URL_EXT;
-import static burp.BurpExtender.CONF_ALLOW_RECORD_STATUS;
+import static burp.BurpExtender.*;
 import static utils.BurpPrintUtils.*;
+import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
 
 
@@ -29,39 +28,38 @@ public class BurpSitemapUtils {
         // 1、获取所有有关的 urlPrefix
         Set<String> urlPrefixes = PathTreeTable.fetchAllRecordPathUrlPrefix();
         for (String urlPrefix:urlPrefixes){
+            //忽略导入禁止导入的主机的信息
+            if (isContainOneKey(urlPrefix, CONF_NOT_AUTO_RECORD, false) || isContainOneKey(urlPrefix, CONF_BLACK_URL_ROOT, false )){
+                continue;
+            }
+
             //获取URL相关的前缀
             IHttpRequestResponse[] httpRequestResponses = BurpExtender.getCallbacks().getSiteMap(urlPrefix);
-            Set<String> JsonStringSet = extractSitemapUrlPaths(httpRequestResponses);
-            List<String> JsonStringList = new ArrayList<>(JsonStringSet);
 
-            //判断是否存在添加的价值
-            if (JsonStringList.size() > 0){
-                String jsonString0 = JsonStringList.get(0);
-                JSONObject jsonObject0 = CastUtils.toJsonObject(jsonString0);
-
+            if (httpRequestResponses.length>0){
                 //插入一个标记,表明这个主机已经插入过滤
+                HttpMsgInfo msgInfo = new HttpMsgInfo(httpRequestResponses[0]);
                 String insertedFlag = isRecordUrl ? urlPrefix + "/RecordUrl" : urlPrefix + "/RecordPath";
-                if (RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, jsonObject0.getString(Constants.REQ_HOST_PORT), 999) > 0){
-                    //没有被添加过,可以继续添加
-                    // 遍历 JsonStringSet 进行添加
-                    for (String JsonString : JsonStringSet){
-                        JSONObject jsonObject = CastUtils.toJsonObject(JsonString);
-                        String reqBaseUrl = jsonObject.getString(Constants.REQ_BASE_URL);
-                        String reqPathExt = jsonObject.getString(Constants.REQ_PATH_EXT);
-                        String reqHostPort =  jsonObject.getString(Constants.REQ_HOST_PORT);
-                        Integer respStatusCode = jsonObject.getInteger(Constants.RESP_STATUS_CODE);
+                if (RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, 999) > 0){
+                    for (IHttpRequestResponse requestResponse: httpRequestResponses){
+                        msgInfo = new HttpMsgInfo(requestResponse);
+                        String reqBaseUrl = msgInfo.getUrlInfo().getUrlToFileUsual();
 
                         try {
                             if (isRecordUrl){
                                 //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
-                                if(!isEqualsOneKey(reqPathExt, CONF_BLACK_URL_EXT, false)){
-                                    RecordUrlTable.insertOrUpdateAccessedUrl(reqBaseUrl,reqHostPort,respStatusCode);
+                                if(!isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)){
+                                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
                                 }
                             } else {
                                 //插入路径 仅保留200 403等有效目录
-                                if(isEqualsOneKey(String.valueOf(respStatusCode), CONF_ALLOW_RECORD_STATUS, false)){
-                                    RecordPathTable.insertOrUpdateRecordPath(reqBaseUrl, respStatusCode);
-                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqBaseUrl));
+                                if(isEqualsOneKey(msgInfo.getRespInfo().getStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
+                                        && !msgInfo.getUrlInfo().getPathToDir().equals("/")
+                                        && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                                ){
+//                                    RecordPathTable.insertOrUpdateRecordPath(reqBaseUrl, msgInfo.getRespInfo().getStatusCode());
+//                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqBaseUrl));
+                                    IProxyScanner.enhanceRecordPathFilter(msgInfo, IProxyScanner.dynamicPthFilterIsOpen);
                                 }
                             }
                         } catch (Exception e){
@@ -70,31 +68,9 @@ public class BurpSitemapUtils {
 
                     }
                 }
-            }
-        }
-    }
 
-    /**
-     * 从sitemap中提取path部分
-     */
-    private static Set<String> extractSitemapUrlPaths(IHttpRequestResponse[] httpRequestResponses) {
-        //创建一个hashSet存储
-        Set<String> JsonStringSet = new HashSet<>();
-        for (IHttpRequestResponse requestResponse : httpRequestResponses) {
-            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
-
-            if (msgInfo.getUrlInfo().getHostPort().contains("-1")){
-                stderr_println(String.format("重大错误!!! URL %s 获取的 reqHostPort 没有合法的端口号 %s",msgInfo.getUrlInfo().getUrlToFileUsual(), msgInfo.getUrlInfo().getHostPort()));
             }
 
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(Constants.REQ_BASE_URL, msgInfo.getUrlInfo().getUrlToFileUsual());
-            jsonObject.put(Constants.REQ_HOST_PORT, msgInfo.getUrlInfo().getHostPort());
-            jsonObject.put(Constants.REQ_PATH_EXT, msgInfo.getUrlInfo().getSuffix());
-            jsonObject.put(Constants.RESP_STATUS_CODE, msgInfo.getRespStatusCode());
-            JsonStringSet.add(jsonObject.toJSONString());
         }
-        return JsonStringSet;
     }
-
 }

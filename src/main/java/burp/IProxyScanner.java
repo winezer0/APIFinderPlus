@@ -106,19 +106,14 @@ public class IProxyScanner implements IProxyListener {
 
             if(autoRecordPathIsOpen
                     && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
-                    && !msgInfo.getUrlInfo().getPathToFile().equals("/")
+                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
             ){
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        if (dynamicPthFilterIsOpen){
-                            enhanceRecordPathFilter(msgInfo);
-                        } else {
-                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
-                            RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                            stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
-                        }
+                        enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
                     }
                 });
             }
@@ -182,37 +177,42 @@ public class IProxyScanner implements IProxyListener {
         }
     }
 
-    private void enhanceRecordPathFilter(HttpMsgInfo msgInfo) {
-        String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
-        String reqUrlToFile = msgInfo.getUrlInfo().getUrlToFileUsual();
-
-        //首先转换为响应Map
-        Map<String, Object> respFieldsMap = new RespFieldsModel(msgInfo.getRespInfo()).getAllFieldsAsMap();
-        if (!urlCompareMap.containsKey(reqRootUrl)){
-            //存储未进行对比的目标,后续通过定时任务再进行对比
-            notCompareMap.put(reqUrlToFile, respFieldsMap);
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
-                    if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
-                        urlCompareMap.put(reqRootUrl, null);
-                        Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
-                        urlCompareMap.put(reqRootUrl, filterModel);
-                    }
-                }
-            });
+    public static void enhanceRecordPathFilter(HttpMsgInfo msgInfo, boolean dynamicPthFilterIsOpen) {
+        if (!dynamicPthFilterIsOpen){
+            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
+            RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+            stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
         } else {
-            Map<String, Object> currentFilterMap = urlCompareMap.get(reqRootUrl);
-            if (currentFilterMap == null){
+            String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
+            String reqUrlToFile = msgInfo.getUrlInfo().getUrlToFileUsual();
+
+            //首先转换为响应Map
+            Map<String, Object> respFieldsMap = new RespFieldsModel(msgInfo.getRespInfo()).getAllFieldsAsMap();
+            if (!urlCompareMap.containsKey(reqRootUrl)){
                 //存储未进行对比的目标,后续通过定时任务再进行对比
                 notCompareMap.put(reqUrlToFile, respFieldsMap);
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
+                        if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
+                            urlCompareMap.put(reqRootUrl, null);
+                            Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                            urlCompareMap.put(reqRootUrl, filterModel);
+                        }
+                    }
+                });
             } else {
-                //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
-                if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
-                    stdout_println("判断完毕, 应该加入PATH");
-                    RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                Map<String, Object> currentFilterMap = urlCompareMap.get(reqRootUrl);
+                if (currentFilterMap == null){
+                    //存储未进行对比的目标,后续通过定时任务再进行对比
+                    notCompareMap.put(reqUrlToFile, respFieldsMap);
+                } else {
+                    //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
+                    if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
+                        RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                    }
                 }
             }
         }
@@ -258,7 +258,6 @@ public class IProxyScanner implements IProxyListener {
                         stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
                     }
 
-                    //TODO 测试 实现循环清空未分析的目标
                     if (dynamicPthFilterIsOpen && isNotEmptyObj(notCompareMap)){
                         // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
                         ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
@@ -269,11 +268,11 @@ public class IProxyScanner implements IProxyListener {
                             Map<String, Object> currentFilterMap = urlCompareMap.get(rootUrl);
 
                             if (currentFilterMap != null){
-                                if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
-                                    stdout_println("判断完毕, 应该加入PATH");
+                                if(isNotEmptyObj(currentFilterMap)
+                                        && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
                                     int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
                                     RecordPathTable.insertOrUpdateRecordPath(reqUrl,setStatusCode );
-                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqUrl));
+                                    stdout_println(LOG_DEBUG, String.format("Insert Temp Record reqBaseUrl: %s", reqUrl));
                                 }
                                 notCompareMap.remove(reqUrl);
                             }
@@ -306,20 +305,20 @@ public class IProxyScanner implements IProxyListener {
                                     stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                 }
 
-                                // 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
-                                if (autoRecordPathIsOpen && isNotEmptyObj(analyseResult.getUrlList())){
-                                    List<String> shouldTrueUrlList = new ArrayList<>();
-                                    for (String shouldTrueUrl:analyseResult.getUrlList()){
-                                        HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
-                                        if (!isContainOneKey(urlInfo.getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-                                                && !urlInfo.getPathToFile().equals("/")
-                                        ){
-                                            shouldTrueUrlList.add(shouldTrueUrl);
-                                        }
-                                    }
-                                    if (isNotEmptyObj(shouldTrueUrlList))
-                                        RecordPathTable.batchInsertOrUpdateRecordPath(shouldTrueUrlList, 299);
-                                }
+//                                // 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
+//                                if (autoRecordPathIsOpen && isNotEmptyObj(analyseResult.getUrlList())){
+//                                    List<String> shouldTrueUrlList = new ArrayList<>();
+//                                    for (String shouldTrueUrl:analyseResult.getUrlList()){
+//                                        HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
+//                                        if (!isContainOneKey(urlInfo.getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+//                                                && !urlInfo.getPathToDir().equals("/")
+//                                        ){
+//                                            shouldTrueUrlList.add(shouldTrueUrl);
+//                                        }
+//                                    }
+//                                    if (isNotEmptyObj(shouldTrueUrlList))
+//                                        RecordPathTable.batchInsertOrUpdateRecordPath(shouldTrueUrlList, 299);
+//                                }
                             }
                         }
                         return;
@@ -388,16 +387,13 @@ public class IProxyScanner implements IProxyListener {
             //获取URL
             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
 
-            //将这些URl标记为已访问 不然涉及的更新的问题很多 //TODO 不能标记,标记后问题很多
-            //RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
-
             //获取这个MsgHash对应的请求体和响应体
             String msgHash = unVisitedUrlsModel.getMsgHash();
             ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
 
-            //获取请求头
+            //获取请求头作为参考数据
             HelperPlus helperPlus = HelperPlus.getInstance();
-            List<String> rawHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
+            List<String> referHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
 
             //记录准备加入的请求
             executorService.submit(new Runnable() {
@@ -409,7 +405,7 @@ public class IProxyScanner implements IProxyListener {
                             //记录已访问的URL
                             urlScanRecordMap.add(rawUrlUsual); //防止循环扫描
 
-                            //TODO Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
+                            // Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
                             RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
 
                             //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
@@ -423,7 +419,7 @@ public class IProxyScanner implements IProxyListener {
                             try {
                                 //发起HTTP请求
                                 stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
-                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, referHeaders);
                                 if (requestResponse != null) {
                                     executorService.submit(new Runnable() {
                                         @Override
@@ -432,14 +428,14 @@ public class IProxyScanner implements IProxyListener {
                                             //更新所有有响应的主动访问请求URL记录到数据库中
                                             RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
 
-                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
+                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
                                             if(autoRecordPathIsOpen
                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
-                                                    && !msgInfo.getUrlInfo().getPathToFile().equals("/")
+                                                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
                                                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+                                                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
                                             ){
-                                                RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                                                stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                                                enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
                                             }
 
                                             //加入请求分析列表

@@ -929,6 +929,8 @@ public class FingerConfigTab extends JPanel {
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
         stdout_println("[+] CONF_ALLOW_RECORD_STATUS: " + BurpExtender.CONF_ALLOW_RECORD_STATUS);
+        stdout_println("[+] CONF_NOT_RECORD_TITLE: " + BurpExtender.CONF_NOT_RECORD_TITLE);
+
         stdout_println("[+] CONF_NOT_AUTO_RECORD: " + BurpExtender.CONF_NOT_AUTO_RECORD);
         stdout_println("[+] CONF_NOT_AUTO_RECURSE: " + BurpExtender.CONF_NOT_AUTO_RECURSE);
 

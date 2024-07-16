@@ -28,6 +28,18 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
+        "404 not Found"
+      ],
+      "type": "CONF_NOT_RECORD_TITLE",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high",
+      "describe": "不允许进行路径记录的标题"
+    },
+    {
+      "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
         ".baidu.com",
         ".google.com",
         ".bing.com",
@@ -55,18 +67,6 @@
       "isOpen": true,
       "accuracy": "high",
       "describe": "不允许自动记录PATH的目标"
-    },
-    {
-      "match": "keyword",
-      "location": "urlPath",
-      "keyword": [
-        "404 not Found"
-      ],
-      "type": "CONF_NOT_RECORD_TITLE",
-      "isImportant": false,
-      "isOpen": true,
-      "accuracy": "high",
-      "describe": "不允许进行路径记录的标题"
     },
     {
       "match": "keyword",

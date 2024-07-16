@@ -66,6 +66,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     public static List<String> CONF_NOT_AUTO_RECORD = new ArrayList<>(); //不检查的ROOT URL 关键字
     public static List<String> CONF_NOT_AUTO_RECURSE = new ArrayList<>(); //不检查的ROOT URL 关键字
 
+    public static List<String> CONF_NOT_RECORD_TITLE = new ArrayList<>(); // 不记录到PATH 的 TITLE 关键字
+
     public static List<String> CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
     public static List<String> CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
 
@@ -133,6 +135,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                 break;
             case "CONF_ALLOW_RECORD_STATUS":
                 CONF_ALLOW_RECORD_STATUS.addAll(rule.getKeyword());
+                break;
+            case "CONF_NOT_RECORD_TITLE":
+                CONF_NOT_RECORD_TITLE.addAll(rule.getKeyword());
                 break;
             case "CONF_NOT_AUTO_RECORD":
                 CONF_NOT_AUTO_RECORD.addAll(rule.getKeyword());
