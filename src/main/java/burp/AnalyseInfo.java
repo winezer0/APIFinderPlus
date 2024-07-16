@@ -13,7 +13,7 @@ import utils.CastUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static utils.CastUtils.isNotEmptyObj;
+import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainAllKey;
 import static utils.ElementUtils.isEqualsOneKey;
@@ -84,7 +84,7 @@ public class AnalyseInfo {
      */
     private static List<String> filterFindPaths(String reqPath, List<String> findUriList, boolean filterChinese) {
         //跳过空列表的情况
-        if (!isNotEmptyObj(findUriList)) return findUriList;
+        if (isEmptyObj(findUriList)) return findUriList;
 
         //过滤重复内容
         findUriList = CastUtils.deduplicateStringList(findUriList);
@@ -124,7 +124,7 @@ public class AnalyseInfo {
      */
     public static List<String> filterFindUrls(String reqUrl, List<String> urlList, boolean onlyScopeDomain) {
         //跳过空列表的情况
-        if (!isNotEmptyObj(urlList)) return urlList;
+        if (isEmptyObj(urlList)) return urlList;
 
         //过滤重复内容
         urlList = CastUtils.deduplicateStringList(urlList);
@@ -145,7 +145,7 @@ public class AnalyseInfo {
         urlList = AnalyseUriFilter.filterBlackSuffixes(urlList, BurpExtender.CONF_BLACK_URL_EXT);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单后缀:%s", urlList.size()));
 
-        if (CastUtils.isNotEmptyObj(reqUrl)){
+        if (isNotEmptyObj(reqUrl)){
             //格式化为URL对象进行操作
             HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
@@ -214,7 +214,7 @@ public class AnalyseInfo {
                 if (rule.getMatch().equals("regular")){
                     for (String patter : rule.getKeyword()){
                         Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, patter);
-                        if (isNotEmptyObj(groups){
+                        if (isNotEmptyObj(groups)){
                             JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(new ArrayList<>(groups)));
                             //stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                             findInfoJsonList.add(findInfo);

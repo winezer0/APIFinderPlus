@@ -6,6 +6,8 @@ import test.RespCompareModel;
 import java.security.SecureRandom;
 import java.util.*;
 
+import static utils.CastUtils.isEmptyObj;
+
 public class RespCompareUtils {
 
     /**
@@ -82,7 +84,7 @@ public class RespCompareUtils {
         String SLASH = "/";
 
         List<String> testUrls;
-        testUrls = (SLASH.equals(pathToDir) || file.isEmpty()) ?
+        testUrls = (SLASH.equals(pathToDir) || isEmptyObj(file)) ?
                 generateTestUrls(rootUrlSimple, SLASH): generateTestUrls(rootUrlSimple, pathToFile, pathToDir, suffix, SLASH);
         return testUrls;
     }
@@ -97,9 +99,9 @@ public class RespCompareUtils {
         String random2 = getRandomStr(8);
 
         // 1. 随机目录随机文件当前后缀
-        urls.add(rootUrl + SLASH + random1 + SLASH + random2 + (suffix.isEmpty() ? "" : suffix));
+        urls.add(rootUrl + SLASH + random1 + SLASH + random2 + (isEmptyObj(suffix) ? "" : suffix));
         // 2. 当前目录随机文件
-        urls.add(rootUrl + pathToDir + random1 + (suffix.isEmpty() ? "" : suffix));
+        urls.add(rootUrl + pathToDir + random1 + (isEmptyObj(suffix) ? "" : suffix));
         // 3. 随机目录当前路径
         urls.add(rootUrl + SLASH + random1 + pathToFile);
         return urls;

@@ -2,6 +2,8 @@ package utils;
 
 import java.util.List;
 
+import static utils.CastUtils.isEmptyObj;
+
 public class ElementUtils {
     /**
      * 判断字符串 是否 等于 元素列表中的任意元素 忽略大小写
@@ -13,7 +15,7 @@ public class ElementUtils {
      */
     public static boolean isEqualsOneKey(String string, String elementsString, boolean bool) {
         //当元素为空时,返回默认值
-        if (string == null || string.trim().isEmpty() || elementsString == null || elementsString.trim().isEmpty()) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return bool;
 
         String[] elements = elementsString.split("\\|");
         for (String element : elements) {
@@ -34,7 +36,7 @@ public class ElementUtils {
      */
     public static boolean isContainOneKey(String string, String elementsString, boolean bool) {
         //当元素为空时,返回默认值
-        if (string == null || string.trim().isEmpty() || elementsString == null || elementsString.trim().isEmpty()) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return bool;
 
         String[] elements = elementsString.split("\\|");
         for (String element : elements) {
@@ -56,7 +58,7 @@ public class ElementUtils {
     public static boolean isEqualsOneKey(Object stringA, List<String> elements, boolean bool) {
         String string = String.valueOf(stringA);
         //当元素为空时,返回默认值
-        if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
 
         for (String element : elements) {
             if (format(string).equals(format(element))) {
@@ -76,7 +78,7 @@ public class ElementUtils {
      */
     public static boolean isContainOneKey(String string, List<String> elements, boolean bool) {
         //当元素为空时,返回默认值
-        if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
 
         for (String element : elements) {
             if (format(string).contains(format(element))){
@@ -96,7 +98,7 @@ public class ElementUtils {
      */
     public static boolean isContainAllKey(String string, List<String> elements, boolean bool) {
         //当元素为空时,返回默认值
-        if (string == null || string.trim().isEmpty() ||elements==null || elements.isEmpty()) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
 
         for (String element : elements) {
             if (!format(string).contains(format(element))){

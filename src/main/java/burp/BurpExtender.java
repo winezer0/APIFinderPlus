@@ -91,7 +91,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             // 读取配置文件参数
             String configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName);
             // 加载配置规则
-            if(CastUtils.isNotEmptyObj(configJson)){
+            if(isNotEmptyObj(configJson)){
                 // 使用Fastjson的parseObject方法将JSON字符串转换为Rule对象
                 FingerPrintRulesWrapper rulesWrapper = JSON.parseObject(configJson, FingerPrintRulesWrapper.class);
                 fingerprintRules = rulesWrapper.getFingerprint();

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isEmptyObj;
 
 public class UnionTableSql {
     //联合 获取一条需要更新的Path数据
@@ -157,9 +158,7 @@ public class UnionTableSql {
      * 基于 host 列表 同时删除多个 行
      */
     public static synchronized int deleteDataByHosts(List<String> reqHostPortList, String tableName) {
-        if (reqHostPortList.isEmpty()) return 0;
-
-        int totalRowsAffected = 0;
+        if (isEmptyObj(reqHostPortList)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = "DELETE FROM "+ tableName +"  WHERE req_host_port IN $buildInParamList$;"
@@ -172,7 +171,7 @@ public class UnionTableSql {
      * 基于 msgHash 列表 同时删除多个 行
      */
     public static synchronized int deleteDataByMsgHashList(List<String> msgHashList, String tableName) {
-        if (msgHashList.isEmpty()) return 0;
+        if (isEmptyObj(msgHashList)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = "DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;"
@@ -212,7 +211,7 @@ public class UnionTableSql {
         }
         ArrayList<String> reqHostPortList = new ArrayList<>(set);
 
-        if (reqHostPortList.isEmpty()) return 0;
+        if (isEmptyObj(reqHostPortList)) return 0;
         return deleteDataByHosts(reqHostPortList,  tableName);
     }
 
@@ -222,7 +221,7 @@ public class UnionTableSql {
      * @return
      */
     public static synchronized int deleteDataByIds(List<Integer> ids, String tableName) {
-        if (ids.isEmpty()) return 0;
+        if (isEmptyObj(ids)) return 0;
 
         int totalRowsAffected = 0;
 
@@ -299,7 +298,7 @@ public class UnionTableSql {
      * 基于 url前缀 列表 删除行
      */
     public static synchronized int deleteDataByRootUr(String rootUrl, String tableName) {
-        if (rootUrl.isEmpty()) return 0;
+        if (isEmptyObj(rootUrl)) return 0;
 
         int totalRowsAffected = 0;
 
@@ -318,7 +317,7 @@ public class UnionTableSql {
     }
 
     public static synchronized int batchDeleteDataByRootUrlList(List<String> rootUrlList, String tableName) {
-        if (rootUrlList.isEmpty()) return 0;
+        if (isEmptyObj(rootUrlList)) return 0;
 
         int totalRowsAffected = 0;
         String deleteSQL = "DELETE FROM "+ tableName + "  WHERE req_url LIKE ?;";

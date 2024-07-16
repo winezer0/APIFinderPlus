@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isEmptyObj;
 import static utils.ElementUtils.isEqualsOneKey;
 
 public class AnalyseUriFilter {
@@ -34,7 +35,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterPathByContainUselessKey(List<String> matchList, List<String> blackPathKeys) {
-        if (matchList == null || matchList.isEmpty()) return matchList;
+        if (isEmptyObj(matchList)) return matchList;
 
         List<String> newList = new ArrayList<>();
         for (String path : matchList){
@@ -51,7 +52,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterPathByContainChinese(List<String> matchList) {
-        if (matchList == null || matchList.isEmpty()) return matchList;
+        if (isEmptyObj(matchList)) return matchList;
 
         List<String> newList = new ArrayList<>();
         for (String s : matchList){
@@ -69,7 +70,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterBlackHosts(List<String> urls, List<String> blackHosts) {
-        if (blackHosts==null || blackHosts.isEmpty()||urls==null||urls.isEmpty()) return urls;
+        if (isEmptyObj(blackHosts) || isEmptyObj(urls)) return urls;
 
         List<String> list = new ArrayList<>();
         for (String url : urls) {
@@ -88,7 +89,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterBlackSuffixes(List<String> uris, List<String> blackSuffixes) {
-        if (blackSuffixes==null || blackSuffixes.isEmpty()||uris==null||uris.isEmpty()) return uris;
+        if (isEmptyObj(blackSuffixes)||isEmptyObj(uris)) return uris;
 
         List<String> list = new ArrayList<>();
         for (String urlStr : uris) {
@@ -106,7 +107,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterBlackPaths(List<String> urls, List<String> blackPaths) {
-        if (urls == null || urls.isEmpty()) return urls;
+        if (isEmptyObj(urls)) return urls;
 
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {
@@ -132,8 +133,8 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterUriBySelfContain(String baseUri, List<String> matchUriList) {
-        if (baseUri == null || baseUri == "" || baseUri == "/" ) return matchUriList;
-        if (matchUriList == null || matchUriList.isEmpty()) return matchUriList;
+        if (isEmptyObj(baseUri) || baseUri == "/" ) return matchUriList;
+        if (isEmptyObj(matchUriList)) return matchUriList;
 
         List<String> list = new ArrayList<>();
         for (String uri : matchUriList){
@@ -151,7 +152,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> filterUrlByMainHost(String baseHost, List<String> matchUrlList){
-        if (baseHost == null || baseHost == "" || matchUrlList == null || matchUrlList.isEmpty()) return matchUrlList;
+        if (isEmptyObj(baseHost) || isEmptyObj(matchUrlList)) return matchUrlList;
 
         List<String> newUrlList = new ArrayList<>();
         for (String matchUrl : matchUrlList){
@@ -186,7 +187,7 @@ public class AnalyseUriFilter {
      * @return
      */
     public static List<String> formatUrls(List<String> urls) {
-        if (urls == null || urls.isEmpty()) return urls;
+        if (isEmptyObj(urls)) return urls;
 
         List<String> list = new ArrayList<>();
         for (String urlStr : urls) {

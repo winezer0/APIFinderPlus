@@ -38,7 +38,7 @@ public class CastUtils {
      * List<String> list 元素去重
      */
     public static List<String> deduplicateStringList(List<String> list) {
-        if (list == null || list.isEmpty()) return new ArrayList<>();
+        if (isEmptyObj(list)) return new ArrayList<>();
 
         return new ArrayList<>(new HashSet<>(list));
     }
@@ -51,7 +51,7 @@ public class CastUtils {
      * @return 去重后的列表。
      */
     public static List<JSONObject> deduplicateJsonList(List<JSONObject> list) {
-        if (list == null || list.isEmpty()) return new ArrayList<>();
+        if (isEmptyObj(list)) return new ArrayList<>();
 
         // 使用LinkedHashMap来保持插入顺序并去除重复
         Map<String, JSONObject> map = new LinkedHashMap<>();
@@ -76,7 +76,7 @@ public class CastUtils {
         listA = fixedNullList(listA);
         listB = fixedNullList(listB);
 
-        if (listA.isEmpty() || listB.isEmpty()) return listA;
+        if (isEmptyObj(listA) || isEmptyObj(listB)) return listA;
 
         Set<String> result = new HashSet<>(listA);
         result.removeAll(listB);
@@ -109,7 +109,7 @@ public class CastUtils {
      * 将JsonArray 转为 List<String>
      */
     public static List<String> toStringList(JSONArray array){
-        if (array == null || array.isEmpty()) return new ArrayList<>();
+        if (isEmptyObj(array)) return new ArrayList<>();
 
         return array.toList(String.class);
     }
@@ -213,7 +213,7 @@ public class CastUtils {
      * 字符串转列表
      */
     public static List<String> getUniqueLines(String text) {
-        if (text == null || text.isEmpty()) {
+        if (isEmptyObj(text)) {
             return new ArrayList<>();
         }
         //自动处理换行符
@@ -298,7 +298,7 @@ public class CastUtils {
     /**
      * 判断字符串|集合|Map类型 是否为null||为空
      */
-    private static boolean isEmptyObj(Object obj) {
+    public static boolean isEmptyObj(Object obj) {
         if (obj == null) {
             return true;
         } else if (obj instanceof String && ((String) obj).trim().isEmpty()) {

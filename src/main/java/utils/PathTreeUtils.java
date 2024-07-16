@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static utils.CastUtils.isNotEmptyObj;
-import static utils.CastUtils.isNotEmptyObj;
+import static utils.CastUtils.*;
 
 public class PathTreeUtils {
 
@@ -55,7 +54,7 @@ public class PathTreeUtils {
         // 使用传统循环过滤掉空字符串
         List<String> filteredParts = new ArrayList<>();
         for (String part : parts) {
-            if (!part.isEmpty()) {
+            if (isNotEmptyObj(part)) {
                 filteredParts.add(part);
             }
         }
@@ -69,9 +68,9 @@ public class PathTreeUtils {
      * @return
      */
     public static JSONObject deepMergeJsonTree(JSONObject baseTree, JSONObject addTree) {
-        if (baseTree.isEmpty())
+        if (isEmptyObj(baseTree))
             return addTree;
-        if (addTree.isEmpty())
+        if (isEmptyObj(addTree))
             return baseTree;
 
         for (Map.Entry<String, Object> entry : addTree.entrySet()) {
@@ -272,7 +271,7 @@ public class PathTreeUtils {
     public static List<String> filterBlankPath(List<String> uriPathList) {
         List list = new ArrayList<String>();
         for (String path: uriPathList){
-            if (CastUtils.isNotEmptyObj(path) &&  !"/".equals(path.trim()))
+            if (isNotEmptyObj(path) &&  !"/".equals(path.trim()))
                 list.add(path);
         }
         return list;
@@ -307,10 +306,10 @@ public class PathTreeUtils {
         JSONArray findPaths = new JSONArray();
 
         List<String> sub_parts = getUrlPart(sub_url);
-        if (!sub_parts.isEmpty()) {
+        if (isNotEmptyObj(sub_parts)) {
             //从树中寻找可能的节点路径
             List<JSONArray> endNodePaths = findNodePathInTree(tree, sub_parts);
-            if (!endNodePaths.isEmpty())
+            if (isNotEmptyObj(endNodePaths))
                 findPaths = concatNodePaths(endNodePaths);
         }
         return findPaths;

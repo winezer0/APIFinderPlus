@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isEmptyObj;
 
 public class UiUtils {
     public static ImageIcon getImageIcon(String iconPath, int xWidth, int yWidth){
@@ -53,7 +54,7 @@ public class UiUtils {
      * @param jsonArray
      */
     public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<TableLineDataModel> jsonArray) {
-        if (jsonArray.isEmpty()) return;
+        if (isEmptyObj(jsonArray)) return;
 
         Iterator<TableLineDataModel> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
