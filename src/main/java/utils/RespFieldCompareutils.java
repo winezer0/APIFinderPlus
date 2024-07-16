@@ -196,13 +196,13 @@ public class RespFieldCompareutils {
         for (String reqUrl:testUrlList){
             try {
                 //发起HTTP请求
-                stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
+                //stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
                 IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
                 if (requestResponse != null){
                     HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
                     RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
                     FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
-                    stdout_println(LOG_DEBUG, String.format("TEST URL:%s -> %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+                    stdout_println(LOG_DEBUG, String.format("[*] TEST URL:%s -> %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
                 }
                 Thread.sleep(500);
             } catch (InterruptedException e) {

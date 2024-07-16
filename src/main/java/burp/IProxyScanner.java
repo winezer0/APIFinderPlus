@@ -278,6 +278,8 @@ public class IProxyScanner implements IProxyListener {
                                 notCompareMap.remove(reqUrl);
                             }
                         }
+                        // 先返回进行其他操作
+                        return;
                     }
 
                     //任务1、获取需要解析的响应体数据并进行解析响

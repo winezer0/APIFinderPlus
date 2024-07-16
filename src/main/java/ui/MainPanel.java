@@ -658,19 +658,22 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            int row = table.rowAtPoint(e.getPoint());
-                            if (row >= 0) {
-                                updateComponentsBasedOnSelectedRow(row);
+                // 只有在双击时才执行
+                if (e.getClickCount() == 2) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {
+                                int row = table.rowAtPoint(e.getPoint());
+                                if (row >= 0) {
+                                    updateComponentsBasedOnSelectedRow(row);
+                                }
+                            }catch (Exception ef) {
+                                BurpExtender.getStderr().println("[-] Error click table: " + table.rowAtPoint(e.getPoint()));
+                                ef.printStackTrace(BurpExtender.getStderr());
                             }
-                        }catch (Exception ef) {
-                            BurpExtender.getStderr().println("[-] Error click table: " + table.rowAtPoint(e.getPoint()));
-                            ef.printStackTrace(BurpExtender.getStderr());
                         }
-                    }
-                });
+                    });
+                }
             }
         });
 
@@ -863,13 +866,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             //实现排序后 视图行 数据的正确获取
             msgHash = UiUtils.getMsgHashAtActualRow(table, row);
         } catch (Exception e) {
-            stderr_println(String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
+            stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
         }
 
-        if (msgHash == null) return;
+        if (CastUtils.isEmptyObj(msgHash)) return;
 
         //根据 msgHash值 查询对应的请求体响应体数据
         ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+        if (CastUtils.isEmptyObj(msgData)) {
+            stderr_println(LOG_ERROR, String.format("[!] fetch Msg Data By MsgHash [%s] is null", msgHash));
+            return;
+        }
+
         String requestUrl = msgData.getReqUrl();
         requestsData = msgData.getReqBytes();
         responseData = msgData.getRespBytes();
