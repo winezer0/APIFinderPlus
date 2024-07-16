@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
@@ -114,8 +116,39 @@ public class ReqMsgDataTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By Msg Hash: %s -> %s", Constants.MSG_HASH, e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By Msg Hash: %s -> %s", msgHash, e.getMessage()));
         }
         return msgData;
+    }
+
+    /**
+     * 根据消息ID查询请求内容
+     */
+    public static synchronized List<ReqMsgDataModel> batchFetchMsgDataByMsgHash(List<String> msgHashList){
+        List<ReqMsgDataModel> reqMsgDataModelList = new ArrayList<>();
+
+        String selectSQL = "SELECT * FROM "+ tableName + " WHERE msg_hash IN $buildInParameterList$;"
+                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 1, msgHashList.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ReqMsgDataModel msgData = new ReqMsgDataModel(
+                            rs.getString("msg_hash"),
+                            rs.getString("req_url"),
+                            rs.getBytes("req_bytes"),
+                            rs.getBytes("resp_bytes")
+                    );
+                    reqMsgDataModelList.add(msgData);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Batch Select Msg Data By Msg Hash: %s -> %s", msgHashList, e.getMessage()));
+        }
+        return reqMsgDataModelList;
     }
 }
