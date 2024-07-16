@@ -22,12 +22,11 @@ public class ConfigPanel extends JPanel {
     public static JLabel lbTaskerCount;    //记录所有加入数据库的请求
     public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
 
-    // public static JLabel jsCrawledCount;
-    public static JComboBox<String> choicesComboBox;
+    private static JComboBox<String> choicesComboBox;   //数据表显示快速选择框
+    public static JTextField urlSearchBox;                 //URl搜索框
 
     private static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
     private static JLabel autoRefreshText; //自动刷新按钮显示的文本
-    public static JTextField searchBox; //URl搜索框显
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
     public ConfigPanel() {
@@ -322,14 +321,14 @@ public class ConfigPanel extends JPanel {
         gbc_btnall.gridy = 0;
         FilterPanel.add(choicesComboBox, gbc_btnall);
         // 检索框
-        searchBox = new JTextField(15);
+        urlSearchBox = new JTextField(15);
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
         gbc_btnSearchField.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
-        searchBox.setToolTipText("搜索URL关键字");
-        FilterPanel.add(searchBox, gbc_btnSearchField);
+        urlSearchBox.setToolTipText("搜索URL关键字");
+        FilterPanel.add(urlSearchBox, gbc_btnSearchField);
         // 检索按钮
         JButton searchButton = new JButton();
         searchButton.setIcon(UiUtils.getImageIcon("/icon/searchButton.png"));
@@ -376,7 +375,7 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try{
                     // 触发显示所有行事件
-                    String searchText = searchBox.getText();
+                    String searchText = urlSearchBox.getText();
                     if(searchText.isEmpty()){
                         searchText = "";
                     }
@@ -392,7 +391,7 @@ public class ConfigPanel extends JPanel {
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String searchText = searchBox.getText();
+                String searchText = urlSearchBox.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
@@ -400,10 +399,10 @@ public class ConfigPanel extends JPanel {
         });
 
         //搜索框的回车事件
-        searchBox.addActionListener(new ActionListener() {
+        urlSearchBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String searchText = searchBox.getText();
+                String searchText = urlSearchBox.getText();
                 String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
                 MainPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
@@ -693,11 +692,16 @@ public class ConfigPanel extends JPanel {
         MainPanel.operationStartTime = LocalDateTime.now();
     }
 
-    public static String getSearchBoxText() {
-        return searchBox.getText();
+    public static String getUrlSearchBoxText() {
+        return urlSearchBox.getText();
     }
 
-    public static void setSearchBoxText(String string) {
-        searchBox.setText(string);
+    public static void setUrlSearchBoxText(String string) {
+        urlSearchBox.setText(string);
+    }
+
+
+    public static String getComboBoxSelectedOption() {
+        return (String) ConfigPanel.choicesComboBox.getSelectedItem();
     }
 }
