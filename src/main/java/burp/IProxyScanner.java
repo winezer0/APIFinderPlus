@@ -241,9 +241,11 @@ public class IProxyScanner implements IProxyListener {
         }
 
         Map<String, Object> filterModel = new HashMap<>();
-        if (!respCompareModelList.isEmpty()) {
+        if (isNotEmptyObj(respCompareModelList)) {
             filterModel = RespCompareUtils.findCommonFieldValues(respCompareModelList);
-            stdout_println(LOG_INFO, String.format("成功生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+            stdout_println(LOG_INFO, String.format("成功 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+        }else {
+            stdout_println(LOG_INFO, String.format("失败 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
         }
         return filterModel;
     }
@@ -306,9 +308,9 @@ public class IProxyScanner implements IProxyListener {
                             AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
 
                             //存入分析结果
-                            if(!analyseResult.getInfoList().isEmpty()
-                                    || !analyseResult.getPathList().isEmpty()
-                                    || !analyseResult.getUrlList().isEmpty()){
+                            if(isNotEmptyObj(analyseResult.getInfoList())
+                                    || isNotEmptyObj(analyseResult.getPathList())
+                                    || isNotEmptyObj(analyseResult.getUrlList())){
                                 //将初次分析结果写入数据库
                                 int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                 if (analyseDataIndex > 0){
@@ -316,7 +318,7 @@ public class IProxyScanner implements IProxyListener {
                                 }
 
                                 // 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
-                                if (ConfigPanel.autoRecordPathIsOpen() && !analyseResult.getUrlList().isEmpty()){
+                                if (ConfigPanel.autoRecordPathIsOpen() && isNotEmptyObj(analyseResult.getUrlList())){
                                     List<String> shouldTrueUrlList = new ArrayList<>();
                                     for (String shouldTrueUrl:analyseResult.getUrlList()){
                                         HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
@@ -326,7 +328,7 @@ public class IProxyScanner implements IProxyListener {
                                             shouldTrueUrlList.add(shouldTrueUrl);
                                         }
                                     }
-                                    if (!shouldTrueUrlList.isEmpty())
+                                    if (isNotEmptyObj(shouldTrueUrlList))
                                         RecordPathTable.batchInsertOrUpdateRecordPath(shouldTrueUrlList, 299);
                                 }
                             }
@@ -498,7 +500,10 @@ public class IProxyScanner implements IProxyListener {
             JSONObject currPathTree = pathTreeModel.getPathTree();
             // 基于根树和paths列表计算新的字典
             //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-            if (isNotEmptyObj(findPathArray) && isNotEmptyObj(currPathTree) && !currPathTree.getJSONObject("ROOT").isEmpty()) {
+            if (isNotEmptyObj(findPathArray)
+                    && isNotEmptyObj(currPathTree)
+                    && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))
+            ) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
                 String reqBaseUrl = new HttpUrlInfo(reqUrl).getUrlToFileUsual();
