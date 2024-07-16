@@ -909,7 +909,7 @@ public class FingerConfigTab extends JPanel {
     //从规则里面重新提取全家遍历配置
     private void reloadConfFromRules(List<FingerPrintRule> fingerprintRules) {
         BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
-        BurpExtender.CONF_NEED_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
+        BurpExtender.CONF_ALLOW_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
         BurpExtender.CONF_NOT_AUTO_RECORD = new ArrayList<>(); //不自动记录PATH的URL域名
         BurpExtender.CONF_NOT_AUTO_RECURSE = new ArrayList<>(); //不自动进行递归扫描的URL域名
 
@@ -928,7 +928,7 @@ public class FingerConfigTab extends JPanel {
         }
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
-        stdout_println("[+] CONF_NEED_RECORD_STATUS: " + BurpExtender.CONF_NEED_RECORD_STATUS);
+        stdout_println("[+] CONF_ALLOW_RECORD_STATUS: " + BurpExtender.CONF_ALLOW_RECORD_STATUS);
         stdout_println("[+] CONF_NOT_AUTO_RECORD: " + BurpExtender.CONF_NOT_AUTO_RECORD);
         stdout_println("[+] CONF_NOT_AUTO_RECURSE: " + BurpExtender.CONF_NOT_AUTO_RECURSE);
 

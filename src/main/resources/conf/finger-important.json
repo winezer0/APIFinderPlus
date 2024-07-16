@@ -18,7 +18,7 @@
         "200",
         "403"
       ],
-      "type": "CONF_NEED_RECORD_STATUS",
+      "type": "CONF_ALLOW_RECORD_STATUS",
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high",

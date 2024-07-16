@@ -105,7 +105,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             if(autoRecordPathIsOpen
-                    && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
+                    && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
                     && !msgInfo.getUrlInfo().getPathToFile().equals("/")
                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
             ){
@@ -434,7 +434,7 @@ public class IProxyScanner implements IProxyListener {
 
                                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
                                             if(autoRecordPathIsOpen
-                                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
+                                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
                                                     && !msgInfo.getUrlInfo().getPathToFile().equals("/")
                                                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
                                             ){
