@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 import static utils.CastUtils.isEmptyObj;
+import static utils.CastUtils.isNotEmptyObj;
 
 public class RespCompareUtils {
 
@@ -14,7 +15,9 @@ public class RespCompareUtils {
      * 实际用来对比的模型数据
      */
     public static Map<String, Object> findCommonFieldValues(List<RespCompareModel> respCompareModelList) {
+        System.out.println("开始 findCommonFieldValues");
         if (respCompareModelList == null || respCompareModelList.size() <= 1) {
+            System.out.println("emptyMap findCommonFieldValues");
             return Collections.emptyMap();
         }
 
@@ -26,19 +29,26 @@ public class RespCompareUtils {
         for (Map.Entry<String, Object> entry : referenceFields.entrySet()) {
             String fieldName = entry.getKey();
             Object fieldValue = entry.getValue();
+            System.out.println(String.format("正在检查 fieldName:%s -> %s", fieldName, fieldValue));
 
-            // 检查所有对象的该字段是否具有相同的值
-            boolean allMatch = respCompareModelList.stream()
-                    .allMatch(response -> fieldValue.equals(response.getAllFieldsAsMap().get(fieldName)));
-
-            if (allMatch) {
-                commonFields.put(fieldName, fieldValue);
+            if (isNotEmptyObj(fieldValue)) {
+                // 检查所有对象的该字段是否具有相同的值
+                boolean allMatch = true;
+                for (RespCompareModel response : respCompareModelList) {
+                    Object currentFieldValue = response.getAllFieldsAsMap().get(fieldName);
+                    if (isEmptyObj(currentFieldValue) || !fieldValue.equals(currentFieldValue)) {
+                        allMatch = false;
+                        break; // 一旦发现不匹配，立即退出循环
+                    }
+                }
+                if (allMatch) {
+                    commonFields.put(fieldName, fieldValue);
+                }
             }
         }
-
+        System.out.println("结束 findCommonFieldValues");
         return commonFields;
     }
-
     /**
      * 生成随机字符串
      */

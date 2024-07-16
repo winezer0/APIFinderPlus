@@ -102,12 +102,12 @@ public class IProxyScanner implements IProxyListener {
             }
 
             RespCompareModel respModel = new RespCompareModel(msgInfo.getRespInfo());
-            stdout_println(String.format("响应生成Json字符串:\n%s", respModel.toJSONString()));
+            //stdout_println(String.format("响应生成Json字符串:\n%s", respModel.toJSONString()));
 
             if (!compareMap.containsKey(reqRootUrl)){
                 System.out.println("暂未存在对应主机的动态筛选条件 即将生成动态筛选条件");
                 //TODO 测试功能,生成响应对比对象
-                if (!"/".equalsIgnoreCase(msgInfo.getUrlInfo().getPathToFile())){
+                if (!"/".equals(msgInfo.getUrlInfo().getPathToDir())){
                     stdout_println(String.format("开始生成动态筛选条件 From URL: %s %s",
                             msgInfo.getUrlInfo().getRawUrlUsual(),
                             msgInfo.getUrlInfo().getPathToFile()));
@@ -124,7 +124,7 @@ public class IProxyScanner implements IProxyListener {
             } else {
                 Map filterFields =  compareMap.get(reqRootUrl);
                if (filterFields == null){
-                   stdout_println("动态筛选条件暂未完成,需要等待");
+                   //stdout_println("动态筛选条件暂未完成,需要等待");
                } else {
                    stdout_println("动态筛选条件已完成,开始判断是否加入PATH");
                    //TODO 动态筛选函数
@@ -210,7 +210,7 @@ public class IProxyScanner implements IProxyListener {
         }
     }
 
-    private Map<String, Object> GenerateDynamicFilterMap(HttpMsgInfo msgInfo) {
+    private void GenerateDynamicFilterMap(HttpMsgInfo msgInfo) {
         //生成测试路径
         List<String> testUrlList = RespCompareUtils.generateTestUrls(msgInfo.getUrlInfo());
         System.out.println(String.format("生成的测试URL:%s", testUrlList));
@@ -232,6 +232,8 @@ public class IProxyScanner implements IProxyListener {
                     HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
                     RespCompareModel respCompareModel = new RespCompareModel(newMsgInfo.getRespInfo());
                     respCompareModelList.add(respCompareModel);
+                    stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+
                 }
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -239,15 +241,17 @@ public class IProxyScanner implements IProxyListener {
                 e.printStackTrace();
             }
         }
-
         Map<String, Object> filterModel = new HashMap<>();
-        if (isNotEmptyObj(respCompareModelList)) {
+        stdout_println(LOG_INFO, String.format("开始 生成域名: %s 的动态过滤条件: %s -> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel), JSON.toJSON(respCompareModelList) ));
+        if (!respCompareModelList.isEmpty()) {
+            System.out.println(String.format("正在 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
             filterModel = RespCompareUtils.findCommonFieldValues(respCompareModelList);
-            stdout_println(LOG_INFO, String.format("成功 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+            System.out.println(String.format("成功 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
         }else {
-            stdout_println(LOG_INFO, String.format("失败 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
+            System.out.println(String.format("失败 生成域名: %s 的动态过滤条件: %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
         }
-        return filterModel;
+
+        compareMap.put(msgInfo.getUrlInfo().getRootUrlUsual(), filterModel);
     }
 
 
