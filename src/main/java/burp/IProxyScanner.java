@@ -33,7 +33,7 @@ public class IProxyScanner implements IProxyListener {
     //存储每个host的对比对象
     private static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
-    private static boolean enhanceRecordPath = true; //是否启用增强的path过滤模式
+    public static boolean dynamicPthFilterIsOpen = true; //是否启用增强的path过滤模式
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -112,7 +112,7 @@ public class IProxyScanner implements IProxyListener {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        if (enhanceRecordPath){
+                        if (dynamicPthFilterIsOpen){
                             enhanceRecordPathFilter(msgInfo);
                         } else {
                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
@@ -295,7 +295,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //TODO 测试 实现循环清空未分析的目标
-                    if (enhanceRecordPath && isNotEmptyObj(notCompareMap)){
+                    if (dynamicPthFilterIsOpen && isNotEmptyObj(notCompareMap)){
                         // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
                         ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
                         // 遍历键的列表

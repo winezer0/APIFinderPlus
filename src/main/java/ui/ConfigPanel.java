@@ -1,6 +1,7 @@
 package ui;
 
 import burp.BurpExtender;
+import burp.IProxyScanner;
 import database.*;
 import utils.BurpSitemapUtils;
 import utils.CastUtils;
@@ -66,7 +67,7 @@ public class ConfigPanel extends JPanel {
 
         // 指定每列的扩展权重。这里前9列的权重都设为0.0，意味着这些列不会随容器大小变化而扩展，
         // 而最后列的权重设为Double.MIN_VALUE，这通常用于指示该列应该尽可能小，不参与额外空间的分配。
-        gbl_panel_1.columnWeights = new double[] { 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, Double.MIN_VALUE};
+        //gbl_panel_1.columnWeights = new double[] { 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D, Double.MIN_VALUE};
         //第一行权重为0.0，不随容器扩展，第二行的权重为Double.MIN_VALUE，表示该行也不扩展。
         gbl_panel_1.rowWeights = new double[] { 0.0D, Double.MIN_VALUE };
         FilterPanel.setLayout(gbl_panel_1);
@@ -77,7 +78,7 @@ public class ConfigPanel extends JPanel {
         gbc_leftStrut.insets = new Insets(0, 0, 0, 5);
         gbc_leftStrut.fill = GridBagConstraints.HORIZONTAL;
         gbc_leftStrut.weightx = 1.0; // 这个值决定了 leftStrut 占据的空间大小
-        gbc_leftStrut.gridx = 8;
+        gbc_leftStrut.gridx = 7;
         gbc_leftStrut.gridy = 0;
         FilterPanel.add(leftStrut, gbc_leftStrut);
 
@@ -141,7 +142,7 @@ public class ConfigPanel extends JPanel {
         Component horizontalBlank = Box.createHorizontalGlue(); //创建一个水平组件
         GridBagConstraints gbc_leftFiller = new GridBagConstraints();
         gbc_leftFiller.weightx = 1; // 使得这个组件吸收额外的水平空间
-        gbc_leftFiller.gridx = 8; // 位置设置为第一个单元格
+        gbc_leftFiller.gridx = 7; // 位置设置为第一个单元格
         gbc_leftFiller.gridy = 0; // 第一行
         gbc_leftFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
@@ -162,6 +163,25 @@ public class ConfigPanel extends JPanel {
         autoRecordPathButton.setFocusPainted(false);  // 移除焦点边框
         autoRecordPathButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
         autoRecordPathButton.setToolTipText("自动保存有效请求PATH");
+
+        // 开关 是否开启自动记录PATH
+        JToggleButton dynamicPthFilterButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        dynamicPthFilterButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        dynamicPthFilterButton.setPreferredSize(new Dimension(50, 24));
+        dynamicPthFilterButton.setBorder(null);  // 设置无边框
+        dynamicPthFilterButton.setFocusPainted(false);  // 移除焦点边框
+        dynamicPthFilterButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        dynamicPthFilterButton.setToolTipText("开启动态PATH过滤要求");
+
+
+        dynamicPthFilterButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该作为不开启配置
+                IProxyScanner.dynamicPthFilterIsOpen = !dynamicPthFilterButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("dynamicPthFilterIsOpen: %s", IProxyScanner.dynamicPthFilterIsOpen));
+            }
+        });
 
         // 开关 是否开启自动刷新未访问URL
         refreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
@@ -201,12 +221,16 @@ public class ConfigPanel extends JPanel {
         gbc_buttons.fill = GridBagConstraints.NONE; // 不填充
 
         // 在 FilterPanel 中添加 refreshButton
-        gbc_buttons.gridx = 9; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
         FilterPanel.add(clickRefreshButton, gbc_buttons);
 
         // 在 FilterPanel 中添加 autoRecordPathButton
-        gbc_buttons.gridx = 10; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 9; // 设置按钮的横坐标位置
         FilterPanel.add(autoRecordPathButton, gbc_buttons);
+
+        // 在 FilterPanel 中添加 dynamicPthFilterButton
+        gbc_buttons.gridx = 10;
+        FilterPanel.add(dynamicPthFilterButton, gbc_buttons);
 
         // 在 FilterPanel 中添加 refreshUnvisitedButton
         gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
