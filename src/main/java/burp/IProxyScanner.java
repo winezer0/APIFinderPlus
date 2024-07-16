@@ -181,7 +181,7 @@ public class IProxyScanner implements IProxyListener {
         if (!dynamicPthFilterIsOpen){
             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
             RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-            stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+            stdout_println(LOG_DEBUG, String.format("Common Direct Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
         } else {
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
             String reqUrlToFile = msgInfo.getUrlInfo().getUrlToFileUsual();
@@ -211,7 +211,7 @@ public class IProxyScanner implements IProxyListener {
                     //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
                     if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
                         RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                        stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                        stdout_println(LOG_DEBUG, String.format("Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                     }
                 }
             }
@@ -258,6 +258,7 @@ public class IProxyScanner implements IProxyListener {
                         stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
                     }
 
+                    //清理在等待动态过滤Map生成过程中没有处理的响应对象
                     if (dynamicPthFilterIsOpen && isNotEmptyObj(notCompareMap)){
                         // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
                         ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
@@ -271,7 +272,7 @@ public class IProxyScanner implements IProxyListener {
                                 if(isNotEmptyObj(currentFilterMap)
                                         && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
                                     int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
-                                    RecordPathTable.insertOrUpdateRecordPath(reqUrl,setStatusCode );
+                                    RecordPathTable.insertOrUpdateRecordPath(reqUrl, setStatusCode);
                                     stdout_println(LOG_DEBUG, String.format("Insert Temp Record reqBaseUrl: %s", reqUrl));
                                 }
                                 notCompareMap.remove(reqUrl);

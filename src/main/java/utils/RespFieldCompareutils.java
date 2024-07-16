@@ -189,7 +189,6 @@ public class RespFieldCompareutils {
         //生成测试路径
         List<String> testUrlList = RespFieldCompareutils.generateTestUrls(msgInfo.getUrlInfo());
         //进行URL请求 并获取 respInfoJson
-        //获取请求头
         HelperPlus helperPlus = HelperPlus.getInstance();
         List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
         List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
@@ -203,7 +202,7 @@ public class RespFieldCompareutils {
                     HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
                     RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
                     FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
-                    //stdout_println(LOG_INFO, String.format("TEST URL: %s 响应JSon: %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+                    stdout_println(LOG_DEBUG, String.format("TEST URL:%s -> %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
                 }
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -212,7 +211,7 @@ public class RespFieldCompareutils {
             }
         }
         Map<String, Object> filterModel = new HashMap<>();
-        if (!FieldValuesMapList.isEmpty()) {
+        if (isNotEmptyObj(FieldValuesMapList)) {
             filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
             stdout_println(LOG_INFO, String.format("[*] 生成的动态过滤条件成功: %s-> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
         }else {
