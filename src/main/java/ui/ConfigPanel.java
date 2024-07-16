@@ -360,10 +360,10 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
-                if (!autoRefreshButton.isSelected()) {
-                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
-                } else {
+                if (autoRefreshButton.isSelected()) {
                     autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
+                } else {
+                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 }
             }
         });
