@@ -25,7 +25,7 @@ public class ConfigPanel extends JPanel {
     // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
-    public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
+    private static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
     private static JLabel autoRefreshText; //自动刷新按钮显示的文本
     public static JTextField searchBox; //URl搜索框显
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
