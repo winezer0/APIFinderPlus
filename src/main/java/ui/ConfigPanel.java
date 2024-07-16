@@ -74,7 +74,7 @@ public class ConfigPanel extends JPanel {
         gbc_leftStrut.insets = new Insets(0, 0, 0, 5);
         gbc_leftStrut.fill = GridBagConstraints.HORIZONTAL;
         gbc_leftStrut.weightx = 1.0; // 这个值决定了 leftStrut 占据的空间大小
-        gbc_leftStrut.gridx = 7;
+        gbc_leftStrut.gridx = 6;
         gbc_leftStrut.gridy = 0;
         FilterPanel.add(leftStrut, gbc_leftStrut);
 
@@ -138,7 +138,7 @@ public class ConfigPanel extends JPanel {
         Component horizontalBlank = Box.createHorizontalGlue(); //创建一个水平组件
         GridBagConstraints gbc_leftFiller = new GridBagConstraints();
         gbc_leftFiller.weightx = 1; // 使得这个组件吸收额外的水平空间
-        gbc_leftFiller.gridx = 7; // 位置设置为第一个单元格
+        gbc_leftFiller.gridx = 6; // 位置设置为第一个单元格
         gbc_leftFiller.gridy = 0; // 第一行
         gbc_leftFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
@@ -221,6 +221,23 @@ public class ConfigPanel extends JPanel {
             }
         });
 
+        JToggleButton autoPathsToUrlsButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        autoPathsToUrlsButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        autoPathsToUrlsButton.setPreferredSize(new Dimension(50, 24));
+        autoPathsToUrlsButton.setBorder(null);  // 设置无边框
+        autoPathsToUrlsButton.setFocusPainted(false);  // 移除焦点边框
+        autoPathsToUrlsButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoPathsToUrlsButton.setToolTipText("自动基于PathTree结合FindPath生成URL");
+
+        autoPathsToUrlsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认关闭本功能, 点击后应该作为开启配置
+                IProxyScanner.autoPathsToUrlsIsOpen = autoPathsToUrlsButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("autoPathsToUrlsIsOpen: %s", IProxyScanner.autoPathsToUrlsIsOpen));
+            }
+        });
+
         // 开关 是否开启自动刷新未访问URL
         JToggleButton autoRefreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
         autoRefreshUnvisitedButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
@@ -257,6 +274,7 @@ public class ConfigPanel extends JPanel {
             }
         });
 
+
         // 刷新按钮按钮
         autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
         autoRefreshButton.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
@@ -275,26 +293,35 @@ public class ConfigPanel extends JPanel {
         gbc_buttons.gridy = 0; // 设置按钮的纵坐标位置
         gbc_buttons.fill = GridBagConstraints.NONE; // 不填充
 
-        // 在 FilterPanel 中添加 refreshButton
-        gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
+        // 点击按钮 点击后刷新数据 含未访问数据
+        gbc_buttons.gridx = 7; // 设置按钮的横坐标位置
         FilterPanel.add(clickRefreshButton, gbc_buttons);
 
-        // 在 FilterPanel 中添加 autoRecordPathButton
-        gbc_buttons.gridx = 9; // 设置按钮的横坐标位置
+        // 自动记录有效的PATH到path表中 功能开关
+        gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
         FilterPanel.add(autoRecordPathButton, gbc_buttons);
 
-        // 在 FilterPanel 中添加 dynamicPthFilterButton
-        gbc_buttons.gridx = 10;
+        // 高级动态有效路径过滤 功能开关
+        gbc_buttons.gridx = 9;
         FilterPanel.add(dynamicPthFilterButton, gbc_buttons);
 
-        // 在 FilterPanel 中添加 refreshUnvisitedButton
+        // 高级动态有效路径过滤 功能开关
+        gbc_buttons.gridx = 10;
+        FilterPanel.add(autoPathsToUrlsButton, gbc_buttons);
+
+
+        // 自动刷新 未访问URL列表
         gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
         FilterPanel.add(autoRefreshUnvisitedButton, gbc_buttons);
-        // 在 FilterPanel 中添加 toggleButton
+
+        // 自动递归 开关
         gbc_buttons.gridx = 12; // 设置按钮的横坐标位置
         FilterPanel.add(autoRecursiveButton, gbc_buttons);
+
+        // 定时刷新按钮
         gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshButton, gbc_buttons);
+        // 定时刷新按钮旁边的描述
         gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshText, gbc_buttons);
 

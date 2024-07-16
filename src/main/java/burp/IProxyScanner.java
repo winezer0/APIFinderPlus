@@ -1,5 +1,6 @@
 package burp;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
@@ -34,9 +35,12 @@ public class IProxyScanner implements IProxyListener {
     //存储每个host的对比对象
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
-    public static boolean dynamicPthFilterIsOpen = true; //是否启用增强的path过滤模式
-    public static boolean autoRecordPathIsOpen  = true;//是否启用自动记录每个录得PATH
-    public static boolean autoRecursiveIsOpen = false; //是否进行递归URL扫描
+
+    public static boolean dynamicPthFilterIsOpen = true;    //是否启用增强的path过滤模式
+
+    public static boolean autoRecordPathIsOpen  = true;     //是否启用自动记录每个录得PATH
+    public static boolean autoPathsToUrlsIsOpen = false;    //是否进行自动PathTree生成URL
+    public static boolean autoRecursiveIsOpen = false;      //是否进行递归URL扫描
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -296,7 +300,6 @@ public class IProxyScanner implements IProxyListener {
                                     msgData.getRespBytes(),
                                     msgData.getMsgHash()
                             );
-
                             //进行数据分析
                             AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
 
@@ -329,54 +332,62 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
-                    //任务2、如果没有需要分析的数据,就更新Path树信息 为动态 path to url 做准备
-                    int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
-                    if (unhandledReqDataId <= 0){
-                        //获取需要更新的所有URL记录
-                        List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchAllNotAddToTreeRecords();
-                        if (recordPathDirsModels.size()>0){
-                            for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
-                                //生成新的路径树
-                                PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
-                                if (pathTreeModel != null){
-                                    //合并|插入新的路径树
-                                    int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeModel);
-                                    if (pathTreeIndex > 0)
-                                        stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
+
+                    if (autoPathsToUrlsIsOpen){
+                        //任务2、如果没有需要分析的数据,就更新Path树信息 为动态 path to url 做准备
+                        int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
+                        if (unhandledReqDataId <= 0){
+                            //获取需要更新的所有URL记录
+                            List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchAllNotAddToTreeRecords();
+                            if (recordPathDirsModels.size()>0){
+                                for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
+                                    //生成新的路径树
+                                    PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
+                                    if (pathTreeModel != null){
+                                        //合并|插入新的路径树
+                                        int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeModel);
+                                        if (pathTreeIndex > 0)
+                                            stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
+                                    }
                                 }
+                                //更新数据后先返回,优先进行之前的操作
+                                return;
                             }
-                            //更新数据后先返回,优先进行之前的操作
-                            return;
                         }
-                    }
 
-                    // 兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
-                    //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-                    int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
-                    if (unhandledRecordPathId <= 0) {
-                        //获取一条需要分析的数据 状态为待解析
-                        FindPathModel findPathModel = AnalyseResultTable.fetchUnhandledPathData();
+                        //兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
+                        //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
+                        int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
+                        if (unhandledRecordPathId <= 0) {
+                            //获取一条需要分析的数据 状态为待解析
+                            FindPathModel findPathModel;
 
-                        //如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
-                        if (isNotEmptyObj(findPathModel)){
+                            findPathModel = AnalyseResultTable.fetchUnhandledPathData();
+                            if (isNotEmptyObj(findPathModel)) {
+                                stdout_println(LOG_DEBUG, String.format("[*] 获取新增PATH数据进行URL计算...%s", JSON.toJSONString(findPathModel)));
+                                pathsToUrlsByPathTree(findPathModel);
+                                return;
+                            }
+
+                            //如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
                             findPathModel = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
-                            stdout_println(LOG_DEBUG,"[*]获取动态更新PATHTree进行重计算...");
-                        } else {
-                            stdout_println(LOG_DEBUG,"[*] 获取新增PATH数据进行URL计算...");
-                        }
-                        
-                        if (isNotEmptyObj(findPathModel)) {
-                            pathsToUrlsByPathTree(findPathModel);
-                            return;
+                            if (isNotEmptyObj(findPathModel)){
+                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算...%s", JSON.toJSONString(findPathModel)));
+                                pathsToUrlsByPathTree(findPathModel);
+                                return;
+                            }
                         }
                     }
 
-                    // 增加自动递归查询功能
-                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
-                        //获取一个未访问URL列表
-                        UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
-                        accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
+                    // 自动递归查询功能
+                    if (autoRecursiveIsOpen){
+                        if (executorService.getActiveCount() < 2){
+                            //获取一个未访问URL列表
+                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
+                            accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
+                        }
                     }
+
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
                     e.printStackTrace();
