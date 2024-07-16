@@ -440,8 +440,7 @@ public class AnalyseResultTable {
         String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
                 .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
 
-        try (Connection conn = DBService.getInstance().getNewConn();
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
 
             for (int i = 0; i < msgHashList.size(); i++) {
                 stmt.setString(i + 1, msgHashList.get(i));
