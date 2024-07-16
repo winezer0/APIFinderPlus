@@ -34,6 +34,7 @@ public class IProxyScanner implements IProxyListener {
     private static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
     public static boolean dynamicPthFilterIsOpen = true; //是否启用增强的path过滤模式
+    public static boolean autoRecordPathIsOpen  = true;//是否启用自动记录每个录得PATH
 
     public IProxyScanner() {
         // 获取操作系统内核数量
@@ -103,8 +104,7 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-
-            if(ConfigPanel.autoRecordPathIsOpen()
+            if(autoRecordPathIsOpen
                     && isEqualsOneKey(statusCode, CONF_NEED_RECORD_STATUS, false)
                     && !msgInfo.getUrlInfo().getPathToFile().equals("/")
                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
@@ -343,7 +343,7 @@ public class IProxyScanner implements IProxyListener {
                                 }
 
                                 // 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
-                                if (ConfigPanel.autoRecordPathIsOpen() && isNotEmptyObj(analyseResult.getUrlList())){
+                                if (autoRecordPathIsOpen && isNotEmptyObj(analyseResult.getUrlList())){
                                     List<String> shouldTrueUrlList = new ArrayList<>();
                                     for (String shouldTrueUrl:analyseResult.getUrlList()){
                                         HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
@@ -469,7 +469,7 @@ public class IProxyScanner implements IProxyListener {
                                             RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
 
                                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确,暂时关闭
-                                            if(ConfigPanel.autoRecordPathIsOpen()
+                                            if(autoRecordPathIsOpen
                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_NEED_RECORD_STATUS, false)
                                                     && !msgInfo.getUrlInfo().getPathToFile().equals("/")
                                                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)

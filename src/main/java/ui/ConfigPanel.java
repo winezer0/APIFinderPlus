@@ -25,7 +25,6 @@ public class ConfigPanel extends JPanel {
     // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
-    public static JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
     public static JToggleButton refreshUnvisitedButton; //自动刷新未访问URL的按钮
     public static JToggleButton recursiveButton; //递归开关按钮状态
     public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
@@ -156,13 +155,23 @@ public class ConfigPanel extends JPanel {
         clickRefreshButton.setToolTipText("点击强制刷新表格");
 
         // 开关 是否开启自动记录PATH
-        autoRecordPathButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        autoRecordPathButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
+        autoRecordPathButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        autoRecordPathButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
         autoRecordPathButton.setPreferredSize(new Dimension(50, 24));
         autoRecordPathButton.setBorder(null);  // 设置无边框
         autoRecordPathButton.setFocusPainted(false);  // 移除焦点边框
         autoRecordPathButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
         autoRecordPathButton.setToolTipText("自动保存有效请求PATH");
+
+        autoRecordPathButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该作为不开启配置
+                IProxyScanner.autoRecordPathIsOpen = !autoRecordPathButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("dynamicPthFilterIsOpen: %s", IProxyScanner.autoRecordPathIsOpen));
+            }
+        });
 
         // 开关 是否开启自动记录PATH
         JToggleButton dynamicPthFilterButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
@@ -676,10 +685,4 @@ public class ConfigPanel extends JPanel {
     public static boolean recursiveIsOpen(){
         return recursiveButton.isSelected();
     }
-
-    //是否开启自动保存请求路径
-    public static boolean autoRecordPathIsOpen() {
-        return ConfigPanel.autoRecordPathButton.isSelected();
-    }
-
 }
