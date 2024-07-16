@@ -13,8 +13,7 @@ import java.util.concurrent.*;
 
 import static burp.BurpExtender.*;
 import static utils.BurpPrintUtils.*;
-import static utils.CastUtils.isEmptyObj;
-import static utils.CastUtils.isNotEmptyObj;
+import static utils.CastUtils.*;
 import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
 
@@ -39,7 +38,13 @@ public class IProxyScanner implements IProxyListener {
     public static boolean autoPathsToUrlsIsOpen = false;    //是否进行自动PathTree生成URL
     public static boolean autoRecursiveIsOpen = false;      //是否进行递归URL扫描
 
+    //持久化保存对象的Hash
+    private static String urlCompareMapCacheFile = "urlCompareMap.json";
+    private static String urlCompareMapHistoryHash = null;
+
     public IProxyScanner() {
+        //加载缓存过滤器
+        urlCompareMap = BurpFileUtils.LoadJsonFromFile(urlCompareMapCacheFile);
         // 获取操作系统内核数量
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         int coreCount = Math.min(availableProcessors, 16);
@@ -180,6 +185,9 @@ public class IProxyScanner implements IProxyListener {
         }
     }
 
+    /**
+     * 增强的有效路径判断过滤函数
+     */
     public static void enhanceRecordPathFilter(HttpMsgInfo msgInfo, boolean dynamicPthFilterIsOpen) {
         if (!dynamicPthFilterIsOpen){
             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
@@ -214,7 +222,7 @@ public class IProxyScanner implements IProxyListener {
                     //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
                     if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
                         RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                        stdout_println(LOG_DEBUG, String.format("Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                        stdout_println(LOG_DEBUG, String.format("[+] Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                     }
                 }
             }
@@ -257,8 +265,29 @@ public class IProxyScanner implements IProxyListener {
 
                     //定时清理URL记录表
                     if (UnionTableSql.getTableCounts(RecordUrlTable.tableName) > 500){
-                        DBService.clearRecordUrlTable();
-                        stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
+                        executorService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
+                                DBService.clearRecordUrlTable();
+                            }
+                        });
+                    }
+
+                    //存储一下当前的过滤器
+                    if (isNotEmptyObj(urlCompareMap)){
+                        executorService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                String urlCompareMapJson = CastUtils.toJsonString(urlCompareMap);
+                                String currentJsonHash = calcCRC32(urlCompareMapJson);
+                                if(!currentJsonHash.equals(urlCompareMapHistoryHash)){
+                                    BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
+                                    urlCompareMapHistoryHash = currentJsonHash;
+                                    stdout_println(LOG_DEBUG, String.format("[*] Auto Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
+                                }
+                            }
+                        });
                     }
 
                     //清理在等待动态过滤Map生成过程中没有处理的响应对象

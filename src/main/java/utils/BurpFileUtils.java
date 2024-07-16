@@ -2,6 +2,8 @@ package utils;
 
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -9,8 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyObj;
 
 public class BurpFileUtils {
     /**
@@ -155,10 +160,29 @@ public class BurpFileUtils {
         writer.close();
     }
 
-    public static void writeToPluginPathFile(String configName, String content) throws IOException  {
+    public static void writeToPluginPathFile(String configName, String content) throws IOException {
         // 使用UTF-8编码写入文件
         String pluginDirFilePath = getPluginDirFilePath(configName);
         File fileToSave = new File(pluginDirFilePath);
         writeToFile(fileToSave, content);
+    }
+
+    public static void writeToPluginPathFileNotEx(String configName, String content) {
+        try { writeToPluginPathFile(configName, content); } catch (IOException e) { e.printStackTrace(); }
+    }
+
+    /**
+     * 从本地缓存文件读取过滤器
+     */
+    public static Map<String, Map<String, Object>> LoadJsonFromFile(String configPath) {
+        configPath = getPluginDirFilePath(configPath);
+        if (isFileExists(configPath)){
+            String configJson = readFileToString(configPath);
+            if (isNotEmptyObj(configJson)){
+                TypeReference<Map<String, Map<String, Object>>> typeRef = new TypeReference<Map<String, Map<String, Object>>>() {};
+                return JSON.parseObject(configJson, typeRef);
+            }
+        }
+        return new HashMap<>();
     }
 }
