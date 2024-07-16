@@ -25,7 +25,6 @@ public class ConfigPanel extends JPanel {
     // public static JLabel jsCrawledCount;
     public static JComboBox<String> choicesComboBox;
 
-    public static JToggleButton refreshUnvisitedButton; //自动刷新未访问URL的按钮
     public static JToggleButton recursiveButton; //递归开关按钮状态
     public static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
     public static JLabel autoRefreshText; //自动刷新按钮显示的文本
@@ -154,6 +153,38 @@ public class ConfigPanel extends JPanel {
         clickRefreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
         clickRefreshButton.setToolTipText("点击强制刷新表格");
 
+        // 手动刷新按钮监听事件
+        clickRefreshButton.addActionListener(new ActionListener() {
+            private boolean canClick = true;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (canClick) {
+                    canClick = false;
+                    ImageIcon originalIcon = (ImageIcon) clickRefreshButton.getIcon();  // 保存原始图标
+                    String originalTip = clickRefreshButton.getToolTipText();   // 保存原始批注
+
+                    // 更换为新图标
+                    clickRefreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
+
+                    //关键的代码
+                    MainPanel.getInstance().refreshAllUnVisitedUrlsAndTableUI(false, true);
+
+                    // 设置定时器，5秒后允许再次点击并恢复图标
+                    Timer timer = new Timer(3000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            canClick = true;
+                            clickRefreshButton.setIcon(originalIcon); // 恢复原始图标
+                            clickRefreshButton.setToolTipText(originalTip); // 恢复原始批注
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            }
+        });
+
         // 开关 是否开启自动记录PATH
         JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
         autoRecordPathButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
@@ -193,14 +224,22 @@ public class ConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动刷新未访问URL
-        refreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        refreshUnvisitedButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        refreshUnvisitedButton.setPreferredSize(new Dimension(50, 24));
-        refreshUnvisitedButton.setBorder(null);  // 设置无边框
-        refreshUnvisitedButton.setFocusPainted(false);  // 移除焦点边框
-        refreshUnvisitedButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        refreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
+        JToggleButton autoRefreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        autoRefreshUnvisitedButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        autoRefreshUnvisitedButton.setPreferredSize(new Dimension(50, 24));
+        autoRefreshUnvisitedButton.setBorder(null);  // 设置无边框
+        autoRefreshUnvisitedButton.setFocusPainted(false);  // 移除焦点边框
+        autoRefreshUnvisitedButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoRefreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
 
+        autoRefreshUnvisitedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认关闭本功能, 点击后应该作为开启配置
+                MainPanel.aurtRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("refreshUnvisite: %s", MainPanel.aurtRefreshUnvisitedIsOpen));
+            }
+        });
 
         // 开关 是否开启对提取URL进行发起请求
         recursiveButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
@@ -243,7 +282,7 @@ public class ConfigPanel extends JPanel {
 
         // 在 FilterPanel 中添加 refreshUnvisitedButton
         gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
-        FilterPanel.add(refreshUnvisitedButton, gbc_buttons);
+        FilterPanel.add(autoRefreshUnvisitedButton, gbc_buttons);
         // 在 FilterPanel 中添加 toggleButton
         gbc_buttons.gridx = 12; // 设置按钮的横坐标位置
         FilterPanel.add(recursiveButton, gbc_buttons);
@@ -317,38 +356,6 @@ public class ConfigPanel extends JPanel {
                     autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 } else {
                     autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
-                }
-            }
-        });
-
-        // 手动刷新按钮监听事件
-        clickRefreshButton.addActionListener(new ActionListener() {
-            private boolean canClick = true;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (canClick) {
-                    canClick = false;
-                    ImageIcon originalIcon = (ImageIcon) clickRefreshButton.getIcon();  // 保存原始图标
-                    String originalTip = clickRefreshButton.getToolTipText();   // 保存原始批注
-
-                    // 更换为新图标
-                    clickRefreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
-
-                    //关键的代码
-                    MainPanel.getInstance().refreshAllUnVisitedUrlsAndTableUI(false, true);
-
-                    // 设置定时器，5秒后允许再次点击并恢复图标
-                    Timer timer = new Timer(3000, new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent ae) {
-                            canClick = true;
-                            clickRefreshButton.setIcon(originalIcon); // 恢复原始图标
-                            clickRefreshButton.setToolTipText(originalTip); // 恢复原始批注
-                        }
-                    });
-                    timer.setRepeats(false);
-                    timer.start();
                 }
             }
         });

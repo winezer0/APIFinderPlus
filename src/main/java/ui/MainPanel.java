@@ -47,6 +47,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     public static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
 
+
+    public static boolean aurtRefreshUnvisitedIsOpen = false;
+
     public static MainPanel getInstance() {
         if (instance == null) {
             synchronized (MainPanel.class) {
@@ -757,8 +760,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    boolean updateUnVisited = ConfigPanel.refreshUnvisitedButton.isSelected();
-                    refreshAllUnVisitedUrlsAndTableUI(true, updateUnVisited);
+                    refreshAllUnVisitedUrlsAndTableUI(true, aurtRefreshUnvisitedIsOpen);
                 }
             }
         });
