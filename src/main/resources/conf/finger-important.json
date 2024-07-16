@@ -47,7 +47,8 @@
         ".aliyun.com",
         ".alibaba.com",
         ".w3.org",
-        ".github.com",
+        "github.com",
+        ".github",
         ".githubusercontent.com"
       ],
       "type": "CONF_BLACK_URL_ROOT",
