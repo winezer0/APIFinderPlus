@@ -373,7 +373,6 @@ public class IProxyScanner implements IProxyListener {
                     if (autoRecursiveIsOpen){
                         if (executorService.getActiveCount() < 2){
                             //获取一个未访问URL列表
-                            stdout_println(LOG_DEBUG, "autoRecursiveIsOpen-autoRecursiveIsOpen-autoRecursiveIsOpen");
                             UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
                             accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                             return;
