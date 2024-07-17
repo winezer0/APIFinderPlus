@@ -80,78 +80,70 @@ public class IProxyScanner implements IProxyListener {
     @Override
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
         if (!messageIsRequest) {
-            //记录并更新UI面板中的扫描计数
-            totalRequestCount += 1;
-            ConfigPanel.lbRequestCount.setText(String.valueOf(totalRequestCount));
 
-            //解析当前请求的信息
-            HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            String statusCode = String.valueOf(msgInfo.getRespStatusCode());
-            String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
-            String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //记录并更新UI面板中的扫描计数
+                    totalRequestCount += 1;
+                    ConfigPanel.lbRequestCount.setText(String.valueOf(totalRequestCount));
 
-            //看URL识别是否报错 不记录报错情况
-            if (msgInfo.getUrlInfo().getUrlToFileUsual() == null){
-                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + rawUrlUsual);
-                return;
-            }
+                    //解析当前请求的信息
+                    HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
+                    String statusCode = String.valueOf(msgInfo.getRespStatusCode());
+                    String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
+                    String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
-            //如果白名单开启,对于其他URL直接忽略
-            if (!isContainOneKey(reqRootUrl, CONF_WHITE_URL_ROOT, true)){
-                return;
-            }
 
-            //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
-            if(isContainOneKey(reqRootUrl, CONF_BLACK_URL_ROOT, false)){
-                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + rawUrlUsual);
-                return;
-            }
+                    //看URL识别是否报错 不记录报错情况
+                    if (msgInfo.getUrlInfo().getUrlToFileUsual() == null){
+                        stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + rawUrlUsual);
+                        return;
+                    }
 
-            //判断是否是正常的响应 不记录无响应情况
-            if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
-                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + rawUrlUsual);
-                return;
-            }
+                    //如果白名单开启,对于其他URL直接忽略
+                    if (!isContainOneKey(reqRootUrl, CONF_WHITE_URL_ROOT, true)){
+                        return;
+                    }
 
-            if(autoRecordPathIsOpen
-                    && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
-                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
-            ){
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
+                    //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
+                    if(isContainOneKey(reqRootUrl, CONF_BLACK_URL_ROOT, false)){
+                        stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + rawUrlUsual);
+                        return;
+                    }
+
+                    if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
+                        stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + rawUrlUsual);
+                        return;
+                    }
+
+                    //判断是否是正常的响应 不记录无响应情况
+                    if(autoRecordPathIsOpen
+                            && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
+                            && !msgInfo.getUrlInfo().getPathToDir().equals("/")
+                            && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+                            && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                    ){
+
                         enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
                     }
-                });
-            }
 
-            // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
-            if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false) ||
-                    isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false)){
-                //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
-                return;
-            }
+                    // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
+                    if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false) ||
+                            isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false)){
+                        //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
+                        return;
+                    }
 
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
                     //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                }
-            });
 
-            // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
-            if (statusCode.startsWith("3") || statusCode.startsWith("4")){
-                //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
-                return;
-            }
+                    // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
+                    if (statusCode.startsWith("3") || statusCode.startsWith("4")){
+                        //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
+                        return;
+                    }
 
-            //记录准备加入的请求
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
                     //判断URL是否已经扫描过
                     if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
                         //加入请求列表
@@ -160,25 +152,26 @@ public class IProxyScanner implements IProxyListener {
                         urlScanRecordMap.add(rawUrlUsual);
                     }
                 }
+
             });
         } else {
-            //解析当前请求的信息
-            HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-
-            //看URL识别是否报错 //如果白名单开启, //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
-            if (msgInfo.getUrlInfo().getUrlToFileUsual() == null
-                    ||!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)
-                    ||isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)
-                    ||isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
-                    ||isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false)
-            ){
-                return;
-            }
-
             //记录所有主动访问请求记录到数据库中
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
+                    //解析当前请求的信息
+                    HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
+
+                    //看URL识别是否报错 //如果白名单开启, //匹配黑名单域名  // 排除黑名单后缀  //排除黑名单路径文件
+                    if (msgInfo.getUrlInfo().getUrlToFileUsual() == null
+                            ||!isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_WHITE_URL_ROOT, true)
+                            ||isContainOneKey(msgInfo.getUrlInfo().getRootUrlUsual(), CONF_BLACK_URL_ROOT, false)
+                            ||isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
+                            ||isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false)
+                    ){
+                        return;
+                    }
+
                     //记录请求记录到数据库中（记录所有请求）
                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
                 }
@@ -203,17 +196,12 @@ public class IProxyScanner implements IProxyListener {
             if (!urlCompareMap.containsKey(reqRootUrl)){
                 //存储未进行对比的目标,后续通过定时任务再进行对比
                 notCompareMap.put(reqUrlToFile, respFieldsMap);
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
-                        if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
-                            urlCompareMap.put(reqRootUrl, null);
-                            Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
-                            urlCompareMap.put(reqRootUrl, filterModel);
-                        }
-                    }
-                });
+                //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
+                if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
+                    urlCompareMap.put(reqRootUrl, null);
+                    Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                    urlCompareMap.put(reqRootUrl, filterModel);
+                }
             } else {
                 Map<String, Object> currentFilterMap = urlCompareMap.get(reqRootUrl);
                 if (currentFilterMap == null){
@@ -266,30 +254,20 @@ public class IProxyScanner implements IProxyListener {
 
                     //定时清理URL记录表
                     if (UnionTableSql.getTableCounts(RecordUrlTable.tableName) > 500){
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
-                                DBService.clearRecordUrlTable();
-                            }
-                        });
+                        stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
+                        DBService.clearRecordUrlTable();
                     }
 
                     //存储一下当前的过滤器
                     if (isNotEmptyObj(urlCompareMap) && urlCompareMap.size() != urlCompareMapHistorySize){
                         urlCompareMapHistorySize = urlCompareMap.size();
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                String urlCompareMapJson = CastUtils.toJsonString(urlCompareMap);
-                                String currentJsonHash = calcCRC32(urlCompareMapJson);
-                                if(!currentJsonHash.equals(urlCompareMapHistoryHash)){
-                                    urlCompareMapHistoryHash = currentJsonHash;
-                                    BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
-                                    stdout_println(LOG_DEBUG, String.format("[*] Auto Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
-                                }
-                            }
-                        });
+                        String urlCompareMapJson = CastUtils.toJsonString(urlCompareMap);
+                        String currentJsonHash = calcCRC32(urlCompareMapJson);
+                        if(!currentJsonHash.equals(urlCompareMapHistoryHash)){
+                            urlCompareMapHistoryHash = currentJsonHash;
+                            BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
+                            stdout_println(LOG_DEBUG, String.format("[*] Auto Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
+                        }
                     }
 
                     //清理在等待动态过滤Map生成过程中没有处理的响应对象
@@ -453,66 +431,56 @@ public class IProxyScanner implements IProxyListener {
 
             //记录准备加入的请求
             List<String> finalReferHeaders = referHeaders;
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (String reqUrl:unvisitedUrls){
-                        if (urlScanRecordMap.get(reqUrl) <= 0){
-                            //记录已访问的URL
-                            urlScanRecordMap.add(reqUrl); //防止循环扫描
+            for (String reqUrl:unvisitedUrls){
+                if (urlScanRecordMap.get(reqUrl) <= 0){
+                    //记录已访问的URL
+                    urlScanRecordMap.add(reqUrl); //防止循环扫描
 
-                            // Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
-                            RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
+                    // Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
+                    RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
 
-                            //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
-                            if (ignoreBlackRecurseHost && isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
-                                continue;
-                            }
-
-                            //记录总请求数增加
-                            totalRequestCount += 1;
-
-                            try {
-                                //发起HTTP请求
-                                stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
-                                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, finalReferHeaders);
-                                if (requestResponse != null) {
-                                    executorService.submit(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
-                                            //更新所有有响应的主动访问请求URL记录到数据库中
-                                            RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-
-                                            //加入请求分析列表
-                                            if (msgInfo.getRespInfo().getRespLength()>0)
-                                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
-
-                                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
-                                            if(autoRecordPathIsOpen
-                                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
-                                                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                                                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-                                                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
-                                            ){
-                                                enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
-                                            }
-
-                                        }
-                                    });
-                                }
-                                Thread.sleep(500);
-                            } catch (InterruptedException e) {
-                                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
-                                e.printStackTrace();
-                            }
-                        }
+                    //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
+                    if (ignoreBlackRecurseHost && isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                        continue;
                     }
 
-                    //标记数据为空 如果很多都没扫描的话,就不要清理了,影响实际使用
-                    if (!ignoreBlackRecurseHost)
-                        AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
-                }});
+                    //记录总请求数增加
+                    totalRequestCount += 1;
+
+                    try {
+                        //发起HTTP请求
+                        stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
+                        IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, finalReferHeaders);
+                        if (requestResponse != null) {
+                            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
+                            //更新所有有响应的主动访问请求URL记录到数据库中
+                            RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+
+                            //加入请求分析列表
+                            if (msgInfo.getRespInfo().getRespLength()>0)
+                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
+
+                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
+                            if(autoRecordPathIsOpen
+                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
+                                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
+                                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+                                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                            ){
+                                enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
+                            }
+
+                        }
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
+                        e.printStackTrace();
+                    }
+                }
+            }
+            //标记数据为空 如果很多都没扫描的话,就不要清理了,影响实际使用
+            if (!ignoreBlackRecurseHost)
+                AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
         }
     }
 
