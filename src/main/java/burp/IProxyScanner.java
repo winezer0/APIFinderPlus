@@ -259,14 +259,14 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //存储一下当前的过滤器
-                    if (isNotEmptyObj(urlCompareMap) && urlCompareMap.size() != urlCompareMapHistorySize){
+                    if (urlCompareMap.size() != urlCompareMapHistorySize){
                         urlCompareMapHistorySize = urlCompareMap.size();
                         String urlCompareMapJson = CastUtils.toJsonString(urlCompareMap);
                         String currentJsonHash = calcCRC32(urlCompareMapJson);
                         if(!currentJsonHash.equals(urlCompareMapHistoryHash)){
                             urlCompareMapHistoryHash = currentJsonHash;
                             BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
-                            stdout_println(LOG_DEBUG, String.format("[*] Auto Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
+                            stdout_println(LOG_DEBUG, String.format("[*] Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
                         }
                     }
 
@@ -323,21 +323,6 @@ public class IProxyScanner implements IProxyListener {
                                 if (analyseDataIndex > 0){
                                     stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                 }
-
-//                                // 将爬取到的 URL 加入到 RecordPathTable, 不一定准确, 最好还是得访问一边再说
-//                                if (autoRecordPathIsOpen && isNotEmptyObj(analyseResult.getUrlList())){
-//                                    List<String> shouldTrueUrlList = new ArrayList<>();
-//                                    for (String shouldTrueUrl:analyseResult.getUrlList()){
-//                                        HttpUrlInfo urlInfo = new HttpUrlInfo(shouldTrueUrl);
-//                                        if (!isContainOneKey(urlInfo.getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-//                                                && !urlInfo.getPathToDir().equals("/")
-//                                        ){
-//                                            shouldTrueUrlList.add(shouldTrueUrl);
-//                                        }
-//                                    }
-//                                    if (isNotEmptyObj(shouldTrueUrlList))
-//                                        RecordPathTable.batchInsertOrUpdateRecordPath(shouldTrueUrlList, 299);
-//                                }
                             }
                         }
                         return;
@@ -346,47 +331,41 @@ public class IProxyScanner implements IProxyListener {
 
                     if (autoPathsToUrlsIsOpen){
                         //任务2、如果没有需要分析的数据,就更新Path树信息 为动态 path to url 做准备
-                        int unhandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(false);
-                        if (unhandledReqDataId <= 0){
-                            //获取需要更新的所有URL记录
-                            List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchAllNotAddToTreeRecords();
-                            if (recordPathDirsModels.size()>0){
-                                for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
-                                    //生成新的路径树
-                                    PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
-                                    if (pathTreeModel != null){
-                                        //合并|插入新的路径树
-                                        int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeModel);
-                                        if (pathTreeIndex > 0)
-                                            stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
-                                    }
+                        //获取需要更新的所有URL记录
+                        List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchAllNotAddToTreeRecords();
+                        if (recordPathDirsModels.size()>0){
+                            for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
+                                //生成新的路径树
+                                PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
+                                if (pathTreeModel != null){
+                                    //合并|插入新的路径树
+                                    int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeModel);
+                                    if (pathTreeIndex > 0)
+                                        stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
                                 }
-                                //更新数据后先返回,优先进行之前的操作
-                                return;
                             }
+                            //更新数据后先返回,优先进行之前的操作
+                            return;
                         }
+
 
                         //兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-                        int unhandledRecordPathId = RecordPathTable.fetchUnhandledRecordPathId();
-                        if (unhandledRecordPathId <= 0) {
-                            //获取一条需要分析的数据 状态为待解析
-                            FindPathModel findPathModel;
+                        //获取一条需要分析的数据 状态为待解析
+                        FindPathModel findPathModel = AnalyseResultTable.fetchUnhandledPathData();
+                        if (isNotEmptyObj(findPathModel)) {
+                            stdout_println(LOG_DEBUG, String.format("[*] 获取新增PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
+                            pathsToUrlsByPathTree(findPathModel);
+                            return;
+                        }
 
-                            findPathModel = AnalyseResultTable.fetchUnhandledPathData();
-                            if (isNotEmptyObj(findPathModel)) {
-                                stdout_println(LOG_DEBUG, String.format("[*] 获取新增PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
-                                pathsToUrlsByPathTree(findPathModel);
-                                return;
-                            }
 
-                            //如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
-                            findPathModel = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
-                            if (isNotEmptyObj(findPathModel)){
-                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
-                                pathsToUrlsByPathTree(findPathModel);
-                                return;
-                            }
+                        //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
+                        FindPathModel  findPathModel2 = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
+                        if (isNotEmptyObj(findPathModel2)){
+                            stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel2.getFindPath().size()));
+                            pathsToUrlsByPathTree(findPathModel2);
+                            return;
                         }
                     }
 
@@ -394,8 +373,10 @@ public class IProxyScanner implements IProxyListener {
                     if (autoRecursiveIsOpen){
                         if (executorService.getActiveCount() < 2){
                             //获取一个未访问URL列表
+                            stdout_println(LOG_DEBUG, "autoRecursiveIsOpen-autoRecursiveIsOpen-autoRecursiveIsOpen");
                             UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
                             accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
+                            return;
                         }
                     }
 

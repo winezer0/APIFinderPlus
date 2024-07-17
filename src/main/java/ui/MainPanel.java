@@ -989,6 +989,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             ConfigPanel.lbTaskerCount.setText("0");
             ConfigPanel.lbAnalysisEndCount.setText("0/0");
 
+
+            //置空 过滤数据
+            IProxyScanner.urlCompareMap.clear();
+
             //清空数据库内容
             if (clearAllTable) {
                 DBService.clearAllTables();
