@@ -39,7 +39,7 @@ public class IProxyScanner implements IProxyListener {
     public static boolean autoRecursiveIsOpen = false;      //是否进行递归URL扫描
 
     //持久化保存对象的Hash
-    private String urlCompareMapCacheFile = "urlCompareMap.json";
+    private String urlCompareMapCacheFile = String.format("%s.urlCompareMap.json", configName);
     private String urlCompareMapHistoryHash = null;
     private int urlCompareMapHistorySize = 0;
 
