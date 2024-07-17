@@ -43,6 +43,9 @@ public class IProxyScanner implements IProxyListener {
     private String urlCompareMapHistoryHash = null;
     private int urlCompareMapHistorySize = 0;
 
+    //开关插件的监听功能
+    public static boolean proxyListenIsOpen = true;
+
     public IProxyScanner() {
         //加载缓存过滤器
         urlCompareMap = BurpFileUtils.LoadJsonFromFile(urlCompareMapCacheFile);
@@ -79,8 +82,11 @@ public class IProxyScanner implements IProxyListener {
 
     @Override
     public void processProxyMessage(boolean messageIsRequest, final IInterceptedProxyMessage iInterceptedProxyMessage) {
-        if (!messageIsRequest) {
+        if(!proxyListenIsOpen){
+            return;
+        }
 
+        if (!messageIsRequest) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {

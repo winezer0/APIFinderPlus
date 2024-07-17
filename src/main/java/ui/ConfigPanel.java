@@ -143,6 +143,25 @@ public class ConfigPanel extends JPanel {
         gbc_leftFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
+        // 开关 是否开启自动记录PATH
+        JToggleButton proxyListenButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
+        proxyListenButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        proxyListenButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        proxyListenButton.setPreferredSize(new Dimension(50, 24));
+        proxyListenButton.setBorder(null);  // 设置无边框
+        proxyListenButton.setFocusPainted(false);  // 移除焦点边框
+        proxyListenButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        proxyListenButton.setToolTipText("关闭插件流量监听");
+
+        proxyListenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该作为不开启配置
+                IProxyScanner.proxyListenIsOpen = !proxyListenButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
+            }
+        });
+
         // 刷新按钮按钮
         JToggleButton clickRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton2.png", 24, 24));
         clickRefreshButton.setPreferredSize(new Dimension(30, 30));
@@ -295,7 +314,7 @@ public class ConfigPanel extends JPanel {
 
         // 点击按钮 点击后刷新数据 含未访问数据
         gbc_buttons.gridx = 7; // 设置按钮的横坐标位置
-        FilterPanel.add(clickRefreshButton, gbc_buttons);
+        FilterPanel.add(proxyListenButton, gbc_buttons);
 
         // 自动记录有效的PATH到path表中 功能开关
         gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
@@ -325,10 +344,14 @@ public class ConfigPanel extends JPanel {
         gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshText, gbc_buttons);
 
+        // 点击按钮 点击后刷新数据 含未访问数据
+        gbc_buttons.gridx = 15; // 设置按钮的横坐标位置
+        FilterPanel.add(clickRefreshButton, gbc_buttons);
+
         // 添加填充以在右侧占位
         GridBagConstraints gbc_rightFiller = new GridBagConstraints();
         gbc_rightFiller.weightx = 1; // 使得这个组件吸收额外的水平空间
-        gbc_rightFiller.gridx = 15; // 位置设置为最后一个单元格
+        gbc_rightFiller.gridx = 16; // 位置设置为最后一个单元格
         gbc_rightFiller.gridy = 0; // 第一行
         gbc_rightFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_rightFiller);
@@ -344,7 +367,7 @@ public class ConfigPanel extends JPanel {
         GridBagConstraints gbc_btnall = new GridBagConstraints();
         gbc_btnall.insets = new Insets(0, 0, 0, 5);
         gbc_btnall.fill = 0;
-        gbc_btnall.gridx = 16;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnall.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnall.gridy = 0;
         FilterPanel.add(choicesComboBox, gbc_btnall);
         // 检索框
@@ -352,7 +375,7 @@ public class ConfigPanel extends JPanel {
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
-        gbc_btnSearchField.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnSearchField.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
         urlSearchBox.setToolTipText("搜索URL关键字");
         FilterPanel.add(urlSearchBox, gbc_btnSearchField);
@@ -363,7 +386,7 @@ public class ConfigPanel extends JPanel {
         GridBagConstraints gbc_btnSearch = new GridBagConstraints();
         gbc_btnSearch.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearch.fill = 0;
-        gbc_btnSearch.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnSearch.gridx = 19;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearch.gridy = 0;
         FilterPanel.add(searchButton, gbc_btnSearch);
 
@@ -374,7 +397,7 @@ public class ConfigPanel extends JPanel {
         GridBagConstraints gbc_btnMore = new GridBagConstraints();
         gbc_btnMore.insets = new Insets(0, 0, 0, 5);
         gbc_btnMore.fill = 0;
-        gbc_btnMore.gridx = 19;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnMore.gridx = 20;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnMore.gridy = 0;
         FilterPanel.add(moreButton, gbc_btnMore);
 
