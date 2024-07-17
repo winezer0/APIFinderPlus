@@ -659,7 +659,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 只有在双击时才执行
-                if (e.getClickCount() == 2) {
+                //if (e.getClickCount() == 2) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {
@@ -673,7 +673,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             }
                         }
                     });
-                }
             }
         });
 
