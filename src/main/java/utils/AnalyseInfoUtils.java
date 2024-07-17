@@ -211,6 +211,7 @@ public class AnalyseInfoUtils {
             extractUri = extractUri
                     .replaceAll("\"", "")
                     .replaceAll("'", "")
+                    .replaceAll("\\\\", "")
                     .replaceAll("\n", "")
                     .replaceAll("\t", "")
                     .trim();
