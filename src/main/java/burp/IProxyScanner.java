@@ -39,8 +39,9 @@ public class IProxyScanner implements IProxyListener {
     public static boolean autoRecursiveIsOpen = false;      //是否进行递归URL扫描
 
     //持久化保存对象的Hash
-    private static String urlCompareMapCacheFile = "urlCompareMap.json";
-    private static String urlCompareMapHistoryHash = null;
+    private String urlCompareMapCacheFile = "urlCompareMap.json";
+    private String urlCompareMapHistoryHash = null;
+    private int urlCompareMapHistorySize = 0;
 
     public IProxyScanner() {
         //加载缓存过滤器
@@ -268,22 +269,23 @@ public class IProxyScanner implements IProxyListener {
                         executorService.submit(new Runnable() {
                             @Override
                             public void run() {
-                                stdout_println(LOG_INFO, "[-] RecordUrlTable 数量超限 开始清理");
+                                stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
                                 DBService.clearRecordUrlTable();
                             }
                         });
                     }
 
                     //存储一下当前的过滤器
-                    if (isNotEmptyObj(urlCompareMap)){
+                    if (isNotEmptyObj(urlCompareMap) && urlCompareMap.size() != urlCompareMapHistorySize){
+                        urlCompareMapHistorySize = urlCompareMap.size();
                         executorService.submit(new Runnable() {
                             @Override
                             public void run() {
                                 String urlCompareMapJson = CastUtils.toJsonString(urlCompareMap);
                                 String currentJsonHash = calcCRC32(urlCompareMapJson);
                                 if(!currentJsonHash.equals(urlCompareMapHistoryHash)){
-                                    BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
                                     urlCompareMapHistoryHash = currentJsonHash;
+                                    BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
                                     stdout_println(LOG_DEBUG, String.format("[*] Auto Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
                                 }
                             }
@@ -482,6 +484,10 @@ public class IProxyScanner implements IProxyListener {
                                             //更新所有有响应的主动访问请求URL记录到数据库中
                                             RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
 
+                                            //加入请求分析列表
+                                            if (msgInfo.getRespInfo().getRespLength()>0)
+                                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
+
                                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
                                             if(autoRecordPathIsOpen
                                                     && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
@@ -492,12 +498,6 @@ public class IProxyScanner implements IProxyListener {
                                                 enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
                                             }
 
-                                            //加入请求分析列表
-                                            if (msgInfo.getRespInfo().getRespLength()>0)
-                                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
-
-                                            //放到后面,确保已经记录数据,不然会被过滤掉
-                                            urlScanRecordMap.add(msgInfo.getUrlInfo().getRawUrlUsual());
                                         }
                                     });
                                 }
