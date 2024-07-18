@@ -387,24 +387,26 @@ public class IProxyScanner implements IProxyListener {
 
                         //忽略TODO 尝试兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-
+                        List<FindPathModel> findPathModelList;
                         //获取多条需要分析【状态为待解析】的数据
-                        List<FindPathModel> findPathModelList = AnalyseResultTable.fetchUnhandledPathDataList(maxPoolSize);
+                        findPathModelList = AnalyseResultTable.fetchUnhandledPathDataList(maxPoolSize);
                         if (findPathModelList.size()>0){
                             for (FindPathModel findPathModel:findPathModelList){
-                                AnalyseResultTable.updateUnhandledPathDataStatusById(findPathModel.getId());  //更新对应的id为已经检查
+                                //AnalyseResultTable.updateUnhandledPathDataStatusByIds(Arrays.asList(findPathModel.getId()));  //更新对应的id为已经检查
+                                AnalyseResultTable.updatePathDataStatusByIds(findPathModel.getId());
                                 stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
                                 pathsToUrlsByPathTree(findPathModel);
                             }
                             return;
                         }
 
-
                         //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
-                        FindPathModel findPathModel2 = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
-                        if (isNotEmptyObj(findPathModel2)){
-                            stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel2.getFindPath().size()));
-                            pathsToUrlsByPathTree(findPathModel2);
+                        findPathModelList = UnionTableSql.fetchNeedUpdatePathToUrlDataList(maxPoolSize);
+                        if (findPathModelList.size()>0){
+                            for (FindPathModel findPathModel:findPathModelList) {
+                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
+                                pathsToUrlsByPathTree(findPathModel);
+                            }
                             return;
                         }
                     }

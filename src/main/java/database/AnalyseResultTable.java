@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
@@ -150,68 +151,6 @@ public class AnalyseResultTable {
         return tabDataModel;
     }
 
-//
-//    /**
-//     * 获取一条 存在 Path 并且没有 动态计算过的 path数据
-//     */
-//    public static synchronized FindPathModel fetchOneUnhandledPathData(){
-//        FindPathModel findPathModel = null;
-//
-//        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-//        String selectSQL = "SELECT * FROM " + tableName + " WHERE find_path_num > 0 and run_status = ? LIMIT 1;";
-//
-//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-//            stmt.setString(1, Constants.ANALYSE_WAIT);
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                if (rs.next()) {
-//                    findPathModel =  new FindPathModel(
-//                            rs.getInt("id"),
-//                            rs.getString("req_url"),
-//                            rs.getString("req_host_port"),
-//                            rs.getString("find_path")
-//                    );
-//
-//                    //更新索引对应的数据
-//                    String updateSQL = "UPDATE "+ tableName +" SET run_status = ? WHERE id = ?;";
-//
-//                    try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
-//                        updateStatement.setString(1, Constants.ANALYSE_ING);
-//                        updateStatement.setInt(2, rs.getInt("id"));
-//                        updateStatement.executeUpdate();
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
-//        }
-//        return findPathModel;
-//    }
-
-
-
-
-//    /**
-//     * 获取多条 存在 Path 并且没有 动态计算过的 path数据 的ID
-//     */
-//    public static synchronized List<Integer> fetchUnhandledPathDataIds(int limit){
-//        List<Integer> findPathIdList = new ArrayList<>();
-//        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-//        String selectSQL = "SELECT id FROM " + tableName + " WHERE find_path_num > 0 and run_status = ? LIMIT ?;";
-//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-//            stmt.setString(1, Constants.ANALYSE_WAIT);
-//            stmt.setInt(2, limit);
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                while (rs.next()) {
-//                    int findPathId = rs.getInt("id");
-//                    findPathIdList.add(findPathId);
-//                }
-//            }
-//        } catch (Exception e) {
-//            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data Ids: %s", e.getMessage()));
-//        }
-//        return findPathIdList ;
-//    }
-
 
     /**
      * 获取多条 存在 Path 并且没有 动态计算过的 path数据
@@ -243,50 +182,61 @@ public class AnalyseResultTable {
     }
 
     /**
-     * 更新 id 对应的数据为已处理
+     * 获取多条 存在 Path 并且没有 动态计算过的 path数据 的ID
      */
-    public static int updateUnhandledPathDataStatusById(int id) {
+    public static synchronized List<Integer> fetchUnhandledPathDataIds(int limit){
+        List<Integer> findPathIdList = new ArrayList<>();
+        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
+        String selectSQL = "SELECT id FROM " + tableName + " WHERE find_path_num > 0 and run_status = ? LIMIT ?;";
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_WAIT);
+            stmt.setInt(2, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int findPathId = rs.getInt("id");
+                    findPathIdList.add(findPathId);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data Ids: %s", e.getMessage()));
+        }
+        return findPathIdList ;
+    }
+
+    /**
+     * 更新多个id对应的数据为已处理
+     */
+    public static int updatePathDataStatusByIds(List<Integer> findPathIds) {
         int updatedCount = -1;
 
-        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id = ?;";
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
             stmtUpdate.setString(1, Constants.ANALYSE_ING);
-            stmtUpdate.setInt(2, id);
+
+            for (int i = 0; i < findPathIds.size(); i++) {
+                stmtUpdate.setInt(i + 2, findPathIds.get(i));
+            }
+
             updatedCount = stmtUpdate.executeUpdate();
+
+            if (updatedCount != findPathIds.size()) {
+                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
+            }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update Unhandled Path Data Status By Id: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error update Unhandled Path Data Status By Ids: %s", e.getMessage()));
         }
         return updatedCount;
     }
 
-
-//    /**
-//     * 更新多个id对应的数据为已处理
-//     */
-//    public static int updateUnhandledPathDataStatusByIds(List<Integer> findPathIds) {
-//        int updatedCount = -1;
-//
-//        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;"
-//                .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
-//
-//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
-//            stmtUpdate.setString(1, Constants.ANALYSE_ING);
-//
-//            for (int i = 0; i < findPathIds.size(); i++) {
-//                stmtUpdate.setInt(i + 2, findPathIds.get(i));
-//            }
-//
-//            updatedCount = stmtUpdate.executeUpdate();
-//
-//            if (updatedCount != findPathIds.size()) {
-//                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
-//            }
-//        } catch (Exception e) {
-//            stderr_println(LOG_ERROR, String.format("[-] Error update Unhandled Path Data Status By Ids: %s", e.getMessage()));
-//        }
-//        return updatedCount;
-//    }
+    /**
+     * 更新 id 对应的数据为已处理
+     */
+    public static int updatePathDataStatusByIds(int id) {
+        //当 IN 只包含一个值，实际上会被优化为等价的等值查询 id = 1。这意味着在单值的情况下，IN 和 = 的性能应该相当。
+        return updatePathDataStatusByIds(Collections.singletonList(id));
+    }
 
     /**
      * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
