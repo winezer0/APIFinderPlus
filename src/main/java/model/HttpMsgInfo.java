@@ -39,7 +39,7 @@ public class HttpMsgInfo {
         respStatusCode =  respInfo.getStatusCode();
 
         //请求响应信息的简单hash值
-        msgHash = calcMsgHash(urlInfo,reqMethod,respStatusCode,respInfo);
+        msgHash = calcMsgHash(urlInfo.getUrlToFileUsual(),reqMethod,respStatusCode,respInfo.getBodyLenVague());
     }
 
     // 构造函数
@@ -63,7 +63,7 @@ public class HttpMsgInfo {
         //响应码是常用的
         respStatusCode =  respInfo.getStatusCode();
         //请求响应信息的简单hash值
-        msgHash = calcMsgHash(urlInfo,reqMethod,respStatusCode,respInfo);
+        msgHash = calcMsgHash(urlInfo.getUrlToFileUsual(),reqMethod,respStatusCode,respInfo.getBodyLenVague());
     }
 
 
@@ -94,8 +94,8 @@ public class HttpMsgInfo {
     /**
      * 计算消息Hash
      */
-    private String calcMsgHash(HttpUrlInfo urlInfo,String reqMethod, int respStatusCode, HttpRespInfo respInfo) {
-        return calcCRC32(String.format("%s|%s|%s|%s", urlInfo.getUrlToFileUsual(), reqMethod, respStatusCode, respInfo.getBodyLenVague()));
+    private String calcMsgHash(String urlToFileUsual, String reqMethod, int respStatusCode, int respBodyLenVague) {
+        return calcCRC32(String.format("%s|%s|%s|%s", urlToFileUsual, reqMethod, respStatusCode, bodyLenVague));
     }
 
     /**

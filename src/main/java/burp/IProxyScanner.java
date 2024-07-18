@@ -272,7 +272,7 @@ public class IProxyScanner implements IProxyListener {
             int insertOrUpdateOriginalDataIndex = ReqDataTable.insertOrUpdateReqData(msgInfo, msgDataIndex, reqSource);
             if (insertOrUpdateOriginalDataIndex > 0)
                 stdout_println(LOG_INFO, String.format("[+] Success Add Task: %s -> msgHash: %s -> reqSource:%s",
-                        msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash(), reqSource));
+                        msgInfo.getUrlInfo().getUrlToFileUsual(), msgInfo.getMsgHash(), reqSource));
         }
     }
 

@@ -11,6 +11,7 @@ import ui.FingerTabRender.CenterRenderer;
 import ui.FingerTabRender.HeaderIconTypeRenderer;
 import ui.FingerTabRender.LeftRenderer;
 import utils.BurpFileUtils;
+import utils.RegularUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -906,7 +907,7 @@ public class FingerConfigTab extends JPanel {
         editRulePanel.add(saveButton);
     }
 
-    //从规则里面重新提取全家遍历配置
+    //从规则里面重新提取全部配置
     private void reloadConfFromRules(List<FingerPrintRule> fingerprintRules) {
         BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
         BurpExtender.CONF_ALLOW_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
@@ -928,6 +929,10 @@ public class FingerConfigTab extends JPanel {
                 setActionByRuleInfo(rule);
             }
         }
+
+        //重新编译正则表达式
+        BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_URI_MATCH_REGULAR);
+
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
         stdout_println("[+] CONF_ALLOW_RECORD_STATUS: " + BurpExtender.CONF_ALLOW_RECORD_STATUS);
@@ -945,6 +950,7 @@ public class FingerConfigTab extends JPanel {
 
         stdout_println("[+] CONF_BLACK_INFO_KEYS: " + BurpExtender.CONF_BLACK_INFO_KEYS);
         stdout_println("[+] CONF_URI_MATCH_REGULAR: " + BurpExtender.CONF_URI_MATCH_REGULAR);
+
     }
 
     // 添加一个新的方法来更新 locationField 的选项

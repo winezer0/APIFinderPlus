@@ -9,15 +9,15 @@ import ui.MainPanel;
 import ui.Tags;
 import utils.BurpFileUtils;
 import utils.BurpPrintUtils;
-import utils.CastUtils;
+import utils.RegularUtils;
 
 import javax.swing.*;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static utils.BurpPrintUtils.*;
-import static utils.CastUtils.isNotEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
@@ -76,6 +76,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
     public static List<String> CONF_BLACK_INFO_KEYS = new ArrayList<>();  //需要忽略的响应提取信息
     public static List<String> CONF_URI_MATCH_REGULAR = new ArrayList<>();  //URL提取正则表达式
 
+    public static List<Pattern> URI_MATCH_REGULAR_COMPILE = new ArrayList<>();  //存储编译后的正则表达式
+
     private static DBService dbService;  //数据库实例
 
     public static int SHOW_MSG_LEVEL = LOG_DEBUG;  //显示消息级别
@@ -110,6 +112,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                     }
                     stdout_println(LOG_INFO, String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
                 }
+
+                //编译正则表达式
+                URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(CONF_URI_MATCH_REGULAR);
             }
 
             //加载UI 标签界面
@@ -130,6 +135,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
         extensionIsLoading = true;
         stdout_println(LOG_INFO, String.format("[+] %s Load success ...", this.extensionName));
     }
+
 
     public static void setActionByRuleInfo(FingerPrintRule rule) {
         switch (rule.getType()) {

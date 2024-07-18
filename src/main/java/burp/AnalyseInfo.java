@@ -33,9 +33,6 @@ public class AnalyseInfo {
 
     static final int CHUNK_SIZE = 20000; // 分割大小
 
-    private static final Pattern FIND_PATH_PATTERN_1 = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
-    //private static String FIND_PATH_PATTERN_1 = "(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')";
-
     public static AnalyseResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
@@ -260,9 +257,11 @@ public class AnalyseInfo {
 
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
             // 针对通用的页面提取  //TODO CONF_EXTRACT_SUFFIX 需要被删除，目前没有用了
-            Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, FIND_PATH_PATTERN_1, CHUNK_SIZE);
-            stdout_println(LOG_DEBUG, String.format("[*] 提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
-            allUriSet.addAll(extractUri);
+            for (Pattern pattern:BurpExtender.URI_MATCH_REGULAR_COMPILE){
+                Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, pattern, CHUNK_SIZE);
+                stdout_println(LOG_DEBUG, String.format("[*] 提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
+                allUriSet.addAll(extractUri);
+            }
         }
         return allUriSet;
     }
