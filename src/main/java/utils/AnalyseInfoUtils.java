@@ -19,7 +19,7 @@ public class AnalyseInfoUtils {
     private static final int RESULT_SIZE = 1024;
 
     private static final Pattern FIND_URL_FROM_HTML_PATTERN = Pattern.compile("(http|https)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
-    private static final Pattern FIND_PATH_FROM_JS_PATTERN = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
+    private static final Pattern FIND_PATH_FROM_JS_PATTERN1 = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
     private static final Pattern FIND_PATH_FROM_JS_PATTERN2 = Pattern.compile("\"(/[^\"\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*)\"|'(/[^'\\\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*?)'");
 
 
@@ -70,6 +70,7 @@ public class AnalyseInfoUtils {
      * @return
      */
     private static boolean isUsefulValue(String group) {
+        //TODO 配置文件增加一项,指定忽略无价值的项
         String BlackValues = "admin@admin.com";
         if (isEqualsOneKey(group, BlackValues, false)){
             //stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 忽略保存", group));
@@ -110,11 +111,6 @@ public class AnalyseInfoUtils {
     public static Set<String> extractDirectUrls(String reqUrl, String htmlText) {
         // 使用正则表达式提取文本内容中的 URL
         Set<String> urlSet = new HashSet<>();
-
-        //直接跳过没有http关键字的场景
-        if (!htmlText.contains("http")){
-            return urlSet;
-        }
 
         // html文件内容长度
         int htmlLength = htmlText.length();
@@ -161,7 +157,7 @@ public class AnalyseInfoUtils {
         for (int start = 0; start < jsLength; start += CHUNK_SIZE) {
             int end = Math.min(start + CHUNK_SIZE, jsLength);
             String jsChunk = jsText.substring(start, end);
-            Matcher m = FIND_PATH_FROM_JS_PATTERN.matcher(jsChunk);
+            Matcher m = FIND_PATH_FROM_JS_PATTERN1.matcher(jsChunk);
             int matcher_start = 0;
             while (m.find(matcher_start)){
                 String matchGroup = m.group(1);

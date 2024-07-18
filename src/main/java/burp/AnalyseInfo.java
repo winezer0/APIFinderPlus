@@ -13,6 +13,8 @@ import utils.CastUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static utils.BurpPrintUtils.LOG_DEBUG;
+import static utils.BurpPrintUtils.stdout_println;
 import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainAllKey;
@@ -253,21 +255,29 @@ public class AnalyseInfo {
 
         //转换响应体,后续可能需要解决编码问题
         String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
+        String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
+        String suffix = msgInfo.getUrlInfo().getSuffix();
+        String mimeType = msgInfo.getRespInfo().getInferredMimeType();
 
         //截取最大响应体长度
         respBody = AnalyseInfoUtils.SubString(respBody, MAX_HANDLE_SIZE);
 
-        // 针对html页面提取 直接的URL 已完成
-        Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(msgInfo.getUrlInfo().getRawUrlUsual(), respBody);
-        //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URL: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUrl.size()));
-        allUriSet.addAll(extractUrl);
+        if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
+            // 针对html页面提取 直接的URL
+            if (respBody.contains("http")){
+                Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(rawUrlUsual, respBody);
+                stdout_println(LOG_DEBUG, String.format("[*] 方案1:初步提取URL: %s -> %s", rawUrlUsual, extractUrl.size()));
+                allUriSet.addAll(extractUrl);
+            }
 
-        // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
-        if (isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), BurpExtender.CONF_EXTRACT_SUFFIX, true)
-                || msgInfo.getRespInfo().getInferredMimeType().contains("script")) {
-            Set<String> extractUri = AnalyseInfoUtils.extractUriFromJs(respBody);
-            //stdout_println(LOG_DEBUG, String.format("[*] 初步提取URI: %s -> %s", msgInfo.getUrlInfo().getReqUrl(), extractUri.size()));
-            allUriSet.addAll(extractUri);
+            // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
+            if (isEqualsOneKey(suffix, BurpExtender.CONF_EXTRACT_SUFFIX, false) || mimeType.contains("script")) {
+                Set<String> extractUri = AnalyseInfoUtils.extractUriFromJs(respBody);
+                stdout_println(LOG_DEBUG, String.format("[*] 方案2:提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
+                allUriSet.addAll(extractUri);
+            }
+
+
         }
         return allUriSet;
     }
