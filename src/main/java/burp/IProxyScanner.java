@@ -331,14 +331,14 @@ public class IProxyScanner implements IProxyListener {
 
 
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandledReqDataIds(maxPoolSize);
+                    List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandledReqDataMsgDataIndexList(maxPoolSize);
                     if (msgDataIndexList.size() > 0){
                         //更新对应的ids列表为已经检查
-                        ReqDataTable.updateUnhandledReqDataStatusByIds(msgDataIndexList);
+                        ReqDataTable.updateUnhandledReqDataStatusByMsgDataIndexList(msgDataIndexList);
                         //循环进行数据获取和分析操作
-                        for (int needHandledReqDataId : msgDataIndexList){
+                        for (int msgDataIndex : msgDataIndexList){
                             //获取 msgDataIndex 对应的数据
-                            ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
+                            ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(msgDataIndex);
                             if (msgData != null){
                                 HttpMsgInfo msgInfo =  new HttpMsgInfo(
                                         msgData.getReqUrl(),
@@ -385,16 +385,20 @@ public class IProxyScanner implements IProxyListener {
                             return;
                         }
 
-
                         //忽略TODO 尝试兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-                        //获取一条需要分析的数据 状态为待解析
-                        FindPathModel findPathModel = AnalyseResultTable.fetchOneUnhandledPathData();
-                        if (isNotEmptyObj(findPathModel)) {
-                            stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
-                            pathsToUrlsByPathTree(findPathModel);
+
+                        //获取多条需要分析【状态为待解析】的数据
+                        List<FindPathModel> findPathModelList = AnalyseResultTable.fetchUnhandledPathDataList(maxPoolSize);
+                        if (findPathModelList.size()>0){
+                            for (FindPathModel findPathModel:findPathModelList){
+                                AnalyseResultTable.updateUnhandledPathDataStatusById(findPathModel.getId());  //更新对应的id为已经检查
+                                stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
+                                pathsToUrlsByPathTree(findPathModel);
+                            }
                             return;
                         }
+
 
                         //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
                         FindPathModel findPathModel2 = UnionTableSql.fetchOneNeedUpdatedPathToUrlData();
