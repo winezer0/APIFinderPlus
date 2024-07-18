@@ -153,35 +153,6 @@ public class AnalyseResultTable {
 
 
     /**
-     * 获取多条 存在 Path 并且没有 动态计算过的 path数据
-     */
-    public static synchronized List<FindPathModel> fetchUnhandledPathDataList(int limit){
-        List<FindPathModel> findPathModelList = new ArrayList<>();
-
-        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-        String selectSQL = "SELECT * FROM " + tableName + " WHERE find_path_num > 0 and run_status = ? LIMIT ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, Constants.ANALYSE_WAIT);
-            stmt.setInt(2, limit);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    FindPathModel findPathModel =  new FindPathModel(
-                            rs.getInt("id"),
-                            rs.getString("req_url"),
-                            rs.getString("req_host_port"),
-                            rs.getString("find_path")
-                    );
-                    findPathModelList.add(findPathModel);
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
-        }
-        return findPathModelList ;
-    }
-
-    /**
      * 获取多条 存在 Path 并且没有 动态计算过的 path数据 的ID
      */
     public static synchronized List<Integer> fetchUnhandledPathDataIds(int limit){
@@ -230,13 +201,42 @@ public class AnalyseResultTable {
         return updatedCount;
     }
 
+
     /**
-     * 更新 id 对应的数据为已处理
+     * 获取多条 存在 Path 并且没有 动态计算过的 path数据
      */
-    public static int updatePathDataStatusByIds(int id) {
-        //当 IN 只包含一个值，实际上会被优化为等价的等值查询 id = 1。这意味着在单值的情况下，IN 和 = 的性能应该相当。
-        return updatePathDataStatusByIds(Collections.singletonList(id));
+    public static synchronized List<FindPathModel> fetchPathDataByIds(List<Integer> findPathIds){
+        List<FindPathModel> findPathModelList = new ArrayList<>();
+
+        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
+        String selectSQL = "SELECT * FROM " + tableName + " WHERE id IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
+
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_WAIT);
+
+            for (int i = 0; i < findPathIds.size(); i++) {
+                stmt.setInt(i + 2, findPathIds.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    FindPathModel findPathModel =  new FindPathModel(
+                            rs.getInt("id"),
+                            rs.getString("req_url"),
+                            rs.getString("req_host_port"),
+                            rs.getString("find_path")
+                    );
+                    findPathModelList.add(findPathModel);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
+        }
+        return findPathModelList ;
     }
+
 
     /**
      * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）

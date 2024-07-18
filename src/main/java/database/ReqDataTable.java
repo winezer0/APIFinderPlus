@@ -117,7 +117,7 @@ public class ReqDataTable {
     }
 
     //获取多条需要更新的ID
-    public static synchronized List<Integer> fetchUnhandledReqDataMsgDataIndexList(int limit) {
+    public static synchronized List<Integer> fetchUnhandleReqDataMsgDataIndexList(int limit) {
         List<Integer> msgDataIndexList = new ArrayList<>();
         String selectSQL = "SELECT msg_data_index FROM " + tableName + " WHERE run_status = ? ORDER BY msg_data_index ASC LIMIT ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -137,7 +137,7 @@ public class ReqDataTable {
     /**
      * 更新多个id的状态
      */
-    public static synchronized int updateUnhandledReqDataStatusByMsgDataIndexList(List<Integer> msgDataIndexList) {
+    public static synchronized int updateReqDataStatusByMsgDataIndex(List<Integer> msgDataIndexList) {
         int updatedCount = -1;
 
         String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;"
