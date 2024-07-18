@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
@@ -113,6 +115,53 @@ public class ReqDataTable {
 
         return msgDataIndex;
     }
+
+    //获取多条需要更新的ID
+    public static synchronized List<Integer> fetchUnhandledReqDataIds(int limit) {
+        List<Integer> msgDataIndexList = new ArrayList<>();
+        String selectSQL = "SELECT msg_data_index FROM " + tableName + " WHERE run_status = ? ORDER BY msg_data_index ASC LIMIT ?;";
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, Constants.ANALYSE_WAIT);
+            stmt.setInt(2, limit); // Set the limit parameter
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int selectedMsgDataIndex = rs.getInt("msg_data_index");
+                msgDataIndexList.add(selectedMsgDataIndex);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetching and marking Req Data Indices for Analysis: %s", e.getMessage()));
+        }
+        return msgDataIndexList;
+    }
+
+    /**
+     * 更新多个id的状态
+     */
+    public static synchronized int updateUnhandledReqDataStatusByIds(List<Integer> msgDataIndexList) {
+        int updatedCount = -1;
+
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgDataIndexList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
+            stmtUpdate.setString(1, Constants.ANALYSE_ING);
+
+            for (int i = 0; i < msgDataIndexList.size(); i++) {
+                stmtUpdate.setInt(i + 2, msgDataIndexList.get(i));
+            }
+
+            updatedCount = stmtUpdate.executeUpdate();
+
+            if (updatedCount != msgDataIndexList.size()) {
+                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error updating Req Data Status: %s", e.getMessage()));
+        }
+
+        return updatedCount;
+    }
+
 
 
     /**
