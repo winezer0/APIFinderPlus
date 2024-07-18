@@ -256,7 +256,7 @@ public class AnalyseInfo {
         String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
-            // 针对通用的页面提取  //TODO CONF_EXTRACT_SUFFIX 需要被删除，目前没有用了
+            // 针对通用的页面提取
             for (Pattern pattern:BurpExtender.URI_MATCH_REGULAR_COMPILE){
                 Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, pattern, CHUNK_SIZE);
                 stdout_println(LOG_DEBUG, String.format("[*] 提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
