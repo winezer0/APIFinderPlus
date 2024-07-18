@@ -95,7 +95,7 @@ public class HttpMsgInfo {
      * 计算消息Hash
      */
     private String calcMsgHash(String urlToFileUsual, String reqMethod, int respStatusCode, int respBodyLenVague) {
-        return calcCRC32(String.format("%s|%s|%s|%s", urlToFileUsual, reqMethod, respStatusCode, bodyLenVague));
+        return calcCRC32(String.format("%s|%s|%s|%s", urlToFileUsual, reqMethod, respStatusCode, respBodyLenVague));
     }
 
     /**
