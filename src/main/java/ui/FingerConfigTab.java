@@ -943,8 +943,8 @@ public class FingerConfigTab extends JPanel {
         stdout_println("[+] CONF_BLACK_PATH_EQUALS: " + BurpExtender.CONF_BLACK_PATH_EQUALS);
         stdout_println("[+] CONF_EXTRACT_SUFFIX: " + BurpExtender.CONF_EXTRACT_SUFFIX);
 
-        stdout_println("[+] CONF_URI_MATCH_REGULAR: " + BurpExtender.CONF_URI_MATCH_REGULAR);
         stdout_println("[+] CONF_BLACK_INFO_KEYS: " + BurpExtender.CONF_BLACK_INFO_KEYS);
+        stdout_println("[+] CONF_URI_MATCH_REGULAR: " + BurpExtender.CONF_URI_MATCH_REGULAR);
     }
 
     // 添加一个新的方法来更新 locationField 的选项

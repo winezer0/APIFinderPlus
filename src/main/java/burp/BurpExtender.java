@@ -73,8 +73,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static List<String> CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
 
-    public static List<String> CONF_URI_MATCH_REGULAR = new ArrayList<>();  //URL提取正则表达式
     public static List<String> CONF_BLACK_INFO_KEYS = new ArrayList<>();  //需要忽略的响应提取信息
+    public static List<String> CONF_URI_MATCH_REGULAR = new ArrayList<>();  //URL提取正则表达式
 
     private static DBService dbService;  //数据库实例
 
