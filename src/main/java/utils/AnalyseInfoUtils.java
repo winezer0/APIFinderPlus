@@ -1,5 +1,6 @@
 package utils;
 
+import burp.BurpExtender;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.net.URI;
@@ -11,6 +12,7 @@ import java.util.regex.PatternSyntaxException;
 
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isNotEmptyObj;
+import static utils.ElementUtils.isContainOneKey;
 import static utils.ElementUtils.isEqualsOneKey;
 
 public class AnalyseInfoUtils {
@@ -64,9 +66,9 @@ public class AnalyseInfoUtils {
      * @return
      */
     private static boolean isUsefulValue(String group) {
-        //TODO 配置文件增加一项,指定忽略无价值的项
-        String BlackValues = "admin@admin.com";
-        if (isEqualsOneKey(group, BlackValues, false)){
+        //配置文件增加 CONF_BLACK_INFO_KEYS , 指定忽略无价值的项
+        //String BlackValues = "admin@admin.com";
+        if (isContainOneKey(group, BurpExtender.CONF_BLACK_INFO_KEYS, false)){
             //stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 忽略保存", group));
             return false;
         }
