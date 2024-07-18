@@ -73,6 +73,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
     public static List<String> CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
 
+    public static List<String> CONF_URI_MATCH_REGULAR = new ArrayList<>();  //URL提取正则表达式
+    public static List<String> CONF_BLACK_INFO_KEYS = new ArrayList<>();  //需要忽略的响应提取信息
+
     private static DBService dbService;  //数据库实例
 
     public static int SHOW_MSG_LEVEL = LOG_DEBUG;  //显示消息级别
@@ -165,6 +168,15 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             case "CONF_BLACK_PATH_EQUALS":
                 CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
                 break;
+
+            case "CONF_BLACK_INFO_KEYS":
+                CONF_BLACK_INFO_KEYS.addAll(rule.getKeyword());
+                break;
+
+            case "CONF_URI_MATCH_REGULAR":
+                CONF_URI_MATCH_REGULAR.addAll(rule.getKeyword());
+                break;
+
             default:
                 break;
         }

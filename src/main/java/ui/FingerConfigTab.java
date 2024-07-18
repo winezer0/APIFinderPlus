@@ -919,6 +919,8 @@ public class FingerConfigTab extends JPanel {
         BurpExtender.CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
         BurpExtender.CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
         BurpExtender.CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
+        BurpExtender.CONF_BLACK_INFO_KEYS = new ArrayList<>();
+        BurpExtender.CONF_URI_MATCH_REGULAR = new ArrayList<>();
 
         if (isNotEmptyObj(fingerprintRules)){
             for (int i = 0 ; i < fingerprintRules.size(); i ++){
@@ -940,6 +942,9 @@ public class FingerConfigTab extends JPanel {
         stdout_println("[+] CONF_BLACK_PATH_KEYS: " + BurpExtender.CONF_BLACK_PATH_KEYS);
         stdout_println("[+] CONF_BLACK_PATH_EQUALS: " + BurpExtender.CONF_BLACK_PATH_EQUALS);
         stdout_println("[+] CONF_EXTRACT_SUFFIX: " + BurpExtender.CONF_EXTRACT_SUFFIX);
+
+        stdout_println("[+] CONF_URI_MATCH_REGULAR: " + BurpExtender.CONF_URI_MATCH_REGULAR);
+        stdout_println("[+] CONF_BLACK_INFO_KEYS: " + BurpExtender.CONF_BLACK_INFO_KEYS);
     }
 
     // 添加一个新的方法来更新 locationField 的选项
