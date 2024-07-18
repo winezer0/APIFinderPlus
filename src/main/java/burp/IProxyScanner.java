@@ -387,7 +387,6 @@ public class IProxyScanner implements IProxyListener {
                             return;
                         }
 
-                        //忽略TODO 尝试兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                         //获取多条需要分析【状态为待解析】的数据
                         List<Integer> findPathIds = AnalyseResultTable.fetchUnhandledPathDataIds(maxPoolSize);
