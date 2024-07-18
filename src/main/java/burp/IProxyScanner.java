@@ -43,6 +43,9 @@ public class IProxyScanner implements IProxyListener {
     private String urlCompareMapHistoryHash = null;
     private int urlCompareMapHistorySize = 0;
 
+    //设置最大进程数量
+    private int maxPoolSize = 10;
+
     //开关插件的监听功能
     public static boolean proxyListenIsOpen = true;
 
@@ -52,7 +55,7 @@ public class IProxyScanner implements IProxyListener {
         // 获取操作系统内核数量
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         int coreCount = Math.min(availableProcessors, 16);
-        int maxPoolSize = coreCount * 2;
+        maxPoolSize = coreCount * 2;
 
         // 高性能模式  //控制ScheduledExecutorService中任务的执行频率或周期。
         monitorExecutorServiceNumberOfIntervals = (availableProcessors > 6) ? 1 : monitorExecutorServiceNumberOfIntervals;
@@ -328,7 +331,7 @@ public class IProxyScanner implements IProxyListener {
 
 
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandledReqDataIds(5);
+                    List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandledReqDataIds(maxPoolSize);
                     if (msgDataIndexList.size() > 0){
                         //更新对应的ids列表为已经检查
                         ReqDataTable.updateUnhandledReqDataStatusByIds(msgDataIndexList);
@@ -386,7 +389,7 @@ public class IProxyScanner implements IProxyListener {
                         //忽略TODO 尝试兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                         //获取一条需要分析的数据 状态为待解析
-                        FindPathModel findPathModel = AnalyseResultTable.fetchUnhandledPathData();
+                        FindPathModel findPathModel = AnalyseResultTable.fetchOneUnhandledPathData();
                         if (isNotEmptyObj(findPathModel)) {
                             stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
                             pathsToUrlsByPathTree(findPathModel);
@@ -408,6 +411,7 @@ public class IProxyScanner implements IProxyListener {
                         executorService.submit(new Runnable() {
                             @Override
                             public void run() {
+                                //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
                                 UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
                                 accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                             }

@@ -155,7 +155,7 @@ public class AnalyseResultTable {
      * 获取一条 存在 Path 并且没有 动态计算过的 path数据
      * @return
      */
-    public static synchronized FindPathModel fetchUnhandledPathData(){
+    public static synchronized FindPathModel fetchOneUnhandledPathData(){
         FindPathModel findPathModel = null;
 
         // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
