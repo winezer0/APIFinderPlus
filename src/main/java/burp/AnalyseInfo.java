@@ -12,6 +12,7 @@ import utils.CastUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static utils.BurpPrintUtils.LOG_DEBUG;
 import static utils.BurpPrintUtils.stdout_println;
@@ -32,6 +33,9 @@ public class AnalyseInfo {
     public static final String PATH_KEY = "PATH_KEY";
 
     private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
+    static final int CHUNK_SIZE = 20000; // 分割大小
+
+    private static final Pattern FIND_PATH_PATTERN_1 = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
 
     public static AnalyseResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
@@ -215,7 +219,7 @@ public class AnalyseInfo {
                 //多个正则匹配
                 if (rule.getMatch().equals("regular")){
                     for (String patter : rule.getKeyword()){
-                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, patter);
+                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, patter, CHUNK_SIZE);
                         if (isNotEmptyObj(groups)){
                             JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(new ArrayList<>(groups)));
                             //stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
@@ -256,28 +260,14 @@ public class AnalyseInfo {
         //转换响应体,后续可能需要解决编码问题
         String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
         String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
-        String suffix = msgInfo.getUrlInfo().getSuffix();
-        String mimeType = msgInfo.getRespInfo().getInferredMimeType();
 
         //截取最大响应体长度
         respBody = AnalyseInfoUtils.SubString(respBody, MAX_HANDLE_SIZE);
-
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
-            // 针对html页面提取 直接的URL
-            if (respBody.contains("http")){
-                Set<String> extractUrl = AnalyseInfoUtils.extractDirectUrls(rawUrlUsual, respBody);
-                stdout_println(LOG_DEBUG, String.format("[*] 方案1:初步提取URL: %s -> %s", rawUrlUsual, extractUrl.size()));
-                allUriSet.addAll(extractUrl);
-            }
-
-            // 针对JS页面提取 当属于 CONF_EXTRACT_SUFFIX 后缀（含后缀为空）的时候 、是脚本类型的时候
-            if (isEqualsOneKey(suffix, BurpExtender.CONF_EXTRACT_SUFFIX, false) || mimeType.contains("script")) {
-                Set<String> extractUri = AnalyseInfoUtils.extractUriFromJs(respBody);
-                stdout_println(LOG_DEBUG, String.format("[*] 方案2:提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
-                allUriSet.addAll(extractUri);
-            }
-
-
+            // 针对通用的页面提取  //TODO CONF_EXTRACT_SUFFIX 需要被删除，目前没有用了
+            Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, FIND_PATH_PATTERN_1, CHUNK_SIZE);
+            stdout_println(LOG_DEBUG, String.format("[*] 方案2:提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
+            allUriSet.addAll(extractUri);
         }
         return allUriSet;
     }

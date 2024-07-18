@@ -15,13 +15,7 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 public class AnalyseInfoUtils {
 
-    static final int CHUNK_SIZE = 20000; // 分割大小
     private static final int RESULT_SIZE = 1024;
-
-    private static final Pattern FIND_URL_FROM_HTML_PATTERN = Pattern.compile("(http|https)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
-    private static final Pattern FIND_PATH_FROM_JS_PATTERN1 = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
-    private static final Pattern FIND_PATH_FROM_JS_PATTERN2 = Pattern.compile("\"(/[^\"\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*)\"|'(/[^'\\\\s,@\\[\\]\\(\\)<>{}，%\\+：:/-]*?)'");
-
 
     /**
      * 支持自动截断的正则提取文本中的内容
@@ -29,11 +23,11 @@ public class AnalyseInfoUtils {
      * @param patter
      * @return
      */
-    public static Set<String> extractInfoWithChunk(String text, String patter) {
+    public static Set<String> extractInfoWithChunk(String text, String patter, int chunkSize) {
         Set<String> groups = new HashSet<>();
         try{
-            for (int start = 0; start < text.length(); start += CHUNK_SIZE) {
-                int end = Math.min(start + CHUNK_SIZE, text.length());
+            for (int start = 0; start < text.length(); start += chunkSize) {
+                int end = Math.min(start + chunkSize, text.length());
                 String beFindContentChunk = text.substring(start, end);
 
                 Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
@@ -101,89 +95,39 @@ public class AnalyseInfoUtils {
         return text;
     }
 
-
     /**
-     * 从html内容中提取url信息
-     * @param reqUrl
-     * @param htmlText
-     * @return
+     * 最新实现的分块正则匹配常规版本
      */
-    public static Set<String> extractDirectUrls(String reqUrl, String htmlText) {
-        // 使用正则表达式提取文本内容中的 URL
-        Set<String> urlSet = new HashSet<>();
+    public static Set<String> extractUriMode1(String text, Pattern pattern, int chunkSize) {
+        Set<String> matches = new HashSet<>();
+        int textLength = text.length();
+        for (int start = 0; start < textLength; start += chunkSize) {
+            int end = Math.min(start + chunkSize, textLength);
+            String jsChunk = text.substring(start, end);
+            Matcher matcher = pattern.matcher(jsChunk);
 
-        // html文件内容长度
-        int htmlLength = htmlText.length();
-
-        // 处理每个 CHUNK_SIZE 大小的片段
-        for (int start = 0; start < htmlLength; start += CHUNK_SIZE) {
-            int end = Math.min(start + CHUNK_SIZE, htmlLength);
-            String htmlChunk = htmlText.substring(start, end);
-
-            htmlChunk = htmlChunk.replace("\\/","/");
-            Matcher matcher = FIND_URL_FROM_HTML_PATTERN.matcher(htmlChunk);
             while (matcher.find()) {
-                String matchUri = formatUri(matcher.group());
-                //识别相对于网站根目录的URL路径 //不包含http 并且以/开头的（可能是一个相对URL）
-                if (!matchUri.contains("http") && matchUri.startsWith("/")) {
-                    try {
-                        //使用当前请求的reqUrl创建URI对象
-                        URI baseUrl = new URI(reqUrl);
-                        //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
-                        matchUri = baseUrl.resolve(matchUri).toString();
-                    } catch (URISyntaxException e) {
-                        stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUri, e.getMessage()));
-                        continue;
+                if (matcher.groupCount() > 0) {
+                    for (int i = 1; i <= matcher.groupCount(); i++) {
+                        String match = matcher.group(i);
+                        if (match != null) { // Check for non-null value before adding
+                            matches.add(match);
+                        }
+                    }
+                } else {
+                    String match = matcher.group();
+                    if (match != null) { // Check for non-null value before adding
+                        matches.add(match);
                     }
                 }
-                urlSet.add(matchUri);
             }
         }
-        return urlSet;
+        return matches;
     }
 
-
-    /**
-     * 从Js内容中提取uri/url信息
-     * @param jsText
-     * @return
-     */
-    public static Set<String> extractUriFromJs(String jsText){
-        // 方式一：原有的正则提取js中的url的逻辑
-        int jsLength = jsText.length(); // JavaScript 文件内容长度
-        Set<String> findUris = new LinkedHashSet<>();
-
-        // 处理每个 CHUNK_SIZE 大小的片段
-        for (int start = 0; start < jsLength; start += CHUNK_SIZE) {
-            int end = Math.min(start + CHUNK_SIZE, jsLength);
-            String jsChunk = jsText.substring(start, end);
-            Matcher m = FIND_PATH_FROM_JS_PATTERN1.matcher(jsChunk);
-            int matcher_start = 0;
-            while (m.find(matcher_start)){
-                String matchGroup = m.group(1);
-                if (matchGroup != null){
-                    findUris.add(formatUri(matchGroup));
-                }
-                matcher_start = m.end();
-            }
-
-            // 方式二：
-            Matcher matcher_result = FIND_PATH_FROM_JS_PATTERN2.matcher(jsChunk);
-            while (matcher_result.find()){
-                // 检查第一个捕获组
-                String group1 = matcher_result.group(1);
-                if (group1 != null) {
-                    findUris.add(formatUri(group1));
-                }
-                // 检查第二个捕获组
-                String group2 = matcher_result.group(2);
-                if (group2 != null) {
-                    findUris.add(formatUri(group2));
-                }
-            }
-        }
-
-        return findUris;
+    public static Set<String> extractUriMode1(String text, String regex, int chunkSize) {
+        Pattern pattern = Pattern.compile(regex);
+        return  extractUriMode1(text , pattern, chunkSize);
     }
 
     /**
