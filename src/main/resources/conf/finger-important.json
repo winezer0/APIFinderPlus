@@ -198,7 +198,7 @@
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high",
-      "describe": "用于提取响应URI的正则表达式"
+      "describe": "提取响应URI的正则 不能使用UI编辑"
     },
     {
       "match": "keyword",
