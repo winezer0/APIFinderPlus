@@ -19,7 +19,6 @@ import static utils.BurpPrintUtils.stdout_println;
 import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainAllKey;
-import static utils.ElementUtils.isEqualsOneKey;
 
 public class AnalyseInfo {
 
@@ -32,10 +31,10 @@ public class AnalyseInfo {
     public static final String URL_KEY = "URL_KEY";
     public static final String PATH_KEY = "PATH_KEY";
 
-    private static final int MAX_HANDLE_SIZE = 50000; //如果数组超过 50000 个字符，则截断
     static final int CHUNK_SIZE = 20000; // 分割大小
 
     private static final Pattern FIND_PATH_PATTERN_1 = Pattern.compile("(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')");
+    //private static String FIND_PATH_PATTERN_1 = "(?:\"|')(((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})|((?:/|\\.\\./|\\./)[^\"'><,;|*()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})|([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/|;][^\"|']{0,}|))|([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|)))(?:\"|')";
 
     public static AnalyseResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
@@ -205,8 +204,6 @@ public class AnalyseInfo {
 
             //当存在字符串不为空时进行匹配
             if (locationText.length() > 0) {
-                locationText = AnalyseInfoUtils.SubString(locationText, MAX_HANDLE_SIZE);
-
                 //多个关键字匹配
                 if (rule.getMatch().equals("keyword"))
                     if(isContainAllKey(locationText, rule.getKeyword(), false)){
@@ -261,12 +258,10 @@ public class AnalyseInfo {
         String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
         String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
-        //截取最大响应体长度
-        respBody = AnalyseInfoUtils.SubString(respBody, MAX_HANDLE_SIZE);
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
             // 针对通用的页面提取  //TODO CONF_EXTRACT_SUFFIX 需要被删除，目前没有用了
             Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, FIND_PATH_PATTERN_1, CHUNK_SIZE);
-            stdout_println(LOG_DEBUG, String.format("[*] 方案2:提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
+            stdout_println(LOG_DEBUG, String.format("[*] 提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
             allUriSet.addAll(extractUri);
         }
         return allUriSet;

@@ -20,7 +20,7 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 public class IProxyScanner implements IProxyListener {
     private static int totalRequestCount = 0;  //记录所有经过插件的请求数量
-    private static final int MaxRespBodyLen = 200000; //最大支持存储的响应 比特长度
+    public static final int MaxRespBodyLen = 500000; //最大支持存储的响应 比特长度
 
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL 防止重复扫描
 
