@@ -921,7 +921,7 @@ public class FingerConfigTab extends JPanel {
         BurpExtender.CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
         BurpExtender.CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
         BurpExtender.CONF_BLACK_INFO_KEYS = new ArrayList<>();
-        BurpExtender.CONF_URI_MATCH_REGULAR = new ArrayList<>();
+        //BurpExtender.CONF_URI_MATCH_REGULAR = new ArrayList<>();  //不进行 正则修改
 
         if (isNotEmptyObj(fingerprintRules)){
             for (int i = 0 ; i < fingerprintRules.size(); i ++){
@@ -930,8 +930,8 @@ public class FingerConfigTab extends JPanel {
             }
         }
 
-        //重新编译正则表达式
-        BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_URI_MATCH_REGULAR);
+        //不进行 正则修改 UI修改会报错
+        //BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_URI_MATCH_REGULAR);
 
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
