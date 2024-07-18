@@ -22,12 +22,10 @@ public class RegularUtils {
                     stdout_println(LOG_DEBUG, String.format("[+] compile regular success: [%s]", regular));
                 } catch (PatternSyntaxException e) {
                     // 处理正则表达式语法错误
-                    stderr_println(LOG_ERROR, String.format("[!] Invalid regular expression: [%s]", regular));
-                    e.printStackTrace();
+                    stderr_println(LOG_ERROR, String.format("[!] Invalid regular expression: [%s] -> [%s]", regular, e.getMessage()));
                 } catch (Exception e) {
                     // 处理其他可能的异常
-                    stderr_println(LOG_ERROR, String.format("Unexpected error occurred while compiling regex: [%s]", regular) );
-                    e.printStackTrace();
+                    stderr_println(LOG_ERROR, String.format("Unexpected error occurred while compiling regex: [%s] -> [%s]", regular, e.getMessage()) );
                 }
             }
         }
