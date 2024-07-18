@@ -105,13 +105,13 @@ public class IProxyScanner implements IProxyListener {
 
             //如果白名单开启,对于其他URL直接忽略
             if (!isContainOneKey(reqRootUrl, CONF_WHITE_URL_ROOT, true)){
-                stdout_println(LOG_DEBUG,"[-] 不匹配白名单域名 跳过url识别：" + rawUrlUsual);
+                //stdout_println(LOG_DEBUG,"[-] 不匹配白名单域名 跳过url识别：" + rawUrlUsual);
                 return;
             }
 
             //匹配黑名单域名 黑名单域名相关的文件和路径都是无用的
             if(isContainOneKey(reqRootUrl, CONF_BLACK_URL_ROOT, false)){
-                stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + rawUrlUsual);
+                //stdout_println(LOG_DEBUG,"[-] 匹配黑名单域名 跳过url识别：" + rawUrlUsual);
                 return;
             }
 
@@ -139,7 +139,7 @@ public class IProxyScanner implements IProxyListener {
             if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
                     || isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URL_PATH, false))
             {
-                stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + rawUrlUsual);
+                //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + rawUrlUsual);
                 return;
             }
 
@@ -153,7 +153,7 @@ public class IProxyScanner implements IProxyListener {
 
             // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
             if (statusCode.startsWith("3") || statusCode.startsWith("4")){
-                //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + msgInfo.getUrlInfo().getReqUrl());
+                //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + rawUrlUsual);
                 return;
             }
 
@@ -326,34 +326,36 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
+
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    int needHandledReqDataId = ReqDataTable.fetchUnhandledReqDataId(true);
-                    if (needHandledReqDataId > 0){
-                        //获取 msgDataIndex 对应的数据
-                        ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
-                        if (msgData != null){
-                            HttpMsgInfo msgInfo =  new HttpMsgInfo(
-                                    msgData.getReqUrl(),
-                                    msgData.getReqBytes(),
-                                    msgData.getRespBytes(),
-                                    msgData.getMsgHash()
-                            );
+                    List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandledReqDataIds(5);
+                    if (msgDataIndexList.size() > 0){
+                        //更新对应的ids列表为已经检查
+                        ReqDataTable.updateUnhandledReqDataStatusByIds(msgDataIndexList);
+                        //循环进行数据获取和分析操作
+                        for (int needHandledReqDataId : msgDataIndexList){
+                            //获取 msgDataIndex 对应的数据
+                            ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(needHandledReqDataId);
+                            if (msgData != null){
+                                HttpMsgInfo msgInfo =  new HttpMsgInfo(
+                                        msgData.getReqUrl(),
+                                        msgData.getReqBytes(),
+                                        msgData.getRespBytes(),
+                                        msgData.getMsgHash()
+                                );
+                                if (!msgData.getMsgHash().equals(msgInfo.getMsgHash())){
+                                    stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash()));
+                                }
 
-                            if (!msgData.getMsgHash().equals(msgInfo.getMsgHash())){
-                                stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash()));
-                            }
-
-                            //进行数据分析
-                            AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
-
-                            //存入分析结果
-                            if(isNotEmptyObj(analyseResult.getInfoList())
-                                    || isNotEmptyObj(analyseResult.getPathList())
-                                    || isNotEmptyObj(analyseResult.getUrlList())){
-                                //将初次分析结果写入数据库
-                                int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
-                                if (analyseDataIndex > 0){
-                                    stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
+                                //进行数据分析
+                                AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
+                                //存入分析结果
+                                if(isNotEmptyObj(analyseResult.getInfoList()) || isNotEmptyObj(analyseResult.getPathList())  || isNotEmptyObj(analyseResult.getUrlList())){
+                                    //将初次分析结果写入数据库
+                                    int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
+                                    if (analyseDataIndex > 0){
+                                        stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
+                                    }
                                 }
                             }
                         }
@@ -382,7 +384,6 @@ public class IProxyScanner implements IProxyListener {
 
 
                         //忽略TODO 尝试兼容 find_path_num>0 + 状态 [ANALYSE_ING|ANALYSE_END] + B.basic_path_num > A.basic_path_num
-
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                         //获取一条需要分析的数据 状态为待解析
                         FindPathModel findPathModel = AnalyseResultTable.fetchUnhandledPathData();
@@ -402,13 +403,16 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     // 自动递归查询功能
-                    if (autoRecursiveIsOpen){
-                        if (executorService.getActiveCount() < 2){
-                            //获取一个未访问URL列表
-                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
-                            accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
-                            return;
-                        }
+                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
+                        //获取一个未访问URL列表
+                        executorService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
+                                accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
+                            }
+                        });
+                        return;
                     }
 
                 } catch (Exception e) {
@@ -511,7 +515,7 @@ public class IProxyScanner implements IProxyListener {
             //如果 PATH TREE都没有添加过, pathTreeModel 就是空的
             if (pathTreeModel == null){
                 //如果 PATH TREE 不应该是空的,因为任务二已经添加过了,
-                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [id:%s host:%s url:%s findPath:%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!",id, reqHostPort, reqUrl, findPathArray.size()));
+                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [host:%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!", reqHostPort));
                 return;
             }
 

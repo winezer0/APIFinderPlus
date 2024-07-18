@@ -125,8 +125,8 @@ public class ReqDataTable {
             stmt.setInt(2, limit); // Set the limit parameter
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                int selectedMsgDataIndex = rs.getInt("msg_data_index");
-                msgDataIndexList.add(selectedMsgDataIndex);
+                int msgDataIndex = rs.getInt("msg_data_index");
+                msgDataIndexList.add(msgDataIndex);
             }
         } catch (Exception e) {
             stderr_println(LOG_DEBUG, String.format("[-] Error fetching and marking Req Data Indices for Analysis: %s", e.getMessage()));
@@ -158,7 +158,6 @@ public class ReqDataTable {
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error updating Req Data Status: %s", e.getMessage()));
         }
-
         return updatedCount;
     }
 
