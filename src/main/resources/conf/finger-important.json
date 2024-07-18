@@ -190,6 +190,18 @@
     },
     {
       "match": "keyword",
+      "location": "urlPath",
+      "keyword": [
+        "admin@admin.com"
+      ],
+      "type": "CONF_BLACK_INFO_KEYS",
+      "isImportant": false,
+      "isOpen": true,
+      "accuracy": "high",
+      "describe": "不允许提取的信息包含此项"
+    },
+    {
+      "match": "keyword",
       "location": "body",
       "keyword": [
         "pass",
