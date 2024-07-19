@@ -5,11 +5,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 // 自定义渲染器类
-public class StatusCellRenderer extends DefaultTableCellRenderer {
+public class ColorInfoCellRenderer extends DefaultTableCellRenderer {
 
     private static final long serialVersionUID = 1L;
 
-    public StatusCellRenderer() {
+    public ColorInfoCellRenderer() {
         setHorizontalAlignment(CENTER); // 设置居中
     }
 
