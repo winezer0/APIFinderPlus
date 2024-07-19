@@ -4,7 +4,6 @@ import burp.*;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
-import inet.ipaddr.format.util.AddressTrieMap;
 import model.*;
 import ui.MainTabRender.importantCellRenderer;
 import utils.*;
@@ -219,6 +218,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
         JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前API结果的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
+        JMenuItem calcSingleLayerNodeItem = new JMenuItem("指定PATH生成单层节点URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
@@ -237,6 +238,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         popupMenu.add(pathTreeToPathLsitItem);
         popupMenu.add(copySingleLayerNodeItem);
+        popupMenu.add(calcSingleLayerNodeItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -677,7 +679,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
-
         //copySingleLayerNodeItem
         copySingleLayerNodeItem.addActionListener(new ActionListener() {
             @Override
@@ -691,29 +692,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                Set<String> pathSet = new LinkedHashSet<>();
-
-                                //查询msgHash列表对应的所有数据find path 数据
-                                List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByMsgHashList(msgHashList);
-                                for (FindPathModel findPathModel:findPathModelList){
-                                    //逐个提取PATH 并 加入 pathSet
-                                    JSONArray findPaths = findPathModel.getFindPath();
-                                    if (!findPaths.isEmpty()){
-                                        // 提取 path中的单层路径
-                                        for (Object uriPath : findPaths){
-                                            List<String> uriPart = PathTreeUtils.getUrlPart((String) uriPath);
-                                            if (uriPart.size() == 1){
-                                                pathSet.add(PathTreeUtils.formatUriPath((String) uriPath));
-                                            }
-                                        }
-                                    }
-                                }
-
+                                Set<String> pathSet = fetchFindPatSet(msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
                                 //弹框让用户查看
                                 UiUtils.showOneMsgBoxToCopy(String.join("\n",pathSet), "单层路径信息");
-
                                 return null;
                             }
                         }.execute();
@@ -721,6 +704,142 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 }
             }
         });
+
+        //calcSingleLayerNodeItem
+        calcSingleLayerNodeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                showInputBox(msgHashList, "calcSingleLayerNodeItem", "指定PATH生成单层节点URL");
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+    }
+
+    /**
+     * 弹框 读取用户输入 弹框 输出到用户
+     * @param msgHashList
+     * @param itemType
+     * @param title
+     */
+    private void showInputBox(List<String> msgHashList, String itemType, String title) {
+        //弹出框,等待用户输入
+        //创建一个对话框,便于输入url数据
+        JDialog dialog = new JDialog();
+        dialog.setTitle(title);
+        dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
+        // 添加第一行提示
+        JLabel urlJLabel = new JLabel("输入数据:");
+        constraints.gridx = 0; // 第1列
+        constraints.gridy = 0; // 第1行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(urlJLabel, constraints);
+
+        JTextArea customParentPathArea = new JTextArea(15, 35);
+        customParentPathArea.setText("");
+        customParentPathArea.setLineWrap(true); // 自动换行
+        customParentPathArea.setWrapStyleWord(true); //断行不断字
+        constraints.gridy = 1; // 第2行
+        constraints.gridx = 0; // 第1列
+        dialog.add(new JScrollPane(customParentPathArea), constraints); // 添加滚动条
+
+        // 添加按钮面板
+        JPanel buttonPanel = new JPanel();
+        JButton confirmButton = new JButton("确认");
+        JButton cancelButton = new JButton("取消");
+        buttonPanel.add(confirmButton);
+        buttonPanel.add(cancelButton);
+
+        constraints.gridx = 0; // 第一列
+        constraints.gridy = 2; // 第三行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(buttonPanel, constraints);
+
+        dialog.pack(); // 调整对话框大小以适应其子组件
+        dialog.setLocationRelativeTo(null); // 居中显示
+        dialog.setVisible(true); // 显示对话框
+
+        // 取消按钮事件
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose(); // 关闭对话框
+            }
+        });
+
+        // 不同的 确认按钮动作
+        confirmButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 获取用户输入
+                String inputText = customParentPathArea.getText();
+                dialog.dispose(); // 关闭对话框
+                //调用新的动作
+                java.util.List<String> urlList = CastUtils.getUniqueLines(inputText);
+                if (!urlList.isEmpty()){
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            switch (itemType){
+                                case "calcSingleLayerNodeItem":
+                                    //基于pathSet和用户输入组合URL
+                                    Set<String> urlSet = new LinkedHashSet<>();
+                                    Set<String> pathSet = fetchFindPatSet(msgHashList);
+                                    for (String prefix : urlList) {
+                                        List<String> urls = AnalyseInfoUtils.concatUrlAddPath(prefix, new ArrayList<>(pathSet));
+                                        if (urls.size() > 0) urlSet.addAll(urls);
+                                    }
+                                    //直接复制到用户的粘贴板
+                                    UiUtils.copyToSystemClipboard(String.join("\n", urlSet));
+                                    //弹框让用户查看
+                                    UiUtils.showOneMsgBoxToCopy(String.join("\n", urlSet), "单层路径生成URL");
+                                    break;
+                            }
+                            return null;
+                        }
+                    }.execute();
+                }
+            }
+        });
+    }
+
+    private Set<String> fetchFindPatSet(List<String> inputList) {
+        Set<String> pathSet = new LinkedHashSet<>();
+        //查询msgHash列表对应的所有数据find path 数据
+        List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByMsgHashList(inputList);
+        for (FindPathModel findPathModel:findPathModelList){
+            //逐个提取PATH 并 加入 pathSet
+            JSONArray findPaths = findPathModel.getFindPath();
+            if (!findPaths.isEmpty()){
+                // 提取 path中的单层路径
+                for (Object uriPath : findPaths){
+                    List<String> uriPart = PathTreeUtils.getUrlPart((String) uriPath);
+                    if (uriPart.size() == 1){
+                        pathSet.add(PathTreeUtils.formatUriPath((String) uriPath));
+                    }
+                }
+            }
+        }
+        return pathSet;
     }
 
 
