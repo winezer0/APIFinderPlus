@@ -42,20 +42,20 @@ public class TableLineDataModel {
     public Object[] toRowDataArray() {
         return new Object[]{
                 this.getId(),
+                this.getReqSource(),
                 this.getMsgHash(),
                 this.getReqUrl(),
                 this.getReqMethod(),
                 this.getRespStatusCode(),
                 this.getRespLength(),
+                this.getFindInfoNum(),
                 this.getFindUrlNum(),
                 this.getFindPathNum(),
-                this.getFindInfoNum(),
                 this.getFindApiNum(),
                 this.getPathToUrlNum(),
                 this.getUnvisitedUrlNum(),
-                this.getRunStatus(),
                 this.getBasicPathNum(),
-                this.getReqSource()
+                this.getRunStatus()
         };
     }
 

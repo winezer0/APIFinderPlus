@@ -123,20 +123,20 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         // 数据展示面板
         model = new DefaultTableModel(new Object[]{
                 "id",
-                "msg_hash",
-                "req_url",
-                "req_method",
-                "resp_status",
-                "resp_length",
-                "find_url_num",
-                "find_path_num",
-                "find_info_num",
-                "find_api_num",
-                "path_to_url_num",
-                "unvisited_url_num",
-                "run_status",
-                "basic_path_num",
-                "req_source"
+                "source",
+                "hash",
+                "url",
+                "method",
+                "status",
+                "length",
+                "find_info",
+                "find_url",
+                "find_path",
+                "find_api",
+                "path_url",
+                "unvisited",
+                "basic_num",
+                "run_status"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -625,8 +625,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private void tableSetColumnsWidth() {
         //设置数据表的宽度 //前两列设置宽度 30px、60px
         tableSetColumnMaxWidth(0, 50);
-        tableSetColumnMaxWidth(1, 100);
-        tableSetColumnMinWidth(2, 300);
+        tableSetColumnMaxWidth(2, 100);
+        tableSetColumnMinWidth(3, 300);
 //        tableSetColumnMinWidth(11, 50);
 //        tableSetColumnMinWidth(12, 50);
     }
@@ -641,10 +641,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
         leftRenderer.setHorizontalAlignment(JLabel.LEFT);
 
-        List<Integer> leftColumns = Arrays.asList(0, 1, 2, 3, 4, 5, 12, 13, 14);
+        List<Integer> leftColumns = Arrays.asList(3);
         tableSetColumnRenders(leftColumns, leftRenderer);
 
-        List<Integer> centerColumns = Arrays.asList(6, 7, 8, 9, 10, 11);
+        List<Integer> centerColumns = Arrays.asList(0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
         tableSetColumnRenders(centerColumns, centerRenderer);
 
     }
