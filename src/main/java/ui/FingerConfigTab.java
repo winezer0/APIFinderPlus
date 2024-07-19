@@ -39,7 +39,9 @@ public class FingerConfigTab extends JPanel {
     private JTable ruleTable;
     private JDialog editRulePanel;  // 新增：编辑面板
     public static Integer editingRow = null;
-    private JTextField keywordField, describeField;  // 新增：编辑面板的文本字段
+    //private JTextField keywordField;  // 新增：编辑面板的文本字段
+    private JTextArea keywordField;
+    private JTextField describeField;
     private JComboBox<Boolean> isImportantField;
     private JComboBox<String> searchMethodField, locationField, typeField, accuracyFiled;
 
@@ -694,7 +696,7 @@ public class FingerConfigTab extends JPanel {
         editRulePanel = new JDialog();
         editRulePanel.setTitle("新增指纹");
         editRulePanel.setLayout(new GridBagLayout());  // 更改为 GridBagLayout
-        editRulePanel.setSize(500, 350);
+        editRulePanel.setSize(500, 450);
         editRulePanel.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         editRulePanel.setModal(false);
         editRulePanel.setResizable(true);
@@ -705,7 +707,7 @@ public class FingerConfigTab extends JPanel {
         searchMethodField = new JComboBox<>(new String[]{"keyword", "regular"});
         accuracyFiled = new JComboBox<>(new String[]{"high", "medium", "lower"});
         locationField = new JComboBox<>();
-        keywordField = new JTextField();
+        keywordField = new JTextArea(5, 20); // 5行，20列
         describeField = new JTextField("-");
         searchMethodField.setSelectedItem("keyword");
         updateLocationField("keyword");
@@ -791,7 +793,12 @@ public class FingerConfigTab extends JPanel {
         // 添加 "Keyword" 输入框
         constraints.gridx = 1;  // 在网格的第二列添加组件
         constraints.weightx = 1.0;  // 允许横向扩展
-        editRulePanel.add(keywordField, constraints);
+        // 设置 GridBagConstraints 来跨越多行和列
+        constraints.gridy = 7;  // 在网格的第四行开始添加组件
+        constraints.gridwidth = 1; // 占据一列
+        //constraints.weighty = 0;  // 允许在垂直方向上伸展
+        JScrollPane keywordFieldScrollPane = new JScrollPane(keywordField); // 包装 JTextArea 到 JScrollPane 中
+        editRulePanel.add(keywordFieldScrollPane, constraints);
 
 
         // 根据需要，为 Location 和 Keyword 输入框设置首选大小
@@ -799,7 +806,6 @@ public class FingerConfigTab extends JPanel {
         isImportantField.setPreferredSize(new Dimension(100, isImportantField.getPreferredSize().height));
         searchMethodField.setPreferredSize(new Dimension(100, searchMethodField.getPreferredSize().height));
         locationField.setPreferredSize(new Dimension(100, locationField.getPreferredSize().height));
-        keywordField.setPreferredSize(new Dimension(100, keywordField.getPreferredSize().height));
 
         JButton saveButton = new JButton("Save");
         saveButton.setIcon(UiUtils.getImageIcon("/icon/saveItem.png"));
@@ -830,12 +836,12 @@ public class FingerConfigTab extends JPanel {
                 String location = (String) locationField.getSelectedItem();
                 String describe = describeField.getText();
                 List<String> keyword;
-                if (method.equals("regular")){
-                    //TODO 需要优化,为什么不能显示多行,且不支持RE
-                    keyword = Collections.singletonList(keywordField.getText());
-                }else{
-                    keyword = Arrays.asList(keywordField.getText().split(","));
-                }
+//                if (method.equals("regular")){
+//                    keyword = Collections.singletonList(keywordField.getText());
+//                }else{
+//                    keyword = Arrays.asList(keywordField.getText().split(","));
+//                }
+                keyword = Arrays.asList(keywordField.getText().split("\n"));
                 if (type.trim().isEmpty() || method.trim().isEmpty() ||
                         location.trim().isEmpty() || keyword.stream().allMatch(String::isEmpty)) {
                     JOptionPane.showMessageDialog(editRulePanel, "所有输入框都必须填写。", "输入错误", JOptionPane.ERROR_MESSAGE);
@@ -1137,7 +1143,7 @@ public class FingerConfigTab extends JPanel {
                     searchMethodField.setSelectedItem(rule.getMatch());
                     locationField.setSelectedItem(rule.getLocation());
                     describeField.setText(rule.getDescribe()); // 根据 rule 的 method 更新 locationField
-                    keywordField.setText(String.join(",", rule.getKeyword())); // 设置 keywordField 的值
+                    keywordField.setText(String.join("\n", rule.getKeyword())); // 设置 keywordField 的值
 
                     // 显示编辑面板
                     Point btnLocation = ((JButton) e.getSource()).getLocationOnScreen();
