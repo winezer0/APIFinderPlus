@@ -151,9 +151,9 @@ public class AnalyseInfoUtils {
     public static String removeSymbol(String extractUri){
         if (isNotEmptyObj(extractUri))
             extractUri = extractUri
-                    .replaceAll("\"", "")
-                    .replaceAll("'", "")
-                    .replaceAll("\\\\", "")
+                    .replace("\"", "")
+                    .replace("'", "")
+                    .replace("\\", "")
                     .replaceAll("\n", "")
                     .replaceAll("\t", "")
                     .trim();
@@ -187,12 +187,13 @@ public class AnalyseInfoUtils {
             //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
             newUrl = baseUrl.resolve(path).toString();
             //stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             //stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s", reqUrl, path, e.getMessage()));
             // 在发生异常时，尝试简单的字符串拼接
             newUrl = reqUrl.endsWith("/") && path.startsWith("/")
                     ? reqUrl + path.substring(1)
                     : reqUrl + "/" + path;
+            newUrl = newUrl.replace("\\","");
             stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s, using fallback method.", reqUrl, path, e.getMessage()));
         }
         return newUrl;
