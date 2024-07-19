@@ -129,6 +129,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 "method",
                 "status",
                 "length",
+                "important",
                 "find_info",
                 "find_url",
                 "find_path",

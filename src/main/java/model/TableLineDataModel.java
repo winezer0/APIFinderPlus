@@ -17,11 +17,12 @@ public class TableLineDataModel {
     private String runStatus;
     private Integer basicPathNum;
     private Integer respLength;
-
+    private Boolean hasImportant;
     // 构造函数
     public TableLineDataModel(int id, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
                               String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
-                              int findApiNum, int pathToUrlNum, int unvisitedUrlNum, String runStatus, int basicPathNum, int respLength) {
+                              boolean hasImportant, int findApiNum, int pathToUrlNum, int unvisitedUrlNum,
+                              String runStatus, int basicPathNum, int respLength) {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
@@ -37,6 +38,7 @@ public class TableLineDataModel {
         this.runStatus = runStatus;
         this.basicPathNum = basicPathNum;
         this.respLength = respLength;
+        this.hasImportant = hasImportant;
     }
 
     public Object[] toRowDataArray() {
@@ -48,6 +50,7 @@ public class TableLineDataModel {
                 this.getReqMethod(),
                 this.getRespStatusCode(),
                 this.getRespLength(),
+                this.getHasImportant(),
                 this.getFindInfoNum(),
                 this.getFindUrlNum(),
                 this.getFindPathNum(),
@@ -118,5 +121,10 @@ public class TableLineDataModel {
     public Integer getRespLength() {
         return respLength;
     }
+
+    public Boolean getHasImportant() {
+        return hasImportant;
+    }
+
 
 }
