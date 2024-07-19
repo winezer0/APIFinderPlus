@@ -568,6 +568,9 @@ public class FingerConfigTab extends JPanel {
         }
     }
 
+    /**
+     * 将当前内存中的配置规则转为Json字符串
+     */
     private static String currentConfigToJsonString() {
         List<FingerPrintRule> rulesToExport = BurpExtender.fingerprintRules;
         // 创建一个新的 FingerPrintRulesWrapper 并设置 fingerprint 列表
@@ -790,6 +793,7 @@ public class FingerConfigTab extends JPanel {
         constraints.weightx = 1.0;  // 允许横向扩展
         editRulePanel.add(keywordField, constraints);
 
+
         // 根据需要，为 Location 和 Keyword 输入框设置首选大小
         typeField.setPreferredSize(new Dimension(100, typeField.getPreferredSize().height));
         isImportantField.setPreferredSize(new Dimension(100, isImportantField.getPreferredSize().height));
@@ -827,6 +831,7 @@ public class FingerConfigTab extends JPanel {
                 String describe = describeField.getText();
                 List<String> keyword;
                 if (method.equals("regular")){
+                    //TODO 需要优化,为什么不能显示多行,且不支持RE
                     keyword = Collections.singletonList(keywordField.getText());
                 }else{
                     keyword = Arrays.asList(keywordField.getText().split(","));
@@ -921,8 +926,7 @@ public class FingerConfigTab extends JPanel {
         BurpExtender.CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
         BurpExtender.CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
         BurpExtender.CONF_BLACK_INFO_KEYS = new ArrayList<>();
-        //BurpExtender.CONF_URI_MATCH_REGULAR = new ArrayList<>();  //不进行 正则修改
-
+        BurpExtender.CONF_URI_MATCH_REGULAR = new ArrayList<>();
         if (isNotEmptyObj(fingerprintRules)){
             for (int i = 0 ; i < fingerprintRules.size(); i ++){
                 FingerPrintRule rule = fingerprintRules.get(i);
@@ -930,8 +934,7 @@ public class FingerConfigTab extends JPanel {
             }
         }
 
-        //不进行 正则修改 UI修改会报错
-        //BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_URI_MATCH_REGULAR);
+        BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_URI_MATCH_REGULAR);
 
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
