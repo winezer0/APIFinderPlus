@@ -11,13 +11,15 @@ public class AnalyseResultModel {
     private List<String> pathList;
     private List<String> apiList;
     private List<String> unvisitedUrl;
+    private Boolean hasImportant;
 
-    public AnalyseResultModel(List<JSONObject> infoList, List<String> urlList, List<String> pathList, List<String> apiList) {
+    public AnalyseResultModel(List<JSONObject> infoList, List<String> urlList, List<String> pathList, List<String> apiList, Boolean hasImportant) {
         this.infoList = infoList;
         this.urlList = urlList;
         this.pathList = pathList;
         this.apiList = apiList;
         this.unvisitedUrl = CastUtils.listAddList(urlList, apiList);
+        this.hasImportant = hasImportant;
     }
 
     public List<JSONObject> getInfoList() {
@@ -42,5 +44,9 @@ public class AnalyseResultModel {
 
     public void setUnvisitedUrl(List<String> unvisitedUrl) {
         this.unvisitedUrl = unvisitedUrl;
+    }
+
+    public Boolean getHasImportant() {
+        return hasImportant;
     }
 }

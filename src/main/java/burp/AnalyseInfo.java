@@ -73,6 +73,7 @@ public class AnalyseInfo {
             for (JSONObject findInfo :findInfoList){
                 if (findInfo.getBoolean(important)){
                     hasImportant = true;
+                    stdout_println(LOG_DEBUG, String.format("[!] 发现重要敏感信息: %s", findInfo.toJSONString()));
                     break;
                 }
             }
@@ -83,7 +84,8 @@ public class AnalyseInfo {
                 findInfoList,
                 findUrlList,
                 findPathList,
-                findApiList
+                findApiList,
+                hasImportant
         );
         return analyseResult;
     }
