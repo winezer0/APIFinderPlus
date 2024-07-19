@@ -6,12 +6,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
-public class IconTableCellRenderer extends DefaultTableCellRenderer {
+public class importantCellRenderer extends DefaultTableCellRenderer {
 
     // 预加载并缓存图标
     private final Icon importantIcon = UiUtils.getImageIcon("/icon/importantButtonIcon.png", 15, 15);
 
-    public IconTableCellRenderer() {
+    public importantCellRenderer() {
         setHorizontalAlignment(CENTER); // 设置居中
     }
 
