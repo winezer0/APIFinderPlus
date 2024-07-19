@@ -90,7 +90,7 @@ public class UiUtils {
     public static String getMsgHashAtActualRow(JTable table, int row) {
         TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
         int modelRow = sorter.convertRowIndexToModel(row);
-        int columnIndex = 1;
+        int columnIndex = 2;
         String msgHash = (String) table.getModel().getValueAt(modelRow, columnIndex);
         return msgHash;
     }
@@ -104,7 +104,7 @@ public class UiUtils {
         // 获取实际的行索引，因为JTable的 getSelectedRows 返回的是视图索引
         TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
         int modelRow = sorter.convertRowIndexToModel(row);
-        int columnIndex = 2;
+        int columnIndex = 3;
         String url = (String) table.getModel().getValueAt(modelRow, columnIndex);
         return url;
     }

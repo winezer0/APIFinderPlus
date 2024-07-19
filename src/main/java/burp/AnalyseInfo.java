@@ -67,6 +67,17 @@ public class AnalyseInfo {
         findApiList = filterFindUrls(reqUrl, findApiList, BurpExtender.onlyScopeDomain);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s -> %s", reqUrl, findApiList.size()));
 
+        //判断是否有敏感信息
+        boolean hasImportant = false;
+        if (isNotEmptyObj(findInfoList)){
+            for (JSONObject findInfo :findInfoList){
+                if (findInfo.getBoolean(important)){
+                    hasImportant = true;
+                    break;
+                }
+            }
+        }
+
         //返回 AnalyseInfoResultModel 结果数据
         AnalyseResultModel analyseResult = new AnalyseResultModel(
                 findInfoList,
