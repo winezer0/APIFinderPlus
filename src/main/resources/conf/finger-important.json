@@ -41,8 +41,10 @@
       "location": "urlPath",
       "keyword": [
         ".microsoft.com",
+        ".scorecardresearch.com",
         ".msn.cn",
         ".baidu.com",
+        ".googleapis.com",
         ".google.com",
         ".bing.com",
         ".yahoo.com",
