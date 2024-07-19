@@ -197,8 +197,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private void tableAddRightClickMenu(int listSelectionModel) {
         // 创建右键菜单
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
         JMenuItem accessUnVisitedItem = new JMenuItem("访问未访问URL列表", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
         JMenuItem updateUnVisitedItem = new JMenuItem("更新未访问URL列表", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
@@ -206,7 +206,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem IgnoreUnVisitedItem = new JMenuItem("写入未访问URL列表", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
         IgnoreUnVisitedItem.setToolTipText("当访问URL后依然无法过滤时使用");
 
-        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH到PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
 
         JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
@@ -215,6 +215,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem genDynaPathFilterItem = new JMenuItem("基于URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
         JMenuItem pathTreeToPathLsitItem = new JMenuItem("复制当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
+        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前API结果的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -231,7 +233,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(addRootUrlToNotAutoRecurseItem);
         popupMenu.add(addRootUrlToAllowListenItem);
         popupMenu.add(genDynaPathFilterItem);
+
         popupMenu.add(pathTreeToPathLsitItem);
+        popupMenu.add(copySingleLayerNodeItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -672,6 +676,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 }
             }
         });
+
+
+        //copySingleLayerNodeItem
+
     }
 
 
