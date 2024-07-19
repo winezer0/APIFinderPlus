@@ -54,7 +54,7 @@ public class PathTreeUtils {
         // 使用传统循环过滤掉空字符串
         List<String> filteredParts = new ArrayList<>();
         for (String part : parts) {
-            if (isNotEmptyObj(part)) {
+            if (isNotEmptyObj(part) && !".".equals(part.trim())) {
                 filteredParts.add(part);
             }
         }
@@ -318,21 +318,22 @@ public class PathTreeUtils {
     public static void main(String[] args) {
         String url = "/biz-gateway/walletParam/paramTypeGroup/findListByGroupName";
         JSONObject tree = createRootTree(url);
-//        System.out.println(tree.toJSONString());
+        System.out.println(tree.toJSONString());
 
         String url2 = "/biz-gateway/walletSystem/sysLogin/randomImage/1715413128";
         JSONObject tree2 = createRootTree(url2);
-//        System.out.println(tree2.toJSONString());
+        System.out.println(tree2.toJSONString());
 
         tree = deepMergeJsonTree(tree, tree2);
-//        System.out.println(tree.toJSONString());
+        System.out.println(tree.toJSONString());
 
         String url3 = "/biz-gateway/walletSystem/sysLogin/randomImage/walletParam";
         tree = deepMergeJsonTree(tree, createRootTree(url3));
-//        System.out.println(tree.toJSONString());
+        System.out.println(tree.toJSONString());
 
-        String sub_url = "/walletParam/paramTypeGroup/findListByGroupName";
-        findNodePathInTree(tree, sub_url);
+        String sub_url = "walletParam/paramTypeGroup/findListByGroupName";
+        JSONArray findNode = findNodePathInTree(tree, sub_url);
+        System.out.println(findNode.toJSONString());
     }
 
 
