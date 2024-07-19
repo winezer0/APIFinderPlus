@@ -143,21 +143,21 @@ public class ConfigPanel extends JPanel {
         gbc_leftFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
-        // 开关 是否开启自动记录PATH
+        // 开关 是否开启代理流量监听
         JToggleButton proxyListenButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        proxyListenButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        proxyListenButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        proxyListenButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        proxyListenButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
         proxyListenButton.setPreferredSize(new Dimension(50, 24));
         proxyListenButton.setBorder(null);  // 设置无边框
         proxyListenButton.setFocusPainted(false);  // 移除焦点边框
         proxyListenButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        proxyListenButton.setToolTipText("关闭插件流量监听");
+        proxyListenButton.setToolTipText("Proxy模块流量监听开关");
 
         proxyListenButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认开启本功能, 点击后应该作为不开启配置
-                IProxyScanner.proxyListenIsOpen = !proxyListenButton.isSelected();
+                //默认关闭本功能, 点击后应该作为开启配置
+                IProxyScanner.proxyListenIsOpen = proxyListenButton.isSelected();
                 stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
             }
         });

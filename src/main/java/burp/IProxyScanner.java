@@ -47,7 +47,7 @@ public class IProxyScanner implements IProxyListener {
     private int maxPoolSize = 10;
 
     //开关插件的监听功能
-    public static boolean proxyListenIsOpen = true;
+    public static boolean proxyListenIsOpen = false;
 
     public IProxyScanner() {
         //加载缓存过滤器
