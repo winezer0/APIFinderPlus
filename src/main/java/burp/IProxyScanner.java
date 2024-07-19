@@ -19,7 +19,7 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class IProxyScanner implements IProxyListener {
-    private static int totalRequestCount = 0;  //记录所有经过插件的请求数量
+    public static int totalRequestCount = 0;  //记录所有经过插件的请求数量
     public static final int MaxRespBodyLen = 500000; //最大支持存储的响应 比特长度
 
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL 防止重复扫描
@@ -81,6 +81,69 @@ public class IProxyScanner implements IProxyListener {
         monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 
         startDatabaseMonitor();
+    }
+
+    /**
+     * 添加右键扫描任务
+     */
+    public static void addRightScanTask(IHttpRequestResponse iInterceptedProxyMessage) {
+        if (true){
+            //记录并更新UI面板中的扫描计数
+            totalRequestCount += 1;
+            ConfigPanel.lbRequestCount.setText(String.valueOf(totalRequestCount));
+
+            //解析当前请求的信息
+            HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
+            String statusCode = String.valueOf(msgInfo.getRespStatusCode());
+            String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
+
+            //看URL识别是否报错 不记录报错情况
+            if (msgInfo.getUrlInfo().getUrlToFileUsual() == null){
+                stdout_println(LOG_ERROR,"[-] URL转化失败 跳过url识别：" + rawUrlUsual);
+                return;
+            }
+
+            if (msgInfo.getRespBytes() == null || msgInfo.getRespBytes().length == 0) {
+                stdout_println(LOG_DEBUG,"[-] 没有响应内容 跳过插件处理：" + rawUrlUsual);
+                return;
+            }
+
+            //判断是否是正常的响应 不记录无响应情况
+            if(autoRecordPathIsOpen
+                    && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
+                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
+                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
+                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+            ){
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
+                    }
+                });
+            }
+
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
+                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                }
+            });
+
+            //判断URL是否已经扫描过
+            if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
+                //应该放到后面,确保已经记录数据,不然会被过滤掉
+                urlScanRecordMap.add(rawUrlUsual);
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        //加入请求列表
+                        insertOrUpdateReqDataAndReqMsgData(msgInfo,"Right");
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -258,7 +321,7 @@ public class IProxyScanner implements IProxyListener {
      * @param msgInfo
      * @param reqSource
      */
-    private static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
+    static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
         //防止响应体过大
         if (msgInfo.getRespBytes().length > MaxRespBodyLen){
             byte[] respBytes = Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen);

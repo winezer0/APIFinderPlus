@@ -12,10 +12,13 @@ import utils.BurpPrintUtils;
 import utils.RegularUtils;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -23,7 +26,7 @@ import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 
-public class BurpExtender implements IBurpExtender, IExtensionStateListener {
+public class BurpExtender implements IBurpExtender, IExtensionStateListener, IContextMenuFactory {
     private static IBurpExtenderCallbacks callbacks;
     private static PrintWriter stdout;
     private static PrintWriter stderr;
@@ -145,6 +148,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
             // 注册插件状态监听操作
             callbacks.registerExtensionStateListener(BurpExtender.this);
 
+            callbacks.registerContextMenuFactory(BurpExtender.this); //注册右键菜单Factory
+
             //设置插件已加载完成
             extensionIsLoading = true;
             stdout_println(LOG_INFO, String.format("[+] %s Load success ...", extensionName));
@@ -234,4 +239,24 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
         stdout_println(LOG_INFO, String.format("[-] %s Unloaded ...", this.extensionName));
     }
+
+    //callbacks.registerContextMenuFactory(this);//必须注册右键菜单Factory
+    //实现右键 感谢原作者Conanjun
+    @Override
+    public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
+        final IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+        JMenuItem menuItem = new JMenuItem(String.format("Send to %s", BurpExtender.extensionName));
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (final IHttpRequestResponse message : messages) {
+                    IProxyScanner.addRightScanTask(message);
+                }
+
+            }
+        });
+
+        return Arrays.asList(menuItem);
+    }
+
 }
