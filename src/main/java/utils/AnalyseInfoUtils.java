@@ -188,8 +188,12 @@ public class AnalyseInfoUtils {
             newUrl = baseUrl.resolve(path).toString();
             //stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
         } catch (URISyntaxException e) {
-            stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s", reqUrl, path, e.getMessage()));
-            return null;
+            //stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s", reqUrl, path, e.getMessage()));
+            // 在发生异常时，尝试简单的字符串拼接
+            newUrl = reqUrl.endsWith("/") && path.startsWith("/")
+                    ? reqUrl + path.substring(1)
+                    : reqUrl + "/" + path;
+            stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s, using fallback method.", reqUrl, path, e.getMessage()));
         }
         return newUrl;
     }
