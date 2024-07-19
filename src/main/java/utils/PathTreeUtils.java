@@ -42,19 +42,24 @@ public class PathTreeUtils {
         return tree;
     }
 
+    public static String formatUriPath(String uriPath) {
+        return uriPath.replace("../", "").replace("./", "");
+    }
+
     /**
      * 拆分输入的PATH路径为列表
      * @param uriPath
      * @return
      */
-    private static List<String> getUrlPart(String uriPath) {
+    public static List<String> getUrlPart(String uriPath) {
         // 去除URL首尾的斜杠并分割路径部分
+        uriPath = formatUriPath(uriPath);
         String[] parts = uriPath.split("/");
 
         // 使用传统循环过滤掉空字符串
         List<String> filteredParts = new ArrayList<>();
         for (String part : parts) {
-            if (isNotEmptyObj(part) && !".".equals(part.trim())) {
+            if (isNotEmptyObj(part)) {
                 filteredParts.add(part);
             }
         }
@@ -358,7 +363,7 @@ public class PathTreeUtils {
         tree = deepMergeJsonTree(tree, createRootTree(url3));
         System.out.println(tree.toJSONString());
 
-        String sub_url = "walletParam/paramTypeGroup/findListByGroupName";
+        String sub_url = "../walletParam/paramTypeGroup/findListByGroupName";
         JSONArray findNode = findNodePathInTree(tree, sub_url);
         System.out.println(findNode.toJSONString());
 

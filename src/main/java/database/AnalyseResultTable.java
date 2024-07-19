@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
@@ -177,6 +176,7 @@ public class AnalyseResultTable {
         return findPathIdList ;
     }
 
+
     /**
      * 更新多个id对应的数据为已处理
      */
@@ -219,30 +219,62 @@ public class AnalyseResultTable {
         String selectSQL = "SELECT * FROM " + tableName + " WHERE id IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
 
-
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, Constants.ANALYSE_WAIT);
-
             for (int i = 0; i < findPathIds.size(); i++) {
-                stmt.setInt(i + 2, findPathIds.get(i));
+                stmt.setInt(i + 1, findPathIds.get(i));
             }
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    FindPathModel findPathModel =  new FindPathModel(
-                            rs.getInt("id"),
-                            rs.getString("req_url"),
-                            rs.getString("req_host_port"),
-                            rs.getString("find_path")
-                    );
-                    findPathModelList.add(findPathModel);
-                }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                FindPathModel findPathModel =  new FindPathModel(
+                        rs.getInt("id"),
+                        rs.getString("req_url"),
+                        rs.getString("req_host_port"),
+                        rs.getString("find_path")
+                );
+                findPathModelList.add(findPathModel);
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error fetch Path Data By Ids: %s", e.getMessage()));
         }
         return findPathModelList ;
     }
+
+
+
+    /**
+     * 获取多条 存在 Path 并且没有 动态计算过的 path数据
+     */
+    public static synchronized List<FindPathModel> fetchPathDataByMsgHashList(List<String> msgHashList){
+        List<FindPathModel> findPathModelList = new ArrayList<>();
+
+        if (msgHashList.isEmpty()) return findPathModelList;
+
+        String selectSQL = "SELECT * FROM " + tableName + " WHERE msg_hash IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 1, msgHashList.get(i));
+            }
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                FindPathModel findPathModel =  new FindPathModel(
+                        rs.getInt("id"),
+                        rs.getString("req_url"),
+                        rs.getString("req_host_port"),
+                        rs.getString("find_path")
+                );
+
+                findPathModelList.add(findPathModel);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch Path Data By MsgHash List: %s", e.getMessage()));
+        }
+        return findPathModelList ;
+    }
+
 
 
     /**
@@ -257,15 +289,14 @@ public class AnalyseResultTable {
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    dynamicUrlsModel = new DynamicUrlsModel(
-                            rs.getInt("id"),
-                            rs.getInt("basic_path_num"),
-                            rs.getString("path_to_url"),
-                            rs.getString("unvisited_url")
-                            );
-                }
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                dynamicUrlsModel = new DynamicUrlsModel(
+                        rs.getInt("id"),
+                        rs.getInt("basic_path_num"),
+                        rs.getString("path_to_url"),
+                        rs.getString("unvisited_url")
+                );
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error fetch path_to_url and unvisited_url By Id: %s", e.getMessage()));

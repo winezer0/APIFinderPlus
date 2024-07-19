@@ -1,6 +1,7 @@
 package ui;
 
 import burp.*;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import inet.ipaddr.format.util.AddressTrieMap;
@@ -640,10 +641,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                //解析URL列表, 生成host port 列表
                                 Set<String> pathSet = new LinkedHashSet<>();
 
-
+                                //解析URL列表, 生成 rootUrls 列表
                                 Set<String> rootUrls = new LinkedHashSet<>();
                                 for (String url :urlList){
                                     String rootUrlSimple = new HttpUrlInfo(url).getRootUrlSimple();
@@ -679,7 +679,48 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
 
         //copySingleLayerNodeItem
+        copySingleLayerNodeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                Set<String> pathSet = new LinkedHashSet<>();
 
+                                //查询msgHash列表对应的所有数据find path 数据
+                                List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByMsgHashList(msgHashList);
+                                for (FindPathModel findPathModel:findPathModelList){
+                                    //逐个提取PATH 并 加入 pathSet
+                                    JSONArray findPaths = findPathModel.getFindPath();
+                                    if (!findPaths.isEmpty()){
+                                        // 提取 path中的单层路径
+                                        for (Object uriPath : findPaths){
+                                            List<String> uriPart = PathTreeUtils.getUrlPart((String) uriPath);
+                                            if (uriPart.size() == 1){
+                                                pathSet.add(PathTreeUtils.formatUriPath((String) uriPath));
+                                            }
+                                        }
+                                    }
+                                }
+
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",pathSet), "单层路径信息");
+
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
     }
 
 
