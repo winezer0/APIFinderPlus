@@ -100,7 +100,7 @@ public class AnalyseResultTable {
                     if (analyseInfo.getPathList().size() > 0){
                         stmt2.setString(14, Constants.ANALYSE_WAIT);
                     } else {
-                        stmt2.setString(14, Constants.ANALYSE_SKIP);
+                        stmt2.setString(14, Constants.ANALYSE_END);
                     }
 
                     stmt2.setBoolean(15, analyseInfo.getHasImportant());
