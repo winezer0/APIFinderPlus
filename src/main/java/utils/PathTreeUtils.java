@@ -315,6 +315,33 @@ public class PathTreeUtils {
         return findPaths;
     }
 
+    /**
+     * 基于Json树生成所有Path
+     */
+    private static List<String> covertTreeToPaths(JSONObject json, String path) {
+        List<String> paths = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : json.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            // 构建新的路径
+            String newPath = path.isEmpty() ? key : path + "/" + key;
+            paths.add(newPath);
+
+            if (value instanceof JSONObject) {
+                // 如果值是JSONObject，递归调用
+                // 注意：这里的collectJsonPaths调用不需要额外的List参数
+                paths.addAll(covertTreeToPaths((JSONObject) value, newPath));
+            }
+        }
+        return paths;
+    }
+
+    private static List<String> covertTreeToPaths(JSONObject tree) {
+        return covertTreeToPaths(tree, "");
+    }
+
+
     public static void main(String[] args) {
         String url = "/biz-gateway/walletParam/paramTypeGroup/findListByGroupName";
         JSONObject tree = createRootTree(url);
@@ -334,7 +361,8 @@ public class PathTreeUtils {
         String sub_url = "walletParam/paramTypeGroup/findListByGroupName";
         JSONArray findNode = findNodePathInTree(tree, sub_url);
         System.out.println(findNode.toJSONString());
+
+        List<String> paths = covertTreeToPaths(tree);
+        System.out.println(paths);
     }
-
-
 }
