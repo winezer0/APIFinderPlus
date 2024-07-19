@@ -337,7 +337,7 @@ public class PathTreeUtils {
         return paths;
     }
 
-    private static List<String> covertTreeToPaths(JSONObject tree) {
+    public static List<String> covertTreeToPaths(JSONObject tree) {
         return covertTreeToPaths(tree, "");
     }
 

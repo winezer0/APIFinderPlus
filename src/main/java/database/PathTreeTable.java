@@ -4,7 +4,9 @@ import com.alibaba.fastjson2.JSONObject;
 import model.PathTreeModel;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static utils.CastUtils.isNotEmptyObj;
@@ -95,6 +97,40 @@ public class PathTreeTable {
         }
 
         return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
+    //根据域名查询对应的Host
+    public static synchronized List<PathTreeModel> fetchPathTreeByReqHostPortList(List<String> reqHostList) {
+        List<PathTreeModel> pathTreeModels = new ArrayList<>();
+
+        if (reqHostList.isEmpty()) return pathTreeModels;
+
+        //查询
+        String selectSql = "SELECT req_proto, req_host_port, path_tree, basic_path_num FROM "+ tableName +" WHERE req_host_port IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(reqHostList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+
+            for (int i = 0; i < reqHostList.size(); i++) {
+                stmt.setString(i + 1, reqHostList.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                PathTreeModel pathTreeModel = new PathTreeModel(
+                        rs.getString("req_proto"),
+                        rs.getString("req_host_port"),
+                        rs.getInt("basic_path_num"),
+                        rs.getString("path_tree")
+                );
+                pathTreeModels.add(pathTreeModel);
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error Fetch Path Tree By Req Host Port List On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+
+        return pathTreeModels;
     }
 
 

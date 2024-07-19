@@ -1,13 +1,12 @@
 package ui;
 
 import burp.*;
+import com.alibaba.fastjson2.JSONObject;
 import database.*;
+import inet.ipaddr.format.util.AddressTrieMap;
 import model.*;
 import ui.MainTabRender.importantCellRenderer;
-import utils.BurpHttpUtils;
-import utils.CastUtils;
-import utils.RespFieldCompareutils;
-import utils.UiUtils;
+import utils.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isNotEmptyObj;
 
 public class MainPanel extends JPanel implements IMessageEditorController {
     private static volatile MainPanel instance; //实现单例模式
@@ -214,6 +214,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
         JMenuItem genDynaPathFilterItem = new JMenuItem("基于URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
+        JMenuItem pathTreeToPathLsitItem = new JMenuItem("复制当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
@@ -229,9 +231,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(addRootUrlToNotAutoRecurseItem);
         popupMenu.add(addRootUrlToAllowListenItem);
         popupMenu.add(genDynaPathFilterItem);
+        popupMenu.add(pathTreeToPathLsitItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
+
 
         // 添加 copyUrlItem 事件监听器
         copyUrlItem.addActionListener(new ActionListener() {
@@ -611,6 +615,56 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                                     Map<String, Object> dynamicFilterMap = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
                                     IProxyScanner.urlCompareMap.put(msgInfo.getUrlInfo().getRootUrlUsual(), dynamicFilterMap);
                                 }
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //pathTreeToPathLsitItem
+        pathTreeToPathLsitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel>=0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //解析URL列表, 生成host port 列表
+                                Set<String> pathSet = new LinkedHashSet<>();
+
+
+                                Set<String> rootUrls = new LinkedHashSet<>();
+                                for (String url :urlList){
+                                    String rootUrlSimple = new HttpUrlInfo(url).getRootUrlSimple();
+                                    rootUrls.add(rootUrlSimple);
+                                }
+
+
+                                for (String rootUrl:rootUrls){
+                                    String getHostPort = new HttpUrlInfo(rootUrl).getHostPort();
+                                    //查询host 对应的树
+                                    PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByReqHostPort(getHostPort);
+                                    if (isNotEmptyObj(pathTreeModel)){
+                                        JSONObject currPathTree = pathTreeModel.getPathTree();
+                                        if (isNotEmptyObj(currPathTree)  && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))){
+                                           List<String> pathList = PathTreeUtils.covertTreeToPaths(currPathTree);
+                                           for (String path:pathList){
+                                               pathSet.add(path.replace("ROOT", rootUrl) + "/");
+                                           }
+                                        }
+                                    }
+                                }
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",pathSet), "所有路径信息");
                                 return null;
                             }
                         }.execute();
