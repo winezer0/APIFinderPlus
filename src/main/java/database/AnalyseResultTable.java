@@ -33,6 +33,7 @@ public class AnalyseResultTable {
 
             + " find_info TEXT DEFAULT '',\n"   //分析出来的敏感信息(Json格式)
             + " find_info_num INTEGER DEFAULT -1,\n"    //发现INFO的数量
+            + " has_important INTEGER DEFAULT 0,\n"    //是否存在重要信息
 
             + " find_api TEXT DEFAULT '',\n"        //基于分析的不完整URI信息 直接拼接 出来的URL (Json格式)
             + " find_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
@@ -72,8 +73,8 @@ public class AnalyseResultTable {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO "+ tableName +"" +
                         " (msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num," +
-                        " find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status)" +
-                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        " find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status, has_important)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, msgInfo.getMsgHash());
@@ -101,6 +102,8 @@ public class AnalyseResultTable {
                     } else {
                         stmt2.setString(14, Constants.ANALYSE_SKIP);
                     }
+
+                    stmt2.setBoolean(15, analyseInfo.getHasImportant());
 
                     stmt2.executeUpdate();
 
