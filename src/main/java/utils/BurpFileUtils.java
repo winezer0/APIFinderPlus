@@ -67,12 +67,13 @@ public class BurpFileUtils {
     /**
          * 从jar包中读取资源文件内容到字符串
          * @param resourceName 资源的路径（例如："com/example/myfile.txt"）
+         * @param charset
          * @return 文件内容字符串，如果发生错误则返回null
          */
-    public static String readResourceToString(String resourceName) {
+    public static String readResourceToString(String resourceName, Charset charset) {
         StringBuilder content = new StringBuilder();
         try (InputStream inputStream = BurpFileUtils.class.getClassLoader().getResourceAsStream(resourceName);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))) {
 
             if (inputStream == null) {
                 stderr_println("无法找到资源: " + resourceName);
@@ -107,9 +108,10 @@ public class BurpFileUtils {
      * 从 jar文件所在路径或jar文件内部读取配置文件
      * @param callbacks
      * @param configName
+     * @param charset
      * @return
      */
-    public static String ReadPluginConfFile(IBurpExtenderCallbacks callbacks, String configName) {
+    public static String ReadPluginConfFile(IBurpExtenderCallbacks callbacks, String configName, Charset charset) {
         String configJson;
 
         String extensionPath = getPluginPath(callbacks);
@@ -117,11 +119,11 @@ public class BurpFileUtils {
 
         if(isFileExists(configPath)){
             stdout_println(LOG_INFO, String.format("[+] Custom Config File Path: %s", configPath));
-            configJson = readFileToString(configPath);
+            configJson = readFileToString(configPath, charset);
         }else {
             configName = String.format("conf/%s", configName);
             stdout_println(LOG_INFO, String.format("[+] User Jar File Inner Config: %s -> %s", extensionPath, configName));
-            configJson = readResourceToString(configName);
+            configJson = readResourceToString(configName, charset);
         }
         return configJson;
     }

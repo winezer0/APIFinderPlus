@@ -13,11 +13,14 @@ import utils.RegularUtils;
 
 import javax.swing.*;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import static utils.BurpPrintUtils.*;
+import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener {
@@ -96,11 +99,18 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
         SwingUtilities.invokeLater(new Runnable() { public void run() {
             // 读取配置文件参数
-            String configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName);
+            String configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName, StandardCharsets.UTF_8);
             // 加载配置规则
             if(isNotEmptyObj(configJson)){
+                FingerPrintRulesWrapper rulesWrapper;
+                try{
+                    rulesWrapper = JSON.parseObject(configJson, FingerPrintRulesWrapper.class);
+                } catch (Exception e){
+                    stderr_println(LOG_ERROR, String.format("[!] JSON.parseObject Config Error:[%s]", e.getMessage()));
+                    configJson = BurpFileUtils.ReadPluginConfFile(callbacks, configName, Charset.forName("GBK"));
+                    rulesWrapper = JSON.parseObject(configJson, FingerPrintRulesWrapper.class);
+                }
                 // 使用Fastjson的parseObject方法将JSON字符串转换为Rule对象
-                FingerPrintRulesWrapper rulesWrapper = JSON.parseObject(configJson, FingerPrintRulesWrapper.class);
                 fingerprintRules = rulesWrapper.getFingerprint();
                 // 从规则json内获取黑名单设置 //此处后续可能需要修改,修改配置类型
                 if (isNotEmptyObj(fingerprintRules)){
@@ -117,6 +127,11 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
                 URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(CONF_URI_MATCH_REGULAR);
             }
 
+            if (isEmptyObj(fingerprintRules)){
+                stderr_println(LOG_ERROR, "[!] 配置文件加载出错!!!");
+                return;
+            }
+
             //加载UI 标签界面
             tags = new Tags(callbacks, extensionName);
 
@@ -129,11 +144,11 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener {
 
             // 注册插件状态监听操作
             callbacks.registerExtensionStateListener(BurpExtender.this);
-        }});
 
-        //设置插件已加载完成
-        extensionIsLoading = true;
-        stdout_println(LOG_INFO, String.format("[+] %s Load success ...", this.extensionName));
+            //设置插件已加载完成
+            extensionIsLoading = true;
+            stdout_println(LOG_INFO, String.format("[+] %s Load success ...", extensionName));
+        }});
     }
 
 
