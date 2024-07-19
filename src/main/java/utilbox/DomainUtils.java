@@ -176,7 +176,7 @@ public class DomainUtils {
 
         try {
             Resolver resolver = null;
-            Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.A);
+            Lookup lookup = new Lookup(domain, Type.A);
             if (IPAddressUtils.isValidIPv4MayPort(server)) {
                 resolver = new SimpleResolver(server);
                 lookup.setResolver(resolver);
@@ -230,7 +230,7 @@ public class DomainUtils {
             return result;
         }
         try {
-            Lookup lookup = new Lookup(domain, org.xbill.DNS.Type.NS);
+            Lookup lookup = new Lookup(domain, Type.NS);
             if (IPAddressUtils.isValidIPv4MayPort(server) || DomainUtils.isValidDomainMayPort(server)) {
                 Resolver resolver = new SimpleResolver(server);
                 lookup.setResolver(resolver);
