@@ -183,6 +183,8 @@ public class AnalyseResultTable {
     public static int updatePathDataStatusByIds(List<Integer> findPathIds) {
         int updatedCount = -1;
 
+        if (findPathIds.isEmpty()) return updatedCount;
+
         String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
 
@@ -211,6 +213,8 @@ public class AnalyseResultTable {
     public static synchronized List<FindPathModel> fetchPathDataByIds(List<Integer> findPathIds){
         List<FindPathModel> findPathModelList = new ArrayList<>();
 
+        if (findPathIds.isEmpty()) return findPathModelList;
+
         // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
         String selectSQL = "SELECT * FROM " + tableName + " WHERE id IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
@@ -235,7 +239,7 @@ public class AnalyseResultTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch Path Data By Ids: %s", e.getMessage()));
         }
         return findPathModelList ;
     }
@@ -432,6 +436,7 @@ public class AnalyseResultTable {
      */
     public static synchronized int clearUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
         int totalRowsAffected = 0;
+        if (msgHashList.isEmpty()) return totalRowsAffected;
 
         // 构建SQL语句
         String updateSQL = "UPDATE "+ tableName + " SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash IN $buildInParamList$;"
@@ -489,6 +494,7 @@ public class AnalyseResultTable {
      */
     public static synchronized List<UnVisitedUrlsModel> fetchUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
         List<UnVisitedUrlsModel> unVisitedUrlsModels = new ArrayList<>();
+        if (msgHashList.isEmpty()) return unVisitedUrlsModels;
 
         String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
                 .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));

@@ -126,6 +126,7 @@ public class ReqMsgDataTable {
      */
     public static synchronized List<ReqMsgDataModel> fetchMsgDataByMsgHashList(List<String> msgHashList){
         List<ReqMsgDataModel> reqMsgDataModelList = new ArrayList<>();
+        if (msgHashList.isEmpty()) return reqMsgDataModelList;
 
         String selectSQL = "SELECT * FROM "+ tableName + " WHERE msg_hash IN $buildInParameterList$;"
                 .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));

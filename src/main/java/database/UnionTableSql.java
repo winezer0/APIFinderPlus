@@ -43,7 +43,7 @@ public class UnionTableSql {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-]  Error fetch Need Update Path Data List: %s", e.getMessage()));
         }
         return findPathModels;
     }
@@ -223,9 +223,9 @@ public class UnionTableSql {
      * @return
      */
     public static synchronized int deleteDataByIds(List<Integer> ids, String tableName) {
-        if (isEmptyObj(ids)) return 0;
-
         int totalRowsAffected = 0;
+
+        if (ids.isEmpty()) return totalRowsAffected;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = "DELETE FROM "+ tableName + "  WHERE id IN $buildInParamList$;"
