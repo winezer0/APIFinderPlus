@@ -10,7 +10,7 @@ public class importantCellRenderer extends DefaultTableCellRenderer {
 
     // 预加载并缓存图标
     private final Icon importantIcon = UiUtils.getImageIcon("/icon/importantButtonIcon.png", 15, 15);
-
+    private final Icon notImportantIcon = UiUtils.getImageIcon("/icon/normalIcon.png", 15, 15);
     public importantCellRenderer() {
         setHorizontalAlignment(CENTER); // 设置居中
     }
@@ -29,7 +29,7 @@ public class importantCellRenderer extends DefaultTableCellRenderer {
                 setIcon(importantIcon);
             }else{
                 setIcon(null);
-                setText("普");
+                setText("NO");
             }
         } else {
             setIcon(null);

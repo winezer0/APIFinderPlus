@@ -3,6 +3,7 @@ package ui;
 import burp.*;
 import database.*;
 import model.*;
+import ui.MainTabRender.importantCellRenderer;
 import utils.BurpHttpUtils;
 import utils.CastUtils;
 import utils.RespFieldCompareutils;
@@ -648,6 +649,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         List<Integer> centerColumns = Arrays.asList(0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
         tableSetColumnRenders(centerColumns, centerRenderer);
 
+        importantCellRenderer havingImportantRenderer = new importantCellRenderer();
+        table.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
     }
 
     /**
