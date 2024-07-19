@@ -718,7 +718,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                showInputBox(msgHashList, "calcSingleLayerNodeItem", "指定PATH生成单层节点URL");
+                                showInputBoxAndHandle(msgHashList, "calcSingleLayerNodeItem", "指定PATH生成单层节点URL");
                                 return null;
                             }
                         }.execute();
@@ -736,7 +736,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * @param itemType
      * @param title
      */
-    private void showInputBox(List<String> msgHashList, String itemType, String title) {
+    private void showInputBoxAndHandle(List<String> msgHashList, String itemType, String title) {
         //弹出框,等待用户输入
         //创建一个对话框,便于输入url数据
         JDialog dialog = new JDialog();
