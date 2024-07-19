@@ -40,6 +40,8 @@
       "match": "keyword",
       "location": "urlPath",
       "keyword": [
+        ".microsoft.com",
+        ".msn.cn",
         ".baidu.com",
         ".google.com",
         ".bing.com",
