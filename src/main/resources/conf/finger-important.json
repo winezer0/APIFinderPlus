@@ -171,7 +171,8 @@
       "location": "urlPath",
       "keyword": [
         "text/css",
-        "text/javascript"
+        "text/javascript",
+        ":/usr/"
       ],
       "type": "CONF_BLACK_PATH_KEYS",
       "isImportant": false,
@@ -202,7 +203,7 @@
       "isImportant": false,
       "isOpen": true,
       "accuracy": "high",
-      "describe": "提取响应URI的正则 不能使用UI编辑"
+      "describe": "提取响应URI的正则"
     },
     {
       "match": "keyword",
