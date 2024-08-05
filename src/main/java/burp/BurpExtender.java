@@ -57,7 +57,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         return iProxyScanner;
     }
 
-    public static String extensionName = "APIFinder";
+    public static String extensionName = "APIFinderPlus";
 
     public static List<FingerPrintRule> fingerprintRules;
 

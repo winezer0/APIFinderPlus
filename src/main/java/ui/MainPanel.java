@@ -202,27 +202,26 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
-        JMenuItem accessUnVisitedItem = new JMenuItem("访问未访问URL列表", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
-        JMenuItem updateUnVisitedItem = new JMenuItem("更新未访问URL列表", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
-        JMenuItem ClearUnVisitedItem = new JMenuItem("清空未访问URL列表", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-        JMenuItem IgnoreUnVisitedItem = new JMenuItem("写入未访问URL列表", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
-        IgnoreUnVisitedItem.setToolTipText("当访问URL后依然无法过滤时使用");
+        JMenuItem accessUnVisitedItem = new JMenuItem("访问当前未访问URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
+        JMenuItem updateUnVisitedItem = new JMenuItem("刷新当前未访问URL", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
+        JMenuItem ClearUnVisitedItem = new JMenuItem("清空当前未访问URL", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        JMenuItem IgnoreUnVisitedItem = new JMenuItem("忽略当前未访问URL", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
 
-        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加ATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
 
         JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
-        JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到递归扫描黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到禁止自动递归目标", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
         JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
-        JMenuItem genDynaPathFilterItem = new JMenuItem("基于URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
+        JMenuItem genDynaPathFilterItem = new JMenuItem("基于当前URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
         JMenuItem pathTreeToPathListItem = new JMenuItem("复制当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
-        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前API结果的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
-        JMenuItem calcSingleLayerNodeItem = new JMenuItem("指定PATH生成单层节点URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem calcSingleLayerNodeItem = new JMenuItem("自定义根URL生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
-        JMenuItem removeFindApiIListItem = new JMenuItem("清空所有FindApi的内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -318,7 +317,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 ClearUnVisitedItem 事件监听器
-        ClearUnVisitedItem.setToolTipText("[多行]清空选定行对应的UnVisitedUrls");
+        ClearUnVisitedItem.setToolTipText("[多行]清空选定行对应的未访问URL");
         ClearUnVisitedItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -360,7 +359,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 IgnoreUnVisitedItem 事件监听器
-        IgnoreUnVisitedItem.setToolTipText("[多行]标记选定行对应的UnVisitedUrls为已访问并清空");
+        IgnoreUnVisitedItem.setToolTipText("[多行]标记选定行对应的未访问URL为已访问 并清空 当访问URL后依然无法过滤时使用");
         IgnoreUnVisitedItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -419,7 +418,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 addUrlPathToRecordPathItem 事件监听器
-        addUrlPathToRecordPathItem.setToolTipText("[多行]添加选定行对应的请求PATH添加到RecordPath表");
+        addUrlPathToRecordPathItem.setToolTipText("[多行]添加选定行对应的请求PATH到RecordPath表 用于计算PathTree");
         addUrlPathToRecordPathItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -468,7 +467,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 updateUnVisitedItem 事件监听器
-        updateUnVisitedItem.setToolTipText("[多行]更新选定行对应的UnVisitedUrls情况");
+        updateUnVisitedItem.setToolTipText("[多行]更新选定行对应的未访问URL情况");
         updateUnVisitedItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -493,7 +492,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 addRootUrlToBlackUrlRootItem 事件监听器
-        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单列表CONF_BLACK_URL_ROOT");
+        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单 CONF_BLACK_URL_ROOT");
         addRootUrlToBlackUrlRootItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -537,7 +536,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 accessUnVisitedItem 事件监听器
-        accessUnVisitedItem.setToolTipText("[多行]访问选定行对应的UnVisitedUrls");
+        accessUnVisitedItem.setToolTipText("[多行]访问选定行对应的当前所有未访问URL");
         accessUnVisitedItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -569,7 +568,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 addRootUrlToNotAutoRecurseItem 事件监听器
-        addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表CONF_NOT_AUTO_RECURSE");
+        addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表 CONF_NOT_AUTO_RECURSE");
         addRootUrlToNotAutoRecurseItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -594,7 +593,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 addRootUrlToAllowListenItem 事件监听器
-        addRootUrlToAllowListenItem.setToolTipText("[多行]添加选定行对应的RootUrl到仅监听的白名单列表CONF_WHITE_URL_ROOT");
+        addRootUrlToAllowListenItem.setToolTipText("[多行]添加选定行对应的RootUrl到仅监听的白名单 CONF_WHITE_URL_ROOT");
         addRootUrlToAllowListenItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -619,7 +618,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 genDynaPathFilterItem 事件监听器
-        genDynaPathFilterItem.setToolTipText("[多行]基于选定行对应的URL生成对应HOST的动态响应过滤条件");
+        genDynaPathFilterItem.setToolTipText("[多行]基于选定行对应的URL生成对应HOST的动态响应过滤条件 过滤无效响应不完善时使用");
         genDynaPathFilterItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -655,7 +654,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         //pathTreeToPathListItem
-        pathTreeToPathListItem.setToolTipText("[多行]复制选定行对应的RootUrl在PathTree中的路径数据到剪贴板并弹框");
+        pathTreeToPathListItem.setToolTipText("[多行]复制选定行对应的RootUrl在PathTree中的路径数据到剪贴板 并弹框");
         pathTreeToPathListItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -704,7 +703,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         //copySingleLayerNodeItem
-        copySingleLayerNodeItem.setToolTipText("[多行]复制选定行对应的FindPath中的无目录PATH到剪贴板并弹框");
+        copySingleLayerNodeItem.setToolTipText("[多行]复制选定行对应的提取PATH中的单层(无目录)路径到剪贴板 并弹框");
         copySingleLayerNodeItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -731,7 +730,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         //calcSingleLayerNodeItem
-        calcSingleLayerNodeItem.setToolTipText("[多行]基于选定行对应的FindPath中的无目录PATH和用户输入的URL前缀计算新的URL");
+        calcSingleLayerNodeItem.setToolTipText("[多行]基于选定行对应的提取PATH中的单层(无目录)PATH和用户输入的URL前缀计算新的URL");
         calcSingleLayerNodeItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -754,7 +753,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         //removeFindApiIListItem
-        removeFindApiIListItem.setToolTipText("[多行]移除选定行对应的FindApi中的URLs及UnVisitedUrls中对应的项");
+        removeFindApiIListItem.setToolTipText("[多行]移除选定行对应的PATH拼接URL内容及当前未访问URL中对应的内容 前后端分离时使用");
         removeFindApiIListItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1142,18 +1141,17 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         pathToUrlTEditor = callbacks.createTextEditor();
         unvisitedUrlTEditor = callbacks.createTextEditor();
 
-        tabs.addTab("RawMsg", msgViewerPane); //同时显示原始请求+原始响应
+        tabs.addTab("请求正文", msgViewerPane); //同时显示原始请求+原始响应
         //tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
         //tabs.addTab("Response", responseTextEditor.getComponent()); //显示原始响应
 
-        tabs.addTab("findInfo", findInfoTextScrollPane); //显示提取的信息
+        tabs.addTab("敏感信息", findInfoTextScrollPane); //显示提取的信息
 
-        tabs.addTab("findUrl", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("findPath", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("findApi", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("pathToUrl", pathToUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
-
-        tabs.addTab("unvisitedUrl", unvisitedUrlTEditor.getComponent()); //显示在这个URL中找到的Path 且还没有访问过的URL
+        tabs.addTab("提取URL", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("提取PATH", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("PATH拼接URL", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("PATH计算URL", pathToUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
+        tabs.addTab("当前未访问URL", unvisitedUrlTEditor.getComponent()); //显示在这个URL中找到的Path 且还没有访问过的URL
 
         return tabs;
     }
