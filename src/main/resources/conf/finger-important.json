@@ -172,7 +172,8 @@
       "keyword": [
         "text/css",
         "text/javascript",
-        ":/usr/"
+        ":/usr/",
+        "  "
       ],
       "type": "CONF_BLACK_PATH_KEYS",
       "isImportant": false,
