@@ -9,13 +9,14 @@
 name: Java CI with Maven
 
 on:
-#  push:
-#    branches: [ "main" ]
-#  pull_request:
-#    branches: [ "main" ]
-  # 只在发布新版本时触发
+  # 在创建新标签时触发
+  push:
+    tags:
+      - '*' # 匹配任何标签
+  # 在发布新版本时触发
   release:
     types: [created]
+
 
 jobs:
   build:
