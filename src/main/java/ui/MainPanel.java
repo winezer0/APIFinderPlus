@@ -31,6 +31,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private static JTable table; //表格UI
     private static DefaultTableModel model; // 存储表格数据
 
+    private static JSplitPane msgViewerPane;  //请求消息|响应消息 二合一 面板
     private static IMessageEditor requestTextEditor;  //请求消息面板
     private static IMessageEditor responseTextEditor; //响应消息面板
 
@@ -1048,6 +1049,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         requestTextEditor = callbacks.createMessageEditor(this, false);
         // 响应的面板
         responseTextEditor = callbacks.createMessageEditor(this, false);
+        //添加请求和响应信息面板到一个面板中
+        msgViewerPane = new JSplitPane(1);
+        msgViewerPane.setLeftComponent(requestTextEditor.getComponent());
+        msgViewerPane.setRightComponent(responseTextEditor.getComponent());
 
         //可以滚动的结果面板
         findInfoTextPane = new JEditorPane("text/html", "");
@@ -1060,8 +1065,9 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         pathToUrlTEditor = callbacks.createTextEditor();
         unvisitedUrlTEditor = callbacks.createTextEditor();
 
-        tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
-        tabs.addTab("Response", responseTextEditor.getComponent()); //显示原始响应
+        tabs.addTab("RawMsg", msgViewerPane); //同时显示原始请求+原始响应
+        //tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
+        //tabs.addTab("Response", responseTextEditor.getComponent()); //显示原始响应
 
         tabs.addTab("findInfo", findInfoTextScrollPane); //显示提取的信息
 
@@ -1080,7 +1086,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * @param row
      */
     private void updateComponentsBasedOnSelectedRow(int row) {
+        //清理下方数据内容
         clearTabsMsgData();
+
+        //动态设置UI宽度
+        msgViewerAutoSetSplitCenter();
 
         //1、获取当前行的msgHash
         String msgHash = null;
@@ -1138,6 +1148,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             pathToUrlTEditor.setText(pathToUrl.getBytes());
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
+    }
+
+    /**
+     * 当左边极小时 设置请求体和响应体各占一半空间
+     */
+    private void msgViewerAutoSetSplitCenter() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (msgViewerPane.getLeftComponent().getWidth() <= 20)
+                    msgViewerPane.setDividerLocation(msgViewerPane.getParent().getWidth() / 2);
+            }
+        });
     }
 
     /**
