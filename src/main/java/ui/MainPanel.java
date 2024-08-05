@@ -222,6 +222,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         JMenuItem calcSingleLayerNodeItem = new JMenuItem("指定PATH生成单层节点URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
+        JMenuItem removeFindApiIListItem = new JMenuItem("清空所有FindApi的内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
@@ -241,6 +243,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(pathTreeToPathListItem);
         popupMenu.add(copySingleLayerNodeItem);
         popupMenu.add(calcSingleLayerNodeItem);
+
+        popupMenu.add(removeFindApiIListItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -477,7 +481,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                updateUnVisitedUrls(msgHashList);
+                                updateUnVisitedUrlsByMsgHashList(msgHashList);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -741,6 +745,59 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 showInputBoxAndHandle(msgHashList, "calcSingleLayerNodeItem", "指定PATH生成单层节点URL");
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //removeFindApiIListItem
+        removeFindApiIListItem.setToolTipText("[多行]移除选定行对应的FindApi中的URLs及UnVisitedUrls中对应的项");
+        removeFindApiIListItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                for (String msgHash:msgHashList){
+                                    //逐个清理 UnvisitedURls 中的 findApiUrl
+
+                                    //根据 msgHash值 查询api分析结果数据
+                                    TableTabDataModel tabDataModel = AnalyseResultTable.fetchAnalyseResultByMsgHash(msgHash);
+                                    if (tabDataModel != null) {
+
+                                        //1、获取 msgHash 对应的 UnvisitedURls
+                                        String unvisitedUrl = tabDataModel.getUnvisitedUrl();
+                                        List<String> unvisitedUrlList = CastUtils.toStringList(CastUtils.toJsonArray(unvisitedUrl));
+                                        //跳过处理未访问列表为空的情况
+                                        if (unvisitedUrlList.isEmpty()) continue;
+
+                                        //2、获取 msgHash 对应的 findApiUrl
+                                        String findApi = tabDataModel.getFindApi();
+                                        List<String> findApiList = CastUtils.toStringList(CastUtils.toJsonArray(findApi));
+                                        //跳过处理findApi列表为空的情况
+                                        if (findApiList.isEmpty()) continue;
+
+                                        //3、计算差值 UnvisitedURls - findApiUrl
+                                        unvisitedUrlList = CastUtils.listReduceList(unvisitedUrlList, findApiList);
+
+                                        //4、更新 UnvisitedURls 到数据库
+                                        UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(-1, msgHash, null, unvisitedUrlList);
+                                        AnalyseResultTable.updateUnVisitedUrlsByMsgHash(unVisitedUrlsModel);
+                                    }
+                                }
+                                //删除所有findApi
+                                AnalyseResultTable.clearFindApiUrlsByMsgHashList(msgHashList);
+                                //刷新表单
+                                refreshTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -1309,7 +1366,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
     //复用 updateUnVisitedUrls
     private void updateAllUnVisitedUrls(){
-        updateUnVisitedUrls(null);
+        updateUnVisitedUrlsByMsgHashList(null);
     }
 
 
@@ -1317,7 +1374,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
      * @param msgHashList updateUnVisitedUrls 目标列表, 为空 为Null时更新全部
      */
-    private void updateUnVisitedUrls(List<String> msgHashList) {
+    private void updateUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
         // 使用SwingWorker来处理数据更新，避免阻塞EDT
         new SwingWorker<Void, Void>() {
             @Override

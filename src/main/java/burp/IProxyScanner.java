@@ -641,7 +641,7 @@ public class IProxyScanner implements IProxyListener {
                         dynamicUrlsModel.setBasicPathNum(currBasicPathNum);
 
                         //更新动态的URL数据
-                        int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModel(dynamicUrlsModel);
+                        int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModelById(dynamicUrlsModel);
                         //if (apiDataIndex > 0)
                         // stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]",
                         // newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));

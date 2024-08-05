@@ -153,7 +153,6 @@ public class AnalyseResultTable {
         return tabDataModel;
     }
 
-
     /**
      * 获取多条 存在 Path 并且没有 动态计算过的 path数据 的ID
      */
@@ -175,7 +174,6 @@ public class AnalyseResultTable {
         }
         return findPathIdList ;
     }
-
 
     /**
      * 更新多个id对应的数据为已处理
@@ -205,7 +203,6 @@ public class AnalyseResultTable {
         }
         return updatedCount;
     }
-
 
     /**
      * 获取多条 存在 Path 并且没有 动态计算过的 path数据
@@ -240,8 +237,6 @@ public class AnalyseResultTable {
         return findPathModelList ;
     }
 
-
-
     /**
      * 获取多条 存在 Path 并且没有 动态计算过的 path数据
      */
@@ -274,8 +269,6 @@ public class AnalyseResultTable {
         }
         return findPathModelList ;
     }
-
-
 
     /**
      * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
@@ -337,7 +330,7 @@ public class AnalyseResultTable {
      * @param dynamicUrlModel
      * @return
      */
-    public static synchronized int updateDynamicUrlsModel(DynamicUrlsModel dynamicUrlModel){
+    public static synchronized int updateDynamicUrlsModelById(DynamicUrlsModel dynamicUrlModel){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE "+ tableName +
@@ -438,10 +431,32 @@ public class AnalyseResultTable {
             stmt.setInt(3, unVisitedUrlsModel.getId());
             affectedRows = stmt.executeUpdate();
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls By Id: %s", e.getMessage()));
         }
         return affectedRows;
     }
+
+    /**
+     * 实现 基于 MsgHash 更新 unvisitedUrls
+     * @param unVisitedUrlsModel
+     * @return
+     */
+    public static synchronized int updateUnVisitedUrlsByMsgHash(UnVisitedUrlsModel unVisitedUrlsModel) {
+        int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE " + tableName +"  SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            stmt.setString(1, CastUtils.toJsonString(unVisitedUrlsModel.getUnvisitedUrls()));
+            stmt.setInt(2, unVisitedUrlsModel.getUnvisitedUrls().size());
+            stmt.setString(3, unVisitedUrlsModel.getMsgHash());
+            affectedRows = stmt.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls By MsgHash: %s", e.getMessage()));
+        }
+        return affectedRows;
+    }
+
 
     /**
      * 实现 基于 msgHash 删除 unvisitedUrls
@@ -493,6 +508,36 @@ public class AnalyseResultTable {
         return totalRowsAffected;
     }
 
+    /**
+     * 实现 基于 msgHash 列表 删除 FindApiUrl
+     */
+    public static synchronized int clearFindApiUrlsByMsgHashList(List<String> msgHashList) {
+        int totalRowsAffected = 0;
+        if (msgHashList.isEmpty()) return totalRowsAffected;
+
+        // 构建SQL语句
+        String updateSQL = "UPDATE "+ tableName + " SET find_api = ?, find_api_num = 0 WHERE msg_hash IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            // 设置第一个参数为JSON数组的toJSONString()
+            JSONArray emptyArray = new JSONArray();
+            stmt.setString(1, emptyArray.toJSONString());
+
+            // 循环设置消息哈希参数
+            int index = 2; // 开始于第二个参数位置，第一个参数已被设置
+            for (String msgHash : msgHashList) {
+                stmt.setString(index++, msgHash);
+            }
+
+            // 执行更新操作并获取受影响行数
+            totalRowsAffected = stmt.executeUpdate();
+
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error clearing FindApi URLs by msg hash list -> Error:[%s]", e.getMessage()));
+        }
+        return totalRowsAffected;
+    }
 
     /**
      * 实现 基于 msgHash 获取 unvisitedUrls
