@@ -114,7 +114,7 @@ public class ElementUtils {
      * @return
      */
     private static String format(String string){
-        return string.toLowerCase().trim();
+        return string.toLowerCase();
     }
 
 }
