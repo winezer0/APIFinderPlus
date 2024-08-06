@@ -3,14 +3,10 @@ package utils;
 import burp.BurpExtender;
 import burp.IHttpRequestResponse;
 import burp.IProxyScanner;
-import com.alibaba.fastjson2.JSONObject;
-import database.Constants;
 import database.PathTreeTable;
-import database.RecordPathTable;
 import database.RecordUrlTable;
 import model.HttpMsgInfo;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static burp.BurpExtender.*;
@@ -59,7 +55,7 @@ public class BurpSitemapUtils {
                                 ){
 //                                    RecordPathTable.insertOrUpdateRecordPath(reqBaseUrl, msgInfo.getRespInfo().getStatusCode());
 //                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqBaseUrl));
-                                    IProxyScanner.enhanceRecordPathFilter(msgInfo, IProxyScanner.dynamicPthFilterIsOpen);
+                                    IProxyScanner.enhanceRecordPathFilter(msgInfo, IProxyScanner.dynamicPathFilterIsOpen);
                                 }
                             }
                         } catch (Exception e){

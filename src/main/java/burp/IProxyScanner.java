@@ -32,7 +32,7 @@ public class IProxyScanner implements IProxyListener {
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
 
-    public static boolean dynamicPthFilterIsOpen = true;    //是否启用增强的path过滤模式
+    public static boolean dynamicPathFilterIsOpen = true;    //是否启用增强的path过滤模式
 
     public static boolean autoRecordPathIsOpen  = true;     //是否启用自动记录每个录得PATH
     public static boolean autoPathsToUrlsIsOpen = false;    //是否进行自动PathTree生成URL
@@ -118,7 +118,7 @@ public class IProxyScanner implements IProxyListener {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
+                        enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
                     }
                 });
             }
@@ -196,7 +196,7 @@ public class IProxyScanner implements IProxyListener {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
+                        enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
                     }
                 });
             }
@@ -263,8 +263,8 @@ public class IProxyScanner implements IProxyListener {
     /**
      * 增强的有效路径判断过滤函数
      */
-    public static void enhanceRecordPathFilter(HttpMsgInfo msgInfo, boolean dynamicPthFilterIsOpen) {
-        if (!dynamicPthFilterIsOpen){
+    public static void enhanceRecordPathFilter(HttpMsgInfo msgInfo, boolean dynamicPathFilterIsOpen) {
+        if (!dynamicPathFilterIsOpen){
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -369,7 +369,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //清理在等待动态过滤Map生成过程中没有处理的响应对象
-                    if (dynamicPthFilterIsOpen && isNotEmptyObj(notCompareMap)){
+                    if (dynamicPathFilterIsOpen && isNotEmptyObj(notCompareMap)){
                         // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
                         ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
                         // 遍历键的列表
@@ -559,7 +559,7 @@ public class IProxyScanner implements IProxyListener {
                                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
                                     && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
                             ){
-                                enhanceRecordPathFilter(msgInfo, dynamicPthFilterIsOpen);
+                                enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
                             }
 
                         }

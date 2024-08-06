@@ -235,8 +235,8 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该作为不开启配置
-                IProxyScanner.dynamicPthFilterIsOpen = !dynamicPthFilterButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("dynamicPthFilterIsOpen: %s", IProxyScanner.dynamicPthFilterIsOpen));
+                IProxyScanner.dynamicPathFilterIsOpen = !dynamicPthFilterButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("dynamicPthFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
             }
         });
 
