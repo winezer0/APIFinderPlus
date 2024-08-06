@@ -151,6 +151,10 @@ public class AnalyseInfoUtils {
     public static String removeSymbol(String extractUri){
         if (isNotEmptyObj(extractUri))
             extractUri = extractUri
+                    .replace("<", "")
+                    .replace(">", "")
+                    .replace(": ", "")
+                    .replace("：", "")
                     .replace("\"", "")
                     .replace("'", "")
                     .replace("\\", "")
