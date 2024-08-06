@@ -27,6 +27,7 @@ public class AnalyseInfo {
     public static final String accuracy = "accuracy";
     public static final String important = "important";
     public static final String value = "value";
+    public static final String match = "match";
 
     public static final String URL_KEY = "URL_KEY";
     public static final String PATH_KEY = "PATH_KEY";
@@ -191,14 +192,14 @@ public class AnalyseInfo {
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
             //忽略关闭的选项 // 过滤掉配置选项
-            if (!rule.getIsOpen() || rule.getType().contains(Constants.RULE_CONF_PREFIX)){
+            if (!rule.getIsOpen() || rule.getType().contains(Constants.RULE_CONF_PREFIX) || rule.getLocation().equals("config")){
                 continue;
             }
 
             // 根据不同的规则 配置 查找范围
             String locationText;
             switch (rule.getLocation()) {
-                case "urlPath":
+                case "path":
                     locationText = msgInfo.getUrlInfo().getPathToFile();
                     break;
                 case "body":
@@ -207,6 +208,7 @@ public class AnalyseInfo {
                 case "header":
                     locationText = new String(msgInfo.getRespInfo().getHeaderBytes(), StandardCharsets.UTF_8);
                     break;
+                case "response":
                 default:
                     locationText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
                     break;
@@ -216,11 +218,13 @@ public class AnalyseInfo {
             if (locationText.length() > 0) {
                 //多个关键字匹配
                 if (rule.getMatch().equals("keyword"))
-                    if(isContainAllKey(locationText, rule.getKeyword(), false)){
-                        //匹配关键字模式成功,应该标记敏感信息 关键字匹配的有效信息就是关键字
-                        JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(rule.getKeyword()));
-                        //stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
-                        findInfoJsonList.add(findInfo);
+                    for (String keywords : rule.getKeyword()){
+                        if(isContainAllKey(locationText, keywords, false)){
+                            //匹配关键字模式成功,应该标记敏感信息 关键字匹配的有效信息就是关键字
+                            JSONObject findInfo = formatMatchInfoToJson(rule, keywords);
+                            //stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
+                            findInfoJsonList.add(findInfo);
+                        }
                     }
 
                 //多个正则匹配
@@ -251,6 +255,7 @@ public class AnalyseInfo {
         jsonObject.put(describe, rule.getDescribe()); //"describe": "身份证",
         jsonObject.put(accuracy, rule.getAccuracy()); //"accuracy": "high"
         jsonObject.put(important, rule.getIsImportant()); //"isImportant": true,
+        jsonObject.put(match, rule.getMatch()); //匹配位置
         jsonObject.put(value, group);
         return jsonObject;
     }

@@ -9,10 +9,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static utils.BurpPrintUtils.*;
+import static utils.BurpPrintUtils.LOG_DEBUG;
+import static utils.BurpPrintUtils.stderr_println;
 import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainOneKey;
-import static utils.ElementUtils.isEqualsOneKey;
 
 public class AnalyseInfoUtils {
 

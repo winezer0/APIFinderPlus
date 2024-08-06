@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static utils.CastUtils.isEmptyObj;
@@ -99,6 +100,20 @@ public class ElementUtils {
     public static boolean isContainAllKey(String string, List<String> elements, boolean bool) {
         //当元素为空时,返回默认值
         if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
+
+        for (String element : elements) {
+            if (!format(string).contains(format(element))){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isContainAllKey(String string, String elementsString, boolean bool) {
+        //当元素为空时,返回默认值
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return bool;
+
+        String[] elements = elementsString.split("\\|");
 
         for (String element : elements) {
             if (!format(string).contains(format(element))){

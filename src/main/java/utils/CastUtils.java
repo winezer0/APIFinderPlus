@@ -1,5 +1,6 @@
 package utils;
 
+import burp.AnalyseInfo;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.HttpUrlInfo;
@@ -167,14 +168,16 @@ public class CastUtils {
                         "############# type: %s #############<br>" +
                                 "describe: <span style='color: $color$};'>%s</span><br>" +
                                 "value: <span style='color: $color$};'>%s</span><br>" +
+                                "match: %s<br>" +
                                 "accuracy: %s<br>" +
                                 "important: %s<br>"
                         ,
-                        jsonObject.getString("type"),
-                        jsonObject.getString("describe"),
-                        UiUtils.encodeForHTML(jsonObject.getString("value")),
-                        jsonObject.getString("accuracy"),
-                        jsonObject.getString("important")
+                        jsonObject.getString(AnalyseInfo.type),
+                        jsonObject.getString(AnalyseInfo.describe),
+                        jsonObject.getString(AnalyseInfo.value),
+                        jsonObject.getString(AnalyseInfo.match),
+                        jsonObject.getString(AnalyseInfo.accuracy),
+                        jsonObject.getString(AnalyseInfo.important)
                 );
 
                 //进行颜色标记
@@ -204,14 +207,16 @@ public class CastUtils {
                         "############# type: %s #############\n" +
                                 "describe: %s\n" +
                                 "value: %s\n" +
+                                "match: %s\n" +
                                 "accuracy: %s\n" +
                                 "important: %s\n"
                         ,
-                        jsonObject.getString("type"),
-                        jsonObject.getString("describe"),
-                        jsonObject.getString("value"),
-                        jsonObject.getString("accuracy"),
-                        jsonObject.getString("important")
+                        jsonObject.getString(AnalyseInfo.type),
+                        jsonObject.getString(AnalyseInfo.describe),
+                        jsonObject.getString(AnalyseInfo.value),
+                        jsonObject.getString(AnalyseInfo.match),
+                        jsonObject.getString(AnalyseInfo.accuracy),
+                        jsonObject.getString(AnalyseInfo.important)
                 );
 
                 //进行颜色标记

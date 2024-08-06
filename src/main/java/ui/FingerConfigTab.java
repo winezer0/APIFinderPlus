@@ -374,7 +374,7 @@ public class FingerConfigTab extends JPanel {
                 editRulePanel.setTitle("新增指纹");
                 isImportantField.setSelectedItem(Boolean.TRUE); // 默认设置为重要
                 searchMethodField.setSelectedItem("keyword"); // 默认方法设置为 keyword
-                updateLocationField("keyword"); // 根据默认的方法更新 locationField
+                updateLocationField(); // 根据默认的方法更新 locationField
                 keywordField.setText("");
 
                 // 更新 typeField 下拉选项
@@ -710,7 +710,7 @@ public class FingerConfigTab extends JPanel {
         keywordField = new JTextArea(5, 20); // 5行，20列
         describeField = new JTextField("-");
         searchMethodField.setSelectedItem("keyword");
-        updateLocationField("keyword");
+        updateLocationField();
 
         // 创建 GridBagConstraints 对象来控制每个组件的布局
         GridBagConstraints constraints = new GridBagConstraints();
@@ -816,7 +816,7 @@ public class FingerConfigTab extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 JComboBox<String> methodCombo = (JComboBox<String>) e.getSource();
                 String selectedMethod = (String) methodCombo.getSelectedItem();
-                updateLocationField(selectedMethod); // 根据选择更新 locationField
+                updateLocationField(); // 根据选择更新 locationField
             }
         });
 
@@ -963,15 +963,13 @@ public class FingerConfigTab extends JPanel {
     }
 
     // 添加一个新的方法来更新 locationField 的选项
-    private void updateLocationField(String method) {
+    private void updateLocationField() {
         locationField.removeAllItems(); // 清除之前的选项
-        if ("keyword".equals(method)) {
-            locationField.addItem("body");
-            locationField.addItem("urlPath");
-        } else if ("regular".equals(method)) {
-            locationField.addItem("body");
-            locationField.addItem("urlPath");
+        String[] locations = {"path", "body", "header", "response", "config"};
+        for (String location : locations) {
+            locationField.addItem(location);
         }
+
         locationField.setSelectedItem("body"); // 默认选中 "body"
     }
 
