@@ -188,6 +188,42 @@ public class CastUtils {
     }
 
     /**
+     * 格式化Json数据为可输出的状态
+     */
+    public static String infoJsonStringSetFormatText(Set<String> infoJsonSet) {
+        if (infoJsonSet.isEmpty())
+            return "";
+
+        StringBuilder formattedResult = new StringBuilder();
+
+        for (String infoJsonString : infoJsonSet) {
+            JSONObject jsonObject = JSONObject.parse(infoJsonString);
+            if (!jsonObject.isEmpty()) {
+                // 使用String.format进行格式化
+                String formattedItem = String.format(
+                        "############# type: %s #############\n" +
+                                "describe: %s\n" +
+                                "value: %s\n" +
+                                "accuracy: %s\n" +
+                                "important: %s\n"
+                        ,
+                        jsonObject.getString("type"),
+                        jsonObject.getString("describe"),
+                        jsonObject.getString("value"),
+                        jsonObject.getString("accuracy"),
+                        jsonObject.getString("important")
+                );
+
+                //进行颜色标记
+                formattedResult.append(formattedItem);
+            }
+        }
+
+        return formattedResult.toString();
+    }
+
+
+    /**
      * 字符串转 CRC32
      */
     public static String calcCRC32(String string) {

@@ -223,6 +223,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 
+        JMenuItem CopyAllFindInfoItem = new JMenuItem("复制当前所有敏感信息", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         JMenuItem CopyAllFindUrlsItem = new JMenuItem("复制当前所有提取URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         JMenuItem CopyAllFindPathItem = new JMenuItem("复制当前所有提取PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         JMenuItem CopyAllFindApiItem = new JMenuItem("复制当前所有PATH拼接URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
@@ -257,6 +258,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(CopyAllFindApiItem);
         popupMenu.add(CopyAllPath2UrlsItem);
         popupMenu.add(CopyAllUnVisitedUrlsItem);
+        popupMenu.add(CopyAllFindInfoItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -958,6 +960,34 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
+        //复制当前所有敏感信息
+        CopyAllFindInfoItem.setToolTipText("[多行]复制选定行对应的敏感信息到剪贴板 并弹框");
+        CopyAllFindInfoItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                String columnName = "find_info";
+                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                String infoJsonStringSetFormatText = CastUtils.infoJsonStringSetFormatText(stringSet);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(infoJsonStringSetFormatText);
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(infoJsonStringSetFormatText, columnName + String.format(" => NUM %s", stringSet.size()));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
     }
 
     /**
