@@ -14,7 +14,7 @@ public class DBService {
 
     //指定sqlite数据库配置文件路径
     private static final String CONNECTION_STRING = String.format(
-            "jdbc:sqlite:%s?journal_mode=WAL", BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinder.db")
+            "jdbc:sqlite:%s?journal_mode=WAL", BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinderPlus.db")
     );
 
 

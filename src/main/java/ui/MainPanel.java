@@ -215,13 +215,19 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
         JMenuItem genDynaPathFilterItem = new JMenuItem("基于当前URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
-        JMenuItem pathTreeToPathListItem = new JMenuItem("复制当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem pathTreeToPathListItem = new JMenuItem("提取当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
         JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
-        JMenuItem calcSingleLayerNodeItem = new JMenuItem("自定义根URL生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem calcSingleLayerNodeItem = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
         JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+
+        JMenuItem CopyAllFindUrlsItem = new JMenuItem("复制当前所有提取URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem CopyAllFindPathItem = new JMenuItem("复制当前所有提取PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem CopyAllFindApiItem = new JMenuItem("复制当前所有PATH拼接URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem CopyAllPath2UrlsItem = new JMenuItem("复制当前所有PATH计算URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem CopyAllUnVisitedUrlsItem = new JMenuItem("复制当前所有未访问URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
@@ -244,6 +250,13 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(calcSingleLayerNodeItem);
 
         popupMenu.add(removeFindApiIListItem);
+
+
+        popupMenu.add(CopyAllFindUrlsItem);
+        popupMenu.add(CopyAllFindPathItem);
+        popupMenu.add(CopyAllFindApiItem);
+        popupMenu.add(CopyAllPath2UrlsItem);
+        popupMenu.add(CopyAllUnVisitedUrlsItem);
 
         // 将右键菜单添加到表格
         table.setComponentPopupMenu(popupMenu);
@@ -716,7 +729,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                Set<String> pathSet = fetchFindPatSet(msgHashList);
+                                Set<String> pathSet = fetchSingleLayerFindPathSet(msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
                                 //弹框让用户查看
@@ -805,6 +818,146 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         });
 
+        //复制当前所有提取URL
+        CopyAllFindUrlsItem.setToolTipText("[多行]复制选定行对应的提取URL到剪贴板 并弹框");
+        CopyAllFindUrlsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                String columnName = "find_url";
+                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //复制当前所有提取PATH
+        CopyAllFindPathItem.setToolTipText("[多行]复制选定行对应的提取PATH到剪贴板 并弹框");
+        CopyAllFindPathItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                String columnName = "find_path";
+                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //复制当前所有PATH拼接URL
+        CopyAllFindApiItem.setToolTipText("[多行]复制选定行对应的PATH拼接URL到剪贴板 并弹框");
+        CopyAllFindApiItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                String columnName = "find_api";
+                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //复制当前所有PATH计算URL
+        CopyAllPath2UrlsItem.setToolTipText("[多行]复制选定行对应的PATH计算URL到剪贴板 并弹框");
+        CopyAllPath2UrlsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                String columnName = "path_to_url";
+                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //复制当前所有未访问URL
+        CopyAllUnVisitedUrlsItem.setToolTipText("[多行]复制选定行对应的未访问URL到剪贴板 并弹框");
+        CopyAllUnVisitedUrlsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (listSelectionModel >= 0) {
+                    int[] selectedRows = table.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                String columnName = "unvisited_url";
+                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
     }
 
     /**
@@ -880,7 +1033,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                                 case "calcSingleLayerNodeItem":
                                     //基于pathSet和用户输入组合URL
                                     Set<String> urlSet = new LinkedHashSet<>();
-                                    Set<String> pathSet = fetchFindPatSet(msgHashList);
+                                    Set<String> pathSet = fetchSingleLayerFindPathSet(msgHashList);
                                     for (String prefix : urlList) {
                                         List<String> urls = AnalyseInfoUtils.concatUrlAddPath(prefix, new ArrayList<>(pathSet));
                                         if (urls.size() > 0) urlSet.addAll(urls);
@@ -899,10 +1052,13 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
     }
 
-    private Set<String> fetchFindPatSet(List<String> inputList) {
+    /**
+     * 复制 msgHashList 对应的 提取PATH 中的 单层（无目录）路径
+     */
+    private Set<String> fetchSingleLayerFindPathSet(List<String> msgHashList) {
         Set<String> pathSet = new LinkedHashSet<>();
         //查询msgHash列表对应的所有数据find path 数据
-        List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByMsgHashList(inputList);
+        List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByMsgHashList(msgHashList);
         for (FindPathModel findPathModel:findPathModelList){
             //逐个提取PATH 并 加入 pathSet
             JSONArray findPaths = findPathModel.getFindPath();
@@ -918,7 +1074,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
         return pathSet;
     }
-
 
     /**
      * 为 table 设置每一列的 宽度

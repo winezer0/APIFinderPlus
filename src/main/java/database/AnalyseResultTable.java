@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
@@ -457,7 +459,6 @@ public class AnalyseResultTable {
         return affectedRows;
     }
 
-
     /**
      * 实现 基于 msgHash 删除 unvisitedUrls
      */
@@ -597,6 +598,37 @@ public class AnalyseResultTable {
         }
 
         return unVisitedUrlsModels;
+    }
+
+
+    /**
+     * 实现 基于 msgHash 列表 获取 XXX Urls 列表
+     */
+    public static synchronized Set<String> fetchSpecialUrlsByMsgHashList(String columnName, List<String> msgHashList) {
+        Set<String> urlsSet = new LinkedHashSet<>();
+        if (msgHashList.isEmpty()) return urlsSet;
+
+        String selectSQL = "SELECT " + columnName + " FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
+                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 1, msgHashList.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String urlJson = rs.getString(columnName);
+                    List<String> urlList = CastUtils.toStringList(CastUtils.toJsonArray(urlJson));
+                    urlsSet.addAll(urlList);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching " + columnName + " Urls By MsgHash List: %s", e.getMessage()));
+        }
+
+        return urlsSet;
     }
 
 }
