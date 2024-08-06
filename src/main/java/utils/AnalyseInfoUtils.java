@@ -34,7 +34,19 @@ public class AnalyseInfoUtils {
                 Pattern pattern = Pattern.compile(patter, Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(beFindContentChunk);
                 while (matcher.find()) {
-                    String group = matcher.group();
+                    int groupCount = matcher.groupCount();
+                    String group;
+                    if (groupCount <= 1){
+                        group = matcher.group(1);
+                    } else {
+                        //简单处理多个捕获组的情况
+                        List<String> groupList = new ArrayList<>();
+                        for (int i = 1; i <= groupCount; i++) {
+                            groupList.add(matcher.group(i));
+                        }
+                        group = String.join("|", groupList);
+                    }
+
                     //格式化响应
                     group = formatSensitiveInfo(group);
 
@@ -150,10 +162,10 @@ public class AnalyseInfoUtils {
     public static String removeSymbol(String extractUri){
         if (isNotEmptyObj(extractUri))
             extractUri = extractUri
-                    .replace("<", "")
-                    .replace(">", "")
-                    .replace(": ", "")
-                    .replace("：", "")
+//                    .replace("<", "")
+//                    .replace(">", "")
+//                    .replace(": ", "")
+//                    .replace("：", "")
                     .replace("\"", "")
                     .replace("'", "")
                     .replace("\\", "")
