@@ -4,7 +4,6 @@ import burp.BurpExtender;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,7 +36,7 @@ public class AnalyseInfoUtils {
                 while (matcher.find()) {
                     String group = matcher.group();
                     //格式化响应
-                    group = formatUri(group);
+                    group = formatSensitiveInfo(group);
 
                     //响应超过长度时 截断
                     if (group.length() > RESULT_SIZE)
@@ -137,7 +136,7 @@ public class AnalyseInfoUtils {
      * @param extractUri
      * @return
      */
-    public static String formatUri(String extractUri){
+    public static String formatSensitiveInfo(String extractUri){
         extractUri = removeSymbol(extractUri);
         extractUri = decodeHtml(extractUri);
         return extractUri;
@@ -161,7 +160,6 @@ public class AnalyseInfoUtils {
                     .replaceAll("\n", "")
                     .replaceAll("\t", "")
                     .trim();
-
         return extractUri;
     }
 
@@ -227,7 +225,7 @@ public class AnalyseInfoUtils {
         List<String> pathList = Arrays.asList("forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=75\",\"/promotions/jackpot2023\",\"data/cache/style_1_forum_index.css?lo9\",\"static/image/k8-2.png\",\"static/image/jackpot_prize_pool/2-pc2.png\",\"static/js/common.js?lo9\",\"plugin.php?id=qidou_assign\",\"/bbs/login\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=81\",\"search.php?searchsubmit=yes\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=83\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=82\",\"data/cache/style_1_widthauto.css?lo9\",\"static/image/home/k8logo.png\",\"static/image/jackpot_prize_pool/3-pc.png\",\"/bbs/register\",\"static/image/jackpot_prize_pool/arrow.webp\",\"member.php?mod=logging&amp;action=login&amp;loginsubmit=yes&amp;infloat=yes&amp;lssubmit=yes\",\"member.php?mod=register\",\"forum.php?mod=list&amp;type=lastpost&amp;page=1&amp;fid=74\",\"static/image/money-icon.png\",\"static/image/dialognew.png\",\"static/image/k8-app-icon.png\",\"template/default/css/use_common.css\",\"static/image/jackpot_prize_pool/2-image.png\",\"static/image/home/home.png\",\"data/cache/style_1_common.css?lo9\",\"/club/forum.php?mod=viewthread&tid=8153&fid=82\",\"static/image/home/activity.png\",\"static/image/home/game.png\",\"/club/forum.php?mod=viewthread&tid=8265&fid=82\",\"static/js/forum.js?lo9\",\"template/default/css/use_forum_viewthread.css?lo9\",\"template/default/css/nice-select.css?lo9\",\"/club/forum.php?mod=viewthread&tid=8264&fid=82\",\"static/js/logging.js?lo9\",\"/club/forum.php?mod=viewthread&tid=8266&fid=82\",\"static/image/common/favicon.ico\",\"static/image/home/xuetang.png\",\"template/default/css/dialog.css?lo9\",\"/club/forum.php?mod=viewthread&tid=8302fid=83\",\"static/image/money_circle.png\",\"member.php?mod=logging&action=login\",\"static/image/K8.png\",\"template/default/css/use_common.css?lo9\",\"forum.php?mod=ajax&action=notices\",\"plugin.php?id=jyjbwl:index\",\"static/image/k8.png\",\"static/image/k8_icon_0112.png\",\"static/image/jackpot_prize_pool/DINAlternateBold.ttf".split(","));
         for (String url : urlList)
             for (String path : pathList){
-                path = formatUri(path);
+                path = formatSensitiveInfo(path);
                 System.out.println(String.format("%s <--> %s %s", concatUrlAddPath(url,path), url, path));
             }
     }
