@@ -74,8 +74,8 @@ public class BurpHttpUtils {
         byte[] requestBytes = baseRequest.getBytes();
 
         //基于请求头列表 更新 requestBytes 中的 请求头
+        HelperPlus helperPlus = HelperPlus.getInstance();
         if (addHeader && isNotEmptyObj(referReqHeaders)){
-            HelperPlus helperPlus = HelperPlus.getInstance();
             for (String referReqHeader : referReqHeaders){
                 if (!referReqHeader.toLowerCase().contains("host:")){
                     // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
@@ -84,6 +84,11 @@ public class BurpHttpUtils {
             }
         }
 
+        //设置 Connection: close
+        requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, "Connection: close");
+
+        //输出修改后的信息 已确定修改成功
+        //System.out.println(new String(requestBytes));
         return requestBytes;
     }
 
