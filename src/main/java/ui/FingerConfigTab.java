@@ -889,11 +889,6 @@ public class FingerConfigTab extends JPanel {
                 String location = (String) locationField.getSelectedItem();
                 String describe = describeField.getText();
                 List<String> keyword;
-//                if (method.equals("regular")){
-//                    keyword = Collections.singletonList(keywordField.getText());
-//                }else{
-//                    keyword = Arrays.asList(keywordField.getText().split(","));
-//                }
                 keyword = Arrays.asList(keywordField.getText().split("\n"));
                 if (type.trim().isEmpty() || method.trim().isEmpty() || location.trim().isEmpty()) {
                     JOptionPane.showMessageDialog(editRulePanel, "主要输入框都必须填写。", "输入错误", JOptionPane.ERROR_MESSAGE);
