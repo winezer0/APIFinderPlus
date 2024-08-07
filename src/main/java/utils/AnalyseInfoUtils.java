@@ -35,16 +35,21 @@ public class AnalyseInfoUtils {
                 Matcher matcher = pattern.matcher(beFindContentChunk);
                 while (matcher.find()) {
                     int groupCount = matcher.groupCount();
+
                     String group;
-                    if (groupCount <= 1){
-                        group = matcher.group(1);
-                    } else {
-                        //简单处理多个捕获组的情况
+                    // 检查是否有至少一个捕获组
+                    if (groupCount > 0) {
+                        // 如果有多个捕获组，处理多个捕获组
                         List<String> groupList = new ArrayList<>();
                         for (int i = 1; i <= groupCount; i++) {
                             groupList.add(matcher.group(i));
                         }
                         group = String.join("|", groupList);
+                        // 处理 group
+                    } else {
+                        // 如果没有捕获组，处理整个匹配
+                        group = matcher.group();
+                        // 处理 group
                     }
 
                     //格式化响应
