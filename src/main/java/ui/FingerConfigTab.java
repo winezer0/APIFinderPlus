@@ -1122,7 +1122,7 @@ public class FingerConfigTab extends JPanel {
     }
 
     class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
-        private final JPanel panel;
+        private final JPanel buttonsPanel;
         private final JButton editButton;
         private final JButton deleteButton;
         private final JButton toggleButton;
@@ -1241,11 +1241,11 @@ public class FingerConfigTab extends JPanel {
             });
 
             //把三个按钮放在一个小面板中
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-            panel.add(toggleButton);
-            panel.add(editButton);
-            panel.add(deleteButton);
-            panel.setBorder(BorderFactory.createEmptyBorder());
+            buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            buttonsPanel.add(toggleButton);
+            buttonsPanel.add(editButton);
+            buttonsPanel.add(deleteButton);
+            buttonsPanel.setBorder(BorderFactory.createEmptyBorder());
         }
 
         @Override
@@ -1256,7 +1256,7 @@ public class FingerConfigTab extends JPanel {
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             this.row = table.convertRowIndexToModel(row); // 转换为模型索引，以防有排序
-            return panel;
+            return buttonsPanel;
         }
     }
 }
