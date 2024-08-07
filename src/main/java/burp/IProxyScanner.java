@@ -110,10 +110,10 @@ public class IProxyScanner implements IProxyListener {
 
             //判断是否是正常的响应 不记录无响应情况
             if(autoRecordPathIsOpen
-                    && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
+                    && isEqualsOneKey(statusCode, CONF_WHITE_RECORD_PATH_STATUS, false)
                     && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
+                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
             ){
                 executorService.submit(new Runnable() {
                     @Override
@@ -188,10 +188,10 @@ public class IProxyScanner implements IProxyListener {
 
             //判断是否是正常的响应 不记录无响应情况
             if(autoRecordPathIsOpen
-                    && isEqualsOneKey(statusCode, CONF_ALLOW_RECORD_STATUS, false)
+                    && isEqualsOneKey(statusCode, CONF_WHITE_RECORD_PATH_STATUS, false)
                     && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
+                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
             ){
                 executorService.submit(new Runnable() {
                     @Override
@@ -533,7 +533,7 @@ public class IProxyScanner implements IProxyListener {
                     RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
 
                     //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
-                    if (ignoreBlackRecurseHost && isContainOneKey(reqUrl, CONF_NOT_AUTO_RECURSE, false)){
+                    if (ignoreBlackRecurseHost && isContainOneKey(reqUrl, CONF_BLACK_AUTO_RECURSE_SCAN, false)){
                         continue;
                     }
 
@@ -554,10 +554,10 @@ public class IProxyScanner implements IProxyListener {
 
                             //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
                             if(autoRecordPathIsOpen
-                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
+                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_WHITE_RECORD_PATH_STATUS, false)
                                     && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_NOT_AUTO_RECORD, false)
-                                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
+                                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
                             ){
                                 enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
                             }

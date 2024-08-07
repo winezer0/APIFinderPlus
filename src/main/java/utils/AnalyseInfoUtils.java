@@ -77,9 +77,9 @@ public class AnalyseInfoUtils {
      * @return
      */
     private static boolean isUsefulValue(String group) {
-        //配置文件增加 CONF_BLACK_INFO_KEYS , 指定忽略无价值的项
+        //配置文件增加 CONF_BLACK_EXTRACT_INFO_KEYS , 指定忽略无价值的项
         //String BlackValues = "admin@admin.com";
-        if (isContainOneKey(group, BurpExtender.CONF_BLACK_INFO_KEYS, false)){
+        if (isContainOneKey(group, BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS, false)){
             //stderr_println(LOG_DEBUG, String.format("[-] 提取结果 [%s] 忽略保存", group));
             return false;
         }

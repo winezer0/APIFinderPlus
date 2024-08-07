@@ -2,7 +2,7 @@
 	"fingerprint": [
 		{
 			"accuracy": "high",
-			"describe": "只允许监听扫描的目标",
+			"describe": "允许扫描的目标RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [],
@@ -12,32 +12,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "允许进行路径记录的状态码",
-			"isImportant": false,
-			"isOpen": true,
-			"keyword": [
-				"200",
-				"403"
-			],
-			"location": "config",
-			"match": "keyword",
-			"type": "CONF_ALLOW_RECORD_STATUS"
-		},
-		{
-			"accuracy": "high",
-			"describe": "不允许进行路径记录的标题",
-			"isImportant": false,
-			"isOpen": true,
-			"keyword": [
-				"404 not Found"
-			],
-			"location": "config",
-			"match": "keyword",
-			"type": "CONF_NOT_RECORD_TITLE"
-		},
-		{
-			"accuracy": "high",
-			"describe": "不允许扫描的URL目标",
+			"describe": "禁止扫描的目标RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -62,31 +37,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "不允许自动记录PATH的目标",
-			"isImportant": false,
-			"isOpen": true,
-			"keyword": [
-				"testphp.vulnweb.com"
-			],
-			"location": "config",
-			"match": "keyword",
-			"type": "CONF_NOT_AUTO_RECORD"
-		},
-		{
-			"accuracy": "high",
-			"describe": "不允许自动递归扫描的目标",
-			"isImportant": false,
-			"isOpen": true,
-			"keyword": [
-				"testphp.vulnweb.com"
-			],
-			"location": "config",
-			"match": "keyword",
-			"type": "CONF_NOT_AUTO_RECURSE"
-		},
-		{
-			"accuracy": "high",
-			"describe": "不允许扫描的URL路径关键字",
+			"describe": "禁止进行扫描的目标URL路径关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -103,7 +54,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "不允许扫描的URL后缀",
+			"describe": "禁止进行扫描的目标URL文件扩展名",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -154,25 +105,56 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "允许被额外提取信息的后缀 暂未使用",
+			"describe": "禁止自动进行有效PATH记录的目标RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
-				"js",
-				"html",
-				"cvs",
-				"php",
-				"jsp",
-				"asp",
-				"aspx"
+				"testphp.vulnweb.com"
 			],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_EXTRACT_SUFFIX"
+			"type": "CONF_BLACK_AUTO_RECORD_PATH"
 		},
 		{
 			"accuracy": "high",
-			"describe": "不允许提取的路径包含此项",
+			"describe": "禁止自动进行未访问URL扫描的目标RootUrl关键字",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"testphp.vulnweb.com"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_BLACK_AUTO_RECURSE_SCAN"
+		},
+		{
+			"accuracy": "high",
+			"describe": "允许自动进行有效PATH记录的响应状态码",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"200",
+				"403"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_WHITE_RECORD_PATH_STATUS"
+		},
+		{
+			"accuracy": "high",
+			"describe": "禁止自动进行有效PATH记录的响应标题",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"404 not Found"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_BLACK_RECORD_PATH_TITLE"
+		},
+		{
+			"accuracy": "high",
+			"describe": "禁止提取的URI路径[包含]此项任一元素",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -184,11 +166,11 @@
 			],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_BLACK_PATH_KEYS"
+			"type": "CONF_BLACK_EXTRACT_PATH_KEYS"
 		},
 		{
 			"accuracy": "high",
-			"describe": "不允许提取的路径等于此项",
+			"describe": "禁止提取的URI路径[等于]此项任一元素",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -197,11 +179,23 @@
 			],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_BLACK_PATH_EQUALS"
+			"type": "CONF_BLACK_EXTRACT_PATH_EQUAL"
 		},
 		{
 			"accuracy": "high",
-			"describe": "提取响应URI的正则",
+			"describe": "禁止提取的敏感信息[包含]此项任一元素",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"admin@admin.com"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_BLACK_EXTRACT_INFO_KEYS"
+		},
+		{
+			"accuracy": "high",
+			"describe": "提取响应URI|URL的正则表达式",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -210,19 +204,7 @@
 			],
 			"location": "config",
 			"match": "regular",
-			"type": "CONF_URI_MATCH_REGULAR"
-		},
-		{
-			"accuracy": "high",
-			"describe": "不允许提取的信息包含此项",
-			"isImportant": false,
-			"isOpen": true,
-			"keyword": [
-				"admin@admin.com"
-			],
-			"location": "config",
-			"match": "keyword",
-			"type": "CONF_BLACK_INFO_KEYS"
+			"type": "CONF_REGULAR_EXTRACT_URIS"
 		},
 		{
 			"accuracy": "high",

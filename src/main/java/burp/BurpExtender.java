@@ -64,23 +64,21 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     //一些需要被排除|允许的情况
     public static List<String> CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅保留的白名单主机,为空时忽略
 
-    public static List<String> CONF_ALLOW_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
+    public static List<String> CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
 
     public static List<String> CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
     public static List<String> CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
     public static List<String> CONF_BLACK_URL_ROOT = new ArrayList<>(); //不检查的ROOT URL 关键字
-    public static List<String> CONF_NOT_AUTO_RECORD = new ArrayList<>(); //不检查的ROOT URL 关键字
-    public static List<String> CONF_NOT_AUTO_RECURSE = new ArrayList<>(); //不检查的ROOT URL 关键字
+    public static List<String> CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不检查的ROOT URL 关键字
+    public static List<String> CONF_BLACK_AUTO_RECURSE_SCAN = new ArrayList<>(); //不检查的ROOT URL 关键字
 
-    public static List<String> CONF_NOT_RECORD_TITLE = new ArrayList<>(); // 不记录到PATH 的 TITLE 关键字
+    public static List<String> CONF_BLACK_RECORD_PATH_TITLE = new ArrayList<>(); // 不记录到PATH 的 TITLE 关键字
 
-    public static List<String> CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
-    public static List<String> CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
+    public static List<String> CONF_BLACK_EXTRACT_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
+    public static List<String> CONF_BLACK_EXTRACT_PATH_EQUAL = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
 
-    public static List<String> CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
-
-    public static List<String> CONF_BLACK_INFO_KEYS = new ArrayList<>();  //需要忽略的响应提取信息
-    public static List<String> CONF_URI_MATCH_REGULAR = new ArrayList<>();  //URL提取正则表达式
+    public static List<String> CONF_BLACK_EXTRACT_INFO_KEYS = new ArrayList<>();  //需要忽略的响应提取信息
+    public static List<String> CONF_REGULAR_EXTRACT_URIS = new ArrayList<>();  //URL提取正则表达式
 
     public static List<Pattern> URI_MATCH_REGULAR_COMPILE = new ArrayList<>();  //存储编译后的正则表达式
 
@@ -127,7 +125,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
                 }
 
                 //编译正则表达式
-                URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(CONF_URI_MATCH_REGULAR);
+                URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(CONF_REGULAR_EXTRACT_URIS);
             }
 
             if (isEmptyObj(fingerprintRules)){
@@ -162,17 +160,17 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
             case "CONF_WHITE_URL_ROOT":
                 CONF_WHITE_URL_ROOT.addAll(rule.getKeyword());
                 break;
-            case "CONF_ALLOW_RECORD_STATUS":
-                CONF_ALLOW_RECORD_STATUS.addAll(rule.getKeyword());
+            case "CONF_WHITE_RECORD_PATH_STATUS":
+                CONF_WHITE_RECORD_PATH_STATUS.addAll(rule.getKeyword());
                 break;
-            case "CONF_NOT_RECORD_TITLE":
-                CONF_NOT_RECORD_TITLE.addAll(rule.getKeyword());
+            case "CONF_BLACK_RECORD_PATH_TITLE":
+                CONF_BLACK_RECORD_PATH_TITLE.addAll(rule.getKeyword());
                 break;
-            case "CONF_NOT_AUTO_RECORD":
-                CONF_NOT_AUTO_RECORD.addAll(rule.getKeyword());
+            case "CONF_BLACK_AUTO_RECORD_PATH":
+                CONF_BLACK_AUTO_RECORD_PATH.addAll(rule.getKeyword());
                 break;
-            case "CONF_NOT_AUTO_RECURSE":
-                CONF_NOT_AUTO_RECURSE.addAll(rule.getKeyword());
+            case "CONF_BLACK_AUTO_RECURSE_SCAN":
+                CONF_BLACK_AUTO_RECURSE_SCAN.addAll(rule.getKeyword());
                 break;
             case "CONF_BLACK_URL_ROOT":
                 CONF_BLACK_URL_ROOT.addAll(rule.getKeyword());
@@ -184,23 +182,19 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
                 CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
                 break;
 
-            case "CONF_EXTRACT_SUFFIX":
-                CONF_EXTRACT_SUFFIX.addAll(rule.getKeyword());
+            case "CONF_BLACK_EXTRACT_PATH_KEYS":
+                CONF_BLACK_EXTRACT_PATH_KEYS.addAll(rule.getKeyword());
+                break;
+            case "CONF_BLACK_EXTRACT_PATH_EQUAL":
+                CONF_BLACK_EXTRACT_PATH_EQUAL.addAll(rule.getKeyword());
                 break;
 
-            case "CONF_BLACK_PATH_KEYS":
-                CONF_BLACK_PATH_KEYS.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_PATH_EQUALS":
-                CONF_BLACK_PATH_EQUALS.addAll(rule.getKeyword());
+            case "CONF_BLACK_EXTRACT_INFO_KEYS":
+                CONF_BLACK_EXTRACT_INFO_KEYS.addAll(rule.getKeyword());
                 break;
 
-            case "CONF_BLACK_INFO_KEYS":
-                CONF_BLACK_INFO_KEYS.addAll(rule.getKeyword());
-                break;
-
-            case "CONF_URI_MATCH_REGULAR":
-                CONF_URI_MATCH_REGULAR.addAll(rule.getKeyword());
+            case "CONF_REGULAR_EXTRACT_URIS":
+                CONF_REGULAR_EXTRACT_URIS.addAll(rule.getKeyword());
                 break;
 
             default:

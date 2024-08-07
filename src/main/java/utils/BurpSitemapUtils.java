@@ -29,7 +29,7 @@ public class BurpSitemapUtils {
             boolean flagIsNotInsert = RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, 999) > 0;
 
             //忽略导入禁止导入的主机的信息
-            if (isContainOneKey(urlPrefix, CONF_NOT_AUTO_RECORD, false) || isContainOneKey(urlPrefix, CONF_BLACK_URL_ROOT, false )){
+            if (isContainOneKey(urlPrefix, CONF_BLACK_AUTO_RECORD_PATH, false) || isContainOneKey(urlPrefix, CONF_BLACK_URL_ROOT, false )){
                 continue;
             }
 
@@ -49,9 +49,9 @@ public class BurpSitemapUtils {
                                 }
                             } else {
                                 //插入路径 仅保留200 403等有效目录
-                                if(isEqualsOneKey(msgInfo.getRespInfo().getStatusCode(), CONF_ALLOW_RECORD_STATUS, false)
+                                if(isEqualsOneKey(msgInfo.getRespInfo().getStatusCode(), CONF_WHITE_RECORD_PATH_STATUS, false)
                                         && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                                        && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_NOT_RECORD_TITLE, false)
+                                        && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
                                 ){
 //                                    RecordPathTable.insertOrUpdateRecordPath(reqBaseUrl, msgInfo.getRespInfo().getStatusCode());
 //                                    stdout_println(LOG_DEBUG, String.format("Record reqBaseUrl: %s", reqBaseUrl));

@@ -583,7 +583,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         });
 
         // 添加 addRootUrlToNotAutoRecurseItem 事件监听器
-        addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表 CONF_NOT_AUTO_RECURSE");
+        addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表 CONF_BLACK_AUTO_RECURSE_SCAN");
         addRootUrlToNotAutoRecurseItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -597,7 +597,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //0、获取所有rootUrl
-                                BurpExtender.CONF_NOT_AUTO_RECURSE = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_NOT_AUTO_RECURSE);
+                                BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN);
                                 FingerConfigTab.saveConfigToDefaultJson();
                                 return null;
                             }

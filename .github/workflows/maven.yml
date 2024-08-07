@@ -9,10 +9,10 @@
 name: Java CI with Maven
 
 on:
-  # 在创建新标签时触发
-  push:
-    tags:
-      - '*' # 匹配任何标签
+#  # 在创建新标签时触发
+#  push:
+#    tags:
+#      - '*' # 匹配任何标签
   # 在发布新版本时触发
   release:
     types: [created]

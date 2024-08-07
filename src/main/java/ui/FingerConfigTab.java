@@ -596,11 +596,11 @@ public class FingerConfigTab extends JPanel {
         ruleTable.getColumnModel().getColumn(0).setMaxWidth(50);
 
         ruleTable.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);
-        ruleTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        ruleTable.getColumnModel().getColumn(1).setPreferredWidth(250);
         ruleTable.getColumnModel().getColumn(1).setMaxWidth(300);
 
         ruleTable.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
-        ruleTable.getColumnModel().getColumn(2).setPreferredWidth(200);
+        ruleTable.getColumnModel().getColumn(2).setPreferredWidth(250);
         ruleTable.getColumnModel().getColumn(2).setMaxWidth(300);
 
         ruleTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
@@ -921,18 +921,17 @@ public class FingerConfigTab extends JPanel {
     //从规则里面重新提取全部配置
     private void reloadConfFromRules(List<FingerPrintRule> fingerprintRules) {
         BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
-        BurpExtender.CONF_ALLOW_RECORD_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
-        BurpExtender.CONF_NOT_AUTO_RECORD = new ArrayList<>(); //不自动记录PATH的URL域名
-        BurpExtender.CONF_NOT_AUTO_RECURSE = new ArrayList<>(); //不自动进行递归扫描的URL域名
+        BurpExtender.CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
+        BurpExtender.CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不自动记录PATH的URL域名
+        BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = new ArrayList<>(); //不自动进行递归扫描的URL域名
 
         BurpExtender.CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
         BurpExtender.CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
         BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(); //不检查的URL域名
-        BurpExtender.CONF_BLACK_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
-        BurpExtender.CONF_BLACK_PATH_EQUALS = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
-        BurpExtender.CONF_EXTRACT_SUFFIX = new ArrayList<>(); //需要提取API的URL后缀类型
-        BurpExtender.CONF_BLACK_INFO_KEYS = new ArrayList<>();
-        BurpExtender.CONF_URI_MATCH_REGULAR = new ArrayList<>();
+        BurpExtender.CONF_BLACK_EXTRACT_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
+        BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
+        BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS = new ArrayList<>();
+        BurpExtender.CONF_REGULAR_EXTRACT_URIS = new ArrayList<>();
         if (isNotEmptyObj(fingerprintRules)){
             for (int i = 0 ; i < fingerprintRules.size(); i ++){
                 FingerPrintRule rule = fingerprintRules.get(i);
@@ -940,25 +939,24 @@ public class FingerConfigTab extends JPanel {
             }
         }
 
-        BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_URI_MATCH_REGULAR);
+        BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_REGULAR_EXTRACT_URIS);
 
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
-        stdout_println("[+] CONF_ALLOW_RECORD_STATUS: " + BurpExtender.CONF_ALLOW_RECORD_STATUS);
-        stdout_println("[+] CONF_NOT_RECORD_TITLE: " + BurpExtender.CONF_NOT_RECORD_TITLE);
+        stdout_println("[+] CONF_WHITE_RECORD_PATH_STATUS: " + BurpExtender.CONF_WHITE_RECORD_PATH_STATUS);
+        stdout_println("[+] CONF_BLACK_RECORD_PATH_TITLE: " + BurpExtender.CONF_BLACK_RECORD_PATH_TITLE);
 
-        stdout_println("[+] CONF_NOT_AUTO_RECORD: " + BurpExtender.CONF_NOT_AUTO_RECORD);
-        stdout_println("[+] CONF_NOT_AUTO_RECURSE: " + BurpExtender.CONF_NOT_AUTO_RECURSE);
+        stdout_println("[+] CONF_BLACK_AUTO_RECORD_PATH: " + BurpExtender.CONF_BLACK_AUTO_RECORD_PATH);
+        stdout_println("[+] CONF_BLACK_AUTO_RECURSE_SCAN: " + BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN);
 
         stdout_println("[+] CONF_BLACK_URL_EXT: " + BurpExtender.CONF_BLACK_URL_EXT);
         stdout_println("[+] CONF_BLACK_URL_PATH: " + BurpExtender.CONF_BLACK_URL_PATH);
         stdout_println("[+] CONF_BLACK_URL_ROOT: " + BurpExtender.CONF_BLACK_URL_ROOT);
-        stdout_println("[+] CONF_BLACK_PATH_KEYS: " + BurpExtender.CONF_BLACK_PATH_KEYS);
-        stdout_println("[+] CONF_BLACK_PATH_EQUALS: " + BurpExtender.CONF_BLACK_PATH_EQUALS);
-        stdout_println("[+] CONF_EXTRACT_SUFFIX: " + BurpExtender.CONF_EXTRACT_SUFFIX);
+        stdout_println("[+] CONF_BLACK_EXTRACT_PATH_KEYS: " + BurpExtender.CONF_BLACK_EXTRACT_PATH_KEYS);
+        stdout_println("[+] CONF_BLACK_EXTRACT_PATH_EQUAL: " + BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL);
 
-        stdout_println("[+] CONF_BLACK_INFO_KEYS: " + BurpExtender.CONF_BLACK_INFO_KEYS);
-        stdout_println("[+] CONF_URI_MATCH_REGULAR: " + BurpExtender.CONF_URI_MATCH_REGULAR);
+        stdout_println("[+] CONF_BLACK_EXTRACT_INFO_KEYS: " + BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS);
+        stdout_println("[+] CONF_REGULAR_EXTRACT_URIS: " + BurpExtender.CONF_REGULAR_EXTRACT_URIS);
 
     }
 
