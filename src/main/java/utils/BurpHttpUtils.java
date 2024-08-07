@@ -7,6 +7,8 @@ import utilbox.HelperPlus;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -20,6 +22,30 @@ import static utils.CastUtils.isNotEmptyObj;
 public class BurpHttpUtils {
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
     private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
+
+    /**
+     * 判断目标是否可以正常连接
+     * @param httpService
+     * @return
+     */
+    public static boolean IpAddressCanConnect(IHttpService httpService) {
+        String baseUrl = String.format("%s://%s:%s", httpService.getProtocol(), httpService.getHost(), httpService.getPort());
+        // 创建一个 Socket 并设置超时时间
+        try {
+            Socket socket = new Socket();
+            String host = httpService.getHost();
+            int port = httpService.getPort();
+            port = port <= 0 ? httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443 : port;
+            InetSocketAddress address = new InetSocketAddress(host, port);
+            socket.connect(address, 3000);
+            socket.close();
+            return true;
+        }catch (Exception e){
+            // 错误处理
+            stderr_println(LOG_DEBUG, String.format("建立 Socket 连接失败: %s -> %s", baseUrl, e.getMessage()));
+            return false;
+        }
+    }
 
     public static IHttpRequestResponse makeHttpRequestForGet(String reqUrl, List<String> referReqHeaders) {
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
