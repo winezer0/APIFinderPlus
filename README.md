@@ -53,14 +53,27 @@
     - 判断是否URL是否都已经被访问
       - 对未访问URL构造HTTP请求
 ```
+### 内部规则说明
+```
+    注意：对于CONF_开头和location为config的规则，属于内部规则，不用于信息匹配。
 
+    CONF_WHITE_URL_ROOT: 允许扫描的目标RootUrl关键字
+    CONF_BLACK_URL_ROOT: 禁止扫描的目标RootUrl关键字
+    CONF_BLACK_URL_PATH: 禁止进行扫描的目标URL路径关键字
+    CONF_BLACK_URL_EXT: 禁止进行扫描的目标URL文件扩展名
+    CONF_BLACK_AUTO_RECORD_PATH: 禁止自动进行有效PATH记录的目标RootUrl关键字
+    CONF_BLACK_AUTO_RECURSE_SCAN: 禁止自动进行未访问URL扫描的目标RootUrl关键字
+    CONF_WHITE_RECORD_PATH_STATUS: 允许自动进行有效PATH记录的响应状态码
+    CONF_BLACK_RECORD_PATH_TITLE: 禁止自动进行有效PATH记录的响应标题
+    CONF_BLACK_EXTRACT_PATH_KEYS: 禁止提取的URI路径[包含]此项任一元素
+    CONF_BLACK_EXTRACT_PATH_EQUAL: 禁止提取的URI路径[等于]此项任一元素
+    CONF_BLACK_EXTRACT_INFO_KEYS: 禁止提取的敏感信息[包含]此项任一元素
+    CONF_REGULAR_EXTRACT_URIS: 提取响应URI|URL的正则表达式
+```
 
-
-### 规则说明
+### 匹配规则说明
 
 ```
-注意：对于CONF_开头和location为config的规则，属于内部规则，不用于信息匹配。
-    
 匹配方法("match"字段)： 
     1、关键字匹配 （"match": "keyword"）
     2、正则匹配 （"match": "regular",）
