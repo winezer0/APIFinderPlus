@@ -1035,7 +1035,7 @@ public class FingerConfigTab extends JPanel {
      * @param types
      * @return
      */
-    private String[] filterConfItems(String[] types) {
+    private String[] filterConfigItemsType(String[] types) {
         List<String> confItems = new ArrayList<>();
 
         // 遍历数组并检查每个元素
@@ -1054,7 +1054,7 @@ public class FingerConfigTab extends JPanel {
         // 将集合转换为数组
         String[] defaultTypes = uniqueTypes.toArray(new String[0]);
         //排除配置规则
-        defaultTypes = filterConfItems(defaultTypes);
+        defaultTypes = filterConfigItemsType(defaultTypes);
 
         // 如果typeField已经存在，那么更新它的模型
         if (typeField != null) {
