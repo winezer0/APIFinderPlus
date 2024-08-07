@@ -32,11 +32,17 @@ public class IProxyScanner implements IProxyListener {
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
     private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
 
-    public static boolean dynamicPathFilterIsOpen = true;    //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
+    public static boolean  dynamicPathFilterIsOpenDefault = false;
+    public static boolean  dynamicPathFilterIsOpen= dynamicPathFilterIsOpenDefault;    //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
 
-    public static boolean autoRecordPathIsOpen  = true;     //是否启用自动记录每个录得PATH //自动记录功能应该开启,不然没有pathTree生成
-    public static boolean autoPathsToUrlsIsOpen = false;    //是否进行自动PathTree生成URL
-    public static boolean autoRecursiveIsOpen = false;      //是否进行递归URL扫描
+    public static boolean autoRecordPathIsOpenDefault  = true;
+    public static boolean autoRecordPathIsOpen  = autoRecordPathIsOpenDefault;     //是否启用自动记录每个录得PATH //自动记录功能应该开启,不然没有pathTree生成
+
+    public static boolean autoPathsToUrlsIsOpenDefault = false;
+    public static boolean autoPathsToUrlsIsOpen = autoPathsToUrlsIsOpenDefault;    //是否进行自动PathTree生成URL
+
+    public static boolean autoRecursiveIsOpenDefault = false;
+    public static boolean autoRecursiveIsOpen = autoRecursiveIsOpenDefault;      //是否进行递归URL扫描
 
     //持久化保存对象的Hash
     private String urlCompareMapCacheFile = String.format("%s.urlCompareMap.json", configName);
@@ -47,7 +53,8 @@ public class IProxyScanner implements IProxyListener {
     private int maxPoolSize = 10;
 
     //开关插件的监听功能
-    public static boolean proxyListenIsOpen = false;
+    public static boolean proxyListenIsOpenDefault = false;
+    public static boolean proxyListenIsOpen = proxyListenIsOpenDefault;
 
     public IProxyScanner() {
         //加载缓存过滤器

@@ -143,21 +143,16 @@ public class MsgInfoConfigPanel extends JPanel {
         gbc_leftFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
-        // 开关 是否开启代理流量监听
-        JToggleButton proxyListenButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        proxyListenButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        proxyListenButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        proxyListenButton.setPreferredSize(new Dimension(50, 24));
-        proxyListenButton.setBorder(null);  // 设置无边框
-        proxyListenButton.setFocusPainted(false);  // 移除焦点边框
-        proxyListenButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        // 开关 是否开启代理流量监听 //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
+        JToggleButton proxyListenButton = getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault)
         proxyListenButton.setToolTipText("Proxy模块流量监听开关");
 
         proxyListenButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认关闭本功能, 点击后应该作为开启配置
-                IProxyScanner.proxyListenIsOpen = proxyListenButton.isSelected();
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = proxyListenButton.isSelected();
+                IProxyScanner.proxyListenIsOpen = IProxyScanner.proxyListenIsOpenDefault ? !selected:selected
                 stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
             }
         });
@@ -204,91 +199,69 @@ public class MsgInfoConfigPanel extends JPanel {
 
         // 开关 是否开启自动记录PATH
         JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        autoRecordPathButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        autoRecordPathButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        autoRecordPathButton.setPreferredSize(new Dimension(50, 24));
-        autoRecordPathButton.setBorder(null);  // 设置无边框
-        autoRecordPathButton.setFocusPainted(false);  // 移除焦点边框
-        autoRecordPathButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoRecordPathButton = getToggleButtonByDefaultValue(IProxyScanner.autoRecordPathIsOpenDefault);
         autoRecordPathButton.setToolTipText("自动保存有效请求PATH");
 
         autoRecordPathButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认开启本功能, 点击后应该作为不开启配置
-                IProxyScanner.autoRecordPathIsOpen = !autoRecordPathButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("dynamicPthFilterIsOpen: %s", IProxyScanner.autoRecordPathIsOpen));
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRecordPathButton.isSelected();
+                IProxyScanner.autoRecordPathIsOpen = IProxyScanner.autoRecordPathIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRecordPathIsOpen: %s", IProxyScanner.autoRecordPathIsOpen));
             }
         });
 
-        // 开关 是否开启自动记录PATH
-        JToggleButton dynamicPthFilterButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        dynamicPthFilterButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        dynamicPthFilterButton.setPreferredSize(new Dimension(50, 24));
-        dynamicPthFilterButton.setBorder(null);  // 设置无边框
-        dynamicPthFilterButton.setFocusPainted(false);  // 移除焦点边框
-        dynamicPthFilterButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        dynamicPthFilterButton.setToolTipText("开启动态PATH过滤要求");
+        // 开关 是否开启复杂的动态PATH过滤
+        JToggleButton dynamicPathFilterButton = getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
+        dynamicPathFilterButton.setToolTipText("开启智能响应过滤(访问随机URL获取目标的404页面的条件)");
 
-
-        dynamicPthFilterButton.addActionListener(new ActionListener() {
+        dynamicPathFilterButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认开启本功能, 点击后应该作为不开启配置
-                IProxyScanner.dynamicPathFilterIsOpen = !dynamicPthFilterButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("dynamicPthFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = dynamicPathFilterButton.isSelected();
+                IProxyScanner.dynamicPathFilterIsOpen = IProxyScanner.dynamicPathFilterIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("dynamicPathFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
             }
         });
 
-        JToggleButton autoPathsToUrlsButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        autoPathsToUrlsButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        autoPathsToUrlsButton.setPreferredSize(new Dimension(50, 24));
-        autoPathsToUrlsButton.setBorder(null);  // 设置无边框
-        autoPathsToUrlsButton.setFocusPainted(false);  // 移除焦点边框
-        autoPathsToUrlsButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        JToggleButton autoPathsToUrlsButton = getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
         autoPathsToUrlsButton.setToolTipText("自动基于PathTree结合FindPath生成URL");
 
         autoPathsToUrlsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认关闭本功能, 点击后应该作为开启配置
-                IProxyScanner.autoPathsToUrlsIsOpen = autoPathsToUrlsButton.isSelected();
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoPathsToUrlsButton.isSelected();
+                IProxyScanner.autoPathsToUrlsIsOpen = IProxyScanner.autoPathsToUrlsIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("autoPathsToUrlsIsOpen: %s", IProxyScanner.autoPathsToUrlsIsOpen));
             }
         });
 
         // 开关 是否开启自动刷新未访问URL
-        JToggleButton autoRefreshUnvisitedButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        autoRefreshUnvisitedButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        autoRefreshUnvisitedButton.setPreferredSize(new Dimension(50, 24));
-        autoRefreshUnvisitedButton.setBorder(null);  // 设置无边框
-        autoRefreshUnvisitedButton.setFocusPainted(false);  // 移除焦点边框
-        autoRefreshUnvisitedButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        JToggleButton autoRefreshUnvisitedButton = getToggleButtonByDefaultValue(MsgInfoPanel.autoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
 
         autoRefreshUnvisitedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认关闭本功能, 点击后应该作为开启配置
-                MsgInfoPanel.autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("auroRefreshUnvisitedIsOpen: %s", MsgInfoPanel.autoRefreshUnvisitedIsOpen));
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRefreshUnvisitedButton.isSelected();
+                MsgInfoPanel.autoRefreshUnvisitedIsOpen = MsgInfoPanel.autoRefreshUnvisitedIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRefreshUnvisitedIsOpen: %s", MsgInfoPanel.autoRefreshUnvisitedIsOpen));
             }
         });
 
         // 开关 是否开启对提取URL进行发起请求
-        JToggleButton autoRecursiveButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        autoRecursiveButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        autoRecursiveButton.setPreferredSize(new Dimension(50, 24));
-        autoRecursiveButton.setBorder(null);  // 设置无边框
-        autoRecursiveButton.setFocusPainted(false);  // 移除焦点边框
-        autoRecursiveButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        JToggleButton autoRecursiveButton = getToggleButtonByDefaultValue(IProxyScanner.autoRecursiveIsOpenDefault);
         autoRecursiveButton.setToolTipText("自动测试未访问URL");
-
         autoRecursiveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //默认关闭本功能, 点击后应该作为开启配置
-                IProxyScanner.autoRecursiveIsOpen = autoRecursiveButton.isSelected();
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRecursiveButton.isSelected();
+                IProxyScanner.autoRecursiveIsOpen = IProxyScanner.autoRecursiveIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("autoRecursiveIsOpen: %s", IProxyScanner.autoRecursiveIsOpen));
             }
         });
@@ -322,7 +295,7 @@ public class MsgInfoConfigPanel extends JPanel {
 
         // 高级动态有效路径过滤 功能开关
         gbc_buttons.gridx = 9;
-        FilterPanel.add(dynamicPthFilterButton, gbc_buttons);
+        FilterPanel.add(dynamicPathFilterButton, gbc_buttons);
 
         // 高级动态有效路径过滤 功能开关
         gbc_buttons.gridx = 10;
@@ -466,6 +439,25 @@ public class MsgInfoConfigPanel extends JPanel {
             }
         });
  }
+
+    private JToggleButton getToggleButtonByDefaultValue(boolean IsOpenDefault) {
+        JToggleButton toggleButton;
+        //根据默认条件设置UI
+        if (IsOpenDefault){
+            toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+            toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        }else {
+            toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+            toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        }
+
+        toggleButton.setPreferredSize(new Dimension(50, 24));
+        toggleButton.setBorder(null);  // 设置无边框
+        toggleButton.setFocusPainted(false);  // 移除焦点边框
+        toggleButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+
+        return toggleButton;
+    }
 
     //创建功能按钮内容和对应事件
     private JPopupMenu createMoreMenuWithAction() {

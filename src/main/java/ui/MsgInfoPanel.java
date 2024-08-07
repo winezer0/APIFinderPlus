@@ -50,7 +50,9 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
     public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
 
 
-    public static boolean autoRefreshUnvisitedIsOpen = false;
+    public static boolean autoRefreshUnvisitedIsOpenDefault = false;
+    public static boolean autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault; //自动刷新未访问URL
+
     public static boolean autoRefreshIsOpen = false;
 
     public static MsgInfoPanel getInstance() {
