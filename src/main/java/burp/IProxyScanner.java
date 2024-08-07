@@ -287,41 +287,42 @@ public class IProxyScanner implements IProxyListener {
         } else {
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
             String reqUrlToFile = msgInfo.getUrlInfo().getUrlToFileUsual();
-
             //首先转换为响应Map
             Map<String, Object> respFieldsMap = new RespFieldsModel(msgInfo.getRespInfo()).getAllFieldsAsMap();
+
+            //如果还没有生成对应的过滤条件
             if (!urlCompareMap.containsKey(reqRootUrl)){
                 //存储未进行对比的目标,后续通过定时任务再进行对比
                 notCompareMap.put(reqUrlToFile, respFieldsMap);
                 //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
-                if (!msgInfo.getUrlInfo().getPathToDir().equals("/")){
-                    urlCompareMap.put(reqRootUrl, null);
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            //计算动态过滤条件
-                            Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
-                            urlCompareMap.put(reqRootUrl, filterModel);
-                        }
-                    });
-                }
+                urlCompareMap.put(reqRootUrl, null);
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        //计算动态过滤条件
+                        Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                        urlCompareMap.put(reqRootUrl, filterModel);
+                    }
+                });
             } else {
                 Map<String, Object> currentFilterMap = urlCompareMap.get(reqRootUrl);
+                //如果正在生成过滤条件
                 if (currentFilterMap == null){
                     //存储未进行对比的目标,后续通过定时任务再进行对比
                     notCompareMap.put(reqUrlToFile, respFieldsMap);
                 } else {
-                    //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
-                    if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                //插入数据库记录
+                    //如果已经生成过滤条件 //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            //插入数据库记录 当过滤条件为空时直接插入路径、过滤条件不为空时,就保存所有正常状态的结果
+                            if (currentFilterMap.isEmpty() || !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)) {
                                 RecordPathTable.insertOrUpdateRecordPath(msgInfo);
                                 stdout_println(LOG_DEBUG, String.format("[+] Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                             }
-                        });
-                   }
+                        }
+                    });
+
                 }
             }
         }
@@ -379,31 +380,6 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-                    //清理在等待动态过滤Map生成过程中没有处理的响应对象
-                    if (dynamicPathFilterIsOpen && isNotEmptyObj(notCompareMap)){
-                        // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
-                        ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
-                        // 遍历键的列表
-                        for (String reqUrl : keys) {
-                            Map<String,Object> respFieldsMap = notCompareMap.get(reqUrl);
-                            String rootUrl = new HttpUrlInfo(reqUrl).getRootUrlUsual();
-                            Map<String, Object> currentFilterMap = urlCompareMap.get(rootUrl);
-
-                            if (currentFilterMap != null){
-                                if(isNotEmptyObj(currentFilterMap)
-                                        && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
-                                    int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
-                                    RecordPathTable.insertOrUpdateRecordPath(reqUrl, setStatusCode);
-                                    stdout_println(LOG_DEBUG, String.format("[+] Insert Temp Record reqBaseUrl: %s", reqUrl));
-                                }
-                                notCompareMap.remove(reqUrl);
-                            }
-                        }
-                        // 先返回进行其他操作
-                        return;
-                    }
-
-
                     //任务1、获取需要解析的响应体数据并进行解析响
                     List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandleReqDataMsgDataIndexList(maxPoolSize);
                     if (msgDataIndexList.size() > 0){
@@ -441,6 +417,30 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
+                    //清理在等待动态过滤Map生成过程中没有处理的响应对象
+                    if (dynamicPathFilterIsOpen && isNotEmptyObj(notCompareMap)){
+                        // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
+                        ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
+                        // 遍历键的列表 对每个缓存目标进行检查,看看对应的URL过滤信息是否已经生成了
+                        for (String reqUrl : keys) {
+                            Map<String,Object> respFieldsMap = notCompareMap.get(reqUrl);
+                            String rootUrl = new HttpUrlInfo(reqUrl).getRootUrlUsual();
+                            Map<String, Object> currentFilterMap = urlCompareMap.get(rootUrl);
+                            if (currentFilterMap != null){
+                                notCompareMap.remove(reqUrl);
+                                if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
+                                    int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
+                                    RecordPathTable.insertOrUpdateRecordPath(reqUrl, setStatusCode);
+                                    stdout_println(LOG_DEBUG, String.format("[+] Insert Temp Record reqBaseUrl: %s", reqUrl));
+                                }
+                            }else {
+                                urlCompareMap.put(rootUrl, new HashMap<>());
+                                stderr_println(String.format("[!] 未成功生成[%s]的动态响应过滤关系! 置空处理", rootUrl));
+                            }
+                        }
+                        // 先返回进行其他操作
+                        return;
+                    }
 
                     if (autoPathsToUrlsIsOpen){
                         //任务2、如果没有需要分析的数据,就更新Path树信息 为动态 path to url 做准备
