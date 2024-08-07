@@ -143,7 +143,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // This will make all cells of the table non-editable
+                //在数据模型层面禁止编辑行数据
                 return false;
             }
         };

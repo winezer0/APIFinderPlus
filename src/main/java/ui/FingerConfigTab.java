@@ -586,8 +586,11 @@ public class FingerConfigTab extends JPanel {
 
     //设置规则表格的表样式和点击动作
     private void setRuleTableStyle(JTable ruleTable) {
-        CenterRenderer centerRenderer = new CenterRenderer();
+        //在表格层面设置整个表格为不可编辑
+        ruleTable.setDefaultEditor(Object.class, null);
 
+        //设置每一列的宽度
+        CenterRenderer centerRenderer = new CenterRenderer();
         LeftRenderer leftRenderer = new LeftRenderer();
 
         int minColumnWidth = 100;
@@ -653,7 +656,17 @@ public class FingerConfigTab extends JPanel {
     // 初始化表格数据
     private void initTableContentModel() {
         // 表格数据
-        tableModel = new DefaultTableModel(new Object[]{"#", "type", "describe", "isImportant", "accuracy", "Match", "location", "keyword", "Action"}, 0) {
+        tableModel = new DefaultTableModel(new Object[]{
+                "#",
+                "type",
+                "describe",
+                "isImportant",
+                "accuracy",
+                "Match",
+                "location",
+                "keyword",
+                "Action"
+        }, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 switch (columnIndex) {
