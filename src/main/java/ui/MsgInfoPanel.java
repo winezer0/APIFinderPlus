@@ -5,15 +5,14 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
+import ui.MainTabRender.TableHeaderWithTips;
 import ui.MainTabRender.importantCellRenderer;
 import utils.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.time.Duration;
@@ -25,11 +24,11 @@ import java.util.concurrent.ExecutionException;
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isNotEmptyObj;
 
-public class MainPanel extends JPanel implements IMessageEditorController {
-    private static volatile MainPanel instance; //实现单例模式
+public class MsgInfoPanel extends JPanel implements IMessageEditorController {
+    private static volatile MsgInfoPanel instance; //实现单例模式
 
-    private static JTable table; //表格UI
-    private static DefaultTableModel model; // 存储表格数据
+    private static JTable msgTableUI; //表格UI
+    private static DefaultTableModel msgTableModel; // 存储表格数据
 
     private static JSplitPane msgInfoViewer;  //请求消息|响应消息 二合一 面板
     private static IMessageEditor requestTextEditor;  //请求消息面板
@@ -54,18 +53,18 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     public static boolean autoRefreshUnvisitedIsOpen = false;
     public static boolean autoRefreshIsOpen = false;
 
-    public static MainPanel getInstance() {
+    public static MsgInfoPanel getInstance() {
         if (instance == null) {
-            synchronized (MainPanel.class) {
+            synchronized (MsgInfoPanel.class) {
                 if (instance == null) {
-                    instance = new MainPanel();
+                    instance = new MsgInfoPanel();
                 }
             }
         }
         return instance;
     }
 
-    public MainPanel() {
+    public MsgInfoPanel() {
         // EmptyBorder 四周各有了5像素的空白边距
         setBorder(new EmptyBorder(5, 5, 5, 5));
         ////BorderLayout 将容器分为五个区域：北 南 东 西 中 每个区域可以放置一个组件，
@@ -77,14 +76,14 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         // 首行配置面板
-        ConfigPanel configPanel = new ConfigPanel();
+        MsgInfoConfigPanel configPanel = new MsgInfoConfigPanel();
 
         // 数据表格
         initDataTableUI();
 
         // JScrollPane是一个可滚动的视图容器，通常用于包裹那些内容可能超出其显示区域的组件，比如表格(JTable)、文本区(JTextArea)等。
         // 这里，它包裹 table（一个JTable实例），使得当表格内容超出显示范围时，用户可以通过滚动条查看所有数据。
-        JScrollPane upScrollPane = new JScrollPane(table);
+        JScrollPane upScrollPane = new JScrollPane(msgTableUI);
         // 将upScrollPane作为mainSplitPane的上半部分
         //将包含table的滚动面板的upScrollPane 设置为另一个组件mainSplitPane的上半部分。
         mainSplitPane.setTopComponent(upScrollPane);
@@ -101,7 +100,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         initDataTableUIData();
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimer(ConfigPanel.timerDelay * 1000);
+        initTimer(MsgInfoConfigPanel.timerDelay * 1000);
     }
 
     /**
@@ -113,7 +112,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 //获取所有数据
                 ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchTableLineDataAll();
                 //将数据赋值给表模型
-                UiUtils.populateModelFromJsonArray(model, allReqAnalyseData);
+                UiUtils.populateModelFromJsonArray(msgTableModel, allReqAnalyseData);
             }
         });
     }
@@ -123,7 +122,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      */
     private void initDataTableUI() {
         // 数据展示面板
-        model = new DefaultTableModel(new Object[]{
+        msgTableModel = new DefaultTableModel(new Object[]{
                 "id",
                 "source",
                 "hash",
@@ -148,7 +147,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             }
         };
 
-        table = new JTable(model){
+        msgTableUI = new JTable(msgTableModel){
             //通过匿名内部类创建JTable，用于在不单独创建一个子类的情况下，覆写或添加JTable的行为。
             //覆写JTable的getToolTipText(MouseEvent e)方法。这个方法决定了当鼠标悬停在表格的某个单元格上时，将显示的工具提示文本内容。
             @Override
@@ -165,7 +164,6 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                 return super.getToolTipText(e);
             }
         };
-
         // 设置列选中模式
         //  SINGLE_SELECTION：单行选择模式
         //  使用 int selectedRow = table.getSelectedRow(); 获取行号
@@ -174,7 +172,29 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         //  多选模式下调用应该调用 int[] rows = table.getSelectedRows(); 如果调用 getSelectedRow 只会获取第一个选项
         //int listSelectionModel = ListSelectionModel.SINGLE_SELECTION;
         int listSelectionModel = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
-        table.setSelectionMode(listSelectionModel);
+        msgTableUI.setSelectionMode(listSelectionModel);
+
+        //自己实现TableHeader 支持请求头提示
+        String[] colHeaderTooltips = new String[]{
+                "请求ID",
+                "请求来源",
+                "消息HASH",
+                "请求URL",
+                "请求方法",
+                "响应状态码",
+                "响应长度",
+                "是否存在匹配重要规则",
+                "当前响应中匹配的【敏感信息】数量",
+                "当前响应中提取的【直接URL】数量",
+                "当前响应中提取的【网站PATH】数量",
+                "当前请求目录 直接组合 已提取PATH =【拼接URL】数量（已过滤）",
+                "网站有效目录 智能组合 已提取PATH =【动态URL】数量（已过滤|只能计算带目录的PATH|跟随网站有效目录新增而变动）",
+                "当前直接URL数量+拼接URL数量+动态URL数量-全局已访问URL=【当前未访问URL】数量 ",
+                "当前【动态URL数量计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
+                "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
+        };
+        TableHeaderWithTips headerWithTooltips = new TableHeaderWithTips(msgTableUI.getColumnModel(), colHeaderTooltips);
+        msgTableUI.setTableHeader(headerWithTooltips);
 
         //添加表头排序功能
         tableAddActionSortByHeader();
@@ -261,7 +281,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         popupMenu.add(CopyAllFindInfoItem);
 
         // 将右键菜单添加到表格
-        table.setComponentPopupMenu(popupMenu);
+        msgTableUI.setComponentPopupMenu(popupMenu);
 
 
         // 添加 copyUrlItem 事件监听器
@@ -281,8 +301,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 */
                 //多行模式下的调用
                 if (listSelectionModel >= 0){
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urls = UiUtils.getUrlsAtActualRows(table,selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urls = UiUtils.getUrlsAtActualRows(msgTableUI,selectedRows);
                     if (!urls.isEmpty())
                         UiUtils.copyToSystemClipboard(String.join("\n", urls));
                 }
@@ -314,8 +334,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
                 //多行选定模式
                 if (listSelectionModel >= 0){
-                    int[] selectedRows = table.getSelectedRows();
-                        List<Integer> ids = UiUtils.getIdsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                        List<Integer> ids = UiUtils.getIdsAtActualRows(msgTableUI, selectedRows);
 
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -356,8 +376,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 */
                 //多行选定模式
                 if (listSelectionModel >= 0){
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -401,8 +421,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
                 //多行选定模式
                 if (listSelectionModel >= 0){
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -439,8 +459,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(msgTableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -463,8 +483,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel>=0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(msgTableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -488,8 +508,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -513,8 +533,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel>=0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(msgTableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -533,7 +553,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                                 rootUrlSet.addAll(BurpExtender.CONF_BLACK_URL_ROOT);
                                 BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(rootUrlSet);
                                 //保存Json
-                                FingerConfigTab.saveConfigToDefaultJson();
+                                RuleConfigPanel.saveConfigToDefaultJson();
 
                                 //2、删除 Root URL 对应的 结果数据
                                 int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
@@ -557,8 +577,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -589,8 +609,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel>=0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(msgTableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -598,7 +618,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             protected Void doInBackground() throws Exception {
                                 //0、获取所有rootUrl
                                 BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN);
-                                FingerConfigTab.saveConfigToDefaultJson();
+                                RuleConfigPanel.saveConfigToDefaultJson();
                                 return null;
                             }
                         }.execute();
@@ -614,8 +634,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel>=0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(msgTableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -623,7 +643,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                             protected Void doInBackground() throws Exception {
                                 BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
                                 //保存Json
-                                FingerConfigTab.saveConfigToDefaultJson();
+                                RuleConfigPanel.saveConfigToDefaultJson();
                                 return null;
                             }
                         }.execute();
@@ -639,8 +659,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -675,8 +695,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel>=0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> urlList =  UiUtils.getUrlsAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.getUrlsAtActualRows(msgTableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -724,8 +744,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -751,8 +771,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -774,8 +794,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -827,8 +847,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -855,8 +875,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -883,8 +903,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -911,8 +931,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -939,8 +959,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -967,8 +987,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (listSelectionModel >= 0) {
-                    int[] selectedRows = table.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(table, selectedRows);
+                    int[] selectedRows = msgTableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -1134,7 +1154,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         tableSetColumnRenders(centerColumns, centerRenderer);
 
         importantCellRenderer havingImportantRenderer = new importantCellRenderer();
-        table.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
+        msgTableUI.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
     }
 
     /**
@@ -1143,7 +1163,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private void tableAddActionSetMsgTabData() {
         //为表格 添加 鼠标监听器
         //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
-        table.addMouseListener(new MouseAdapter() {
+        msgTableUI.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 只有在双击时才执行
@@ -1151,12 +1171,12 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {
-                                int row = table.rowAtPoint(e.getPoint());
+                                int row = msgTableUI.rowAtPoint(e.getPoint());
                                 if (row >= 0) {
                                     updateComponentsBasedOnSelectedRow(row);
                                 }
                             }catch (Exception ef) {
-                                BurpExtender.getStderr().println("[-] Error click table: " + table.rowAtPoint(e.getPoint()));
+                                BurpExtender.getStderr().println("[-] Error click table: " + msgTableUI.rowAtPoint(e.getPoint()));
                                 ef.printStackTrace(BurpExtender.getStderr());
                             }
                         }
@@ -1166,7 +1186,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         //为表格 添加 键盘按键释放事件监听器
         //获取按键事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
-        table.addKeyListener(new KeyAdapter() {
+        msgTableUI.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 //关注向上 和向下 的按键事件
@@ -1174,7 +1194,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {
-                                int row = table.getSelectedRow();
+                                int row = msgTableUI.getSelectedRow();
                                 if (row >= 0) {
                                     updateComponentsBasedOnSelectedRow(row);
                                 }
@@ -1195,11 +1215,11 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private void tableAddActionSortByHeader() {
         //为 table添加排序功能
         //创建并设置 TableRowSorter
-        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
-        table.setRowSorter(sorter);
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(msgTableModel);
+        msgTableUI.setRowSorter(sorter);
 
         // 设置列类型和比较器
-        for (int i = 0; i < model.getColumnCount(); i++) {
+        for (int i = 0; i < msgTableModel.getColumnCount(); i++) {
             //Comparator.naturalOrder() 使用自然排序 是 Java 8 引入的一个实用方法，按字母顺序（对于字符串）或数值大小（对于数字类型）。
             Comparator<?> comparator = Comparator.naturalOrder();
             // 如果比较器不是 null，则设置该比较器
@@ -1207,12 +1227,12 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         }
 
         // 监听表头点击事件
-        table.getTableHeader().addMouseListener(new MouseAdapter() {
+        msgTableUI.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int viewIndex = table.columnAtPoint(e.getPoint());
+                int viewIndex = msgTableUI.columnAtPoint(e.getPoint());
                 if (viewIndex >= 0) {
-                    int modelIndex = table.convertColumnIndexToModel(viewIndex);
+                    int modelIndex = msgTableUI.convertColumnIndexToModel(viewIndex);
                     // 获取当前列的排序模式
                     List<? extends RowSorter.SortKey> currentSortKeys = sorter.getSortKeys();
                     RowSorter.SortKey currentSortKey = null;
@@ -1254,7 +1274,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * @param minWidth
      */
     private void tableSetColumnMinWidth(int columnIndex, int minWidth) {
-        table.getColumnModel().getColumn(columnIndex).setMinWidth(minWidth);
+        msgTableUI.getColumnModel().getColumn(columnIndex).setMinWidth(minWidth);
     }
 
     /**
@@ -1263,7 +1283,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * @param maxWidth
      */
     private void tableSetColumnMaxWidth(int columnIndex, int maxWidth) {
-        table.getColumnModel().getColumn(columnIndex).setMaxWidth(maxWidth);
+        msgTableUI.getColumnModel().getColumn(columnIndex).setMaxWidth(maxWidth);
     }
 
     /**
@@ -1273,7 +1293,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      */
     private void tableSetColumnRenders(List<Integer> columns, DefaultTableCellRenderer renderer) {
         for (Integer column : columns) {
-            table.getColumnModel().getColumn(column).setCellRenderer(renderer);
+            msgTableUI.getColumnModel().getColumn(column).setCellRenderer(renderer);
         }
     }
 
@@ -1355,7 +1375,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             //stdout_println(String.format("当前点击第[%s]行 获取 msgHash [%s]",row, msgHash));
 
             //实现排序后 视图行 数据的正确获取
-            msgHash = UiUtils.getMsgHashAtActualRow(table, row);
+            msgHash = UiUtils.getMsgHashAtActualRow(msgTableUI, row);
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
         }
@@ -1429,7 +1449,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             @Override
             protected Void doInBackground() throws Exception {
                 // 构建一个新的表格模型
-                model.setRowCount(0);
+                msgTableModel.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
                 ArrayList<TableLineDataModel> apiDataModels =null;
@@ -1460,7 +1480,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     if (url.toLowerCase().contains(searchText.toLowerCase())) {
                         Object[] rowData = apiDataModel.toRowDataArray();
                         //model.insertRow(0, rowData); //插入到首行
-                        model.insertRow(model.getRowCount(), rowData); //插入到最后一行
+                        msgTableModel.insertRow(msgTableModel.getRowCount(), rowData); //插入到最后一行
                     }
                 }
                 return null;
@@ -1482,16 +1502,16 @@ public class MainPanel extends JPanel implements IMessageEditorController {
      * 清理所有数据
      */
     public static void clearModelData(boolean clearAllTable){
-        synchronized (model) {
+        synchronized (msgTableModel) {
             // 清空model
-            model.setRowCount(0);
+            msgTableModel.setRowCount(0);
 
             //清空记录变量的内容
             IProxyScanner.urlScanRecordMap = new RecordHashMap();
 
-            ConfigPanel.lbRequestCount.setText("0");
-            ConfigPanel.lbTaskerCount.setText("0");
-            ConfigPanel.lbAnalysisEndCount.setText("0/0");
+            MsgInfoConfigPanel.lbRequestCount.setText("0");
+            MsgInfoConfigPanel.lbTaskerCount.setText("0");
+            MsgInfoConfigPanel.lbAnalysisEndCount.setText("0/0");
 
 
             //置空 过滤数据
@@ -1506,7 +1526,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             // 清空检索框的内容
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ConfigPanel.setUrlSearchBoxText("");
+                    MsgInfoConfigPanel.setUrlSearchBoxText("");
                 }
             });
 
@@ -1533,7 +1553,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         // 调用刷新表格的方法
         try{
-            MainPanel.getInstance().refreshTableModel(checkAutoRefreshButtonStatus);
+            MsgInfoPanel.getInstance().refreshTableModel(checkAutoRefreshButtonStatus);
         } catch (Exception ep){
             stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
         }
@@ -1613,21 +1633,21 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             return;
 
         //设置已加入数据库的数量
-        ConfigPanel.lbTaskerCount.setText(String.valueOf(UnionTableSql.getTableCounts(ReqDataTable.tableName)));
+        MsgInfoConfigPanel.lbTaskerCount.setText(String.valueOf(UnionTableSql.getTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
-        ConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
+        MsgInfoConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (checkAutoRefreshButtonStatus && autoRefreshIsOpen) {
             if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                ConfigPanel.setAutoRefreshOpen();
+                MsgInfoConfigPanel.setAutoRefreshOpen();
             }
             return;
         }
 
         // 获取搜索框和搜索选项
-        final String searchText = ConfigPanel.getUrlSearchBoxText();
-        final String selectedOption = ConfigPanel.getComboBoxSelectedOption();
+        final String searchText = MsgInfoConfigPanel.getUrlSearchBoxText();
+        final String selectedOption = MsgInfoConfigPanel.getComboBoxSelectedOption();
 
         // 使用SwingWorker来处理数据更新，避免阻塞EDT
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1635,7 +1655,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             protected Void doInBackground() throws Exception {
                 try {
                     // 执行耗时的数据操作
-                    MainPanel.showDataTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
+                    MsgInfoPanel.showDataTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
                 } catch (Exception e) {
                     // 处理数据操作中可能出现的异常
                     System.err.println("Error while updating data: " + e.getMessage());
@@ -1651,7 +1671,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
                     // 更新UI组件
                     SwingUtilities.invokeLater(() -> {
                         try {
-                            model.fireTableDataChanged(); // 通知模型数据发生了变化
+                            msgTableModel.fireTableDataChanged(); // 通知模型数据发生了变化
                         } catch (Exception e) {
                             // 处理更新UI组件时可能出现的异常
                             System.err.println("Error while updating UI: " + e.getMessage());
@@ -1702,6 +1722,7 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         smartPath2UrlTEditor.setText(new byte[0]);
         unvisitedUrlTEditor.setText(new byte[0]);
     }
+
 }
 
 

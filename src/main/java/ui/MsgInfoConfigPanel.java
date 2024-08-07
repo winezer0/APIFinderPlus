@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.*;
 
-public class ConfigPanel extends JPanel {
+public class MsgInfoConfigPanel extends JPanel {
     public static JLabel lbRequestCount;   //记录所有加入到URL的请求
     public static JLabel lbTaskerCount;    //记录所有加入数据库的请求
     public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
@@ -29,7 +29,7 @@ public class ConfigPanel extends JPanel {
     private static JLabel autoRefreshText; //自动刷新按钮显示的文本
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
-    public ConfigPanel() {
+    public MsgInfoConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
         //GridBagLayout 允许以网格形式布局容器中的组件，同时为每个组件提供独立的定位和大小控制，非常适用于需要复杂布局设计的GUI界面。
         // 列数，行数  //表示容器被划分为两列，每一列的初始宽度均为0。
@@ -185,7 +185,7 @@ public class ConfigPanel extends JPanel {
                     clickRefreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
 
                     //关键的代码
-                    MainPanel.getInstance().refreshAllUnVisitedUrlsAndTableUI(false, true);
+                    MsgInfoPanel.getInstance().refreshAllUnVisitedUrlsAndTableUI(false, true);
 
                     // 设置定时器，5秒后允许再次点击并恢复图标
                     Timer timer = new Timer(3000, new ActionListener() {
@@ -270,8 +270,8 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认关闭本功能, 点击后应该作为开启配置
-                MainPanel.autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
-                stdout_println(LOG_DEBUG, String.format("auroRefreshUnvisitedIsOpen: %s", MainPanel.autoRefreshUnvisitedIsOpen));
+                MsgInfoPanel.autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedButton.isSelected();
+                stdout_println(LOG_DEBUG, String.format("auroRefreshUnvisitedIsOpen: %s", MsgInfoPanel.autoRefreshUnvisitedIsOpen));
             }
         });
 
@@ -410,10 +410,10 @@ public class ConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
                 if (autoRefreshButton.isSelected()) {
-                    MainPanel.autoRefreshIsOpen = autoRefreshButton.isSelected();
+                    MsgInfoPanel.autoRefreshIsOpen = autoRefreshButton.isSelected();
                     autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
                 } else {
-                    MainPanel.autoRefreshIsOpen = !autoRefreshButton.isSelected();
+                    MsgInfoPanel.autoRefreshIsOpen = !autoRefreshButton.isSelected();
                     autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 }
             }
@@ -430,7 +430,7 @@ public class ConfigPanel extends JPanel {
                         searchText = "";
                     }
                     String selectedOption = (String)choicesComboBox.getSelectedItem();
-                    MainPanel.showDataTableByFilter(selectedOption, searchText);
+                    MsgInfoPanel.showDataTableByFilter(selectedOption, searchText);
                 } catch (Exception ex) {
                     stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
                 }
@@ -442,8 +442,8 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String searchText = urlSearchBox.getText();
-                String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-                MainPanel.showDataTableByFilter(selectedOption, searchText);
+                String selectedOption = (String) MsgInfoConfigPanel.choicesComboBox.getSelectedItem();
+                MsgInfoPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
             }
         });
@@ -453,8 +453,8 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String searchText = urlSearchBox.getText();
-                String selectedOption = (String)ConfigPanel.choicesComboBox.getSelectedItem();
-                MainPanel.showDataTableByFilter(selectedOption, searchText);
+                String selectedOption = (String) MsgInfoConfigPanel.choicesComboBox.getSelectedItem();
+                MsgInfoPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
             }
         });
@@ -532,7 +532,7 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
-                MainPanel.clearModelData(false);
+                MsgInfoPanel.clearModelData(false);
                 setAutoRefreshOpen();
             }
         });
@@ -542,7 +542,7 @@ public class ConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
-                MainPanel.clearModelData(true);
+                MsgInfoPanel.clearModelData(true);
                 setAutoRefreshOpen();
             }
         });
@@ -706,19 +706,19 @@ public class ConfigPanel extends JPanel {
                                     break;
                                 case "addRootUrlToAllowListen":
                                     BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
-                                    FingerConfigTab.saveConfigToDefaultJson();
+                                    RuleConfigPanel.saveConfigToDefaultJson();
                                     break;
                                 case "addRootUrlToBlackUrlRoot":
                                     //1、修改配置文件
                                     BurpExtender.CONF_BLACK_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_BLACK_URL_ROOT);
-                                    FingerConfigTab.saveConfigToDefaultJson();
+                                    RuleConfigPanel.saveConfigToDefaultJson();
                                     //2、删除 Root URL 对应的 结果数据
                                     java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);
                                     int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
                                     int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseResultTable.tableName);
                                     stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
                                     //3、刷新表格
-                                    MainPanel.getInstance().refreshTableModel(false);
+                                    MsgInfoPanel.getInstance().refreshTableModel(false);
                                     break;
                             }
                             return null;
@@ -739,7 +739,7 @@ public class ConfigPanel extends JPanel {
     public static void setAutoRefreshClose(){
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
-        MainPanel.operationStartTime = LocalDateTime.now();
+        MsgInfoPanel.operationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxText() {
@@ -752,6 +752,6 @@ public class ConfigPanel extends JPanel {
 
 
     public static String getComboBoxSelectedOption() {
-        return (String) ConfigPanel.choicesComboBox.getSelectedItem();
+        return (String) MsgInfoConfigPanel.choicesComboBox.getSelectedItem();
     }
 }

@@ -7,23 +7,23 @@ import javax.swing.*;
 import java.awt.*;
 
 
-public class Tags implements ITab {
+public class Tabs implements ITab {
     private final JTabbedPane tabs;
-    private final String tagName;
-    private final FingerConfigTab fingerConfigTab;
-    private final MainPanel mainPanel;
+    private final String name;
+    private final RuleConfigPanel ruleConfigPanel;
+    private final MsgInfoPanel msgInfoPanel;
 
-    public Tags(IBurpExtenderCallbacks callbacks, String name){
-        this.tagName = name;
+    public Tabs(IBurpExtenderCallbacks callbacks, String name){
+        this.name = name;
 
         // 定义tab标签页
         this.tabs = new JTabbedPane();
 
-        this.mainPanel = MainPanel.getInstance();
-        this.tabs.add("主页", this.mainPanel);
+        this.msgInfoPanel = MsgInfoPanel.getInstance();
+        this.tabs.add("主页", this.msgInfoPanel);
 
-        this.fingerConfigTab = FingerConfigTab.getInstance();
-        this.tabs.add("配置", this.fingerConfigTab);
+        this.ruleConfigPanel = RuleConfigPanel.getInstance();
+        this.tabs.add("配置", this.ruleConfigPanel);
 
         // 将整个tab加载到平台即可
         callbacks.customizeUiComponent(tabs);
@@ -34,7 +34,7 @@ public class Tags implements ITab {
 
     @Override
     public String getTabCaption() {
-        return this.tagName;
+        return this.name;
     }
 
     @Override

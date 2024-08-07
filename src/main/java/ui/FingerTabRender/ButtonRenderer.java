@@ -2,7 +2,7 @@ package ui.FingerTabRender;
 
 import burp.BurpExtender;
 import model.FingerPrintRule;
-import ui.FingerConfigTab;
+import ui.RuleConfigPanel;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -44,7 +44,7 @@ public class ButtonRenderer extends JPanel implements TableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         // 注意：这里使用传入的 `row` 参数，而不是 `table.getSelectedRow()`
         int modelRow = table.convertRowIndexToModel(row); // 转换为模型索引
-        int dataIndex = FingerConfigTab.tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
+        int dataIndex = RuleConfigPanel.tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
 
         FingerPrintRule rule = BurpExtender.fingerprintRules.get(dataIndex);
         if (rule.getIsOpen()) {

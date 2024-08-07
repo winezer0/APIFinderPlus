@@ -7,6 +7,7 @@ import database.Constants;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.*;
+import ui.MainTabRender.TableHeaderWithTips;
 import utils.BurpFileUtils;
 import utils.RegularUtils;
 import utils.UiUtils;
@@ -27,7 +28,7 @@ import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isNotEmptyObj;
 
 
-public class FingerConfigTab extends JPanel {
+public class RuleConfigPanel extends JPanel {
     private static DefaultTableModel ruleTableModel;
     //DefaultTableModel 是 Java Swing 库中的一个类，通常用于表格组件（如 JTable）的数据模型。它管理着表格的数据、列名以及对数据的各种操作（如添加行、删除行等）。
     private static JTable ruleTableUI;
@@ -48,19 +49,19 @@ public class FingerConfigTab extends JPanel {
     public static final String String_All_Type = "全部类型";
 
 
-    private static volatile FingerConfigTab instance; //实现单例模式
-    public static FingerConfigTab getInstance() {
+    private static volatile RuleConfigPanel instance; //实现单例模式
+    public static RuleConfigPanel getInstance() {
         if (instance == null) {
-            synchronized (FingerConfigTab.class) {
+            synchronized (RuleConfigPanel.class) {
                 if (instance == null) {
-                    instance = new FingerConfigTab();
+                    instance = new RuleConfigPanel();
                 }
             }
         }
         return instance;
     }
 
-    public FingerConfigTab() {
+    public RuleConfigPanel() {
         //在FingerConfigTab类中设置该容器的默认布局为BorderLayout，为后续向容器中添加组件并控制这些组件的布局奠定了基础。这一步是构建用户界面时组织和排列组件的关键步骤之一。
         setLayout(new BorderLayout());
 
@@ -402,7 +403,7 @@ public class FingerConfigTab extends JPanel {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("保存为");
                 fileChooser.setFileFilter(new FileNameExtensionFilter("JSON文件 (*.json)", "json"));
-                int userSelection = fileChooser.showSaveDialog(FingerConfigTab.this);
+                int userSelection = fileChooser.showSaveDialog(RuleConfigPanel.this);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = fileChooser.getSelectedFile();
@@ -413,9 +414,9 @@ public class FingerConfigTab extends JPanel {
 
                     try {
                         BurpFileUtils.writeToFile(fileToSave, configToJson);
-                        JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已导出至: " + fileToSave.getAbsolutePath(), "导出成功", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(RuleConfigPanel.this, "数据已导出至: " + fileToSave.getAbsolutePath(), "导出成功", JOptionPane.INFORMATION_MESSAGE);
                     } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(FingerConfigTab.this, "写入文件时发生错误: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(RuleConfigPanel.this, "写入文件时发生错误: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -430,7 +431,7 @@ public class FingerConfigTab extends JPanel {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("请选择规则配置文件");
                 fileChooser.setFileFilter(new FileNameExtensionFilter("JSON文件 (*.json)", "json"));
-                int userSelection = fileChooser.showOpenDialog(FingerConfigTab.this);
+                int userSelection = fileChooser.showOpenDialog(RuleConfigPanel.this);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToOpen = fileChooser.getSelectedFile();
@@ -469,10 +470,10 @@ public class FingerConfigTab extends JPanel {
                             counter ++;
                         }
 
-                        JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已从: " + fileToOpen.getAbsolutePath() + " 导入", "导入成功", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(RuleConfigPanel.this, "数据已从: " + fileToOpen.getAbsolutePath() + " 导入", "导入成功", JOptionPane.INFORMATION_MESSAGE);
                         ruleTableModel.fireTableDataChanged();  //通知所有依赖于该数据模型的组件，特别是JTable，数据模型中的数据已经发生了改变，从而触发UI的更新。
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(FingerConfigTab.this, "读取文件或解析 JSON 数据时发生错误: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(RuleConfigPanel.this, "读取文件或解析 JSON 数据时发生错误: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
                         stderr_println(ex.getMessage());
                     }
                 }
@@ -516,10 +517,10 @@ public class FingerConfigTab extends JPanel {
                         counter ++;
                     }
 
-                    JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已重置到最原始状态", "重置成功",  JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(RuleConfigPanel.this, "数据已重置到最原始状态", "重置成功",  JOptionPane.INFORMATION_MESSAGE);
                     ruleTableModel.fireTableDataChanged();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已重置失败： " + ex.getMessage(), "重置失败", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(RuleConfigPanel.this, "数据已重置失败： " + ex.getMessage(), "重置失败", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -532,9 +533,9 @@ public class FingerConfigTab extends JPanel {
                 try {
                     // 使用UTF-8编码写入文件
                     BurpFileUtils.writeToPluginPathFile(BurpExtender.configName, json);
-                    JOptionPane.showMessageDialog(FingerConfigTab.this, "指纹已保存，下次启动使用该指纹", "保存成功",  JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(RuleConfigPanel.this, "指纹已保存，下次启动使用该指纹", "保存成功",  JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(FingerConfigTab.this, "指纹保存失败： " + ex.getMessage(), "保存失败", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(RuleConfigPanel.this, "指纹保存失败： " + ex.getMessage(), "保存失败", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -586,6 +587,21 @@ public class FingerConfigTab extends JPanel {
 
         //在表格层面设置整个表格为不可编辑
         ruleTableUI.setDefaultEditor(Object.class, null);
+
+        //自己实现TableHeader 支持请求头提示
+        String[] colHeaderTooltips = new String[]{
+                "规则ID",
+                "规则类型",
+                "规则描述",
+                "是否重要",
+                "准确度",
+                "匹配方式",
+                "匹配位置",
+                "规则内容",
+                "开关|编辑|删除"
+        };
+        TableHeaderWithTips headerWithTooltips = new TableHeaderWithTips(ruleTableUI.getColumnModel(), colHeaderTooltips);
+        ruleTableUI.setTableHeader(headerWithTooltips);
 
         //设置每一列的宽度
         CenterRenderer centerRenderer = new CenterRenderer();
@@ -711,7 +727,7 @@ public class FingerConfigTab extends JPanel {
                 "describe",
                 "isImportant",
                 "accuracy",
-                "Match",
+                "match",
                 "location",
                 "keyword",
                 "Action"

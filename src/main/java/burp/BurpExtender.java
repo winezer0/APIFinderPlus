@@ -5,8 +5,8 @@ import com.alibaba.fastjson2.JSON;
 import database.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
-import ui.MainPanel;
-import ui.Tags;
+import ui.MsgInfoPanel;
+import ui.Tabs;
 import utils.BurpFileUtils;
 import utils.BurpPrintUtils;
 import utils.RegularUtils;
@@ -33,7 +33,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     private static IExtensionHelpers helpers;
 
     private static IProxyScanner iProxyScanner;
-    private static Tags tags;
+    private static Tabs tags;
 
     public static boolean extensionIsLoading = false; //记录插件是否处于加载状态
 
@@ -134,7 +134,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
             }
 
             //加载UI 标签界面
-            tags = new Tags(callbacks, extensionName);
+            tags = new Tabs(callbacks, extensionName);
 
             //初始化数据配置
             dbService = DBService.getInstance();
@@ -219,7 +219,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         extensionIsLoading = false;
 
         // 停止面板更新器
-        MainPanel.timer.stop();
+        MsgInfoPanel.timer.stop();
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();

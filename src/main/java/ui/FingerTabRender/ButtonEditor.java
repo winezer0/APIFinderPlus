@@ -2,7 +2,7 @@ package ui.FingerTabRender;
 
 import burp.BurpExtender;
 import model.FingerPrintRule;
-import ui.FingerConfigTab;
+import ui.RuleConfigPanel;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -44,9 +44,9 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
                     return; // 如果没有选中任何行，就不执行编辑操作
                 }
                 int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
-                int dataIndex = FingerConfigTab.tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
+                int dataIndex = RuleConfigPanel.tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
 
-                FingerConfigTab.editingRow = dataIndex; // 更新编辑行索引为原始数据列表中的索引
+                RuleConfigPanel.editingRow = dataIndex; // 更新编辑行索引为原始数据列表中的索引
                 FingerPrintRule rule = BurpExtender.fingerprintRules.get(dataIndex);
                 if (rule.getIsOpen()) {
                     toggleButton.setIcon(closeIcon);
@@ -70,7 +70,7 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
                 int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
 
                 //加载规则编辑面板
-                FingerConfigTab.showRuleEditorPanel(modelRow);
+                RuleConfigPanel.showRuleEditorPanel(modelRow);
 
 /*
                 //跟随标签显示 优化版本
@@ -101,17 +101,17 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
                     return; // 如果没有选中任何行，就不执行删除操作
                 }
                 int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
-                int dataIndex = FingerConfigTab.tableToModelIndexMap.get(modelRow); // 获取实际数据索引
+                int dataIndex = RuleConfigPanel.tableToModelIndexMap.get(modelRow); // 获取实际数据索引
 
                 // 删除数据源中的数据
                 BurpExtender.fingerprintRules.remove(dataIndex);
 
                 // 更新映射
-                FingerConfigTab.tableToModelIndexMap.remove(modelRow);
+                RuleConfigPanel.tableToModelIndexMap.remove(modelRow);
 
                 // 由于删除了一个元素，需要更新所有后续元素的索引
-                for (int i = modelRow; i < FingerConfigTab.tableToModelIndexMap.size(); i++) {
-                    FingerConfigTab.tableToModelIndexMap.set(i, FingerConfigTab.tableToModelIndexMap.get(i) - 1);
+                for (int i = modelRow; i < RuleConfigPanel.tableToModelIndexMap.size(); i++) {
+                    RuleConfigPanel.tableToModelIndexMap.set(i, RuleConfigPanel.tableToModelIndexMap.get(i) - 1);
                 }
 
                 // 删除表格模型中的数据
@@ -122,7 +122,7 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
                 sourceTable.repaint();
 
                 //重新加载系统CONF_配置
-                FingerConfigTab.reloadConfFromRules(BurpExtender.fingerprintRules);
+                RuleConfigPanel.reloadConfFromRules(BurpExtender.fingerprintRules);
             }
         });
 
