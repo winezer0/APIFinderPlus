@@ -34,7 +34,7 @@ public class IProxyScanner implements IProxyListener {
 
     //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
     public static boolean  dynamicPathFilterIsOpenDefault = false;
-    public static boolean  dynamicPathFilterIsOpen= dynamicPathFilterIsOpenDefault;
+    public static boolean  dynamicPathFilterIsOpen = dynamicPathFilterIsOpenDefault;
 
     //是否启用自动记录每个请求的PATH //自动记录功能应该开启,不然没有pathTree生成
     public static boolean autoRecordPathIsOpenDefault  = true;
