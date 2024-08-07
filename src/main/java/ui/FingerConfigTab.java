@@ -31,9 +31,9 @@ import static utils.CastUtils.isNotEmptyObj;
 
 
 public class FingerConfigTab extends JPanel {
-    private static DefaultTableModel tableModel;
+    private static DefaultTableModel ruleTableModel;
     //DefaultTableModel 是 Java Swing 库中的一个类，通常用于表格组件（如 JTable）的数据模型。它管理着表格的数据、列名以及对数据的各种操作（如添加行、删除行等）。
-    private JTable ruleTable;
+    private JTable ruleTableUI;
     private JDialog editRulePanel;  // 新增：编辑面板
     public static Integer editingRow = null;
     //private JTextField keywordField;  // 新增：编辑面板的文本字段
@@ -151,7 +151,7 @@ public class FingerConfigTab extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清除表格的所有行
-                tableModel.setRowCount(0);
+                ruleTableModel.setRowCount(0);
                 // 清空映射
                 tableToModelIndexMap.clear();
                 // 重新添加匹配搜索文本的行，并更新映射
@@ -160,7 +160,7 @@ public class FingerConfigTab extends JPanel {
                     FingerPrintRule rule = BurpExtender.fingerprintRules.get(ruleIndex);
                     // 保存当前规则在模型列表中的索引
                     tableToModelIndexMap.add(ruleIndex);
-                    tableModel.addRow(new Object[]{
+                    ruleTableModel.addRow(new Object[]{
                             counter, //行号
                             rule.getType(), //规则类型
                             rule.getDescribe(),  //规则描述
@@ -184,7 +184,7 @@ public class FingerConfigTab extends JPanel {
                 String searchText = searchField.getText(); // 获取用户输入的搜索文本
 
                 // 清除表格的所有行
-                tableModel.setRowCount(0);
+                ruleTableModel.setRowCount(0);
                 // 清空映射
                 tableToModelIndexMap.clear();
                 // 重新添加匹配搜索文本的行，并更新映射
@@ -195,7 +195,7 @@ public class FingerConfigTab extends JPanel {
                     if (keywords.contains(searchText.toLowerCase())){
                         // 保存当前规则在模型列表中的索引
                         tableToModelIndexMap.add(i);
-                        tableModel.addRow(new Object[]{
+                        ruleTableModel.addRow(new Object[]{
                                 counter,
                                 rule.getType(),
                                 rule.getDescribe(),
@@ -218,7 +218,7 @@ public class FingerConfigTab extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 String searchText = searchField.getText(); // 获取用户输入的搜索文本
                 // 清除表格的所有行
-                tableModel.setRowCount(0);
+                ruleTableModel.setRowCount(0);
                 // 清空映射
                 tableToModelIndexMap.clear();
                 // 重新添加匹配搜索文本的行，并更新映射
@@ -229,7 +229,7 @@ public class FingerConfigTab extends JPanel {
                     if (keywords.contains(searchText.toLowerCase())){
                         // 保存当前规则在模型列表中的索引
                         tableToModelIndexMap.add(i);
-                        tableModel.addRow(new Object[]{
+                        ruleTableModel.addRow(new Object[]{
                                 counter,
                                 rule.getType(),
                                 rule.getDescribe(),
@@ -260,7 +260,7 @@ public class FingerConfigTab extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清除表格的所有行
-                tableModel.setRowCount(0);
+                ruleTableModel.setRowCount(0);
                 // 重新添加匹配搜索文本的行
                 int counter=1;
                 // 清空映射
@@ -272,7 +272,7 @@ public class FingerConfigTab extends JPanel {
                     tableToModelIndexMap.add(i);
                     //低级以上就等于开启所有规则
                     rule.setOpen(true);
-                    tableModel.addRow(new Object[]{
+                    ruleTableModel.addRow(new Object[]{
                             counter,
                             rule.getType(),
                             rule.getDescribe(),
@@ -285,7 +285,7 @@ public class FingerConfigTab extends JPanel {
                     });
                     counter ++;
                 }
-                ruleTable.repaint();
+                ruleTableUI.repaint();
             }
         });
 
@@ -295,7 +295,7 @@ public class FingerConfigTab extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清除表格的所有行
-                tableModel.setRowCount(0);
+                ruleTableModel.setRowCount(0);
                 // 清空映射
                 tableToModelIndexMap.clear();
                 // 重新添加匹配搜索文本的行，并更新映射
@@ -306,7 +306,7 @@ public class FingerConfigTab extends JPanel {
                     tableToModelIndexMap.add(i);
                     //设置lower级别规则为关闭
                     rule.setOpen(!rule.getAccuracy().equals("lower"));
-                    tableModel.addRow(new Object[]{
+                    ruleTableModel.addRow(new Object[]{
                             counter,
                             rule.getType(),
                             rule.getDescribe(),
@@ -319,7 +319,7 @@ public class FingerConfigTab extends JPanel {
                     });
                     counter ++;
                 }
-                ruleTable.repaint();
+                ruleTableUI.repaint();
             }
         });
 
@@ -329,7 +329,7 @@ public class FingerConfigTab extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清除表格的所有行
-                tableModel.setRowCount(0);
+                ruleTableModel.setRowCount(0);
                 // 重新添加匹配搜索文本的行
                 int counter=1;
                 // 清空映射
@@ -342,7 +342,7 @@ public class FingerConfigTab extends JPanel {
                     tableToModelIndexMap.add(i);
                     //开启high级别的规则
                     rule.setOpen(rule.getAccuracy().equals("high"));
-                    tableModel.addRow(new Object[]{
+                    ruleTableModel.addRow(new Object[]{
                             counter,
                             rule.getType(),
                             rule.getDescribe(),
@@ -355,7 +355,7 @@ public class FingerConfigTab extends JPanel {
                     });
                     counter ++;
                 }
-                ruleTable.repaint();
+                ruleTableUI.repaint();
             }
         });
         
@@ -365,7 +365,7 @@ public class FingerConfigTab extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 //初始化建立一个隐藏的配置编辑框
                 if (editRulePanel == null)
-                    initEditRulePanel();
+                    creatRuleEditorPanel();
 
                 // 清空编辑面板的文本字段
                 editRulePanel.setTitle("新增指纹");
@@ -450,12 +450,12 @@ public class FingerConfigTab extends JPanel {
                         }
 
                         // 清除表格的所有行
-                        tableModel.setRowCount(0);
+                        ruleTableModel.setRowCount(0);
 
                         // 添加所有的行
                         int counter = 1;
                         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
-                            tableModel.addRow(new Object[]{
+                            ruleTableModel.addRow(new Object[]{
                                     counter,
                                     rule.getType(),
                                     rule.getDescribe(),
@@ -470,7 +470,7 @@ public class FingerConfigTab extends JPanel {
                         }
 
                         JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已从: " + fileToOpen.getAbsolutePath() + " 导入", "导入成功", JOptionPane.INFORMATION_MESSAGE);
-                        tableModel.fireTableDataChanged();  //通知所有依赖于该数据模型的组件，特别是JTable，数据模型中的数据已经发生了改变，从而触发UI的更新。
+                        ruleTableModel.fireTableDataChanged();  //通知所有依赖于该数据模型的组件，特别是JTable，数据模型中的数据已经发生了改变，从而触发UI的更新。
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(FingerConfigTab.this, "读取文件或解析 JSON 数据时发生错误: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
                         stderr_println(ex.getMessage());
@@ -497,12 +497,12 @@ public class FingerConfigTab extends JPanel {
                     }
 
                     // 清除表格的所有行
-                    tableModel.setRowCount(0);
+                    ruleTableModel.setRowCount(0);
 
                     // 添加所有的行
                     int counter = 1;
                     for (FingerPrintRule rule : BurpExtender.fingerprintRules){
-                        tableModel.addRow(new Object[]{
+                        ruleTableModel.addRow(new Object[]{
                                 counter,
                                 rule.getType(),
                                 rule.getDescribe(),
@@ -517,7 +517,7 @@ public class FingerConfigTab extends JPanel {
                     }
 
                     JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已重置到最原始状态", "重置成功",  JOptionPane.INFORMATION_MESSAGE);
-                    tableModel.fireTableDataChanged();
+                    ruleTableModel.fireTableDataChanged();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(FingerConfigTab.this, "数据已重置失败： " + ex.getMessage(), "重置失败", JOptionPane.ERROR_MESSAGE);
                 }
@@ -543,13 +543,12 @@ public class FingerConfigTab extends JPanel {
         add(toolbar, BorderLayout.NORTH);
 
         //初始化表格数据
-        initTableContentModel();
+        initRuleTableModel();
         //创建了一个新的JTable对象，并将之前定义的tableModel 作为数据模型赋给这个表格。表格将根据数据模型中提供的数据来显示内容，包括行数、列数及每个单元格的具体数据。
-        ruleTable = new JTable(tableModel);
-        setRuleTableStyle(ruleTable);
+        initRuleTableUI(ruleTableModel);
 
         //add函数用于向容器（如JFrame, JPanel等）添加组件的方法。
-        add(new JScrollPane(ruleTable), BorderLayout.CENTER);
+        add(new JScrollPane(ruleTableUI), BorderLayout.CENTER);
     }
 
 
@@ -582,56 +581,58 @@ public class FingerConfigTab extends JPanel {
     }
 
     //设置规则表格的表样式和点击动作
-    private void setRuleTableStyle(JTable ruleTable) {
+    private void initRuleTableUI(DefaultTableModel tableModel) {
+        ruleTableUI = new JTable(tableModel);
+
         //在表格层面设置整个表格为不可编辑
-        ruleTable.setDefaultEditor(Object.class, null);
+        ruleTableUI.setDefaultEditor(Object.class, null);
 
         //设置每一列的宽度
         CenterRenderer centerRenderer = new CenterRenderer();
         LeftRenderer leftRenderer = new LeftRenderer();
 
         int minColumnWidth = 100;
-        ruleTable.getColumnModel().getColumn(0).setCellRenderer(leftRenderer);
-        ruleTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-        ruleTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        ruleTableUI.getColumnModel().getColumn(0).setCellRenderer(leftRenderer);
+        ruleTableUI.getColumnModel().getColumn(0).setPreferredWidth(50);
+        ruleTableUI.getColumnModel().getColumn(0).setMaxWidth(50);
 
-        ruleTable.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);
-        ruleTable.getColumnModel().getColumn(1).setPreferredWidth(250);
-        ruleTable.getColumnModel().getColumn(1).setMaxWidth(300);
+        ruleTableUI.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);
+        ruleTableUI.getColumnModel().getColumn(1).setPreferredWidth(250);
+        ruleTableUI.getColumnModel().getColumn(1).setMaxWidth(300);
 
-        ruleTable.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
-        ruleTable.getColumnModel().getColumn(2).setPreferredWidth(250);
-        ruleTable.getColumnModel().getColumn(2).setMaxWidth(300);
+        ruleTableUI.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
+        ruleTableUI.getColumnModel().getColumn(2).setPreferredWidth(250);
+        ruleTableUI.getColumnModel().getColumn(2).setMaxWidth(300);
 
-        ruleTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(3).setPreferredWidth(minColumnWidth);
-        ruleTable.getColumnModel().getColumn(3).setMaxWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+        ruleTableUI.getColumnModel().getColumn(3).setPreferredWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(3).setMaxWidth(minColumnWidth);
 
-        ruleTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(4).setPreferredWidth(minColumnWidth);
-        ruleTable.getColumnModel().getColumn(4).setMaxWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+        ruleTableUI.getColumnModel().getColumn(4).setPreferredWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(4).setMaxWidth(minColumnWidth);
 
-        ruleTable.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(5).setPreferredWidth(minColumnWidth);
-        ruleTable.getColumnModel().getColumn(5).setMaxWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
+        ruleTableUI.getColumnModel().getColumn(5).setPreferredWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(5).setMaxWidth(minColumnWidth);
 
-        ruleTable.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        ruleTable.getColumnModel().getColumn(6).setPreferredWidth(minColumnWidth);
-        ruleTable.getColumnModel().getColumn(6).setMaxWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
+        ruleTableUI.getColumnModel().getColumn(6).setPreferredWidth(minColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(6).setMaxWidth(minColumnWidth);
 
-        ruleTable.getColumnModel().getColumn(7).setCellRenderer(leftRenderer);
-        ruleTable.getColumnModel().getColumn(7).setPreferredWidth(300);
+        ruleTableUI.getColumnModel().getColumn(7).setCellRenderer(leftRenderer);
+        ruleTableUI.getColumnModel().getColumn(7).setPreferredWidth(300);
 
         // 设置操作列的宽度以适应两个按钮
         int actionColumnWidth = 100;  // 假设每个按钮宽度为70，中间间隔10
-        ruleTable.getColumnModel().getColumn(8).setPreferredWidth(actionColumnWidth);
-        ruleTable.getColumnModel().getColumn(8).setMaxWidth(actionColumnWidth);
-        ruleTable.getColumnModel().getColumn(8).setCellRenderer(new ButtonRenderer());
-        ruleTable.getColumnModel().getColumn(8).setCellEditor(new ButtonEditor(ruleTable));
+        ruleTableUI.getColumnModel().getColumn(8).setPreferredWidth(actionColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(8).setMaxWidth(actionColumnWidth);
+        ruleTableUI.getColumnModel().getColumn(8).setCellRenderer(new ButtonRenderer());
+        ruleTableUI.getColumnModel().getColumn(8).setCellEditor(new ButtonEditor(ruleTableUI));
 
         // 在FingerConfigTab构造函数中设置表头渲染器和监听器的代码
         //JTableHeader是JTable顶部显示列名的部分，允许用户对列进行排序、调整列宽等 自定义设置
-        JTableHeader tableHeader = ruleTable.getTableHeader();
+        JTableHeader tableHeader = ruleTableUI.getTableHeader();
         //获取 type所在的列 // 假定类型列的索引是1
         TableColumn typeColumn = tableHeader.getColumnModel().getColumn(1);
 
@@ -642,7 +643,7 @@ public class FingerConfigTab extends JPanel {
         tableHeader.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (ruleTable.getColumnModel().getColumnIndexAtX(e.getX()) == 1) { // 假设类型列的索引是1
+                if (ruleTableUI.getColumnModel().getColumnIndexAtX(e.getX()) == 1) { // 假设类型列的索引是1
                     //显示 表头 类型 点击动作
                     showFilterPopup(e.getComponent(), e.getX(), e.getY());
                 }
@@ -650,14 +651,14 @@ public class FingerConfigTab extends JPanel {
         });
 
         // 添加鼠标监听器
-        ruleTable.addMouseListener(new MouseAdapter() {
+        ruleTableUI.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 获取点击的行索引
-                int row = ruleTable.rowAtPoint(e.getPoint());
+                int row = ruleTableUI.rowAtPoint(e.getPoint());
                 if (row >= 0) {
                     // 转换为模型索引
-                    int modelRow = ruleTable.convertRowIndexToModel(row);
+                    int modelRow = ruleTableUI.convertRowIndexToModel(row);
                     if (e.getClickCount() >= 2) { // 双击
                         //加载规则编辑面板
                         loadRuleEditorPanel(modelRow);
@@ -681,7 +682,7 @@ public class FingerConfigTab extends JPanel {
         FingerPrintRule rule = BurpExtender.fingerprintRules.get(dataIndex);
 
         if (editRulePanel == null)
-            initEditRulePanel();
+            creatRuleEditorPanel();
 
         // 填充编辑面板的字段
         editRulePanel.setTitle("loadRuleEditorPanel");
@@ -695,9 +696,9 @@ public class FingerConfigTab extends JPanel {
     }
 
     // 初始化表格数据
-    private void initTableContentModel() {
+    private void initRuleTableModel() {
         // 表格数据
-        tableModel = new DefaultTableModel(new Object[]{
+        ruleTableModel = new DefaultTableModel(new Object[]{
                 "#",
                 "type",
                 "describe",
@@ -729,7 +730,7 @@ public class FingerConfigTab extends JPanel {
             FingerPrintRule rule = BurpExtender.fingerprintRules.get(i);
             tableToModelIndexMap.add(i);
             uniqueTypes.add(rule.getType());
-            tableModel.addRow(new Object[]{
+            ruleTableModel.addRow(new Object[]{
                     counter,
                     rule.getType(),
                     rule.getDescribe(),
@@ -745,7 +746,7 @@ public class FingerConfigTab extends JPanel {
     }
 
     //初始化建立一个隐藏的配置编辑框
-    private void initEditRulePanel() {
+    private void creatRuleEditorPanel() {
         // 编辑页面框
         editRulePanel = new JDialog();
         editRulePanel.setTitle("新增指纹");
@@ -907,16 +908,16 @@ public class FingerConfigTab extends JPanel {
                     rule.setKeyword(keyword);
 
                     // 更新表格模型
-                    tableModel.setValueAt(type, ruleTable.getSelectedRow(), 1);
-                    tableModel.setValueAt(describe, ruleTable.getSelectedRow(), 2);
-                    tableModel.setValueAt(isImportant, ruleTable.getSelectedRow(), 3);
-                    tableModel.setValueAt(accuracy, ruleTable.getSelectedRow(), 4);
-                    tableModel.setValueAt(method, ruleTable.getSelectedRow(), 5); // 假设Method列是第3列
-                    tableModel.setValueAt(location, ruleTable.getSelectedRow(), 6); // 假设Location列是第4列
-                    tableModel.setValueAt(String.join(",", keyword), ruleTable.getSelectedRow(), 7); // 假设Keyword列是第5列
+                    ruleTableModel.setValueAt(type, ruleTableUI.getSelectedRow(), 1);
+                    ruleTableModel.setValueAt(describe, ruleTableUI.getSelectedRow(), 2);
+                    ruleTableModel.setValueAt(isImportant, ruleTableUI.getSelectedRow(), 3);
+                    ruleTableModel.setValueAt(accuracy, ruleTableUI.getSelectedRow(), 4);
+                    ruleTableModel.setValueAt(method, ruleTableUI.getSelectedRow(), 5); // 假设Method列是第3列
+                    ruleTableModel.setValueAt(location, ruleTableUI.getSelectedRow(), 6); // 假设Location列是第4列
+                    ruleTableModel.setValueAt(String.join(",", keyword), ruleTableUI.getSelectedRow(), 7); // 假设Keyword列是第5列
 
                     // 通知模型数据已更新，触发表格重绘
-                    tableModel.fireTableRowsUpdated(ruleTable.getSelectedRow(), ruleTable.getSelectedRow());
+                    ruleTableModel.fireTableRowsUpdated(ruleTableUI.getSelectedRow(), ruleTableUI.getSelectedRow());
                     // 关闭编辑面板
                     editRulePanel.setVisible(false);
 
@@ -929,7 +930,7 @@ public class FingerConfigTab extends JPanel {
                         // 将新规则添加到数据源的开始位置
                         BurpExtender.fingerprintRules.add(0, newRule);
                         // 更新表格模型
-                        ((DefaultTableModel) ruleTable.getModel()).insertRow(0, new Object[]{
+                        ((DefaultTableModel) ruleTableUI.getModel()).insertRow(0, new Object[]{
                                 1, // 新行的序号始终为1
                                 newRule.getType(),
                                 newRule.getDescribe(),
@@ -943,8 +944,8 @@ public class FingerConfigTab extends JPanel {
                         // 更新映射列表，因为添加了新的数据项
                         tableToModelIndexMap.add(0, 0); // 在映射列表的开始位置添加新项
                         // 由于添加了新元素，更新所有行的序号
-                        for (int i = 1; i < ruleTable.getRowCount(); i++) {
-                            ruleTable.getModel().setValueAt(i + 1, i, 0);
+                        for (int i = 1; i < ruleTableUI.getRowCount(); i++) {
+                            ruleTableUI.getModel().setValueAt(i + 1, i, 0);
                         }
                         // 更新后续映射的索引
                         for (int i = 1; i < tableToModelIndexMap.size(); i++) {
@@ -955,7 +956,7 @@ public class FingerConfigTab extends JPanel {
                     // 关闭编辑面板
                     editRulePanel.setVisible(false);
                     // 通知模型数据已更新，触发表格重绘
-                    tableModel.fireTableDataChanged();
+                    ruleTableModel.fireTableDataChanged();
                 }
 
                 //重新加载配置文件中的CONF_列
@@ -997,6 +998,7 @@ public class FingerConfigTab extends JPanel {
 
         BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_REGULAR_EXTRACT_URIS);
 
+        /*
         stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
 
         stdout_println("[+] CONF_WHITE_RECORD_PATH_STATUS: " + BurpExtender.CONF_WHITE_RECORD_PATH_STATUS);
@@ -1013,6 +1015,7 @@ public class FingerConfigTab extends JPanel {
 
         stdout_println("[+] CONF_BLACK_EXTRACT_INFO_KEYS: " + BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS);
         stdout_println("[+] CONF_REGULAR_EXTRACT_URIS: " + BurpExtender.CONF_REGULAR_EXTRACT_URIS);
+         */
 
     }
 
@@ -1065,7 +1068,7 @@ public class FingerConfigTab extends JPanel {
 
     //基于选定的类型过滤规则
     private void filterTableByType(String type) {
-        tableModel.setRowCount(0); // 清空表格
+        ruleTableModel.setRowCount(0); // 清空表格
         tableToModelIndexMap.clear(); // 清空索引映射
 
         int counter = 1;
@@ -1073,7 +1076,7 @@ public class FingerConfigTab extends JPanel {
             FingerPrintRule rule = BurpExtender.fingerprintRules.get(i);
             // 如果type为null或者与规则类型匹配，添加到表格中
             if (type == null || String_All_Type.equals(type) || rule.getType().equals(type)) {
-                tableModel.addRow(new Object[]{
+                ruleTableModel.addRow(new Object[]{
                         counter++,
                         rule.getType(),
                         rule.getDescribe(),
@@ -1132,7 +1135,6 @@ public class FingerConfigTab extends JPanel {
 
         public ButtonEditor(JTable fromTable) {
             this.fromTable = fromTable;
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             toggleButton = new JButton(); //开关按钮
             toggleButton.setIcon(openIcon);
 
@@ -1238,6 +1240,8 @@ public class FingerConfigTab extends JPanel {
                 }
             });
 
+            //把三个按钮放在一个小面板中
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             panel.add(toggleButton);
             panel.add(editButton);
             panel.add(deleteButton);
