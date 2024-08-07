@@ -6,10 +6,7 @@ import com.alibaba.fastjson2.JSONWriter;
 import database.Constants;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
-import ui.FingerTabRender.ButtonRenderer;
-import ui.FingerTabRender.CenterRenderer;
-import ui.FingerTabRender.HeaderIconTypeRenderer;
-import ui.FingerTabRender.LeftRenderer;
+import ui.FingerTabRender.*;
 import utils.BurpFileUtils;
 import utils.RegularUtils;
 import utils.UiUtils;
@@ -33,17 +30,20 @@ import static utils.CastUtils.isNotEmptyObj;
 public class FingerConfigTab extends JPanel {
     private static DefaultTableModel ruleTableModel;
     //DefaultTableModel 是 Java Swing 库中的一个类，通常用于表格组件（如 JTable）的数据模型。它管理着表格的数据、列名以及对数据的各种操作（如添加行、删除行等）。
-    private JTable ruleTableUI;
-    private JDialog editRulePanel;  // 新增：编辑面板
+    private static JTable ruleTableUI;
+    private static JDialog editRulePanel;  // 新增：编辑面板
     public static Integer editingRow = null;
     //private JTextField keywordField;  // 新增：编辑面板的文本字段
-    private JTextArea keywordField;
-    private JTextField describeField;
-    private JComboBox<Boolean> isImportantField;
-    private JComboBox<String> searchMethodField, locationField, typeField, accuracyFiled;
+    private static JTextArea keywordField;
+    private static JTextField describeField;
+    private static JComboBox<Boolean> isImportantField;
+    private static JComboBox<String> searchMethodField;
+    private static JComboBox<String> locationField;
+    private static JComboBox<String> typeField;
+    private static JComboBox<String> accuracyFiled;
 
     public static List<Integer> tableToModelIndexMap = new ArrayList<>();
-    public Set<String> uniqueTypes = new LinkedHashSet<>();
+    public static Set<String> uniqueTypes = new LinkedHashSet<>();
 
     public static final String String_All_Type = "全部类型";
 
@@ -661,9 +661,7 @@ public class FingerConfigTab extends JPanel {
                     int modelRow = ruleTableUI.convertRowIndexToModel(row);
                     if (e.getClickCount() >= 2) { // 双击
                         //加载规则编辑面板
-                        loadRuleEditorPanel(modelRow);
-                        editRulePanel.setLocationRelativeTo(null); // 使窗口居中
-                        editRulePanel.setVisible(true); // 显示编辑面板
+                        showRuleEditorPanel(modelRow);
                     }
                 }
             }
@@ -674,7 +672,7 @@ public class FingerConfigTab extends JPanel {
     /**
      * 加载当前行的规则规则编辑面板
      */
-    private void loadRuleEditorPanel(int modelRow) {
+    public static void showRuleEditorPanel(int modelRow) {
         int dataIndex = tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
 
         // 使用原始数据列表中的索引来获取和编辑正确的规则
@@ -685,7 +683,7 @@ public class FingerConfigTab extends JPanel {
             creatRuleEditorPanel();
 
         // 填充编辑面板的字段
-        editRulePanel.setTitle("loadRuleEditorPanel");
+        editRulePanel.setTitle("编辑规则");
         typeField.getEditor().setItem(rule.getType());
         isImportantField.setSelectedItem(rule.getIsImportant());
         accuracyFiled.setSelectedItem(rule.getAccuracy());
@@ -693,6 +691,15 @@ public class FingerConfigTab extends JPanel {
         locationField.setSelectedItem(rule.getLocation());
         describeField.setText(rule.getDescribe()); // 根据 rule 的 method 更新 locationField
         keywordField.setText(String.join("\n", rule.getKeyword())); // 设置 keywordField 的值
+
+        // 放在在屏幕最中间
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension panelSize = editRulePanel.getPreferredSize();
+        int newX = (screenSize.width - panelSize.width) / 2;
+        int newY = (screenSize.height - panelSize.height) / 2;
+
+        editRulePanel.setLocation(newX, newY);  // 设置面板的位置
+        editRulePanel.setVisible(true);  // 显示面板
     }
 
     // 初始化表格数据
@@ -746,10 +753,10 @@ public class FingerConfigTab extends JPanel {
     }
 
     //初始化建立一个隐藏的配置编辑框
-    private void creatRuleEditorPanel() {
+    private static void creatRuleEditorPanel() {
         // 编辑页面框
         editRulePanel = new JDialog();
-        editRulePanel.setTitle("新增指纹");
+        editRulePanel.setTitle("新增规则");
         editRulePanel.setLayout(new GridBagLayout());  // 更改为 GridBagLayout
         editRulePanel.setSize(500, 450);
         editRulePanel.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
@@ -976,7 +983,7 @@ public class FingerConfigTab extends JPanel {
     }
 
     //从规则里面重新提取全部配置
-    private void reloadConfFromRules(List<FingerPrintRule> fingerprintRules) {
+    public static void reloadConfFromRules(List<FingerPrintRule> fingerprintRules) {
         BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
         BurpExtender.CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
         BurpExtender.CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不自动记录PATH的URL域名
@@ -1020,7 +1027,7 @@ public class FingerConfigTab extends JPanel {
     }
 
     // 添加一个新的方法来更新 locationField 的选项
-    private void updateLocationField() {
+    private static void updateLocationField() {
         locationField.removeAllItems(); // 清除之前的选项
         String[] locations = {"path", "body", "header", "response", "config"};
         for (String location : locations) {
@@ -1121,142 +1128,4 @@ public class FingerConfigTab extends JPanel {
         filterMenu.show(invoker, x, y); // 显示菜单
     }
 
-    class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
-        private final JPanel buttonsPanel;
-        private final JButton editButton;
-        private final JButton deleteButton;
-        private final JButton toggleButton;
-        private final Icon EDIT_ICON = UiUtils.getImageIcon("/icon/editButton.png");
-        private final Icon DELETE_ICON = UiUtils.getImageIcon("/icon/deleteButton.png");
-        private final Icon openIcon = UiUtils.getImageIcon("/icon/openButtonIcon.png");
-        private final Icon closeIcon = UiUtils.getImageIcon("/icon/shutdownButtonIcon.png");
-        private JTable sourceTable;
-        private int row;
-
-        public ButtonEditor(JTable sourceTable) {
-            this.sourceTable = sourceTable;
-            toggleButton = new JButton(); //开关按钮
-            toggleButton.setIcon(openIcon);
-
-            editButton = new JButton(); //编辑按钮
-            editButton.setIcon(EDIT_ICON);
-
-            deleteButton = new JButton(); //删除按钮
-            deleteButton.setIcon(DELETE_ICON);
-
-            editButton.setPreferredSize(new Dimension(17, 17));
-            deleteButton.setPreferredSize(new Dimension(17, 17));
-            toggleButton.setPreferredSize(new Dimension(17, 17));
-
-            toggleButton.addActionListener(new ActionListener() {
-               @Override
-               public void actionPerformed(ActionEvent e) {
-                   int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行
-                   if (viewRow < 0) {
-                       return; // 如果没有选中任何行，就不执行编辑操作
-                   }
-                   int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
-                   int dataIndex = tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
-
-                   editingRow = dataIndex; // 更新编辑行索引为原始数据列表中的索引
-                   FingerPrintRule rule = BurpExtender.fingerprintRules.get(dataIndex);
-                   if (rule.getIsOpen()){
-                       toggleButton.setIcon(closeIcon);
-                       rule.setOpen(false);
-                   } else {
-                       toggleButton.setIcon(openIcon);
-                       rule.setOpen(true);
-                   }
-                   fireEditingStopped();
-                   sourceTable.repaint();
-               }
-           });
-
-            // 在编辑按钮的 ActionListener 中添加以下代码来设置 keywordField 的值
-            editButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行
-                    if (viewRow < 0) {
-                        return; // 如果没有选中任何行，就不执行编辑操作
-                    }
-                    int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
-
-                    //加载规则编辑面板
-                    loadRuleEditorPanel(modelRow);
-
-                    //跟随标签显示
-                    //editRulePanel.setLocation(btnLocation.x - editRulePanel.getWidth(), btnLocation.y + ((JButton) e.getSource()).getHeight());
-                    //跟随标签显示 优化版本
-                    Point btnLocation = ((JButton) e.getSource()).getLocationOnScreen();
-                    // 计算面板的左上角新位置
-                    int newX = btnLocation.x - editRulePanel.getWidth(); //水平方向，从左向右增加。
-                    int newY = btnLocation.y + ((JButton) e.getSource()).getHeight(); //垂直方向，从上向下增加。
-                    // 获取容器的大小
-                    Dimension containerSize = sourceTable.getSize();
-                    // 获取面板的大小
-                    Dimension panelSize = editRulePanel.getPreferredSize();
-                    // 检查面板是否会超出容器的底部边界
-                    if (newY + panelSize.height > containerSize.height) {
-                        // 如果会超出底部边界，则将面板移到按钮上方
-                        newY = btnLocation.y - panelSize.height - 50;
-                    }
-
-                    editRulePanel.setLocation(newX, newY);  // 设置面板的位置
-                    editRulePanel.setVisible(true);  // 显示面板
-                    fireEditingStopped(); // 停止表格的编辑状态
-                }
-            });
-
-            deleteButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped(); // 确保停止编辑状态
-                    int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行
-                    if (viewRow < 0) {
-                        return; // 如果没有选中任何行，就不执行删除操作
-                    }
-                    int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
-                    int dataIndex = tableToModelIndexMap.get(modelRow); // 获取实际数据索引
-
-                    // 删除数据源中的数据
-                    BurpExtender.fingerprintRules.remove(dataIndex);
-
-                    // 更新映射
-                    tableToModelIndexMap.remove(modelRow);
-
-                    // 由于删除了一个元素，需要更新所有后续元素的索引
-                    for (int i = modelRow; i < tableToModelIndexMap.size(); i++) {
-                        tableToModelIndexMap.set(i, tableToModelIndexMap.get(i) - 1);
-                    }
-
-                    // 删除表格模型中的数据
-                    ((DefaultTableModel) sourceTable.getModel()).removeRow(viewRow);
-
-                    // 在删除行之后，重新验证和重绘表格
-                    sourceTable.revalidate();
-                    sourceTable.repaint();
-
-                    //重新加载系统CONF_配置
-                    reloadConfFromRules(BurpExtender.fingerprintRules);
-                }
-            });
-
-            //把三个按钮放在一个小面板中
-            buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-            buttonsPanel.add(toggleButton);
-            buttonsPanel.add(editButton);
-            buttonsPanel.add(deleteButton);
-            buttonsPanel.setBorder(BorderFactory.createEmptyBorder());
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return null;
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            this.row = table.convertRowIndexToModel(row); // 转换为模型索引，以防有排序
-            return buttonsPanel;
-        }
-    }
 }
