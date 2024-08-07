@@ -55,6 +55,46 @@
 ```
 
 
+
+### 规则说明
+
+```
+注意：对于CONF_开头和location为config的规则，属于内部规则，不用于信息匹配。
+    
+匹配方法("match"字段)： 
+    1、关键字匹配 （"match": "keyword"）
+    2、正则匹配 （"match": "regular",）
+
+实际匹配规则（"keyword" : [] 列表）：
+     1、关键字匹配规则编写
+        每行是一个关键字提取匹配规则、
+        每行的内容由多个关键字拼接组成，拼接符号是 【|】 
+		举例：
+		    "keyword": ["fzhm|total|rows" ],
+			 表示要求 同时含有 fzhm、total、rows 关键字
+        注意：
+            1、本规则和原版的有差异，
+            2、由于使用了拼接符号 【|】 ，因此不能让匹配关键字中包含【|】
+     2、正则匹配规则编写 
+        每行是一个正则提取匹配规则
+
+匹配位置("location" 字段)：
+    locations = {"path", "body", "header", "response", "config"};
+    path 请求路径
+    body 响应正文
+    header 响应头
+    response 全部响应内容
+    config 配置规则、不参与匹配
+
+其他关键字：
+    "accuracy": 规则准确度
+    "describe": 规则描述
+    "isImportant": 匹配结果是否重要信
+    "isOpen": 是否启用规则
+    "type": 规则类型
+```
+
+
 ### TODO
 
 ```
