@@ -216,6 +216,8 @@ public class MsgInfoConfigPanel extends JPanel {
         JToggleButton dynamicPathFilterButton = getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
         dynamicPathFilterButton.setToolTipText("开启智能响应过滤(访问随机URL获取目标的404页面的条件)");
 
+        /*
+        //TODO 暂时关闭智能响应过滤功能、目前过滤方案不完善
         dynamicPathFilterButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -225,6 +227,7 @@ public class MsgInfoConfigPanel extends JPanel {
                 stdout_println(LOG_DEBUG, String.format("dynamicPathFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
             }
         });
+         */
 
         JToggleButton autoPathsToUrlsButton = getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
         autoPathsToUrlsButton.setToolTipText("自动基于PathTree结合FindPath生成URL");
