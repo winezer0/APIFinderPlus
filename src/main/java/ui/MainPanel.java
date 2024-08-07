@@ -31,16 +31,16 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private static JTable table; //表格UI
     private static DefaultTableModel model; // 存储表格数据
 
-    private static JSplitPane msgViewerPane;  //请求消息|响应消息 二合一 面板
+    private static JSplitPane msgInfoViewer;  //请求消息|响应消息 二合一 面板
     private static IMessageEditor requestTextEditor;  //请求消息面板
     private static IMessageEditor responseTextEditor; //响应消息面板
 
     private static JEditorPane findInfoTextPane;  //敏感信息文本面板
 
-    private static ITextEditor findUrlTEditor; //显示找到的URL
-    private static ITextEditor findPathTEditor; //显示找到的PATH
-    private static ITextEditor findApiTEditor; //基于PATH计算出的URL
-    private static ITextEditor pathToUrlTEditor; //基于树算法计算出的URL
+    private static ITextEditor respFindUrlTEditor; //显示找到的URL
+    private static ITextEditor respFindPathTEditor; //显示找到的PATH
+    private static ITextEditor directPath2UrlTEditor; //基于PATH计算出的URL
+    private static ITextEditor smartPath2UrlTEditor; //基于树算法计算出的URL
     private static ITextEditor unvisitedUrlTEditor; //未访问过的URL
 
     private static byte[] requestsData; //请求数据,设置为全局变量,便于IMessageEditorController函数调用
@@ -1306,37 +1306,33 @@ public class MainPanel extends JPanel implements IMessageEditorController {
 
         // 将 结果消息面板 添加到窗口下方
         JTabbedPane tabs = new JTabbedPane();
+
         // 请求的面板
         requestTextEditor = callbacks.createMessageEditor(this, false);
         // 响应的面板
         responseTextEditor = callbacks.createMessageEditor(this, false);
         //添加请求和响应信息面板到一个面板中
-        msgViewerPane = new JSplitPane(1);
-        msgViewerPane.setLeftComponent(requestTextEditor.getComponent());
-        msgViewerPane.setRightComponent(responseTextEditor.getComponent());
+        msgInfoViewer = new JSplitPane(1);
+        msgInfoViewer.setLeftComponent(requestTextEditor.getComponent());
+        msgInfoViewer.setRightComponent(responseTextEditor.getComponent());
 
-        //可以滚动的结果面板
+        //敏感信息结果面板 使用 "text/html" 可用于 html 渲染颜色
         findInfoTextPane = new JEditorPane("text/html", "");
-        JScrollPane findInfoTextScrollPane = new JScrollPane(findInfoTextPane);
 
         // 提取到URL的面板
-        findUrlTEditor = callbacks.createTextEditor();
-        findPathTEditor = callbacks.createTextEditor();
-        findApiTEditor = callbacks.createTextEditor();
-        pathToUrlTEditor = callbacks.createTextEditor();
+        respFindUrlTEditor = callbacks.createTextEditor();
+        respFindPathTEditor = callbacks.createTextEditor();
+        directPath2UrlTEditor = callbacks.createTextEditor();
+        smartPath2UrlTEditor = callbacks.createTextEditor();
         unvisitedUrlTEditor = callbacks.createTextEditor();
 
-        tabs.addTab("请求正文", msgViewerPane); //同时显示原始请求+原始响应
-        //tabs.addTab("Request", requestTextEditor.getComponent()); //显示原始请求
-        //tabs.addTab("Response", responseTextEditor.getComponent()); //显示原始响应
-
-        tabs.addTab("敏感信息", findInfoTextScrollPane); //显示提取的信息
-
-        tabs.addTab("提取URL", findUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("提取PATH", findPathTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("PATH拼接URL", findApiTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("PATH计算URL", pathToUrlTEditor.getComponent()); //显示在这个URL中找到的PATH
-        tabs.addTab("当前未访问URL", unvisitedUrlTEditor.getComponent()); //显示在这个URL中找到的Path 且还没有访问过的URL
+        tabs.addTab("MsgInfoViewer",null, msgInfoViewer, "原始请求响应信息"); //同时显示原始请求+原始响应
+        tabs.addTab("RespFindInfo",null, findInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
+        tabs.addTab("RespFindUrl",null, respFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("RespFindPath",null, respFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("DirectPath2Url",null, directPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("SmartPath2Url",null, smartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("UnvisitedUrl",null, unvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
 
         return tabs;
     }
@@ -1402,10 +1398,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
             unvisitedUrl = CastUtils.stringJsonArrayFormat(unvisitedUrl);
 
             findInfoTextPane.setText(findInfo);
-            findUrlTEditor.setText(findUrl.getBytes());
-            findPathTEditor.setText(findPath.getBytes());
-            findApiTEditor.setText(findApi.getBytes());
-            pathToUrlTEditor.setText(pathToUrl.getBytes());
+            respFindUrlTEditor.setText(findUrl.getBytes());
+            respFindPathTEditor.setText(findPath.getBytes());
+            directPath2UrlTEditor.setText(findApi.getBytes());
+            smartPath2UrlTEditor.setText(pathToUrl.getBytes());
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
@@ -1416,8 +1412,8 @@ public class MainPanel extends JPanel implements IMessageEditorController {
     private void msgViewerAutoSetSplitCenter() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (msgViewerPane.getLeftComponent().getWidth() <= 20)
-                    msgViewerPane.setDividerLocation(msgViewerPane.getParent().getWidth() / 2);
+                if (msgInfoViewer.getLeftComponent().getWidth() <= 20)
+                    msgInfoViewer.setDividerLocation(msgInfoViewer.getParent().getWidth() / 2);
             }
         });
     }
@@ -1700,10 +1696,10 @@ public class MainPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(new byte[0], false); // 清空响应编辑器
 
         findInfoTextPane.setText("");
-        findUrlTEditor.setText(new byte[0]);
-        findPathTEditor.setText(new byte[0]);
-        findApiTEditor.setText(new byte[0]);
-        pathToUrlTEditor.setText(new byte[0]);
+        respFindUrlTEditor.setText(new byte[0]);
+        respFindPathTEditor.setText(new byte[0]);
+        directPath2UrlTEditor.setText(new byte[0]);
+        smartPath2UrlTEditor.setText(new byte[0]);
         unvisitedUrlTEditor.setText(new byte[0]);
     }
 }
