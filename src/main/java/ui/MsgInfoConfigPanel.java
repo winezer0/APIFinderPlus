@@ -144,7 +144,7 @@ public class MsgInfoConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
         // 开关 是否开启代理流量监听 //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        JToggleButton proxyListenButton = getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault)
+        JToggleButton proxyListenButton = getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
         proxyListenButton.setToolTipText("Proxy模块流量监听开关");
 
         proxyListenButton.addActionListener(new ActionListener() {
@@ -152,7 +152,7 @@ public class MsgInfoConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = proxyListenButton.isSelected();
-                IProxyScanner.proxyListenIsOpen = IProxyScanner.proxyListenIsOpenDefault ? !selected:selected
+                IProxyScanner.proxyListenIsOpen = IProxyScanner.proxyListenIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
             }
         });
