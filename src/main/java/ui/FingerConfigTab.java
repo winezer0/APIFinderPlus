@@ -381,7 +381,6 @@ public class FingerConfigTab extends JPanel {
                 Point locationOnScreen = ((Component)e.getSource()).getLocationOnScreen();
                 editRulePanel.setLocation(locationOnScreen.x + 70, locationOnScreen.y);  // 设置编辑面板的位置
                 editRulePanel.setVisible(true);  // 显示编辑面板
-                editRulePanel.requestFocus(); // 请求焦点 失去焦点时自动隐藏
             }
         });
 
@@ -664,7 +663,6 @@ public class FingerConfigTab extends JPanel {
                         loadRuleEditorPanel(modelRow);
                         editRulePanel.setLocationRelativeTo(null); // 使窗口居中
                         editRulePanel.setVisible(true); // 显示编辑面板
-                        editRulePanel.requestFocus(); // 请求焦点 失去焦点时自动隐藏
                     }
                 }
             }
@@ -1209,7 +1207,6 @@ public class FingerConfigTab extends JPanel {
 
                     editRulePanel.setLocation(newX, newY);  // 设置面板的位置
                     editRulePanel.setVisible(true);  // 显示面板
-                    editRulePanel.requestFocus(); // 请求焦点 失去焦点时自动隐藏
                     fireEditingStopped(); // 停止表格的编辑状态
                 }
             });
