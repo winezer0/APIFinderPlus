@@ -19,10 +19,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -384,6 +381,7 @@ public class FingerConfigTab extends JPanel {
                 Point locationOnScreen = ((Component)e.getSource()).getLocationOnScreen();
                 editRulePanel.setLocation(locationOnScreen.x + 70, locationOnScreen.y);  // 设置编辑面板的位置
                 editRulePanel.setVisible(true);  // 显示编辑面板
+                editRulePanel.requestFocus(); // 请求焦点 失去焦点时自动隐藏
             }
         });
 
@@ -651,6 +649,51 @@ public class FingerConfigTab extends JPanel {
                 }
             }
         });
+
+        // 添加鼠标监听器
+        ruleTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // 获取点击的行索引
+                int row = ruleTable.rowAtPoint(e.getPoint());
+                if (row >= 0) {
+                    // 转换为模型索引
+                    int modelRow = ruleTable.convertRowIndexToModel(row);
+                    if (e.getClickCount() >= 2) { // 双击
+                        //加载规则编辑面板
+                        loadRuleEditorPanel(modelRow);
+                        editRulePanel.setLocationRelativeTo(null); // 使窗口居中
+                        editRulePanel.setVisible(true); // 显示编辑面板
+                        editRulePanel.requestFocus(); // 请求焦点 失去焦点时自动隐藏
+                    }
+                }
+            }
+        });
+    }
+
+
+    /**
+     * 加载当前行的规则规则编辑面板
+     */
+    private void loadRuleEditorPanel(int modelRow) {
+        int dataIndex = tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
+
+        // 使用原始数据列表中的索引来获取和编辑正确的规则
+        editingRow = dataIndex; // 更新编辑行索引为原始数据列表中的索引
+        FingerPrintRule rule = BurpExtender.fingerprintRules.get(dataIndex);
+
+        if (editRulePanel == null)
+            initEditRulePanel();
+
+        // 填充编辑面板的字段
+        editRulePanel.setTitle("loadRuleEditorPanel");
+        typeField.getEditor().setItem(rule.getType());
+        isImportantField.setSelectedItem(rule.getIsImportant());
+        accuracyFiled.setSelectedItem(rule.getAccuracy());
+        searchMethodField.setSelectedItem(rule.getMatch());
+        locationField.setSelectedItem(rule.getLocation());
+        describeField.setText(rule.getDescribe()); // 根据 rule 的 method 更新 locationField
+        keywordField.setText(String.join("\n", rule.getKeyword())); // 设置 keywordField 的值
     }
 
     // 初始化表格数据
@@ -813,7 +856,6 @@ public class FingerConfigTab extends JPanel {
         JScrollPane keywordFieldScrollPane = new JScrollPane(keywordField); // 包装 JTextArea 到 JScrollPane 中
         editRulePanel.add(keywordFieldScrollPane, constraints);
 
-
         // 根据需要，为 Location 和 Keyword 输入框设置首选大小
         typeField.setPreferredSize(new Dimension(100, typeField.getPreferredSize().height));
         isImportantField.setPreferredSize(new Dimension(100, isImportantField.getPreferredSize().height));
@@ -929,6 +971,15 @@ public class FingerConfigTab extends JPanel {
             }
         });
         editRulePanel.add(saveButton);
+
+        // 添加焦点监听器
+        editRulePanel.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                // 当面板失去焦点时，将其隐藏或关闭
+                editRulePanel.setVisible(false);
+            }
+        });
     }
 
     //从规则里面重新提取全部配置
@@ -1135,35 +1186,33 @@ public class FingerConfigTab extends JPanel {
                         return; // 如果没有选中任何行，就不执行编辑操作
                     }
                     int modelRow = fromTable.convertRowIndexToModel(viewRow); // 转换为模型索引
-                    int dataIndex = tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
 
-                    // 使用原始数据列表中的索引来获取和编辑正确的规则
-                    editingRow = dataIndex; // 更新编辑行索引为原始数据列表中的索引
-                    FingerPrintRule rule = BurpExtender.fingerprintRules.get(dataIndex);
+                    //加载规则编辑面板
+                    loadRuleEditorPanel(modelRow);
 
-                    if (editRulePanel == null)
-                        initEditRulePanel();
-
-                    // 填充编辑面板的字段
-                    editRulePanel.setTitle("编辑指纹");
-                    typeField.getEditor().setItem(rule.getType());
-                    isImportantField.setSelectedItem(rule.getIsImportant());
-                    accuracyFiled.setSelectedItem(rule.getAccuracy());
-                    searchMethodField.setSelectedItem(rule.getMatch());
-                    locationField.setSelectedItem(rule.getLocation());
-                    describeField.setText(rule.getDescribe()); // 根据 rule 的 method 更新 locationField
-                    keywordField.setText(String.join("\n", rule.getKeyword())); // 设置 keywordField 的值
-
-                    // 显示编辑面板
+                    //跟随标签显示
+                    //editRulePanel.setLocation(btnLocation.x - editRulePanel.getWidth(), btnLocation.y + ((JButton) e.getSource()).getHeight());
+                    //跟随标签显示 优化版本
                     Point btnLocation = ((JButton) e.getSource()).getLocationOnScreen();
-                    editRulePanel.setLocation(btnLocation.x - editRulePanel.getWidth() / 2, btnLocation.y + ((JButton) e.getSource()).getHeight());
-                    editRulePanel.setVisible(true);
+                    // 计算面板的左上角新位置
+                    int newX = btnLocation.x - editRulePanel.getWidth(); //水平方向，从左向右增加。
+                    int newY = btnLocation.y + ((JButton) e.getSource()).getHeight(); //垂直方向，从上向下增加。
+                    // 获取容器的大小
+                    Dimension containerSize = fromTable.getSize();
+                    // 获取面板的大小
+                    Dimension panelSize = editRulePanel.getPreferredSize();
+                    // 检查面板是否会超出容器的底部边界
+                    if (newY + panelSize.height > containerSize.height) {
+                        // 如果会超出底部边界，则将面板移到按钮上方
+                        newY = btnLocation.y - panelSize.height - 50;
+                    }
 
-                    // 停止表格的编辑状态
-                    fireEditingStopped();
+                    editRulePanel.setLocation(newX, newY);  // 设置面板的位置
+                    editRulePanel.setVisible(true);  // 显示面板
+                    editRulePanel.requestFocus(); // 请求焦点 失去焦点时自动隐藏
+                    fireEditingStopped(); // 停止表格的编辑状态
                 }
             });
-
 
             deleteButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
