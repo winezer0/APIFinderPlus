@@ -58,7 +58,7 @@ public class IProxyScanner implements IProxyListener {
     public static boolean proxyListenIsOpen = proxyListenIsOpenDefault;
 
     //设置最大进程数量
-    private int maxPoolSize = 10;
+    private int maxPoolSize;
 
     public IProxyScanner() {
         //加载缓存过滤器
@@ -126,32 +126,21 @@ public class IProxyScanner implements IProxyListener {
                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
                     && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
             ){
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
-                    }
-                });
+                executorService.submit(() -> enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen));
             }
 
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
-                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                }
+            executorService.submit(() -> {
+                //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
+                RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
             });
 
             //判断URL是否已经扫描过
             if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
                 //应该放到后面,确保已经记录数据,不然会被过滤掉
                 urlScanRecordMap.add(rawUrlUsual);
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        //加入请求列表
-                        insertOrUpdateReqDataAndReqMsgData(msgInfo,"Right");
-                    }
+                executorService.submit(() -> {
+                    //加入请求列表
+                    insertOrUpdateReqDataAndReqMsgData(msgInfo,"Right");
                 });
             }
         }
@@ -204,12 +193,7 @@ public class IProxyScanner implements IProxyListener {
                     && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
                     && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
             ){
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
-                    }
-                });
+                executorService.submit(() -> enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen));
             }
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
@@ -220,12 +204,9 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
-                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                }
+            executorService.submit(() -> {
+                //更新所有有响应的主动访问请求URL记录到数据库中  //记录请求记录到数据库中（记录所有请求）
+                RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
             });
 
             // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
@@ -238,12 +219,9 @@ public class IProxyScanner implements IProxyListener {
             if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
                 //应该放到后面,确保已经记录数据,不然会被过滤掉
                 urlScanRecordMap.add(rawUrlUsual);
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        //加入请求列表
-                        insertOrUpdateReqDataAndReqMsgData(msgInfo,"Proxy");
-                    }
+                executorService.submit(() -> {
+                    //加入请求列表
+                    insertOrUpdateReqDataAndReqMsgData(msgInfo,"Proxy");
                 });
             }
         } else {
@@ -261,12 +239,9 @@ public class IProxyScanner implements IProxyListener {
                 return;
             }
 
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //记录请求记录到数据库中（记录所有请求）
-                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
-                }
+            executorService.submit(() -> {
+                //记录请求记录到数据库中（记录所有请求）
+                RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
             });
         }
     }
@@ -276,13 +251,10 @@ public class IProxyScanner implements IProxyListener {
      */
     public static void enhanceRecordPathFilter(HttpMsgInfo msgInfo, boolean openDynamicFilter) {
         if (!openDynamicFilter){
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
-                    RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                    stdout_println(LOG_DEBUG, String.format("Common Direct Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
-                }
+            executorService.submit(() -> {
+                //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
+                RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+                stdout_println(LOG_DEBUG, String.format("Common Direct Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
             });
         } else {
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
@@ -296,13 +268,10 @@ public class IProxyScanner implements IProxyListener {
                 notCompareMap.put(reqUrlToFile, respFieldsMap);
                 //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
                 urlCompareMap.put(reqRootUrl, null);
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        //计算动态过滤条件
-                        Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
-                        urlCompareMap.put(reqRootUrl, filterModel);
-                    }
+                executorService.submit(() -> {
+                    //计算动态过滤条件
+                    Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                    urlCompareMap.put(reqRootUrl, filterModel);
                 });
             } else {
                 Map<String, Object> currentFilterMap = urlCompareMap.get(reqRootUrl);
@@ -312,14 +281,11 @@ public class IProxyScanner implements IProxyListener {
                     notCompareMap.put(reqUrlToFile, respFieldsMap);
                 } else {
                     //如果已经生成过滤条件 //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            //插入数据库记录 当过滤条件为空时直接插入路径、过滤条件不为空时,就保存所有正常状态的结果
-                            if (currentFilterMap.isEmpty() || !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)) {
-                                RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                                stdout_println(LOG_DEBUG, String.format("[+] Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
-                            }
+                    executorService.submit(() -> {
+                        //插入数据库记录 当过滤条件为空时直接插入路径、过滤条件不为空时,就保存所有正常状态的结果
+                        if (currentFilterMap.isEmpty() || !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)) {
+                            RecordPathTable.insertOrUpdateRecordPath(msgInfo);
+                            stdout_println(LOG_DEBUG, String.format("[+] Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                         }
                     });
 
@@ -330,8 +296,6 @@ public class IProxyScanner implements IProxyListener {
 
     /**
      * 合并添加请求数据和请求信息为一个函数
-     * @param msgInfo
-     * @param reqSource
      */
     static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
         //防止响应体过大
@@ -492,13 +456,10 @@ public class IProxyScanner implements IProxyListener {
                     // 自动递归查询功能
                     if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
                         //获取一个未访问URL列表
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
-                                UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
-                                accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
-                            }
+                        executorService.submit(() -> {
+                            //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
+                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
+                            accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                         });
                         return;
                     }
@@ -589,7 +550,6 @@ public class IProxyScanner implements IProxyListener {
 
     /**
      * 重复使用的独立的 path to url 路径计算+更新函数
-     * @param findPathModel
      */
     private void pathsToUrlsByPathTree(FindPathModel findPathModel) {
         if (findPathModel != null) {
@@ -653,9 +613,8 @@ public class IProxyScanner implements IProxyListener {
 
                         //更新动态的URL数据
                         int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModelById(dynamicUrlsModel);
-                        //if (apiDataIndex > 0)
-                        // stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]",
-                        // newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
+                        if (apiDataIndex > 0)
+                            stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]", newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
                         AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
