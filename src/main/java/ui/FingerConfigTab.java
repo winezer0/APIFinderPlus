@@ -1130,11 +1130,11 @@ public class FingerConfigTab extends JPanel {
         private final Icon DELETE_ICON = UiUtils.getImageIcon("/icon/deleteButton.png");
         private final Icon openIcon = UiUtils.getImageIcon("/icon/openButtonIcon.png");
         private final Icon closeIcon = UiUtils.getImageIcon("/icon/shutdownButtonIcon.png");
-        private JTable fromTable;
+        private JTable sourceTable;
         private int row;
 
-        public ButtonEditor(JTable fromTable) {
-            this.fromTable = fromTable;
+        public ButtonEditor(JTable sourceTable) {
+            this.sourceTable = sourceTable;
             toggleButton = new JButton(); //开关按钮
             toggleButton.setIcon(openIcon);
 
@@ -1151,11 +1151,11 @@ public class FingerConfigTab extends JPanel {
             toggleButton.addActionListener(new ActionListener() {
                @Override
                public void actionPerformed(ActionEvent e) {
-                   int viewRow = fromTable.getSelectedRow(); // 获取视图中选中的行
+                   int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行
                    if (viewRow < 0) {
                        return; // 如果没有选中任何行，就不执行编辑操作
                    }
-                   int modelRow = fromTable.convertRowIndexToModel(viewRow); // 转换为模型索引
+                   int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
                    int dataIndex = tableToModelIndexMap.get(modelRow); // 使用模型索引查找原始数据列表中的索引
 
                    editingRow = dataIndex; // 更新编辑行索引为原始数据列表中的索引
@@ -1168,18 +1168,18 @@ public class FingerConfigTab extends JPanel {
                        rule.setOpen(true);
                    }
                    fireEditingStopped();
-                   fromTable.repaint();
+                   sourceTable.repaint();
                }
            });
 
             // 在编辑按钮的 ActionListener 中添加以下代码来设置 keywordField 的值
             editButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    int viewRow = fromTable.getSelectedRow(); // 获取视图中选中的行
+                    int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行
                     if (viewRow < 0) {
                         return; // 如果没有选中任何行，就不执行编辑操作
                     }
-                    int modelRow = fromTable.convertRowIndexToModel(viewRow); // 转换为模型索引
+                    int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
 
                     //加载规则编辑面板
                     loadRuleEditorPanel(modelRow);
@@ -1192,7 +1192,7 @@ public class FingerConfigTab extends JPanel {
                     int newX = btnLocation.x - editRulePanel.getWidth(); //水平方向，从左向右增加。
                     int newY = btnLocation.y + ((JButton) e.getSource()).getHeight(); //垂直方向，从上向下增加。
                     // 获取容器的大小
-                    Dimension containerSize = fromTable.getSize();
+                    Dimension containerSize = sourceTable.getSize();
                     // 获取面板的大小
                     Dimension panelSize = editRulePanel.getPreferredSize();
                     // 检查面板是否会超出容器的底部边界
@@ -1210,11 +1210,11 @@ public class FingerConfigTab extends JPanel {
             deleteButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     fireEditingStopped(); // 确保停止编辑状态
-                    int viewRow = fromTable.getSelectedRow(); // 获取视图中选中的行
+                    int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行
                     if (viewRow < 0) {
                         return; // 如果没有选中任何行，就不执行删除操作
                     }
-                    int modelRow = fromTable.convertRowIndexToModel(viewRow); // 转换为模型索引
+                    int modelRow = sourceTable.convertRowIndexToModel(viewRow); // 转换为模型索引
                     int dataIndex = tableToModelIndexMap.get(modelRow); // 获取实际数据索引
 
                     // 删除数据源中的数据
@@ -1229,11 +1229,11 @@ public class FingerConfigTab extends JPanel {
                     }
 
                     // 删除表格模型中的数据
-                    ((DefaultTableModel) fromTable.getModel()).removeRow(viewRow);
+                    ((DefaultTableModel) sourceTable.getModel()).removeRow(viewRow);
 
                     // 在删除行之后，重新验证和重绘表格
-                    fromTable.revalidate();
-                    fromTable.repaint();
+                    sourceTable.revalidate();
+                    sourceTable.repaint();
 
                     //重新加载系统CONF_配置
                     reloadConfFromRules(BurpExtender.fingerprintRules);
