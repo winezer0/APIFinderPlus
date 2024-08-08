@@ -399,7 +399,7 @@ public class IProxyScanner implements IProxyListener {
                                 }
                             }else {
                                 urlCompareMap.put(rootUrl, new HashMap<>());
-                                stderr_println(String.format("[!] 未成功生成[%s]的动态响应过滤关系! 置空处理", rootUrl));
+                                stdout_println(String.format("[!] 未成功生成[%s]的动态响应过滤关系! 置空处理", rootUrl));
                             }
                         }
                         // 先返回进行其他操作
