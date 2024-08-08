@@ -197,7 +197,7 @@ public class RespFieldCompareutils {
             try {
                 //发起HTTP请求
                 //stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
-                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, rawHeaders);
+                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, rawHeaders);
                 if (requestResponse != null){
                     HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
                     RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());

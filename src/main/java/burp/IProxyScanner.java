@@ -514,7 +514,7 @@ public class IProxyScanner implements IProxyListener {
                     try {
                         //发起HTTP请求
                         stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
-                        IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequestForGet(reqUrl, finalReferHeaders);
+                        IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, finalReferHeaders);
                         if (requestResponse != null) {
                             HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
                             //更新所有有响应的主动访问请求URL记录到数据库中

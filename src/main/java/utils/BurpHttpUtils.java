@@ -17,43 +17,24 @@ import static burp.BurpExtender.CONF_BLACK_URL_ROOT;
 import static burp.BurpExtender.getHelpers;
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isNotEmptyObj;
+import static utils.ElementUtils.isEqualsOneKey;
 
 
 public class BurpHttpUtils {
     private static IExtensionHelpers helpers = BurpExtender.getHelpers();
     private static IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 
-    /**
-     * 判断目标是否可以正常连接
-     * @param httpService
-     * @return
-     */
-    public static boolean IpAddressCanConnect(IHttpService httpService) {
-        String baseUrl = String.format("%s://%s:%s", httpService.getProtocol(), httpService.getHost(), httpService.getPort());
-        // 创建一个 Socket 并设置超时时间
-        try {
-            Socket socket = new Socket();
-            String host = httpService.getHost();
-            int port = httpService.getPort();
-            port = port <= 0 ? httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443 : port;
-            InetSocketAddress address = new InetSocketAddress(host, port);
-            socket.connect(address, 3000);
-            socket.close();
-            return true;
-        }catch (Exception e){
-            // 错误处理
-            stderr_println(LOG_DEBUG, String.format("建立 Socket 连接失败: %s -> %s", baseUrl, e.getMessage()));
-            return false;
-        }
+    public static IHttpRequestResponse makeHttpRequest(String reqUrl, List<String> referReqHeaders) {
+        return  makeHttpRequest("GET", reqUrl, referReqHeaders, null);
     }
 
-    public static IHttpRequestResponse makeHttpRequestForGet(String reqUrl, List<String> referReqHeaders) {
+    public static IHttpRequestResponse makeHttpRequest(String reqMethod, String reqUrl, List<String> referReqHeaders, byte[] reqBody) {
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
 
         // 创建IHttpService对象
         IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
         //构建HTTP请求体
-        byte[] requestBytes = genGetRequestBytes(reqUrl, referReqHeaders, isNotEmptyObj(referReqHeaders));
+        byte[] requestBytes = genRequestBytes(reqMethod, reqUrl , referReqHeaders , reqBody);
 
         //分析当前创建的请求 判断生成是否一致
         HelperPlus helperPlus = HelperPlus.getInstance();
@@ -81,27 +62,23 @@ public class BurpHttpUtils {
         return requestResponse;
     }
 
+
     /**
      * 输入URl 构建 GET 请求体 再修改新增请求头(忽略host替换)
      * @param reqUrl
      * @param referReqHeaders
      * @return
      */
-    private static byte[] genGetRequestBytes(String reqUrl, List<String> referReqHeaders, boolean addHeader) {
+    private static byte[] genRequestBytes(String reqMethod, String reqUrl, List<String> referReqHeaders, byte[] reqBody) {
         //编写函数 实现 基于请求体 替换 URL
         HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
-        // 构造GET请求的字节数组
-        String baseRequest = "GET %s HTTP/1.1\r\n" +
-                "Host: %s\r\n" +
-                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36\r\n" +
-                "\r\n";
-        //补充数据
-        baseRequest = String.format(baseRequest, urlInfo.getPathToEnd(), urlInfo.getHostPortUsual());
-        byte[] requestBytes = baseRequest.getBytes();
+
+        // 构造请求数据包信息
+        byte[] requestBytes =  genBaseRequestBytes(reqMethod, urlInfo.getPathToEnd(), urlInfo.getHostPortUsual(), reqBody);
 
         //基于请求头列表 更新 requestBytes 中的 请求头
         HelperPlus helperPlus = HelperPlus.getInstance();
-        if (addHeader && isNotEmptyObj(referReqHeaders)){
+        if (isNotEmptyObj(referReqHeaders)){
             for (String referReqHeader : referReqHeaders){
                 if (!referReqHeader.toLowerCase().contains("host:")){
                     // addOrUpdateHeader 不会替换首行,但是会替换 HOST 头部
@@ -114,7 +91,34 @@ public class BurpHttpUtils {
         requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, "Connection: close");
 
         //输出修改后的信息 已确定修改成功
-        //System.out.println(new String(requestBytes));
+        System.out.println(new String(requestBytes));
+        return requestBytes;
+    }
+
+    private static byte[] genBaseRequestBytes(String reqMethod, String reqPath, String reqHost, String reqBodyString) {
+        byte[] reqBodyBytes = (reqBodyString != null && reqBodyString.length()>0) ? reqBodyString.getBytes() : null;
+        return genBaseRequestBytes( reqMethod,  reqPath,  reqHost, reqBodyBytes);
+    }
+
+    private static byte[] genBaseRequestBytes(String reqMethod, String reqPath, String reqHost, byte[] reqBodyBytes) {
+        //"GET|POST|HEAD|PUT|DELETE|OPTIONS|PATCH"
+
+        String baseRequestString = "%s %s HTTP/1.1\r\n" +
+                "Host: %s\r\n" +
+                //设置内容类型 后续一般实际会被覆盖
+                "Content-Type: application/x-www-form-urlencoded\r\n" +
+                //设置浏览器UA 后续一般实际会被覆盖
+                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36\r\n" +
+                "\r\n";
+        //补充数据
+        baseRequestString = String.format(baseRequestString, reqMethod.toUpperCase().trim(), reqPath, reqHost);
+        byte[] requestBytes = baseRequestString.getBytes();
+
+        // 检查 httpMethod 是否为 "POST" 或 "PUT" 是的话就添加请求体
+        if (reqBodyBytes != null && reqBodyBytes.length > 0 && isEqualsOneKey(reqMethod.trim(),"POST|PUT",false)){
+            requestBytes = concatenateByteArrays(requestBytes,reqBodyBytes);
+        }
+
         return requestBytes;
     }
 
@@ -223,4 +227,32 @@ public class BurpHttpUtils {
         return firstLineBytes;
     }
 
+    /**
+     * 判断目标是否可以正常连接
+     */
+    public static boolean AddressCanConnect(String reqUrl, IHttpService httpService) {
+        try {
+            // 创建一个 Socket 并设置超时时间
+            Socket socket = new Socket();
+            String host = httpService.getHost();
+            int port = httpService.getPort();
+            port = port <= 0 ? httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443 : port;
+            InetSocketAddress address = new InetSocketAddress(host, port);
+            socket.connect(address, 3000);
+            socket.close();
+            return true;
+        }catch (Exception e){
+            // 错误处理
+            stderr_println(LOG_DEBUG, String.format("建立 Socket 连接失败: %s -> %s", reqUrl, e.getMessage()));
+            return false;
+        }
+    }
+
+    /**
+     * 判断目标是否可以正常连接
+     */
+    public static boolean AddressCanConnect(String reqUrl) {
+        IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
+        return AddressCanConnect(reqUrl,  httpService);
+    }
 }
