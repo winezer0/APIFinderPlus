@@ -185,33 +185,43 @@ public class RespFieldCompareutils {
     /**
      * 生成动态过滤信息
      */
-    public static Map<String, Object> generateDynamicFilterMap(HttpMsgInfo msgInfo) {
+    public static Map<String, Object> generateDynamicFilterMap(HttpMsgInfo msgInfo, boolean checkSocketConnect) {
         //生成测试路径
         List<String> testUrlList = RespFieldCompareutils.generateTestUrls(msgInfo.getUrlInfo());
-        //进行URL请求 并获取 respInfoJson
-        HelperPlus helperPlus = HelperPlus.getInstance();
-        List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
-        List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
-        //记录准备加入的请求
-        for (String reqUrl:testUrlList){
-            try {
-                //发起HTTP请求
-                //stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
-                IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, rawHeaders);
-                if (requestResponse != null){
-                    HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
-                    RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
-                    FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
-                    stdout_println(LOG_DEBUG, String.format("[*] TEST URL:%s -> %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+
+        Map<String, Object> filterModel = new HashMap<>();
+        //判断是否能够正常建立socket连接
+        if (!checkSocketConnect || BurpHttpUtils.AddressCanConnect(testUrlList.get(0))){
+            List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
+
+            //进行URL请求 并获取 respInfoJson
+            HelperPlus helperPlus = HelperPlus.getInstance();
+            List<String> rawHeaders = helperPlus.getHeaderList(true, msgInfo.getReqBytes());
+
+            //记录准备加入的请求
+            for (String reqUrl:testUrlList){
+                try {
+                    //发起HTTP请求
+                    //stdout_println(LOG_DEBUG, String.format("[*] Auto Access Test URL: %s", reqUrl));
+                    IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, rawHeaders);
+                    if (requestResponse != null){
+                        HttpMsgInfo newMsgInfo = new HttpMsgInfo(requestResponse);
+                        RespFieldsModel respCompareModel = new RespFieldsModel(newMsgInfo.getRespInfo());
+                        FieldValuesMapList.add(respCompareModel.getAllFieldsAsMap());
+                        stdout_println(LOG_DEBUG, String.format("[*] TEST URL:%s -> %s", reqUrl, JSON.toJSON(respCompareModel.getAllFieldsAsMap())));
+                    }
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
+                    e.printStackTrace();
                 }
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                stderr_println(LOG_ERROR, String.format("Thread.sleep Error: %s", e.getMessage()));
-                e.printStackTrace();
             }
+
+            //生成过滤条件
+            filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
         }
-        //生成过滤条件
-        Map<String, Object> filterModel = RespFieldCompareutils.findMapsSameFieldValue(FieldValuesMapList);
+
+
         if (isNotEmptyObj(filterModel)) {
             stdout_println(LOG_INFO, String.format("[*] 生成动态过滤条件成功: %s-> %s", msgInfo.getUrlInfo().getRootUrlUsual(), JSON.toJSON(filterModel)));
         }else {

@@ -680,7 +680,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                     );
                                     //3、进行动态过滤器生成
                                     try {
-                                        Map<String, Object> dynamicFilterMap = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                                        Map<String, Object> dynamicFilterMap = RespFieldCompareutils.generateDynamicFilterMap(msgInfo,true);
                                         IProxyScanner.urlCompareMap.put(msgInfo.getUrlInfo().getRootUrlUsual(), dynamicFilterMap);
                                         System.out.println(String.format("主动动态规则生成完毕:%s", CastUtils.toJsonString(dynamicFilterMap)));
                                     } catch (Exception e){

@@ -270,7 +270,7 @@ public class IProxyScanner implements IProxyListener {
                 urlCompareMap.put(reqRootUrl, null);
                 executorService.submit(() -> {
                     //计算动态过滤条件
-                    Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo);
+                    Map<String, Object> filterModel = RespFieldCompareutils.generateDynamicFilterMap(msgInfo, true);
                     urlCompareMap.put(reqRootUrl, filterModel);
                 });
             } else {
