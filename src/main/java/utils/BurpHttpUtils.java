@@ -90,8 +90,8 @@ public class BurpHttpUtils {
         //设置 Connection: close
         requestBytes = helperPlus.addOrUpdateHeader(true, requestBytes, "Connection: close");
 
-        //输出修改后的信息 已确定修改成功
-        System.out.println(new String(requestBytes));
+        //输出修改后的信息 已确定修改成功 20240808
+        //System.out.println(new String(requestBytes));
         return requestBytes;
     }
 
@@ -236,7 +236,7 @@ public class BurpHttpUtils {
             Socket socket = new Socket();
             String host = httpService.getHost();
             int port = httpService.getPort();
-            port = port <= 0 ? httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443 : port;
+            port = port > 0 ? port : (httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443);
             InetSocketAddress address = new InetSocketAddress(host, port);
             socket.connect(address, 3000);
             socket.close();
