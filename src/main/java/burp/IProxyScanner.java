@@ -28,9 +28,10 @@ public class IProxyScanner implements IProxyListener {
     public static ScheduledExecutorService monitorExecutor;
     private static int monitorExecutorServiceNumberOfIntervals = 2;
 
-    //存储每个host的对比对象
-    public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>(); //存储每个域名的对比关系,后续可以考虑写入到数据库
-    private static ConcurrentHashMap<String, Map<String,Object>> notCompareMap = new ConcurrentHashMap<>();  //在域名对比关系生成前,需要把响应信息先存起来,等后续再进行处理
+    //存储每个host的动态响应对比关系
+    public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
+    //在动态响应对比关系生成前,需要把响应信息先存起来,等后续再进行处理
+    private static ConcurrentHashMap<String, Map<String,Object>> waitingUrlCompareMap = new ConcurrentHashMap<>();
 
     //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
     public static boolean  dynamicPathFilterIsOpenDefault = false;
@@ -265,7 +266,7 @@ public class IProxyScanner implements IProxyListener {
             //如果还没有生成对应的过滤条件
             if (!urlCompareMap.containsKey(reqRootUrl)){
                 //存储未进行对比的目标,后续通过定时任务再进行对比
-                notCompareMap.put(reqUrlToFile, respFieldsMap);
+                waitingUrlCompareMap.put(reqUrlToFile, respFieldsMap);
                 //记录状态为正在生成,避免重复调用 GenerateDynamicFilterMap
                 urlCompareMap.put(reqRootUrl, null);
                 executorService.submit(() -> {
@@ -278,7 +279,7 @@ public class IProxyScanner implements IProxyListener {
                 //如果正在生成过滤条件
                 if (currentFilterMap == null){
                     //存储未进行对比的目标,后续通过定时任务再进行对比
-                    notCompareMap.put(reqUrlToFile, respFieldsMap);
+                    waitingUrlCompareMap.put(reqUrlToFile, respFieldsMap);
                 } else {
                     //如果已经生成过滤条件 //当存在对比规则的时候,就进行对比,没有规则，说明目录猜不出来,只能人工添加
                     executorService.submit(() -> {
@@ -382,16 +383,16 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //清理在等待动态过滤Map生成过程中没有处理的响应对象
-                    if (dynamicPathFilterIsOpen && isNotEmptyObj(notCompareMap)){
+                    if (dynamicPathFilterIsOpen && isNotEmptyObj(waitingUrlCompareMap)){
                         // 创建一个ArrayList来保存所有的键，这是一个安全的迭代方式
-                        ArrayList<String> keys = new ArrayList<>(notCompareMap.keySet());
+                        ArrayList<String> keys = new ArrayList<>(waitingUrlCompareMap.keySet());
                         // 遍历键的列表 对每个缓存目标进行检查,看看对应的URL过滤信息是否已经生成了
                         for (String reqUrl : keys) {
-                            Map<String,Object> respFieldsMap = notCompareMap.get(reqUrl);
+                            Map<String,Object> respFieldsMap = waitingUrlCompareMap.get(reqUrl);
                             String rootUrl = new HttpUrlInfo(reqUrl).getRootUrlUsual();
                             Map<String, Object> currentFilterMap = urlCompareMap.get(rootUrl);
                             if (currentFilterMap != null){
-                                notCompareMap.remove(reqUrl);
+                                waitingUrlCompareMap.remove(reqUrl);
                                 if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
                                     int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
                                     RecordPathTable.insertOrUpdateRecordPath(reqUrl, setStatusCode);
@@ -511,10 +512,17 @@ public class IProxyScanner implements IProxyListener {
 
                     //记录总请求数增加
                     totalRequestCount += 1;
+
                     try {
                         //发起HTTP请求
                         stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
-                        IHttpRequestResponse requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, finalReferHeaders);
+                        IHttpRequestResponse requestResponse = null;
+
+                        //进行http请求时,先测试连接是否成功
+                        if (BurpHttpUtils.AddressCanConnect(reqUrl)){
+                            requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, finalReferHeaders);
+                        }
+
                         if (requestResponse != null) {
                             HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
                             //更新所有有响应的主动访问请求URL记录到数据库中

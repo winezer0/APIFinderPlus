@@ -7,10 +7,12 @@ import utilbox.HelperPlus;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 
 import static burp.BurpExtender.CONF_BLACK_URL_ROOT;
@@ -227,23 +229,36 @@ public class BurpHttpUtils {
         return firstLineBytes;
     }
 
+    //记录已进程测试过的连接,加快测试速度
+    private static ConcurrentHashMap<String, Boolean> AddressConnectStatusMap = new ConcurrentHashMap<>();
+
     /**
      * 判断目标是否可以正常连接
      */
-    public static boolean AddressCanConnect(String reqUrl, IHttpService httpService) {
+    public static boolean AddressCanConnect(IHttpService httpService) {
+        String host = httpService.getHost();
+        int port = httpService.getPort();
+        port = port > 0 ? port : (httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443);
+        String host_port = String.format("%s:%s", host, port);
+
+        //从历史记录中查找连接分析结果
+        if (AddressConnectStatusMap.containsKey(host_port)){
+            return AddressConnectStatusMap.get(host_port);
+        }
+
         try {
             // 创建一个 Socket 并设置超时时间
             Socket socket = new Socket();
-            String host = httpService.getHost();
-            int port = httpService.getPort();
-            port = port > 0 ? port : (httpService.getProtocol().equalsIgnoreCase("http") ? 80 : 443);
             InetSocketAddress address = new InetSocketAddress(host, port);
             socket.connect(address, 3000);
             socket.close();
+            AddressConnectStatusMap.put(host_port, true);
             return true;
         }catch (Exception e){
             // 错误处理
-            stderr_println(LOG_DEBUG, String.format("建立 Socket 连接失败: %s -> %s", reqUrl, e.getMessage()));
+            stderr_println(LOG_DEBUG, String.format("建立 Socket 连接失败: %s -> %s", host_port, e.getMessage()));
+            //记录目标不可访问,下次直接返回不可访问
+            AddressConnectStatusMap.put(host_port, false);
             return false;
         }
     }
@@ -253,6 +268,6 @@ public class BurpHttpUtils {
      */
     public static boolean AddressCanConnect(String reqUrl) {
         IHttpService httpService = BurpHttpUtils.getHttpService(reqUrl);
-        return AddressCanConnect(reqUrl,  httpService);
+        return AddressCanConnect(httpService);
     }
 }
