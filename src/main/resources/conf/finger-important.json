@@ -208,6 +208,46 @@
 		},
 		{
 			"accuracy": "high",
+			"describe": "禁止递归访问的URL路径[包含]此项任一元素",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"logout",
+				"cancel",
+				"delete",
+				"remove",
+				"update"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_BLACK_RECURSE_REQ_PATH_KEYS"
+		},
+		{
+			"accuracy": "high",
+			"describe": "递归访问URL时的HTTP请求方法",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"get",
+				"post"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_RECURSE_REQ_HTTP_METHODS"
+		},
+		{
+			"accuracy": "high",
+			"describe": "递归访问URL时的HTTP请求参数",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_RECURSE_REQ_HTTP_PARAMS"
+		},
+		{
+			"accuracy": "high",
 			"describe": "AppSecret、AppID",
 			"isImportant": true,
 			"isOpen": true,

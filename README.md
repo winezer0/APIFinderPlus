@@ -2,6 +2,26 @@
 
 本插件参考 APIFinder [https://github.com/shuanx/BurpAPIFinder] 进行深度重构开发
 
+### TODO
+
+```
+对非200响应但存在敏感信息的请求进行行处理【应该无需处理、默认是只过滤了30X和404】
+
+实现自定义自动扫描的方法
+    1、CONF_RECURSE_REQ_HTTP_METHODS 自定义 POST 请求方法支持 
+    2、CONF_RECURSE_REQ_HTTP_PARAMS 配置禁止自动扫描的URL关键字 如【logout、del】等 防止误删除 
+    3、CONF_BLACK_RECURSE_REQ_PATH_KEYS 支持自定义请求参数 
+    4、增加一个开关、决定是否添加自定义请求头
+
+webpack页面的自动自动拼接
+    实现简单的 webpack 页面js的自动拼接。
+    复杂的还没找到规律，暂未=无法实现自动化的 webpack 封装JS内容分析希望大家踊跃提供。
+
+实现一个集成的面板
+    显示当前域名的所有敏感信息、URL、API、等
+    将详细面板中的对应项都取消显示。
+```
+
 
 ### 插件目标
 
@@ -106,11 +126,3 @@
     "isOpen": 是否启用规则
     "type": 规则类型
 ```
-
-
-### TODO
-
-```
-暂未实现自动化的 webpack 封装JS内容分析
-```
-
