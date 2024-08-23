@@ -147,7 +147,10 @@ public class AnalyseHostResultTable {
                     stmt2.setString(8, CastUtils.toJsonString(newApiList));
                     stmt2.setInt(9, newApiList.size());
 
-                    List<String> newUnvisitedUrlList = CastUtils.listAddList(unvisitedUrlList, oldUnvisitedUrlList);
+                    //计算所有新增的URL
+                    List<String> oldAddUrlList = CastUtils.listAddList(oldUrlList, oldApiList); //历史上该主机采集的所有URL
+                    unvisitedUrlList = CastUtils.listReduceList(unvisitedUrlList,oldAddUrlList); //首先排除所有历史采集的URL
+                    List<String> newUnvisitedUrlList = CastUtils.listAddList(unvisitedUrlList, oldUnvisitedUrlList); //合并查询前未访问URL
                     stmt2.setString(10, CastUtils.toJsonString(newUnvisitedUrlList));
                     stmt2.setInt(11, newUnvisitedUrlList.size());
 

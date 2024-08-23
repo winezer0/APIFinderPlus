@@ -253,7 +253,7 @@ public class IProxyScanner implements IProxyListener {
             executorService.submit(() -> {
                 //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
                 RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                stdout_println(LOG_DEBUG, String.format("Common Direct Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                stdout_println(LOG_DEBUG, String.format("[*] Direct Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
             });
         } else {
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
@@ -696,7 +696,5 @@ public class IProxyScanner implements IProxyListener {
             }
         }
     }
-
-
 
 }
