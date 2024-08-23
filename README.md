@@ -5,14 +5,14 @@
 ### TODO
 
 ```
-对非200响应但存在敏感信息的请求进行行处理【应该无需处理、默认是只过滤了30X和404】
+【暂时忽略】 对非200响应但存在敏感信息的请求进行行处理【应该无需处理、默认是只过滤了30X和404】
 
-实现自定义自动扫描的方法
-    1、CONF_RECURSE_REQ_HTTP_METHODS 自定义 POST 请求方法支持 
+【已完成】实现自定义自动扫描的方法
+    1、CONF_RECURSE_REQ_HTTP_METHODS 自定义 任意 请求方法列表支持 【每行一种请求方法】
     2、CONF_RECURSE_REQ_HTTP_PARAMS 配置禁止自动扫描的URL关键字 如【logout、del】等 防止误删除 
-    3、CONF_BLACK_RECURSE_REQ_PATH_KEYS 支持自定义请求参数 
-    4、增加一个开关、决定是否添加自定义请求头
-
+    3、CONF_BLACK_RECURSE_REQ_PATH_KEYS 支持自定义请求参数 【一次的请求参数写在一行即可,多行会遍历】
+    注意：当前请求的请求头是基于当前URL请求体中动态获取的,后续根据用户需求添加自定义请求头功能。
+    
 webpack页面的自动自动拼接
     实现简单的 webpack 页面js的自动拼接。
     复杂的还没找到规律，暂未=无法实现自动化的 webpack 封装JS内容分析希望大家踊跃提供。

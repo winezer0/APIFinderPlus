@@ -4,6 +4,7 @@ import burp.BurpExtender;
 import model.FingerPrintRule;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static utils.CastUtils.isNotEmptyObj;
@@ -112,6 +113,12 @@ public class ConfigUtils {
 
         //重新编译正则表达式
         BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_REGULAR_EXTRACT_URIS);
-    }
 
+        //处理必须有内容的列
+        //设置默认请求方法
+        if (BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS.isEmpty()){BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS =  Collections.singletonList("GET");}
+        //设置默认请求参数
+        if (BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.isEmpty()){BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS =  Collections.singletonList("");}
+
+    }
 }

@@ -191,7 +191,7 @@ public class RespFieldCompareutils {
 
         Map<String, Object> filterModel = new HashMap<>();
         //判断是否能够正常建立socket连接
-        if (!checkSocketConnect || BurpHttpUtils.AddressCanConnect(testUrlList.get(0))){
+        if (!checkSocketConnect || BurpHttpUtils.AddressCanConnectWithCache(testUrlList.get(0))){
             List<Map<String, Object>> FieldValuesMapList = new ArrayList<>();
 
             //进行URL请求 并获取 respInfoJson

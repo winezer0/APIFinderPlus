@@ -106,7 +106,6 @@ public class IProxyScanner implements IProxyListener {
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            String statusCode = String.valueOf(msgInfo.getRespStatusCode());
             String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
             //看URL识别是否报错 不记录报错情况
@@ -122,10 +121,10 @@ public class IProxyScanner implements IProxyListener {
 
             //判断是否是正常的响应 不记录无响应情况
             if(autoRecordPathIsOpen
-                    && isEqualsOneKey(statusCode, CONF_WHITE_RECORD_PATH_STATUS, false)
-                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
-                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
+                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")  //忽略没有目录的选项
+                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_WHITE_RECORD_PATH_STATUS, false) //保留200|403等响应码的路径
+                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false) //忽略禁止自动进行有效PATH记录的目标
+                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false) //忽略禁止自动进行有效PATH记录的响应标题
             ){
                 executorService.submit(() -> enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen));
             }
@@ -160,7 +159,6 @@ public class IProxyScanner implements IProxyListener {
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
-            String statusCode = String.valueOf(msgInfo.getRespStatusCode());
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
             String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
@@ -189,10 +187,10 @@ public class IProxyScanner implements IProxyListener {
 
             //判断是否是正常的响应 不记录无响应情况
             if(autoRecordPathIsOpen
-                    && isEqualsOneKey(statusCode, CONF_WHITE_RECORD_PATH_STATUS, false)
-                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
-                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
+                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")  //忽略没有目录的选项
+                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_WHITE_RECORD_PATH_STATUS, false) //保留200|403等响应码的路径
+                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false) //忽略禁止自动进行有效PATH记录的目标
+                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false) //忽略禁止自动进行有效PATH记录的响应标题
             ){
                 executorService.submit(() -> enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen));
             }
@@ -211,7 +209,7 @@ public class IProxyScanner implements IProxyListener {
             });
 
             // 看status是否为30开头 || 看status是否为4  403 404 30x 都是没有敏感数据和URl的,可以直接忽略
-            if (statusCode.startsWith("3") || statusCode.startsWith("4")){
+            if (String.valueOf(msgInfo.getRespStatusCode()).startsWith("3") || String.valueOf(msgInfo.getRespStatusCode()).startsWith("4")){
                 //stdout_println(LOG_DEBUG, "[-] 匹配30X|404 页面 跳过url识别：" + rawUrlUsual);
                 return;
             }
@@ -502,11 +500,19 @@ public class IProxyScanner implements IProxyListener {
                     //记录已访问的URL
                     urlScanRecordMap.add(reqUrl); //防止循环扫描
 
-                    // Check 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
+                    // 记录URL已经扫描 不一定合适,因为没有扫描的URL很难处理
                     RecordUrlTable.insertOrUpdateAccessedUrl(reqUrl,299);
 
+                    //格式化URL
+                    HttpUrlInfo urlInfo = new HttpUrlInfo(reqUrl);
+
                     //不递归扫描黑名单内的主机 //需要 放在记录URL后面 不然每次都会获取到这个目标 导致无法忽略正常扫描
-                    if (ignoreBlackRecurseHost && isContainOneKey(reqUrl, CONF_BLACK_AUTO_RECURSE_SCAN, false)){
+                    if (ignoreBlackRecurseHost
+                            //禁止自动进行未访问URL扫描的目标RootUrl关键字
+                            && isContainOneKey(urlInfo.getRootUrlUsual(), CONF_BLACK_AUTO_RECURSE_SCAN, false)
+                            //禁止递归访问的URL路径关键字
+                            && isContainOneKey(urlInfo.getPathToFile(), CONF_BLACK_RECURSE_REQ_PATH_KEYS, false)
+                    ){
                         continue;
                     }
 
@@ -514,34 +520,45 @@ public class IProxyScanner implements IProxyListener {
                     totalRequestCount += 1;
 
                     try {
-                        //发起HTTP请求
-                        stdout_println(LOG_DEBUG, String.format("[*] Auto Access URL: %s", reqUrl));
-                        IHttpRequestResponse requestResponse = null;
+                        //递归请求参数
+                        for (String reqMethod: CONF_RECURSE_REQ_HTTP_METHODS){ //递归请求方法列表
+                            for (String reqHttpParam: CONF_RECURSE_REQ_HTTP_PARAMS){ //循环处理请求方法
+                                //发起HTTP请求
+                                stdout_println(LOG_DEBUG, String.format("[*] Start Request Url: %s <--> %s <--> %s", reqUrl, reqMethod, reqHttpParam));
 
-                        //进行http请求时,先测试连接是否成功
-                        if (BurpHttpUtils.AddressCanConnect(reqUrl)){
-                            requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, finalReferHeaders);
-                        }
+                                IHttpRequestResponse requestResponse = null;
 
-                        if (requestResponse != null) {
-                            HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
-                            //更新所有有响应的主动访问请求URL记录到数据库中
-                            RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+                                //进行http请求时,先测试连接是否成功
+                                if (BurpHttpUtils.AddressCanConnectWithCache(urlInfo)){
+                                    //requestResponse = BurpHttpUtils.makeHttpRequest(reqUrl, finalReferHeaders);
+                                    //makeHttpRequest(String reqMethod, String reqUrl, List<String> referReqHeaders, byte[] reqBody)
+                                    requestResponse  = BurpHttpUtils.makeHttpRequest(reqMethod, reqUrl, reqHttpParam, finalReferHeaders);
+                                }
 
-                            //加入请求分析列表
-                            if (msgInfo.getRespInfo().getRespLength()>0)
-                                insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
+                                if (requestResponse != null) {
+                                    HttpMsgInfo msgInfo = new HttpMsgInfo(requestResponse);
 
-                            //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
-                            if(autoRecordPathIsOpen
-                                    && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_WHITE_RECORD_PATH_STATUS, false)
-                                    && !msgInfo.getUrlInfo().getPathToDir().equals("/")
-                                    && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false)
-                                    && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)
-                            ){
-                                enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
+                                    //重新更新所有有响应的主动访问请求URL记录到数据库中
+                                    RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
+
+                                    //加入请求分析列表
+                                    if (msgInfo.getRespInfo().getRespLength() > 0){
+                                        insertOrUpdateReqDataAndReqMsgData(msgInfo,"Auto");
+                                    }
+
+                                    //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在
+                                    if(autoRecordPathIsOpen
+                                            && !msgInfo.getUrlInfo().getPathToDir().equals("/") //忽略没有目录的选项
+                                            && isEqualsOneKey(msgInfo.getRespStatusCode(), CONF_WHITE_RECORD_PATH_STATUS, false) //保留200|403等响应码的路径
+                                            && !isContainOneKey(msgInfo.getUrlInfo().getUrlToFileUsual(), CONF_BLACK_AUTO_RECORD_PATH, false) //忽略禁止自动进行有效PATH记录的目标
+                                            && !isContainOneKey(msgInfo.getRespInfo().getRespTitle(), CONF_BLACK_RECORD_PATH_TITLE, false)  //忽略禁止自动进行有效PATH记录的响应标题
+                                    ){
+                                        enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen);
+                                    }
+                                } else {
+                                    stdout_println(LOG_ERROR, String.format("[-] Failed Request Url: %s", reqUrl));
+                                }
                             }
-
                         }
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
