@@ -8,10 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static utils.BurpPrintUtils.*;
 
@@ -88,21 +85,25 @@ public class AnalyseUrlResultTable {
                     stmt2.setString(6, CastUtils.toJsonString(analyseInfo.getPathList()));
                     stmt2.setInt(7, analyseInfo.getPathList().size());
 
-                    stmt2.setString(8, CastUtils.toJsonString(analyseInfo.getInfoList()));
-                    stmt2.setInt(9, analyseInfo.getInfoList().size());
+                    stmt2.setString(8, CastUtils.toJsonString(analyseInfo.getInfoArray()));
+                    stmt2.setInt(9, analyseInfo.getInfoArray().size());
 
                     stmt2.setString(10, CastUtils.toJsonString(analyseInfo.getApiList()));
                     stmt2.setInt(11, analyseInfo.getApiList().size());
 
+                    //TODO 需要删除 此处的 UnvisitedUrl 相关代码
                     stmt2.setString(12, CastUtils.toJsonString(analyseInfo.getUnvisitedUrl()));
                     stmt2.setInt(13, analyseInfo.getUnvisitedUrl().size());
 
-                    //在这个响应中没有找到 PATH 数据,就修改状态为无需解析
-                    if (analyseInfo.getPathList().size() > 0){
-                        stmt2.setString(14, Constants.ANALYSE_WAIT);
-                    } else {
-                        stmt2.setString(14, Constants.ANALYSE_END);
-                    }
+//                    //在这个响应中没有找到 PATH 数据,就修改状态为无需解析
+//                    if (analyseInfo.getPathList().size() > 0){
+//                        stmt2.setString(14, Constants.ANALYSE_WAIT);
+//                    } else {
+//                        stmt2.setString(14, Constants.ANALYSE_END);
+//                    }
+
+                    //设置初始的响应状态为 等待处理
+                    stmt2.setString(14, Constants.ANALYSE_WAIT);
 
                     stmt2.setBoolean(15, analyseInfo.getHasImportant());
 
@@ -125,12 +126,113 @@ public class AnalyseUrlResultTable {
     }
 
     /**
-     * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
-     * @param msgHash
+     * 根据运行状态取获取对应请求ID
      * @return
      */
-    public static synchronized TableTabDataModel fetchAnalyseResultByMsgHash(String msgHash){
-        TableTabDataModel tabDataModel = null;
+    public static synchronized List<String> fetchMsgHashByRunStatus(int limit, String analyseStatus) {
+        List<String> msgHashList = new ArrayList<>();
+        String selectSQL = "SELECT msg_hash FROM " + tableName + " WHERE run_status = ? ORDER BY id ASC LIMIT ?;";
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, analyseStatus);
+            stmt.setInt(2, limit); // Set the limit parameter
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String msgHash = rs.getString("msg_hash");
+                msgHashList.add(msgHash);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetching and marking id list from Analysis: %s", e.getMessage()));
+        }
+        return msgHashList;
+    }
+
+    /**
+     * 根据运行状态取获取对应请求ID
+     * @return
+     */
+    public static synchronized List<String> fetchMsgHashByRunStatusIsWait(int limit){
+        return fetchMsgHashByRunStatus(limit, Constants.ANALYSE_WAIT);
+    }
+
+
+    /**
+     * 更新多个 msgHash 的状态
+     */
+    private static synchronized int updateUrlResultStatusByMsgHashList(List<String> msgHashList, String updateStatus) {
+        int updatedCount = -1;
+
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_hash IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
+            stmtUpdate.setString(1, updateStatus);
+
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmtUpdate.setString(i + 2, msgHashList.get(i));
+            }
+
+            updatedCount = stmtUpdate.executeUpdate();
+
+            if (updatedCount != msgHashList.size()) {
+                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error updating Analyse Url Result Data Status: %s", e.getMessage()));
+        }
+        return updatedCount;
+    }
+
+    //更新数据对应状态
+    public static int updateUrlResultStatusRunIngByMsgHashList(List<String> msgHashList) {
+        return updateUrlResultStatusByMsgHashList(msgHashList, Constants.ANALYSE_ING);
+    }
+
+    //更新数据对对应状态
+    public static int updateUrlResultStatusRunEndByMsgHashList(List<String> msgHashList) {
+        return updateUrlResultStatusByMsgHashList(msgHashList, Constants.ANALYSE_END);
+    }
+
+    /**
+     * 获取 指定 msgHashList 对应的 所有 分析结果 数据
+     * @return
+     */
+    public static synchronized List<AnalyseUrlResultModel> fetchAnalyseUrlResultByMsgHashList(List<String> msgHashList){
+        List<AnalyseUrlResultModel> AnalyseUrlResultModels = new ArrayList<>();
+
+        if (msgHashList.isEmpty()) return AnalyseUrlResultModels;
+
+        String selectSQL = "SELECT * FROM " + tableName + " WHERE msg_hash IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 1, msgHashList.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                AnalyseUrlResultModel tabDataModel = new AnalyseUrlResultModel(
+                        rs.getString("req_url"),
+                        rs.getString("find_info"),
+                        rs.getString("find_url"),
+                        rs.getString("find_path"),
+                        rs.getString("find_api"),
+                        rs.getBoolean("has_important")
+                );
+                AnalyseUrlResultModels.add(tabDataModel);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch Analyse Url Result Data By MsgHash List: %s", e.getMessage()));
+        }
+        return AnalyseUrlResultModels;
+    }
+
+
+    /**
+     * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
+     */
+    public static synchronized UrlTableTabDataModel fetchAnalyseUrlResultByMsgHash(String msgHash){
+        UrlTableTabDataModel tabDataModel = null;
 
         String selectSQL = "SELECT * FROM "+ tableName +" WHERE msg_hash = ?;";
 
@@ -138,7 +240,7 @@ public class AnalyseUrlResultTable {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    tabDataModel = new TableTabDataModel(
+                    tabDataModel = new UrlTableTabDataModel(
                             rs.getString("msg_hash"),
                             rs.getString("find_url"),
                             rs.getString("find_path"),
@@ -153,90 +255,6 @@ public class AnalyseUrlResultTable {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Analyse Result Data By MsgHash: %s", e.getMessage()));
         }
         return tabDataModel;
-    }
-
-    /**
-     * 获取多条 存在 Path 并且没有 动态计算过的 path数据 的ID
-     */
-    public static synchronized List<Integer> fetchUnhandledPathDataIds(int limit){
-        List<Integer> findPathIdList = new ArrayList<>();
-        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-        String selectSQL = "SELECT id FROM " + tableName + " WHERE find_path_num > 0 and run_status = ? LIMIT ?;";
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, Constants.ANALYSE_WAIT);
-            stmt.setInt(2, limit);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    int findPathId = rs.getInt("id");
-                    findPathIdList.add(findPathId);
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Path Data Ids: %s", e.getMessage()));
-        }
-        return findPathIdList ;
-    }
-
-    /**
-     * 更新多个id对应的数据为已处理
-     */
-    public static int updatePathDataStatusByIds(List<Integer> findPathIds) {
-        int updatedCount = -1;
-
-        if (findPathIds.isEmpty()) return updatedCount;
-
-        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
-            stmtUpdate.setString(1, Constants.ANALYSE_ING);
-
-            for (int i = 0; i < findPathIds.size(); i++) {
-                stmtUpdate.setInt(i + 2, findPathIds.get(i));
-            }
-
-            updatedCount = stmtUpdate.executeUpdate();
-
-            if (updatedCount != findPathIds.size()) {
-                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update Unhandled Path Data Status By Ids: %s", e.getMessage()));
-        }
-        return updatedCount;
-    }
-
-    /**
-     * 获取多条 存在 Path 并且没有 动态计算过的 path数据
-     */
-    public static synchronized List<FindPathModel> fetchPathDataByIds(List<Integer> findPathIds){
-        List<FindPathModel> findPathModelList = new ArrayList<>();
-
-        if (findPathIds.isEmpty()) return findPathModelList;
-
-        // 首先选取一条记录的ID path数量大于0 并且 状态为等待分析
-        String selectSQL = "SELECT * FROM " + tableName + " WHERE id IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(findPathIds.size()));
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            for (int i = 0; i < findPathIds.size(); i++) {
-                stmt.setInt(i + 1, findPathIds.get(i));
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                FindPathModel findPathModel =  new FindPathModel(
-                        rs.getInt("id"),
-                        rs.getString("req_url"),
-                        rs.getString("req_host_port"),
-                        rs.getString("find_path")
-                );
-                findPathModelList.add(findPathModel);
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch Path Data By Ids: %s", e.getMessage()));
-        }
-        return findPathModelList ;
     }
 
     /**
@@ -391,33 +409,6 @@ public class AnalyseUrlResultTable {
     }
 
     /**
-     * 获取 一个 未访问URl 对象 (unvisited_url_num > 0)
-     * @return
-     */
-    public static synchronized UnVisitedUrlsModel fetchOneUnVisitedUrls() {
-        UnVisitedUrlsModel unVisitedUrlsModel = null;
-
-        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +
-                " WHERE unvisited_url_num > 0 ORDER BY unvisited_url_num DESC Limit 1;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    unVisitedUrlsModel = new UnVisitedUrlsModel(
-                            rs.getInt("id"),
-                            rs.getString("msg_hash"),
-                            rs.getString("req_url"),
-                            rs.getString("unvisited_url")
-                    );
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch All UnVisited Urls: %s", e.getMessage()));
-        }
-        return unVisitedUrlsModel;
-    }
-
-    /**
      * 实现 基于 ID 更新 unvisitedUrls
      * @param unVisitedUrlsModel
      * @return
@@ -540,31 +531,31 @@ public class AnalyseUrlResultTable {
         return totalRowsAffected;
     }
 
-    /**
-     * 实现 基于 msgHash 获取 unvisitedUrls
-     */
-    public static synchronized UnVisitedUrlsModel fetchUnVisitedUrlsByMsgHash(String msgHash) {
-        UnVisitedUrlsModel unVisitedUrlsModel = null;
-
-        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash = ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, msgHash);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    unVisitedUrlsModel = new UnVisitedUrlsModel(
-                            rs.getInt("id"),
-                            rs.getString("msg_hash"),
-                            rs.getString("req_url"),
-                            rs.getString("unvisited_url")
-                    );
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch UnVisited Urls By MsgHash: %s", e.getMessage()));
-        }
-        return unVisitedUrlsModel;
-    }
+//    /**
+//     * 实现 基于 msgHash 获取 unvisitedUrls
+//     */
+//    public static synchronized UnVisitedUrlsModel fetchUnVisitedUrlsByMsgHash(String msgHash) {
+//        UnVisitedUrlsModel unVisitedUrlsModel = null;
+//
+//        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash = ?;";
+//
+//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+//            stmt.setString(1, msgHash);
+//            try (ResultSet rs = stmt.executeQuery()) {
+//                while (rs.next()) {
+//                    unVisitedUrlsModel = new UnVisitedUrlsModel(
+//                            rs.getInt("id"),
+//                            rs.getString("msg_hash"),
+//                            rs.getString("req_url"),
+//                            rs.getString("unvisited_url")
+//                    );
+//                }
+//            }
+//        } catch (Exception e) {
+//            stderr_println(LOG_ERROR, String.format("[-] Error fetch UnVisited Urls By MsgHash: %s", e.getMessage()));
+//        }
+//        return unVisitedUrlsModel;
+//    }
 
     /**
      * 实现 基于 msgHash 列表 获取 unvisitedUrls 列表
@@ -600,7 +591,6 @@ public class AnalyseUrlResultTable {
         return unVisitedUrlsModels;
     }
 
-
     /**
      * 实现 基于 msgHash 列表 获取 XXX Urls 列表
      */
@@ -620,7 +610,7 @@ public class AnalyseUrlResultTable {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     String urlJson = rs.getString(columnName);
-                    List<String> urlList = CastUtils.toStringList(CastUtils.toJsonArray(urlJson));
+                    List<String> urlList = CastUtils.toStringList(urlJson);
                     urlsSet.addAll(urlList);
                 }
             }
@@ -630,5 +620,6 @@ public class AnalyseUrlResultTable {
 
         return urlsSet;
     }
+
 
 }

@@ -14,7 +14,7 @@ public class UnVisitedUrlsModel {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
-        this.unvisitedUrls =  CastUtils.toStringList(CastUtils.toJsonArray(unvisitedUrl));
+        this.unvisitedUrls =  CastUtils.toStringList(unvisitedUrl);
     }
 
     public UnVisitedUrlsModel(int id, String msgHash, String reqUrl, List<String> unvisitedUrl) {

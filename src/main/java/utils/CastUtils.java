@@ -46,25 +46,32 @@ public class CastUtils {
 
 
     /**
-     * 去除List<JSONObject>中的重复项。
+     * 去除JSONArray中的重复项。
      *
-     * @param list 需要去重的原始列表。
+     * @param jsonArray 需要去重的原始列表。
      * @return 去重后的列表。
      */
-    public static List<JSONObject> deduplicateJsonList(List<JSONObject> list) {
-        if (isEmptyObj(list)) return new ArrayList<>();
+    public static JSONArray deduplicateJsonArray(JSONArray jsonArray) {
+        if (jsonArray == null || jsonArray.size() == 0)
+            return new JSONArray();
 
         // 使用LinkedHashMap来保持插入顺序并去除重复
         Map<String, JSONObject> map = new LinkedHashMap<>();
 
-        for (JSONObject jsonObject : list) {
-            // 将每个JSONObject转换成字符串，并用作Map的键
-            String jsonString = jsonObject.toString();
-            map.putIfAbsent(jsonString, jsonObject);
+        // 将每个JSONObject转换成字符串，并用作Map的键
+        for (int i = 0; i < jsonArray.size(); i++) {
+            try {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String jsonString = jsonObject.toString();
+                map.putIfAbsent(jsonString, jsonObject);
+            } catch (Exception exception) {
+                // Handle any exceptions that might occur during the process.
+                System.err.println("Error processing JSON object: " + exception.getMessage());
+            }
         }
 
         // 将Map的值转换回List
-        return new ArrayList<>(map.values());
+        return new JSONArray(new ArrayList<>(map.values()));
     }
 
     /**
@@ -116,6 +123,13 @@ public class CastUtils {
     }
 
     /**
+     * 将JsonArrayString 转为 List<String>
+     */
+    public static List<String> toStringList(String jsonArrayString){
+        return toStringList(toJsonArray(jsonArrayString));
+    }
+
+    /**
      * 格式化Json数据为可输出的状态
      */
     public static String stringJsonArrayFormat(String jsonArrayString) {
@@ -146,6 +160,17 @@ public class CastUtils {
         Set<String> uniqueSet = new LinkedHashSet<>(listA); // 创建 LinkedHashSet 并添加第一个列表的所有元素
         uniqueSet.addAll(listB); // 添加第二个列表的所有元素，重复项会被自动过滤
         return new ArrayList<>(uniqueSet); // 将 Set 转换回 List 并返回
+    }
+
+    /**
+     * 合并两个 List<String> 并去重
+     */
+    public static JSONArray listAddList(JSONArray arrayA, JSONArray arrayB) {
+        JSONArray combinedArray = new JSONArray();
+        combinedArray.addAll(arrayA);
+        combinedArray.addAll(arrayB);
+        combinedArray = CastUtils.deduplicateJsonArray(combinedArray);
+        return combinedArray;
     }
 
 

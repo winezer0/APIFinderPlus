@@ -1,6 +1,6 @@
 package utils;
 
-import model.TableLineDataModel;
+import model.UrlTableLineDataModel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -53,12 +53,12 @@ public class UiUtils {
      * @param model
      * @param jsonArray
      */
-    public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<TableLineDataModel> jsonArray) {
+    public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<UrlTableLineDataModel> jsonArray) {
         if (isEmptyObj(jsonArray)) return;
 
-        Iterator<TableLineDataModel> iterator = jsonArray.iterator();
+        Iterator<UrlTableLineDataModel> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
-            TableLineDataModel apiDataModel = iterator.next();
+            UrlTableLineDataModel apiDataModel = iterator.next();
             Object[] rowData = apiDataModel.toRowDataArray();
             model.addRow(rowData);
         }

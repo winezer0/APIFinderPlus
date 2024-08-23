@@ -18,7 +18,9 @@ public class ReqDataTable {
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS "+ tableName +" ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+
             + "msg_hash TEXT UNIQUE,"  //作为实际的消息独立标记
+
             + "req_url TEXT NOT NULL,"
             + "req_method TEXT NOT NULL,"
 
@@ -78,50 +80,14 @@ public class ReqDataTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-
-    //获取一条需要处理的数据 （状态为等待解析），并且标记状态为处理中
-    public static synchronized int fetchUnhandledReqDataId(boolean updateStatus) {
-        // 考虑开启事务
-        int msgDataIndex = -1;
-
-        // 首先选取一条记录的 msg_data_index
-        String selectSQL = "SELECT msg_data_index FROM "+ tableName +" WHERE run_status = ? LIMIT 1;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, Constants.ANALYSE_WAIT );
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                int selectedMsgDataIndex = rs.getInt("msg_data_index");
-
-                //不更新索引直接返回查询到的索引号
-                if (!updateStatus)
-                    return selectedMsgDataIndex;
-
-                //更新索引对应的数据
-                String updateSQL = "UPDATE "+ tableName +" SET run_status = ? WHERE msg_data_index = ?;";
-
-                try (PreparedStatement stmt2 = conn.prepareStatement(updateSQL)) {
-                    stmt2.setString(1, Constants.ANALYSE_ING);
-                    stmt2.setInt(2, selectedMsgDataIndex);
-                    int affectedRows = stmt2.executeUpdate();
-                    if (affectedRows > 0) {
-                        msgDataIndex = selectedMsgDataIndex;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_DEBUG, String.format("[-] Error fetch And Mark Req Data Index To Analysis: %s", e.getMessage()));
-        }
-
-        return msgDataIndex;
-    }
-
-    //获取多条需要更新的ID
-    public static synchronized List<Integer> fetchUnhandleReqDataMsgDataIndexList(int limit) {
+    /**
+     * 根据运行状态取获取对应请求的实际消息ID
+     */
+    public static synchronized List<Integer> fetchMsgDataIndexListByRunStatus(int limit, String analyseStatus) {
         List<Integer> msgDataIndexList = new ArrayList<>();
         String selectSQL = "SELECT msg_data_index FROM " + tableName + " WHERE run_status = ? ORDER BY msg_data_index ASC LIMIT ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, Constants.ANALYSE_WAIT);
+            stmt.setString(1, analyseStatus);
             stmt.setInt(2, limit); // Set the limit parameter
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -135,16 +101,23 @@ public class ReqDataTable {
     }
 
     /**
+     * 获取未处理的消息的 MsgDataIndexList
+     */
+    public static synchronized List<Integer> fetchMsgIdListWhereRunWait(int limit){
+        return fetchMsgDataIndexListByRunStatus(limit, Constants.ANALYSE_WAIT);
+    }
+
+    /**
      * 更新多个id的状态
      */
-    public static synchronized int updateReqDataStatusByMsgDataIndex(List<Integer> msgDataIndexList) {
+    private static synchronized int updateReqDataStatusByMsgId(List<Integer> msgDataIndexList, String updateStatus) {
         int updatedCount = -1;
 
         String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(msgDataIndexList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
-            stmtUpdate.setString(1, Constants.ANALYSE_ING);
+            stmtUpdate.setString(1, updateStatus);
 
             for (int i = 0; i < msgDataIndexList.size(); i++) {
                 stmtUpdate.setInt(i + 2, msgDataIndexList.get(i));
@@ -161,6 +134,19 @@ public class ReqDataTable {
         return updatedCount;
     }
 
+    /**
+     * 批量更新请求状态为 解析中
+     */
+    public static synchronized int updateReqDataStatusRunIngByMsgId(List<Integer> msgDataIndexList){
+        return updateReqDataStatusByMsgId(msgDataIndexList, Constants.ANALYSE_ING);
+    }
+
+    /**
+     * 批量更新请求状态为 已完成
+     */
+    public static synchronized int updateReqDataStatusRunEndByMsgId(List<Integer> msgDataIndexList){
+        return updateReqDataStatusByMsgId(msgDataIndexList, Constants.ANALYSE_END);
+    }
 
     /**
      * 统计所有已经识别完成的URL的数量
@@ -169,10 +155,10 @@ public class ReqDataTable {
     public static synchronized int getReqDataCountWhereStatusIsEnd() {
         int count = 0;
 
-        String selectSQL = "SELECT COUNT(*) FROM "+ tableName + "  WHERE run_status != ?;";
+        String selectSQL = "SELECT COUNT(*) FROM "+ tableName + " WHERE run_status == ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)){
-            stmt.setString(1, Constants.ANALYSE_WAIT);
+            stmt.setString(1, Constants.ANALYSE_END);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
@@ -182,24 +168,4 @@ public class ReqDataTable {
         }
         return count;
     }
-
-
-    //获取没有数据的行,备用,用于后续删除数据
-    public static synchronized int deleteReqDataById(int id) {
-        int rowsAffected = -1;
-
-        // 获取当前所有记录的数据
-        String deleteSQL = "DELETE FROM  "+ tableName +" WHERE id = ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
-            stmt.setInt(1, id);
-            rowsAffected = stmt.executeUpdate();
-        } catch (Exception e) {
-            stderr_println(String.format("[-] Error delete Data By Id On Table [%s] -> Error:[%s]", tableName, e.getMessage()));
-            e.printStackTrace();
-        }
-
-        return rowsAffected;
-    }
-
 }

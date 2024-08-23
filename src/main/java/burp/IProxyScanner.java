@@ -344,39 +344,62 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //任务1、获取需要解析的响应体数据并进行解析响
-                    List<Integer> msgDataIndexList = ReqDataTable.fetchUnhandleReqDataMsgDataIndexList(maxPoolSize);
+                    List<Integer> msgDataIndexList = ReqDataTable.fetchMsgIdListWhereRunWait(maxPoolSize);
                     if (msgDataIndexList.size() > 0){
-                        //更新对应的ids为已经检查 防止其他进程获取这些数据
-                        int updateCount = ReqDataTable.updateReqDataStatusByMsgDataIndex(msgDataIndexList);
-                        if(updateCount>0){
-                            //循环进行数据获取和分析操作
-                            for (int msgDataIndex : msgDataIndexList){
-                                //逐个 获取 msgDataIndex 对应的数据 . 一次性获取数据太多了
-                                ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(msgDataIndex);
-                                if (msgData != null){
-                                    HttpMsgInfo msgInfo =  new HttpMsgInfo(
-                                            msgData.getReqUrl(),
-                                            msgData.getReqBytes(),
-                                            msgData.getRespBytes(),
-                                            msgData.getMsgHash()
-                                    );
-                                    if (!msgData.getMsgHash().equals(msgInfo.getMsgHash())){
-                                        stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash()));
-                                    }
+                        //更新对应的ids为检查中 防止其他进程获取这些数据
+                        ReqDataTable.updateReqDataStatusRunIngByMsgId(msgDataIndexList);
 
-                                    //进行数据分析
-                                    AnalyseUrlResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
-                                    //存入分析结果
-                                    if(isNotEmptyObj(analyseResult.getInfoList()) || isNotEmptyObj(analyseResult.getPathList())  || isNotEmptyObj(analyseResult.getUrlList())){
-                                        //将初次分析结果写入数据库
-                                        int analyseDataIndex = AnalyseUrlResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
-                                        if (analyseDataIndex > 0){
-                                            stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
-                                        }
+                        //循环进行数据获取和分析操作
+                        for (int msgDataIndex : msgDataIndexList){
+                            //逐个 获取 msgDataIndex 对应的数据 . 一次性获取数据太多了
+                            ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataById(msgDataIndex);
+                            if (msgData != null){
+                                HttpMsgInfo msgInfo =  new HttpMsgInfo(
+                                        msgData.getReqUrl(),
+                                        msgData.getReqBytes(),
+                                        msgData.getRespBytes(),
+                                        msgData.getMsgHash()
+                                );
+                                if (!msgData.getMsgHash().equals(msgInfo.getMsgHash())){
+                                    stderr_println(LOG_ERROR, String.format("[!] 发生严重错误 URL的新旧Hash不一致: %s -> %s", msgData.getMsgHash(), msgInfo.getMsgHash()));
+                                }
+
+                                //进行数据分析
+                                AnalyseUrlResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
+                                //存入分析结果
+                                if(isNotEmptyObj(analyseResult.getInfoArray())
+                                        || isNotEmptyObj(analyseResult.getPathList())
+                                        || isNotEmptyObj(analyseResult.getUrlList())){
+                                    //将初次分析结果写入数据库
+                                    int analyseDataIndex = AnalyseUrlResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
+                                    if (analyseDataIndex > 0){
+                                        stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                     }
                                 }
                             }
                         }
+                        //更新对应的ids为分析完成,实际上没啥用
+                        ReqDataTable.updateReqDataStatusRunEndByMsgId(msgDataIndexList);
+                        return;
+                    }
+
+                    //新任务 判断是否由存在 分析结果数据表 有没有加入到集成面板,存在的话就加入到集成面板
+                    //检查是否存在 Running 中的状态，有的话加入到数据表中，并修改状态为 Finished
+                    List<String> urlResultMsgHashList = AnalyseUrlResultTable.fetchMsgHashByRunStatusIsWait(maxPoolSize);
+                    if (urlResultMsgHashList.size() > 0){
+                        //更新对应的ids为检查中 防止其他进程获取这些数据
+                        AnalyseUrlResultTable.updateUrlResultStatusRunIngByMsgHashList(urlResultMsgHashList);
+
+                        //循环进行数据获取和分析操作
+                        List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchAnalyseUrlResultByMsgHashList(urlResultMsgHashList);
+                        for (AnalyseUrlResultModel analyseUrlResultModel : AnalyseUrlResultModels){
+                            //插入数据|同时合并数据
+                            AnalyseHostResultModel analyseHostResultModel = new AnalyseHostResultModel(analyseUrlResultModel);
+                            AnalyseHostResultTable.insertOrUpdateAnalyseHostResult(analyseHostResultModel);
+                        }
+
+                        //更新对应的ids为分析完成,实际上没啥用
+                        AnalyseUrlResultTable.updateUrlResultStatusRunEndByMsgHashList(urlResultMsgHashList);
                         return;
                     }
 
@@ -424,44 +447,44 @@ public class IProxyScanner implements IProxyListener {
                             return;
                         }
 
-                        //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-                        //获取多条需要分析【状态为待解析】的数据
-                        List<Integer> findPathIds = AnalyseUrlResultTable.fetchUnhandledPathDataIds(maxPoolSize);
-                        if (findPathIds.size()>0){
-                            //更新ids对应的状态,防止其他线程读取
-                            int updateCount = AnalyseUrlResultTable.updatePathDataStatusByIds(findPathIds);
-                            if (updateCount>0){
-                                //一次性 获取实际的数据进行修改
-                                List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByIds(findPathIds);
-                                for (FindPathModel findPathModel:findPathModelList){
-                                    stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
-                                    pathsToUrlsByPathTree(findPathModel);
-                                }
-                            }
-                            return;
-                        }
+//                        //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
+//                        //获取多条需要分析【状态为待解析】的数据
+//                        List<Integer> findPathIds = AnalyseUrlResultTable.fetchUnhandledPathDataIds(maxPoolSize);
+//                        if (findPathIds.size()>0){
+//                            //更新ids对应的状态,防止其他线程读取
+//                            int updateCount = AnalyseUrlResultTable.updatePathDataStatusByIds(findPathIds);
+//                            if (updateCount>0){
+//                                //一次性 获取实际的数据进行修改
+//                                List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByIds(findPathIds);
+//                                for (FindPathModel findPathModel:findPathModelList){
+//                                    stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
+//                                    pathsToUrlsByPathTree(findPathModel);
+//                                }
+//                            }
+//                            return;
+//                        }
 
-                        //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
-                        List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
-                        if (findPathModelList.size()>0){
-                            for (FindPathModel findPathModel:findPathModelList) {
-                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
-                                pathsToUrlsByPathTree(findPathModel);
-                            }
-                            return;
-                        }
+//                        //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
+//                        List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
+//                        if (findPathModelList.size()>0){
+//                            for (FindPathModel findPathModel:findPathModelList) {
+//                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
+//                                pathsToUrlsByPathTree(findPathModel);
+//                            }
+//                            return;
+//                        }
                     }
 
-                    // 自动递归查询功能
-                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
-                        //获取一个未访问URL列表
-                        executorService.submit(() -> {
-                            //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
-                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseUrlResultTable.fetchOneUnVisitedUrls( );
-                            accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
-                        });
-                        return;
-                    }
+//                    // 自动递归查询功能
+//                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
+//                        //获取一个未访问URL列表
+//                        executorService.submit(() -> {
+//                            //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
+//                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseUrlResultTable.fetchOneUnVisitedUrls( );
+//                            accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
+//                        });
+//                        return;
+//                    }
 
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));

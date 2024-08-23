@@ -112,7 +112,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<TableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchTableLineDataAll();
+                ArrayList<UrlTableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchTableLineDataAll();
                 //将数据赋值给表模型
                 UiUtils.populateModelFromJsonArray(msgTableModel, allReqAnalyseData);
             }
@@ -812,18 +812,18 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                     //逐个清理 UnvisitedURls 中的 findApiUrl
 
                                     //根据 msgHash值 查询api分析结果数据
-                                    TableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseResultByMsgHash(msgHash);
+                                    UrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseUrlResultByMsgHash(msgHash);
                                     if (tabDataModel != null) {
 
                                         //1、获取 msgHash 对应的 UnvisitedURls
                                         String unvisitedUrl = tabDataModel.getUnvisitedUrl();
-                                        List<String> unvisitedUrlList = CastUtils.toStringList(CastUtils.toJsonArray(unvisitedUrl));
+                                        List<String> unvisitedUrlList = CastUtils.toStringList(unvisitedUrl);
                                         //跳过处理未访问列表为空的情况
                                         if (unvisitedUrlList.isEmpty()) continue;
 
                                         //2、获取 msgHash 对应的 findApiUrl
                                         String findApi = tabDataModel.getFindApi();
-                                        List<String> findApiList = CastUtils.toStringList(CastUtils.toJsonArray(findApi));
+                                        List<String> findApiList = CastUtils.toStringList(findApi);
                                         //跳过处理findApi列表为空的情况
                                         if (findApiList.isEmpty()) continue;
 
@@ -1406,7 +1406,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(responseData, false);
 
         //根据 msgHash值 查询api分析结果数据
-        TableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseResultByMsgHash(msgHash);
+        UrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseUrlResultByMsgHash(msgHash);
         if (tabDataModel != null) {
             //String msgHash = analyseResult.getMsgHash();
             String findInfo = tabDataModel.getFindInfo();
@@ -1459,7 +1459,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                 msgTableModel.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<TableLineDataModel> apiDataModels =null;
+                ArrayList<UrlTableLineDataModel> apiDataModels =null;
 
                 switch (selectOption) {
                     case "显示有效内容":
@@ -1481,7 +1481,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                 }
 
                 // 遍历apiDataModelMap
-                for (TableLineDataModel apiDataModel : apiDataModels) {
+                for (UrlTableLineDataModel apiDataModel : apiDataModels) {
                     String url = apiDataModel.getReqUrl();
                     //是否包含关键字,当输入了关键字时,使用本函数再次进行过滤
                     if (url.toLowerCase().contains(searchText.toLowerCase())) {

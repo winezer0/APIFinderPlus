@@ -1,7 +1,7 @@
 package model;
 
 
-public class TableLineDataModel {
+public class UrlTableLineDataModel {
     private Integer id;
     private String msgHash;
     private String reqUrl;
@@ -19,10 +19,10 @@ public class TableLineDataModel {
     private Integer respLength;
     private Boolean hasImportant;
     // 构造函数
-    public TableLineDataModel(int id, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
-                              String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
-                              boolean hasImportant, int findApiNum, int pathToUrlNum, int unvisitedUrlNum,
-                              String runStatus, int basicPathNum, int respLength) {
+    public UrlTableLineDataModel(int id, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
+                                 String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
+                                 boolean hasImportant, int findApiNum, int pathToUrlNum, int unvisitedUrlNum,
+                                 String runStatus, int basicPathNum, int respLength) {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;

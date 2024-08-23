@@ -1,5 +1,6 @@
 package burp;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
 import model.AnalyseUrlResultModel;
@@ -14,8 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static utils.BurpPrintUtils.LOG_DEBUG;
-import static utils.BurpPrintUtils.stdout_println;
+import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
 import static utils.ElementUtils.isContainAllKey;
@@ -36,8 +36,8 @@ public class AnalyseInfo {
 
     public static AnalyseUrlResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
-        List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
-        findInfoList = CastUtils.deduplicateJsonList(findInfoList); //去重提取结果
+        JSONArray findInfoJsonArray = findSensitiveInfoByRules(msgInfo);
+        findInfoJsonArray = CastUtils.deduplicateJsonArray(findInfoJsonArray); //去重提取结果
         //stdout_println(LOG_DEBUG, String.format("[+] 敏感信息数量:%s -> %s", reqUrl, findInfoList.size()));
 
         //2、实现响应中的 URL 和 PATH 提取
@@ -69,26 +69,39 @@ public class AnalyseInfo {
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤重复API内容:%s -> %s", reqUrl, findApiList.size()));
 
         //判断是否有敏感信息
-        boolean hasImportant = false;
-        if (isNotEmptyObj(findInfoList)){
-            for (JSONObject findInfo :findInfoList){
-                if (findInfo.getBoolean(important)){
-                    hasImportant = true;
-                    stdout_println(LOG_DEBUG, String.format("[!] 发现重要敏感信息: %s", findInfo.toJSONString()));
-                    break;
-                }
-            }
-        }
+        boolean hasImportant = isHasImportant(findInfoJsonArray);
 
         //返回 AnalyseInfoResultModel 结果数据
         AnalyseUrlResultModel analyseResult = new AnalyseUrlResultModel(
-                findInfoList,
+                msgInfo.getUrlInfo().getRawUrlUsual(),
+                findInfoJsonArray,
                 findUrlList,
                 findPathList,
                 findApiList,
                 hasImportant
         );
         return analyseResult;
+    }
+
+    private static boolean isHasImportant(JSONArray findInfoJsonArray) {
+        boolean hasImportant = false;
+        if (findInfoJsonArray != null && findInfoJsonArray.size() > 0){
+            for (int i = 0; i < findInfoJsonArray.size(); i++) {
+                Object item = findInfoJsonArray.get(i);
+                if (item instanceof JSONObject) {
+                    JSONObject findInfo = (JSONObject) item;
+                    if (findInfo.getBoolean(important)){
+                        hasImportant = true;
+                        stdout_println(LOG_DEBUG, String.format("[!] 发现重要敏感信息: %s", findInfo.toJSONString()));
+                        break;
+                    }
+                } else {
+                    // 处理非 JSONObject 元素的情况
+                    stdout_println(LOG_ERROR, "[!] 非 JSONObject 元素被发现: " + item.toString());
+                }
+            }
+        }
+        return hasImportant;
     }
 
     /**
@@ -185,9 +198,9 @@ public class AnalyseInfo {
      * @param msgInfo
      * @return
      */
-    public static List<JSONObject> findSensitiveInfoByRules(HttpMsgInfo msgInfo) {
+    public static JSONArray findSensitiveInfoByRules(HttpMsgInfo msgInfo) {
         // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
-        List<JSONObject> findInfoJsonList = new ArrayList<>();
+        JSONArray findInfoJsonList = new JSONArray();
 
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){

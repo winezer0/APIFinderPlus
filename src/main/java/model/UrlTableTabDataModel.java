@@ -1,6 +1,6 @@
 package model;
 
-public class TableTabDataModel {
+public class UrlTableTabDataModel {
     private String msgHash;
     private String findUrl;
     private String findPath;
@@ -9,15 +9,15 @@ public class TableTabDataModel {
     private String pathToUrl;
     private String unvisitedUrl;
 
-    public TableTabDataModel(String msgHash, String findUrl, String findPath, String findInfo,
-                             String findApi, String pathToUrl, String unvisitedUrl) {
+    public UrlTableTabDataModel(String msgHash, String findUrl, String findPath, String findInfo,
+                                String findApi, String pathToUrl, String unvisitedUrl) {
         this.msgHash = msgHash;
         this.findUrl = findUrl;
         this.findPath = findPath;
         this.findInfo = findInfo;
         this.findApi = findApi;
-        this.pathToUrl = pathToUrl;
-        this.unvisitedUrl = unvisitedUrl;
+        this.pathToUrl = pathToUrl;  //TODO 后续需要删除
+        this.unvisitedUrl = unvisitedUrl; //TODO 后续需要删除
     }
 
     public String getMsgHash() {

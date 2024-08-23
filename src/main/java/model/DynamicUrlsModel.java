@@ -21,8 +21,8 @@ public class DynamicUrlsModel {
     public DynamicUrlsModel(int id, int basic_path_num, String pathToUrls, String unvisitedUrls) {
         this.id = id;
         this.basicPathNum = basic_path_num;
-        this.pathToUrls = CastUtils.toStringList(CastUtils.toJsonArray(pathToUrls));
-        this.unvisitedUrls =  CastUtils.toStringList(CastUtils.toJsonArray(unvisitedUrls));
+        this.pathToUrls = CastUtils.toStringList(pathToUrls);
+        this.unvisitedUrls =  CastUtils.toStringList(unvisitedUrls);
     }
 
     public int getId() {
