@@ -161,8 +161,7 @@
 				"text/css",
 				"text/javascript",
 				":/usr/",
-				"  ",
-				"image/x-icon"
+				"  "
 			],
 			"location": "config",
 			"match": "keyword",
@@ -175,7 +174,12 @@
 			"isOpen": true,
 			"keyword": [
 				"/",
-				"/?"
+				"/?",
+				"image/x-icon",
+				"image/png",
+				"image/jpg",
+				"application/x-www-form-urlencoded",
+				"multipart/form-data"
 			],
 			"location": "config",
 			"match": "keyword",
