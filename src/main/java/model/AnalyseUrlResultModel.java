@@ -5,7 +5,7 @@ import utils.CastUtils;
 
 import java.util.List;
 
-public class AnalyseResultModel {
+public class AnalyseUrlResultModel {
     private List<JSONObject> infoList;
     private List<String> urlList;
     private List<String> pathList;
@@ -13,7 +13,7 @@ public class AnalyseResultModel {
     private List<String> unvisitedUrl;
     private Boolean hasImportant;
 
-    public AnalyseResultModel(List<JSONObject> infoList, List<String> urlList, List<String> pathList, List<String> apiList, Boolean hasImportant) {
+    public AnalyseUrlResultModel(List<JSONObject> infoList, List<String> urlList, List<String> pathList, List<String> apiList, Boolean hasImportant) {
         this.infoList = infoList;
         this.urlList = urlList;
         this.pathList = pathList;

@@ -15,9 +15,9 @@ import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
-public class AnalyseResultTable {
+public class AnalyseUrlResultTable {
     //数据表名称
-    public static String tableName = "ANALYSE_RESULT";
+    public static String tableName = "ANALYSE_URL_RESULT";
 
     //创建用于存储 需要处理的URL的原始请求响应
     static String creatTableSQL  = "CREATE TABLE IF NOT EXISTS "+ tableName +" (\n"
@@ -58,7 +58,7 @@ public class AnalyseResultTable {
      * @param analyseInfo
      * @return
      */
-    public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseResultModel analyseInfo){
+    public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseUrlResultModel analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String selectSql = "SELECT id FROM "+ tableName +" WHERE msg_hash = ?;";
 

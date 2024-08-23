@@ -24,7 +24,7 @@ public class UnionTableSql {
         String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
                 "From $tableName1$ A LEFT JOIN $tableName2$ B ON A.req_host_port = B.req_host_port " +
                 "WHERE A.run_status = ? AND B.basic_path_num > A.basic_path_num Limit ?;")
-                .replace("$tableName1$", AnalyseResultTable.tableName)
+                .replace("$tableName1$", AnalyseUrlResultTable.tableName)
                 .replace("$tableName2$", PathTreeTable.tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -87,7 +87,7 @@ public class UnionTableSql {
                 "B.find_url_num,B.find_path_num,B.find_info_num,B.has_important,B.find_api_num,B.path_to_url_num,B.unvisited_url_num,B.basic_path_num " +
                 "from $tableName1$ A LEFT JOIN $tableName2$ B ON A.msg_hash = B.msg_hash $WHERE$ order by A.id;")
                 .replace("$tableName1$", ReqDataTable.tableName)
-                .replace("$tableName2$", AnalyseResultTable.tableName);
+                .replace("$tableName2$", AnalyseUrlResultTable.tableName);
 
         if (WhereCondition == null) WhereCondition="";
 
@@ -142,7 +142,7 @@ public class UnionTableSql {
                 "WHERE (find_url_num IS NULL AND find_path_num IS NULL AND find_info_num IS NULL) " +
                 "OR (find_url_num < 1 AND find_path_num < 1 AND find_info_num < 1));")
                 .replace("$tableName1$", ReqDataTable.tableName)
-                .replace("$tableName2$", AnalyseResultTable.tableName);
+                .replace("$tableName2$", AnalyseUrlResultTable.tableName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             rowsAffected = stmt.executeUpdate();

@@ -368,7 +368,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
+                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -385,7 +385,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                AnalyseResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
+                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -409,10 +409,10 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                UnVisitedUrlsModel unVisitedUrlsModel= AnalyseResultTable.fetchUnVisitedUrlsByMsgHash(msgHash);
+                                UnVisitedUrlsModel unVisitedUrlsModel= AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHash(msgHash);
                                 List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
                                 RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
-                                AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
+                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -431,7 +431,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
+                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
 
                                 //整合所有结果URL到一个Set
                                 Set<String> unvisitedUrlsSet = new HashSet<>();
@@ -443,7 +443,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                 //批量插入所有URL
                                 RecordUrlTable.batchInsertOrUpdateAccessedUrls(new ArrayList<>(unvisitedUrlsSet), 299);
                                 //批量删除所有msgHashList
-                                AnalyseResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
+                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -559,7 +559,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
 
                                 //2、删除 Root URL 对应的 结果数据
                                 int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
-                                int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseResultTable.tableName);
+                                int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
                                 stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
 
                                 //3、刷新表格
@@ -587,13 +587,13 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
+                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
                                 //批量访问所有URL模型
                                 for (UnVisitedUrlsModel unVisitedUrlsModel: unVisitedUrlsModels){
                                     IProxyScanner.accessUnVisitedUrlsModel(unVisitedUrlsModel, false);
                                 }
                                 //标记所有扫描结果数据为空
-                                AnalyseResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
+                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -812,7 +812,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                     //逐个清理 UnvisitedURls 中的 findApiUrl
 
                                     //根据 msgHash值 查询api分析结果数据
-                                    TableTabDataModel tabDataModel = AnalyseResultTable.fetchAnalyseResultByMsgHash(msgHash);
+                                    TableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseResultByMsgHash(msgHash);
                                     if (tabDataModel != null) {
 
                                         //1、获取 msgHash 对应的 UnvisitedURls
@@ -832,11 +832,11 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
 
                                         //4、更新 UnvisitedURls 到数据库
                                         UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(-1, msgHash, null, unvisitedUrlList);
-                                        AnalyseResultTable.updateUnVisitedUrlsByMsgHash(unVisitedUrlsModel);
+                                        AnalyseUrlResultTable.updateUnVisitedUrlsByMsgHash(unVisitedUrlsModel);
                                     }
                                 }
                                 //删除所有findApi
-                                AnalyseResultTable.clearFindApiUrlsByMsgHashList(msgHashList);
+                                AnalyseUrlResultTable.clearFindApiUrlsByMsgHashList(msgHashList);
                                 //刷新表单
                                 refreshTableModel(false);
                                 return null;
@@ -862,7 +862,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 String columnName = "find_url";
-                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
                                 //弹框让用户查看
@@ -890,7 +890,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 String columnName = "find_path";
-                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
                                 //弹框让用户查看
@@ -918,7 +918,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 String columnName = "find_api";
-                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
                                 //弹框让用户查看
@@ -946,7 +946,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 String columnName = "path_to_url";
-                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
                                 //弹框让用户查看
@@ -974,7 +974,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 String columnName = "unvisited_url";
-                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
                                 //弹框让用户查看
@@ -1002,7 +1002,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 String columnName = "find_info";
-                                Set<String> stringSet =  AnalyseResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
                                 String infoJsonStringSetFormatText = CastUtils.infoJsonStringSetFormatText(stringSet);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(infoJsonStringSetFormatText);
@@ -1115,7 +1115,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
     private Set<String> fetchSingleLayerFindPathSet(List<String> msgHashList) {
         Set<String> pathSet = new LinkedHashSet<>();
         //查询msgHash列表对应的所有数据find path 数据
-        List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByMsgHashList(msgHashList);
+        List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByMsgHashList(msgHashList);
         for (FindPathModel findPathModel:findPathModelList){
             //逐个提取PATH 并 加入 pathSet
             JSONArray findPaths = findPathModel.getFindPath();
@@ -1406,7 +1406,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(responseData, false);
 
         //根据 msgHash值 查询api分析结果数据
-        TableTabDataModel tabDataModel = AnalyseResultTable.fetchAnalyseResultByMsgHash(msgHash);
+        TableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseResultByMsgHash(msgHash);
         if (tabDataModel != null) {
             //String msgHash = analyseResult.getMsgHash();
             String findInfo = tabDataModel.getFindInfo();
@@ -1589,10 +1589,10 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                 List<UnVisitedUrlsModel> unVisitedUrlsModels;
                 if (msgHashList == null || msgHashList.isEmpty()) {
                     //更新所有的结果
-                    unVisitedUrlsModels = AnalyseResultTable.fetchAllUnVisitedUrls();
+                    unVisitedUrlsModels = AnalyseUrlResultTable.fetchAllUnVisitedUrls();
                 }else {
                     //仅更新指定 msgHash 对应的未访问URL
-                    unVisitedUrlsModels = AnalyseResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
+                    unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
                 }
 
                 if (unVisitedUrlsModels.size() > 0) {
@@ -1620,7 +1620,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
 
                         // 执行更新插入数据操作
                         try {
-                            AnalyseResultTable.updateUnVisitedUrlsById(urlsModel);
+                            AnalyseUrlResultTable.updateUnVisitedUrlsById(urlsModel);
                         } catch (Exception ex) {
                             stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                         }

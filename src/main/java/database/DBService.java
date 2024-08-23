@@ -63,17 +63,20 @@ public class DBService {
         // RecordUrlTable URL 访问记录表 用于后续排除已访问过的UR了
         execCreatTableSql(RecordUrlTable.creatTableSQL, RecordUrlTable.tableName);
 
-        // RecordUrlsTable URL PATH记录表 用于后续路径猜测记录
+        // RecordPathTable URL PATH记录表 用于后续路径猜测记录
         execCreatTableSql(RecordPathTable.creatTableSQL, RecordPathTable.tableName);
 
-        // MsgDataTable 用于存储 实际的请求体和响应体
+        // ReqMsgDataTable 用于存储 实际的请求体和响应体
         execCreatTableSql(ReqMsgDataTable.creatTableSQL, ReqMsgDataTable.tableName);
 
-        // reqDataTable 存储需要敏感信息提取的url
+        // ReqDataTable 存储需要提取敏感信息的数据
         execCreatTableSql(ReqDataTable.creatTableSQL, ReqDataTable.tableName);
 
-        // 用来创建数据库 analyse_path 存储分析后的数据
-        execCreatTableSql(AnalyseResultTable.creatTableSQL, AnalyseResultTable.tableName);
+        // AnalyseUrlResultTable 存储分析后的数据
+        execCreatTableSql(AnalyseUrlResultTable.creatTableSQL, AnalyseUrlResultTable.tableName);
+
+        // AnalyseHostResultTable 存储分析后的数据 的 集合
+        execCreatTableSql(AnalyseHostResultTable.creatTableSQL, AnalyseHostResultTable.tableName);
 
         // 创建存储根树的表
         execCreatTableSql(PathTreeTable.creatTableSQL, PathTreeTable.tableName);
@@ -129,9 +132,9 @@ public class DBService {
      * 清空常用表的数据
      */
     public static void clearModelTables(){
-       clearTable(AnalyseResultTable.tableName);
-       clearTable(ReqDataTable.tableName);
-       clearTable(ReqMsgDataTable.tableName);
+        clearTable(AnalyseUrlResultTable.tableName);
+        clearTable(ReqDataTable.tableName);
+        clearTable(ReqMsgDataTable.tableName);
     }
 
 
@@ -142,6 +145,7 @@ public class DBService {
         clearTable(PathTreeTable.tableName);
         clearTable(RecordPathTable.tableName);
         clearTable(RecordUrlTable.tableName);
+        //clearTable(AnalyseHostResultTable.tableName);
     }
 
 

@@ -2,7 +2,7 @@ package burp;
 
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
-import model.AnalyseResultModel;
+import model.AnalyseUrlResultModel;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
@@ -34,7 +34,7 @@ public class AnalyseInfo {
 
     static final int CHUNK_SIZE = 20000; // 分割大小
 
-    public static AnalyseResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
+    public static AnalyseUrlResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
         List<JSONObject> findInfoList = findSensitiveInfoByRules(msgInfo);
         findInfoList = CastUtils.deduplicateJsonList(findInfoList); //去重提取结果
@@ -81,7 +81,7 @@ public class AnalyseInfo {
         }
 
         //返回 AnalyseInfoResultModel 结果数据
-        AnalyseResultModel analyseResult = new AnalyseResultModel(
+        AnalyseUrlResultModel analyseResult = new AnalyseUrlResultModel(
                 findInfoList,
                 findUrlList,
                 findPathList,

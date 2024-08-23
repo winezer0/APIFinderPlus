@@ -13,13 +13,19 @@
     3、CONF_BLACK_RECURSE_REQ_PATH_KEYS 支持自定义请求参数 【一次的请求参数写在一行即可,多行会遍历】
     注意：当前请求的请求头是基于当前URL请求体中动态获取的,后续根据用户需求添加自定义请求头功能。
     
+实现一个集成的面板，显示所有动态信息
+    显示当前域名的所有敏感信息、URL、API、等
+    将详细面板中的对应项都取消显示。
+
+表格刷新后的分析问题
+    描述：表格刷新以后，排序大概是会变动的，就不知道目前分析到哪里了，如何解决呢？
+    解决：目前似乎没有办法解决，除非是动态记录当前行的hash或id信息、这样就需要全部遍历一边才能找到已处理的hash、内存占用上是个问题。
+    方案：添加表格列【已读】 右键可以批量标记已经分析过的目标，可以减少结果数量，便于更新分析。
+
 webpack页面的自动自动拼接
     实现简单的 webpack 页面js的自动拼接。
     复杂的还没找到规律，暂未=无法实现自动化的 webpack 封装JS内容分析希望大家踊跃提供。
 
-实现一个集成的面板
-    显示当前域名的所有敏感信息、URL、API、等
-    将详细面板中的对应项都取消显示。
 ```
 
 
@@ -57,21 +63,21 @@ webpack页面的自动自动拼接
 - 查询数据库 ReqDataTable 表
   - 是否存在未分析的 消息
     - 根据规则配置 匹配 提取 请求|响应中的敏感信息和URL、PATH
-      - 分析结果存入数据库 AnalyseResultTable 表
+      - 分析结果存入数据库 AnalyseUrlResultTable 表
 - autoPathsToUrlsIsOpen 开启自动基于路径计算URL功能 (默认关闭、支持手动)
   - 查询数据库  RecordPathTable
     - 检查是否存在没有加入到 网站路径树 的有效请求PATH
       - 根据已记录的URL路径计算/更新Pathree
         - 分析结果存入 PathTree 表
-  - 查询数据库 AnalyseResultTable
+  - 查询数据库 AnalyseUrlResultTable
     - 检查是否存在没有根据PathTree计算PATH实际URL的数据
       - 根据已记录的Pathree计算PATH可能的前缀
-        - 分析结果存入  AnalyseResultTable 的 PATH计算URL
-  - 查询数据库 联合分析 PathTreeTable 和 AnalyseResultTable 表
+        - 分析结果存入  AnalyseUrlResultTable 的 PATH计算URL
+  - 查询数据库 联合分析 PathTreeTable 和 AnalyseUrlResultTable 表
     - 检查是否存在已经更新的PathTree 但是还没有重新计算过PATH URL的数据
       - 根据已更新的Pathree计算新的PATH可能的前缀
 - autoRecursiveIsOpen 开启自动访问未访问的URL
-  - 查询数据库 AnalyseResultTable 表
+  - 查询数据库 AnalyseUrlResultTable 表
     - 判断是否URL是否都已经被访问
       - 对未访问URL构造HTTP请求
 ```

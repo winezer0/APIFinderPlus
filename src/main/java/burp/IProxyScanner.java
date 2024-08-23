@@ -365,11 +365,11 @@ public class IProxyScanner implements IProxyListener {
                                     }
 
                                     //进行数据分析
-                                    AnalyseResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
+                                    AnalyseUrlResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
                                     //存入分析结果
                                     if(isNotEmptyObj(analyseResult.getInfoList()) || isNotEmptyObj(analyseResult.getPathList())  || isNotEmptyObj(analyseResult.getUrlList())){
                                         //将初次分析结果写入数据库
-                                        int analyseDataIndex = AnalyseResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
+                                        int analyseDataIndex = AnalyseUrlResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
                                         if (analyseDataIndex > 0){
                                             stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                         }
@@ -426,13 +426,13 @@ public class IProxyScanner implements IProxyListener {
 
                         //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
                         //获取多条需要分析【状态为待解析】的数据
-                        List<Integer> findPathIds = AnalyseResultTable.fetchUnhandledPathDataIds(maxPoolSize);
+                        List<Integer> findPathIds = AnalyseUrlResultTable.fetchUnhandledPathDataIds(maxPoolSize);
                         if (findPathIds.size()>0){
                             //更新ids对应的状态,防止其他线程读取
-                            int updateCount = AnalyseResultTable.updatePathDataStatusByIds(findPathIds);
+                            int updateCount = AnalyseUrlResultTable.updatePathDataStatusByIds(findPathIds);
                             if (updateCount>0){
                                 //一次性 获取实际的数据进行修改
-                                List<FindPathModel> findPathModelList = AnalyseResultTable.fetchPathDataByIds(findPathIds);
+                                List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByIds(findPathIds);
                                 for (FindPathModel findPathModel:findPathModelList){
                                     stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
                                     pathsToUrlsByPathTree(findPathModel);
@@ -457,7 +457,7 @@ public class IProxyScanner implements IProxyListener {
                         //获取一个未访问URL列表
                         executorService.submit(() -> {
                             //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
-                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseResultTable.fetchOneUnVisitedUrls( );
+                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseUrlResultTable.fetchOneUnVisitedUrls( );
                             accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                         });
                         return;
@@ -569,7 +569,7 @@ public class IProxyScanner implements IProxyListener {
             }
             //标记数据为空 如果很多都没扫描的话,就不要清理了,影响实际使用
             if (!ignoreBlackRecurseHost)
-                AnalyseResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
+                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
         }
     }
 
@@ -624,7 +624,7 @@ public class IProxyScanner implements IProxyListener {
                 if (findUrlsList.size() > 0){
                     //判断查找到的URL是全新的
                     //1、获取所有 id 对应的原始 findUrlsList
-                    DynamicUrlsModel dynamicUrlsModel = AnalyseResultTable.fetchDynamicUrlsDataById(id);
+                    DynamicUrlsModel dynamicUrlsModel = AnalyseUrlResultTable.fetchDynamicUrlsDataById(id);
                     List<String> rawPathToUrls = dynamicUrlsModel.getPathToUrls();
 
                     //2、计算新找到的URl的数量
@@ -637,16 +637,16 @@ public class IProxyScanner implements IProxyListener {
                         dynamicUrlsModel.setBasicPathNum(currBasicPathNum);
 
                         //更新动态的URL数据
-                        int apiDataIndex = AnalyseResultTable.updateDynamicUrlsModelById(dynamicUrlsModel);
+                        int apiDataIndex = AnalyseUrlResultTable.updateDynamicUrlsModelById(dynamicUrlsModel);
                         if (apiDataIndex > 0)
                             stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]", newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
-                        AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
+                        AnalyseUrlResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
                     }
                 } else {
                     // 没有找到新路径时,仅需要更新基础计数即可
-                    AnalyseResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
+                    AnalyseUrlResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
                 }
             }
         }
