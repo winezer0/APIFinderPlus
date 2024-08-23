@@ -3,6 +3,7 @@ package ui.FingerTabRender;
 import burp.BurpExtender;
 import model.FingerPrintRule;
 import ui.RuleConfigPanel;
+import utils.ConfigUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -122,7 +123,7 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
                 sourceTable.repaint();
 
                 //重新加载系统CONF_配置
-                RuleConfigPanel.reloadConfFromRules(BurpExtender.fingerprintRules);
+                ConfigUtils.reloadConfigArrayListFromRules(BurpExtender.fingerprintRules);
             }
         });
 

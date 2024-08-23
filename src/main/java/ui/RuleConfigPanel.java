@@ -9,7 +9,7 @@ import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.*;
 import ui.MainTabRender.TableHeaderWithTips;
 import utils.BurpFileUtils;
-import utils.RegularUtils;
+import utils.ConfigUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -23,9 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
-import static burp.BurpExtender.setActionByRuleInfo;
 import static utils.BurpPrintUtils.*;
-import static utils.CastUtils.isNotEmptyObj;
 
 
 public class RuleConfigPanel extends JPanel {
@@ -983,7 +981,7 @@ public class RuleConfigPanel extends JPanel {
                 }
 
                 //重新加载配置文件中的CONF_列
-                reloadConfFromRules(BurpExtender.fingerprintRules);
+                ConfigUtils.reloadConfigArrayListFromRules(BurpExtender.fingerprintRules);
             }
         });
         editRulePanel.add(saveButton);
@@ -996,50 +994,6 @@ public class RuleConfigPanel extends JPanel {
                 editRulePanel.setVisible(false);
             }
         });
-    }
-
-    //从规则里面重新提取全部配置
-    public static void reloadConfFromRules(List<FingerPrintRule> fingerprintRules) {
-        BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
-        BurpExtender.CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
-        BurpExtender.CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不自动记录PATH的URL域名
-        BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = new ArrayList<>(); //不自动进行递归扫描的URL域名
-
-        BurpExtender.CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
-        BurpExtender.CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
-        BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(); //不检查的URL域名
-        BurpExtender.CONF_BLACK_EXTRACT_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
-        BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
-        BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS = new ArrayList<>();
-        BurpExtender.CONF_REGULAR_EXTRACT_URIS = new ArrayList<>();
-        if (isNotEmptyObj(fingerprintRules)){
-            for (int i = 0 ; i < fingerprintRules.size(); i ++){
-                FingerPrintRule rule = fingerprintRules.get(i);
-                setActionByRuleInfo(rule);
-            }
-        }
-
-        BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_REGULAR_EXTRACT_URIS);
-
-        /*
-        stdout_println("[+] CONF_WHITE_URL_ROOT: " + BurpExtender.CONF_WHITE_URL_ROOT);
-
-        stdout_println("[+] CONF_WHITE_RECORD_PATH_STATUS: " + BurpExtender.CONF_WHITE_RECORD_PATH_STATUS);
-        stdout_println("[+] CONF_BLACK_RECORD_PATH_TITLE: " + BurpExtender.CONF_BLACK_RECORD_PATH_TITLE);
-
-        stdout_println("[+] CONF_BLACK_AUTO_RECORD_PATH: " + BurpExtender.CONF_BLACK_AUTO_RECORD_PATH);
-        stdout_println("[+] CONF_BLACK_AUTO_RECURSE_SCAN: " + BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN);
-
-        stdout_println("[+] CONF_BLACK_URL_EXT: " + BurpExtender.CONF_BLACK_URL_EXT);
-        stdout_println("[+] CONF_BLACK_URL_PATH: " + BurpExtender.CONF_BLACK_URL_PATH);
-        stdout_println("[+] CONF_BLACK_URL_ROOT: " + BurpExtender.CONF_BLACK_URL_ROOT);
-        stdout_println("[+] CONF_BLACK_EXTRACT_PATH_KEYS: " + BurpExtender.CONF_BLACK_EXTRACT_PATH_KEYS);
-        stdout_println("[+] CONF_BLACK_EXTRACT_PATH_EQUAL: " + BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL);
-
-        stdout_println("[+] CONF_BLACK_EXTRACT_INFO_KEYS: " + BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS);
-        stdout_println("[+] CONF_REGULAR_EXTRACT_URIS: " + BurpExtender.CONF_REGULAR_EXTRACT_URIS);
-         */
-
     }
 
     // 添加一个新的方法来更新 locationField 的选项

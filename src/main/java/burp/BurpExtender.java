@@ -9,7 +9,7 @@ import ui.MsgInfoPanel;
 import ui.Tabs;
 import utils.BurpFileUtils;
 import utils.BurpPrintUtils;
-import utils.RegularUtils;
+import utils.ConfigUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -35,7 +35,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     private static IProxyScanner iProxyScanner;
     private static Tabs tags;
 
-    public static boolean extensionIsLoading = false; //记录插件是否处于加载状态
+    public static boolean EXTENSION_IS_LOADED = false; //记录插件是否处于加载状态
 
     public static PrintWriter getStdout() {
         return stdout;
@@ -82,6 +82,11 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     public static List<Pattern> URI_MATCH_REGULAR_COMPILE = new ArrayList<>();  //存储编译后的正则表达式
 
+    //添加HTTP请求相关参数配置
+    public static List<String> CONF_BLACK_RECURSE_REQ_PATH_KEYS = new ArrayList<>();  //禁止递归访问的URL路径[包含]此项任一元素
+    public static List<String> CONF_RECURSE_REQ_HTTP_METHODS = new ArrayList<>();  //递归访问URL时的HTTP请求方法
+    public static List<String> CONF_RECURSE_REQ_HTTP_PARAMS = new ArrayList<>();  //递归访问URL时的HTTP请求参数
+
     private static DBService dbService;  //数据库实例
 
     public static int SHOW_MSG_LEVEL = LOG_DEBUG;  //显示消息级别
@@ -89,6 +94,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     public static  String configName = "finger-important.json";
 
     public static boolean onlyScopeDomain = false; //是否仅显示本主机域名的URL
+
 
     @Override
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
@@ -113,19 +119,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
                 }
                 // 使用Fastjson的parseObject方法将JSON字符串转换为Rule对象
                 fingerprintRules = rulesWrapper.getFingerprint();
-                // 从规则json内获取黑名单设置 //此处后续可能需要修改,修改配置类型
-                if (isNotEmptyObj(fingerprintRules)){
-                    for (int i = 0 ; i < fingerprintRules.size(); i ++){
-                        FingerPrintRule rule = fingerprintRules.get(i);
-                        if (rule.getIsOpen()) {
-                            setActionByRuleInfo(rule);
-                        }
-                    }
-                    stdout_println(LOG_INFO, String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
-                }
-
-                //编译正则表达式
-                URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(CONF_REGULAR_EXTRACT_URIS);
+                ConfigUtils.reloadConfigArrayListFromRules(fingerprintRules);
+                stdout_println(LOG_INFO, String.format("[*] Load Config Rules Size: %s", fingerprintRules.size()));
             }
 
             if (isEmptyObj(fingerprintRules)){
@@ -149,89 +144,41 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
             callbacks.registerContextMenuFactory(BurpExtender.this); //注册右键菜单Factory
 
             //设置插件已加载完成
-            extensionIsLoading = true;
-            stdout_println(LOG_INFO, String.format("[+] %s Load success ...", extensionName));
+            EXTENSION_IS_LOADED = true;
+            stdout_println(LOG_INFO, String.format("[+] Extension [%s] Loaded Successfully ...", extensionName));
         }});
-    }
-
-
-    public static void setActionByRuleInfo(FingerPrintRule rule) {
-        switch (rule.getType()) {
-            case "CONF_WHITE_URL_ROOT":
-                CONF_WHITE_URL_ROOT.addAll(rule.getKeyword());
-                break;
-            case "CONF_WHITE_RECORD_PATH_STATUS":
-                CONF_WHITE_RECORD_PATH_STATUS.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_RECORD_PATH_TITLE":
-                CONF_BLACK_RECORD_PATH_TITLE.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_AUTO_RECORD_PATH":
-                CONF_BLACK_AUTO_RECORD_PATH.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_AUTO_RECURSE_SCAN":
-                CONF_BLACK_AUTO_RECURSE_SCAN.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_URL_ROOT":
-                CONF_BLACK_URL_ROOT.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_URL_PATH":
-                CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_URL_EXT":
-                CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
-                break;
-
-            case "CONF_BLACK_EXTRACT_PATH_KEYS":
-                CONF_BLACK_EXTRACT_PATH_KEYS.addAll(rule.getKeyword());
-                break;
-            case "CONF_BLACK_EXTRACT_PATH_EQUAL":
-                CONF_BLACK_EXTRACT_PATH_EQUAL.addAll(rule.getKeyword());
-                break;
-
-            case "CONF_BLACK_EXTRACT_INFO_KEYS":
-                CONF_BLACK_EXTRACT_INFO_KEYS.addAll(rule.getKeyword());
-                break;
-
-            case "CONF_REGULAR_EXTRACT_URIS":
-                CONF_REGULAR_EXTRACT_URIS.addAll(rule.getKeyword());
-                break;
-
-            default:
-                break;
-        }
     }
 
     @Override
     public void extensionUnloaded() {
         // 扩展卸载时，立刻关闭线程池
-        stdout_println(LOG_DEBUG, "[+] Plugin will unloaded, cleaning resources...");
+        stdout_println(LOG_DEBUG, "[+] Extension Will Unloaded, Cleaning Resources ing ...");
 
 
         // 立刻关闭线程池
         if (iProxyScanner.executorService != null) {
             // 尝试立即关闭所有正在执行的任务
             List<Runnable> notExecutedTasks = iProxyScanner.executorService.shutdownNow();
-            stdout_println(LOG_DEBUG, "[+] 尝试停止所有任务, 未执行的任务数量：" + notExecutedTasks.size());
+            stdout_println(LOG_DEBUG, "[+] Try to Stop All Tasks, The Number of Not Executed Tasks：[%s]" + notExecutedTasks.size());
         }
 
         //更新插件状态
-        extensionIsLoading = false;
+        EXTENSION_IS_LOADED = false;
 
         // 停止面板更新器
         MsgInfoPanel.timer.stop();
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();
-        stdout_println(LOG_DEBUG, "[+] 定时任务断开成功.");
+        stdout_println(LOG_DEBUG, "[+] The Scheduled Task is Shutdown Successfully...");
 
         // 关闭数据库连接
         if (dbService != null) {
             dbService.closeConnection();
-            stdout_println(LOG_DEBUG, "[+] 断开数据连接成功.");
+            stdout_println(LOG_DEBUG, "[+] The Database Connection is Disconnected Successfully...");
         }
 
-        stdout_println(LOG_INFO, String.format("[-] %s Unloaded ...", this.extensionName));
+        stdout_println(LOG_INFO, String.format("[-] Extension [%s] Unloaded Complete .", this.extensionName));
     }
 
     //callbacks.registerContextMenuFactory(this);//必须注册右键菜单Factory
@@ -246,7 +193,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
                 for (final IHttpRequestResponse message : messages) {
                     IProxyScanner.addRightScanTask(message);
                 }
-
             }
         });
 

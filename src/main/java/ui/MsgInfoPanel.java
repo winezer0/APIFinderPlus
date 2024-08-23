@@ -1636,7 +1636,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
      */
     public void refreshTableModel(boolean checkAutoRefreshButtonStatus) {
         //当已经卸载插件时,不要再进行刷新UI
-        if (!BurpExtender.extensionIsLoading)
+        if (!BurpExtender.EXTENSION_IS_LOADED)
             return;
 
         //设置已加入数据库的数量
