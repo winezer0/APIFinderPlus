@@ -387,7 +387,7 @@ public class IProxyScanner implements IProxyListener {
                     List<String> urlResultMsgHashList = CommonSql.fetchMsgHashByRunStatusIsWait(AnalyseUrlResultTable.tableName, maxPoolSize);
                     if (urlResultMsgHashList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        CommonSql.updateStatusRunIngByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
+                        CommonUpdateStatus.updateStatusRunIngByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
                         //由于数据不是很大，可以一次性获取需要处理的结果
                         List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchUrlResultByMsgHashList(urlResultMsgHashList);
                         //循环插入数据 到HOST结果表
@@ -396,7 +396,7 @@ public class IProxyScanner implements IProxyListener {
                             AnalyseHostResultTable.insertOrUpdateAnalyseHostResult(analyseHostResultModel);
                         }
                         //更新对应的ids为分析完成,实际上没啥用
-                        CommonSql.updateStatusRunEndByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
+                        CommonUpdateStatus.updateStatusRunEndByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
                         return;
                     }
 
@@ -429,7 +429,7 @@ public class IProxyScanner implements IProxyListener {
                     List<Integer> recordPathIds = RecordPathTable.fetchIdsByRunStatusIsWait(maxPoolSize * 2);
                     if (recordPathIds.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        RecordPathTable.updateStatusRunIngByIds(recordPathIds);
+                        CommonUpdateStatus.updateStatusRunIngByIds(RecordPathTable.tableName, recordPathIds);
                         //由于数据不是很大，可以一次性获取需要处理的结果
                         List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchStatusRunIngPathRecords();
                         for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
@@ -443,7 +443,7 @@ public class IProxyScanner implements IProxyListener {
                             }
                         }
                         //更新对应的ids为检查完毕
-                        RecordPathTable.updateStatusRunEndByIds(recordPathIds);
+                        CommonUpdateStatus.updateStatusRunEndByIds(RecordPathTable.tableName,recordPathIds);
                     }
 
                     if (autoPathsToUrlsIsOpen){

@@ -145,20 +145,6 @@ public class RecordPathTable {
     }
 
     /**
-     * 修改ID对应的数据状态 为 分析中
-     */
-    public static int updateStatusRunIngByIds(List<Integer> ids) {
-        return CommonSql.updateStatusByIds(tableName, ids, Constants.ANALYSE_ING);
-    }
-
-    /**
-     * 修改ID对应的数据状态 为 分析完成
-     */
-    public static int updateStatusRunEndByIds(List<Integer> ids) {
-        return CommonSql.updateStatusByIds(tableName, ids, Constants.ANALYSE_END);
-    }
-
-    /**
      * 获取 指定状态的数据 并封装为 路径模型
      */
     public static List<RecordPathDirsModel> fetchPathRecordsByStatus(String analyseStatus) {

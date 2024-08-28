@@ -501,8 +501,8 @@ public class UiUtils {
                                     RuleConfigPanel.saveConfigToDefaultJson();
                                     //2、删除 Root URL 对应的 结果数据
                                     java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);
-                                    int count1 = CommonSql.batchDeleteDataByLikeRootUrls(ReqDataTable.tableName, rootUrlList);
-                                    int count2 = CommonSql.batchDeleteDataByLikeRootUrls(AnalyseUrlResultTable.tableName, rootUrlList);
+                                    int count1 = CommonDeleteLine.batchDeleteDataByLikeRootUrls(ReqDataTable.tableName, rootUrlList);
+                                    int count2 = CommonDeleteLine.batchDeleteDataByLikeRootUrls(AnalyseUrlResultTable.tableName, rootUrlList);
                                     stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
                                     //3、刷新表格
                                     BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
