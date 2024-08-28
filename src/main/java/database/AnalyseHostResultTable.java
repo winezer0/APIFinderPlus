@@ -76,8 +76,8 @@ public class AnalyseHostResultTable {
                 String insertSql = "INSERT INTO "+ tableName + " " +
                         "(root_url, find_info, find_info_num, has_important, " +
                         "find_url, find_url_num, find_path, find_path_num, find_api, find_api_num, " +
-                        "unvisited_url, unvisited_url_num) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "unvisited_url, unvisited_url_num, run_status) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, rootUrl);
@@ -97,6 +97,8 @@ public class AnalyseHostResultTable {
 
                     stmt2.setString(11, CastUtils.toJsonString(unvisitedUrlList));
                     stmt2.setInt(12,unvisitedUrlList.size());
+
+                    stmt2.setString(13,Constants.HANDLE_WAIT); //设置状态为等待处理
 
                     stmt2.executeUpdate();
 
@@ -200,7 +202,7 @@ public class AnalyseHostResultTable {
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE "+ tableName +
-                " SET path_to_url = ?, path_to_url_num = ?, unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ? WHERE id = ?;";
+                " SET path_to_url = ?, path_to_url_num = ?, unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ?, run_status = ? WHERE id = ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
@@ -211,7 +213,10 @@ public class AnalyseHostResultTable {
             stmt.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
 
             stmt.setInt(5, dynamicUrlModel.getBasicPathNum());
-            stmt.setInt(6, dynamicUrlModel.getId());
+
+            stmt.setString(6, Constants.HANDLE_WAIT);//更新状态为待处理
+
+            stmt.setInt(7, dynamicUrlModel.getId());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
