@@ -440,6 +440,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     if (autoPathsToUrlsIsOpen){
+                        System.out.println("已开启 autoPathsToUrlsIsOpen");
 //                        //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
 //                        //获取多条需要分析【状态为待解析】的数据
 //                        List<Integer> findPathIds = AnalyseUrlResultTable.fetchUnhandledPathDataIds(maxPoolSize);
@@ -462,7 +463,7 @@ public class IProxyScanner implements IProxyListener {
                         if (findPathModelList.size()>0){
                             for (FindPathModel findPathModel:findPathModelList) {
                                 stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
-                                pathsToUrlsByPathTree(findPathModel);
+                                findPathsToUrlsByPathTree(findPathModel);
                             }
                             return;
                         }
@@ -592,56 +593,54 @@ public class IProxyScanner implements IProxyListener {
     /**
      * 重复使用的独立的 path to url 路径计算+更新函数
      */
-    private void pathsToUrlsByPathTree(FindPathModel findPathModel) {
+    private void findPathsToUrlsByPathTree(FindPathModel findPathModel) {
         if (findPathModel != null) {
-            int id = findPathModel.getId();
-            String reqUrl = findPathModel.getReqUrl();
-            HttpUrlInfo httpUrlInfo = new HttpUrlInfo(reqUrl);
-            String reqRootUrl = httpUrlInfo.getRootUrlUsual();
+            int findPathId = findPathModel.getId();
+            String rootUrl = findPathModel.getRootUrl();
             JSONArray findPathArray = findPathModel.getFindPath();
 
+            //如果没有找到路径, 直接返回
+            if (isEmptyObj(findPathArray)) return;
+
             // 从数据库中获取当前 reqRootUrl 的 PathTree
-            PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(reqRootUrl);
+            PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(rootUrl);
+
             //如果 PATH TREE都没有添加过, pathTreeModel 就是空的
             if (pathTreeModel == null){
                 //如果 PATH TREE 不应该是空的,因为任务二已经添加过了,
-                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [host:%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!", reqRootUrl));
+                stderr_println(LOG_ERROR, String.format("[!] 获取 [%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!", rootUrl));
                 return;
             }
-
             Integer currBasicPathNum = pathTreeModel.getBasicPathNum();
             JSONObject currPathTree = pathTreeModel.getPathTree();
-            // 基于根树和paths列表计算新的字典
-            //当获取到Path数据,并且路径树不为空时 可以计算新的URL列表
-            if (isNotEmptyObj(findPathArray)
-                    && isNotEmptyObj(currPathTree)
-                    && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))
-            ) {
+
+            // 当路径树不为空 且 不是根目录时 可以计算新的URL列表
+            if (isNotEmptyObj(currPathTree) && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
-                String reqBaseUrl = httpUrlInfo.getUrlToFileUsual();
-
                 for (Object findPath: findPathArray){
+                    //把路径放在 路径树 中去查找
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);
+
+                    //没有查询到,就进行下一次查询
+                    if (isEmptyObj(nodePath)) continue;
+
                     //查询到结果就组合成URL,加到查询结果中
-                    if (isNotEmptyObj(nodePath)){
-                        for (Object prefix:nodePath){
-                            //组合URL、findNodePath、path
-                            String prefixPath = (String) prefix;
-                            prefixPath = prefixPath.replace("ROOT", reqBaseUrl);
-                            String findUrl = AnalyseInfoUtils.concatUrlAddPath(prefixPath, (String) findPath);
-                            findUrlsList.add(findUrl);
-                        }
+                    for (Object prefix:nodePath){
+                        //组合URL、findNodePath、path
+                        String prefixPath = (String) prefix;
+                        prefixPath = prefixPath.replace("ROOT", rootUrl);
+                        String findUrl = AnalyseInfoUtils.concatUrlAddPath(prefixPath, (String) findPath);
+                        findUrlsList.add(findUrl);
                     }
                 }
 
                 // 去重、格式化、过滤 不符合规则的URL
-                findUrlsList = AnalyseInfo.filterFindUrls(reqUrl, findUrlsList, BurpExtender.onlyScopeDomain);
-
-                if (findUrlsList.size() > 0){
+                findUrlsList = AnalyseInfo.filterFindUrls(rootUrl, findUrlsList, BurpExtender.onlyScopeDomain);
+                if (findUrlsList.size()>0){
                     //判断查找到的URL是全新的
                     //1、获取所有 id 对应的原始 findUrlsList
-                    DynamicUrlsModel dynamicUrlsModel = AnalyseUrlResultTable.fetchDynamicUrlsDataById(id);
+                    PathToUrlsModel dynamicUrlsModel = AnalyseHostResultTable.fetchDynamicUrlsDataById(findPathId);
                     List<String> rawPathToUrls = dynamicUrlsModel.getPathToUrls();
 
                     //2、计算新找到的URl的数量
@@ -654,16 +653,16 @@ public class IProxyScanner implements IProxyListener {
                         dynamicUrlsModel.setBasicPathNum(currBasicPathNum);
 
                         //更新动态的URL数据
-                        int apiDataIndex = AnalyseUrlResultTable.updateDynamicUrlsModelById(dynamicUrlsModel);
+                        int apiDataIndex = AnalyseHostResultTable.updateDynamicUrlsModelById(dynamicUrlsModel);
                         if (apiDataIndex > 0)
                             stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]", newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
                     } else {
                         // 没有找到新路径时,仅需要更新基础计数即可
-                        AnalyseUrlResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
+                        AnalyseHostResultTable.updateDynamicUrlsBasicNum(findPathId, currBasicPathNum);
                     }
                 } else {
                     // 没有找到新路径时,仅需要更新基础计数即可
-                    AnalyseUrlResultTable.updateDynamicUrlsBasicNum(id, currBasicPathNum);
+                    AnalyseHostResultTable.updateDynamicUrlsBasicNum(findPathId, currBasicPathNum);
                 }
             }
         }

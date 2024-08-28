@@ -5,20 +5,20 @@ import utils.CastUtils;
 
 import java.util.List;
 
-public class DynamicUrlsModel {
+public class PathToUrlsModel {
     private int id;
     private int basicPathNum;
     private List<String> pathToUrls;
     private List<String> unvisitedUrls;
 
-    public DynamicUrlsModel(int id, int basic_path_num, JSONArray pathToUrls, JSONArray unvisitedUrls) {
+    public PathToUrlsModel(int id, int basic_path_num, JSONArray pathToUrls, JSONArray unvisitedUrls) {
         this.id = id;
         this.basicPathNum = basic_path_num;
         this.pathToUrls = CastUtils.toStringList(pathToUrls);
         this.unvisitedUrls = CastUtils.toStringList(unvisitedUrls);
     }
 
-    public DynamicUrlsModel(int id, int basic_path_num, String pathToUrls, String unvisitedUrls) {
+    public PathToUrlsModel(int id, int basic_path_num, String pathToUrls, String unvisitedUrls) {
         this.id = id;
         this.basicPathNum = basic_path_num;
         this.pathToUrls = CastUtils.toStringList(pathToUrls);

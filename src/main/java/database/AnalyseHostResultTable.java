@@ -2,6 +2,7 @@ package database;
 
 import com.alibaba.fastjson2.JSONArray;
 import model.AnalyseHostResultModel;
+import model.PathToUrlsModel;
 import utils.CastUtils;
 
 import java.sql.Connection;
@@ -10,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
+import static utils.BurpPrintUtils.LOG_ERROR;
 import static utils.BurpPrintUtils.stderr_println;
 
 public class AnalyseHostResultTable {
@@ -74,8 +76,8 @@ public class AnalyseHostResultTable {
                 String insertSql = "INSERT INTO "+ tableName + " " +
                         "(root_url, find_info, find_info_num, has_important, " +
                         "find_url, find_url_num, find_path, find_path_num, find_api, find_api_num, " +
-                        "unvisited_url, unvisited_url_num, run_status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "unvisited_url, unvisited_url_num) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, rootUrl);
@@ -95,9 +97,6 @@ public class AnalyseHostResultTable {
 
                     stmt2.setString(11, CastUtils.toJsonString(unvisitedUrlList));
                     stmt2.setInt(12,unvisitedUrlList.size());
-
-                    //设置初始的响应状态为 等待处理
-                    stmt2.setString(13, Constants.ANALYSE_WAIT);
 
                     stmt2.executeUpdate();
 
@@ -123,8 +122,7 @@ public class AnalyseHostResultTable {
                 String updateSql = "UPDATE " + tableName + " SET " +
                         "find_info = ?, find_info_num = ?, has_important = ?, " +
                         "find_url = ?, find_url_num = ?, find_path = ?, find_path_num = ?, find_api = ?, find_api_num = ?, " +
-                        "unvisited_url = ?, unvisited_url_num = ?, run_status = ? " +
-                        "WHERE root_url = ?";
+                        "unvisited_url = ?, unvisited_url_num = ? WHERE root_url = ?";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(updateSql)) {
                     //find_info
@@ -154,10 +152,7 @@ public class AnalyseHostResultTable {
                     stmt2.setString(10, CastUtils.toJsonString(newUnvisitedUrlList));
                     stmt2.setInt(11, newUnvisitedUrlList.size());
 
-                    // 设置响应状态为处理中
-                    stmt2.setString(12, Constants.ANALYSE_ING);
-
-                    stmt2.setString(13, rootUrl);
+                    stmt2.setString(12, rootUrl);
 
                     stmt2.executeUpdate();
 
@@ -172,5 +167,90 @@ public class AnalyseHostResultTable {
 
         return generatedId; //返回ID值，无论是更新还是插入
     }
+
+
+    /**
+     * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
+     */
+    public static synchronized PathToUrlsModel fetchDynamicUrlsDataById(int id){
+        PathToUrlsModel pathToUrlsModel = null;
+
+        String selectSQL = "SELECT id,path_to_url,unvisited_url,basic_path_num FROM  "+ tableName +" WHERE id = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                pathToUrlsModel = new PathToUrlsModel(
+                        rs.getInt("id"),
+                        rs.getInt("basic_path_num"),
+                        rs.getString("path_to_url"),
+                        rs.getString("unvisited_url")
+                );
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] path_to_url and unvisited_url By Id: %s", tableName, e.getMessage()));
+        }
+        return pathToUrlsModel;
+    }
+
+
+    /**
+     * 基于ID更新动态URl数据
+     */
+    public static synchronized int updateDynamicUrlsModelById(PathToUrlsModel dynamicUrlModel){
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE "+ tableName +
+                " SET path_to_url = ?, path_to_url_num = ?, unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ? WHERE id = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+
+            stmt.setString(1, CastUtils.toJsonString(dynamicUrlModel.getPathToUrls()));
+            stmt.setInt(2, dynamicUrlModel.getPathToUrls().size());
+
+            stmt.setString(3, CastUtils.toJsonString(dynamicUrlModel.getUnvisitedUrls()));
+            stmt.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
+
+            stmt.setInt(5, dynamicUrlModel.getBasicPathNum());
+            stmt.setInt(6, dynamicUrlModel.getId());
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                generatedId = dynamicUrlModel.getId();
+            }
+
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update [%] Path Data: %s", tableName, e.getMessage()));
+        }
+
+        return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
+    /**
+     * 基于ID更新 PathToUrl 的基础计数数据
+     */
+    public static synchronized int updateDynamicUrlsBasicNum(int id, int basicPathNum){
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE "+ tableName +"  SET basic_path_num = ? WHERE id = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+
+            stmt.setInt(1, basicPathNum);
+            stmt.setInt(2, id);
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                generatedId = id;
+            }
+
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update [%] Basic Path Num: %s",tableName, e.getMessage()));
+        }
+
+        return generatedId; // 返回ID值，无论是更新还是插入
+    }
+
 
 }

@@ -112,7 +112,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<UrlTableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchTableLineDataAll();
+                ArrayList<UrlTableLineDataModel> allReqAnalyseData  = UnionTableSql.fetchUrlTableLineDataAll();
                 //将数据赋值给表模型
                 UiUtils.populateModelFromJsonArray(msgTableModel, allReqAnalyseData);
             }
@@ -1461,7 +1461,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
 
                 switch (selectOption) {
                     case "显示有效内容":
-                        apiDataModels = UnionTableSql.fetchTableLineDataHasData();
+                        apiDataModels = UnionTableSql.fetchUrlTableLineDataHasData();
                         break;
                     case "显示敏感内容":
                         apiDataModels = UnionTableSql.fetchTableLineDataHasInfo();
@@ -1474,7 +1474,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         break;
                     case "显示全部内容":
                     default:
-                        apiDataModels = UnionTableSql.fetchTableLineDataAll();
+                        apiDataModels = UnionTableSql.fetchUrlTableLineDataAll();
                         break;
                 }
 

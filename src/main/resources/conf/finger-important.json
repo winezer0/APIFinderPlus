@@ -178,7 +178,8 @@
 				"image/png",
 				"image/jpg",
 				"application/x-www-form-urlencoded",
-				"multipart/form-data"
+				"multipart/form-data",
+				"MM/DD/YYYY"
 			],
 			"location": "config",
 			"match": "keyword",

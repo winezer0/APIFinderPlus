@@ -230,7 +230,6 @@ public class AnalyseUrlResultTable {
             while (rs.next()) {
                 FindPathModel findPathModel =  new FindPathModel(
                         rs.getInt("id"),
-                        rs.getString("req_url"),
                         rs.getString("root_url"),
                         rs.getString("find_path")
                 );
@@ -243,96 +242,6 @@ public class AnalyseUrlResultTable {
         return findPathModelList ;
     }
 
-    /**
-     * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
-     * @param id
-     * @return
-     */
-    public static synchronized DynamicUrlsModel fetchDynamicUrlsDataById(int id){
-        DynamicUrlsModel dynamicUrlsModel = null;
-
-        String selectSQL = "SELECT id,path_to_url,unvisited_url,basic_path_num FROM  "+ tableName +" WHERE id = ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                dynamicUrlsModel = new DynamicUrlsModel(
-                        rs.getInt("id"),
-                        rs.getInt("basic_path_num"),
-                        rs.getString("path_to_url"),
-                        rs.getString("unvisited_url")
-                );
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] path_to_url and unvisited_url By Id: %s", tableName, e.getMessage()));
-        }
-        return dynamicUrlsModel;
-    }
-
-    /**
-     * 基于ID更新 PathToUrl 的基础计数数据
-     * @param id
-     * @param basicPathNum
-     * @return
-     */
-    public static synchronized int updateDynamicUrlsBasicNum(int id, int basicPathNum){
-        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-
-        String updateSQL = "UPDATE "+ tableName +"  SET basic_path_num = ? WHERE id = ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
-
-            stmt.setInt(1, basicPathNum);
-            stmt.setInt(2, id);
-
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) {
-                generatedId = id;
-            }
-
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update Path Data: %s", e.getMessage()));
-        }
-
-        return generatedId; // 返回ID值，无论是更新还是插入
-    }
-
-    /**
-     * 基于ID更新动态URl数据
-     * @param dynamicUrlModel
-     * @return
-     */
-    public static synchronized int updateDynamicUrlsModelById(DynamicUrlsModel dynamicUrlModel){
-        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
-
-        String updateSQL = "UPDATE "+ tableName +
-                " SET path_to_url = ?, path_to_url_num = ?," +
-                " unvisited_url = ?, unvisited_url_num = ?, basic_path_num = ?" +
-                " WHERE id = ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
-
-            stmt.setString(1, CastUtils.toJsonString(dynamicUrlModel.getPathToUrls()));
-            stmt.setInt(2, dynamicUrlModel.getPathToUrls().size());
-
-            stmt.setString(3, CastUtils.toJsonString(dynamicUrlModel.getUnvisitedUrls()));
-            stmt.setInt(4, dynamicUrlModel.getUnvisitedUrls().size());
-
-            stmt.setInt(5, dynamicUrlModel.getBasicPathNum());
-            stmt.setInt(6, dynamicUrlModel.getId());
-
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) {
-                generatedId = dynamicUrlModel.getId();
-            }
-
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update Path Data: %s", e.getMessage()));
-        }
-
-        return generatedId; // 返回ID值，无论是更新还是插入
-    }
 
     /**
      * 获取 所有未访问URl (unvisited_url_num > 0)
