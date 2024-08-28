@@ -32,6 +32,9 @@ public class IProxyScanner implements IProxyListener {
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
     //在动态响应对比关系生成前,需要把响应信息先存起来,等后续再进行处理
     private static ConcurrentHashMap<String, Map<String,Object>> waitingUrlCompareMap = new ConcurrentHashMap<>();
+    //持久化保存对象的Hash
+    private String urlCompareMapCacheFile = String.format("%s.urlCompareMap.json", configName);
+    private String urlCompareMapHistoryHash = null;
 
     //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
     public static boolean  dynamicPathFilterIsOpenDefault = false;
@@ -48,11 +51,6 @@ public class IProxyScanner implements IProxyListener {
     //是否进行递归URL扫描
     public static boolean autoRecursiveIsOpenDefault = false;
     public static boolean autoRecursiveIsOpen = autoRecursiveIsOpenDefault;
-
-    //持久化保存对象的Hash
-    private String urlCompareMapCacheFile = String.format("%s.urlCompareMap.json", configName);
-    private String urlCompareMapHistoryHash = null;
-    private int urlCompareMapHistorySize = 0;
 
     //开关插件的监听功能
     public static boolean proxyListenIsOpenDefault = false;
@@ -325,22 +323,17 @@ public class IProxyScanner implements IProxyListener {
                     if (executorService.getActiveCount() >= 6)
                         return;
 
-                    //定时清理URL记录表
+                    //定时清理URL记录表 防止无用数据占用空间过大
                     if (UnionTableSql.getTableCounts(RecordUrlTable.tableName) > 500){
                         stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
                         DBService.clearRecordUrlTable();
                     }
 
-                    //存储一下当前的过滤器
-                    if (urlCompareMap.size() != urlCompareMapHistorySize){
-                        urlCompareMapHistorySize = urlCompareMap.size();
-                        String urlCompareMapJson = CastUtils.toJsonString(urlCompareMap);
-                        String currentJsonHash = calcCRC32(urlCompareMapJson);
-                        if(!currentJsonHash.equals(urlCompareMapHistoryHash)){
-                            urlCompareMapHistoryHash = currentJsonHash;
-                            BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, urlCompareMapJson);
-                            stdout_println(LOG_DEBUG, String.format("[*] Save urlCompareMap To Cache Json: %s", urlCompareMapCacheFile));
-                        }
+                    //存储一下当前的动态过滤器 如果当前实际的过滤map内容和历史存储的内容不一样时,就写入到文件中
+                    String currentJsonHash = calcCRC32(CastUtils.toJsonString(urlCompareMap));
+                    if (!currentJsonHash.equals(urlCompareMapHistoryHash)){
+                        urlCompareMapHistoryHash = currentJsonHash;
+                        BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, CastUtils.toJsonString(urlCompareMap));
                     }
 
                     //任务1、获取需要解析的响应体数据并进行解析响
