@@ -7,11 +7,7 @@ import utils.CastUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import static utils.BurpPrintUtils.*;
 
 public class RecordUrlTable {
     //数据表名称
@@ -72,7 +68,7 @@ public class RecordUrlTable {
     }
 
     //实现批量插入访问信息
-    public static synchronized int[] batchInsertOrUpdateAccessedUrls(List<AccessedUrlInfo> accessedUrlInfos) {
+    public static synchronized int[] insertOrUpdateAccessedUrlsBatch(List<AccessedUrlInfo> accessedUrlInfos) {
         int[] generatedIds = null;
 
         String upsertSql = "INSERT INTO "+ tableName +
@@ -103,12 +99,12 @@ public class RecordUrlTable {
 
 
     //实现批量插入访问信息 复用
-    public static synchronized int[] batchInsertOrUpdateAccessedUrls(List<String> accessedUrls, int respStatusCode){
+    public static synchronized int[] insertOrUpdateAccessedUrlsBatch(List<String> accessedUrls, int respStatusCode){
         List<AccessedUrlInfo> accessedUrlInfos = new ArrayList<>();
         for (String reqUrl : accessedUrls){
             AccessedUrlInfo accessedUrlInfo = new AccessedUrlInfo(reqUrl, new HttpUrlInfo(reqUrl).getRootUrlUsual(),respStatusCode);
             accessedUrlInfos.add(accessedUrlInfo);
         }
-        return batchInsertOrUpdateAccessedUrls(accessedUrlInfos);
+        return insertOrUpdateAccessedUrlsBatch(accessedUrlInfos);
     }
 }

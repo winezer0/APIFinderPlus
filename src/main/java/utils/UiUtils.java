@@ -486,10 +486,10 @@ public class UiUtils {
                         protected Void doInBackground() throws Exception {
                             switch (RecordType){
                                 case "addUrlToRecordUrl":
-                                    RecordUrlTable.batchInsertOrUpdateAccessedUrls(urlList, 299);
+                                    RecordUrlTable.insertOrUpdateAccessedUrlsBatch(urlList, 299);
                                     break;
                                 case "addUrlToRecordPath":
-                                    RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                                    RecordPathTable.insertOrUpdateRecordPathsBatch(urlList, 299);
                                     break;
                                 case "addRootUrlToAllowListen":
                                     BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);

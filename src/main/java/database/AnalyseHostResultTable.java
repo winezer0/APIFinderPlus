@@ -196,7 +196,7 @@ public class AnalyseHostResultTable {
     /**
      * 基于ID更新动态URl数据
      */
-    public static synchronized int updateDynamicUrlsDataByUrlModel(PathToUrlsModel dynamicUrlModel){
+    public static synchronized int updateDynamicUrlsDataByModel(PathToUrlsModel dynamicUrlModel){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE "+ tableName +

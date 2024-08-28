@@ -128,7 +128,7 @@ public class PathTreeTable {
     }
 
 
-    //根据域名查询对应的Host
+    //根据 rootUrl 查询对应的path_tree
     public static synchronized PathTreeModel fetchPathTreeByRootUrl(String rootUrl) {
         PathTreeModel pathTreeModel= null;
 

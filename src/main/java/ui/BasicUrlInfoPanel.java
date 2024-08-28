@@ -273,7 +273,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
+                                RecordPathTable.insertOrUpdateRecordPathsBatch(urlList, 299);
                                 refreshBasicUrlTableModel(false);
                                 return null;
                             }

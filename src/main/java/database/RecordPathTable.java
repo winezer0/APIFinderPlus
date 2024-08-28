@@ -90,7 +90,7 @@ public class RecordPathTable {
     /**
      * 批量插入 recordPathModels
      */
-    public static int[] batchInsertOrUpdateRecordPath(List<RecordPathModel> recordPathModels) {
+    public static int[] insertOrUpdateRecordPathsBatch(List<RecordPathModel> recordPathModels) {
         int[] generatedIds = null;
 
         String insertSql = "INSERT INTO "+ tableName +
@@ -122,7 +122,7 @@ public class RecordPathTable {
     /**
      * 实现URL批量插入 复用batchInsertOrUpdateRecordPath
      */
-    public static int[] batchInsertOrUpdateRecordPath(List<String> findUrls, int respStatusCode) {
+    public static int[] insertOrUpdateRecordPathsBatch(List<String> findUrls, int respStatusCode) {
         List<RecordPathModel> recordPathModels = new ArrayList<>();
         for (String findUrl: findUrls){
             HttpUrlInfo urlInfo = new HttpUrlInfo(findUrl);
@@ -133,7 +133,7 @@ public class RecordPathTable {
             );
             recordPathModels.add(recordPathModel);
         }
-        return batchInsertOrUpdateRecordPath(recordPathModels);
+        return insertOrUpdateRecordPathsBatch(recordPathModels);
     }
 
     /**

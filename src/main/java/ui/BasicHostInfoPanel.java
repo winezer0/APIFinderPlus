@@ -547,7 +547,7 @@ public class BasicHostInfoPanel extends JPanel {
 
                         // 执行更新插入数据操作
                         try {
-                            AnalyseHostUnVisitedUrls.updateUnVisitedUrlsById(urlsModel);
+                            AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
                         } catch (Exception ex) {
                             stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                         }
@@ -664,7 +664,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 }
 
                                 //批量插入所有URL
-                                RecordUrlTable.batchInsertOrUpdateAccessedUrls(new ArrayList<>(unvisitedUrlsSet), 299);
+                                RecordUrlTable.insertOrUpdateAccessedUrlsBatch(new ArrayList<>(unvisitedUrlsSet), 299);
                                 //批量删除所有msgHashList
                                 AnalyseHostUnVisitedUrls.clearUnVisitedUrlsByRootUrls(rootUrls);
                                 refreshBasicHostTableModel(false);

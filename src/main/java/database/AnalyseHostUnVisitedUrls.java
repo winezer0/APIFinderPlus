@@ -104,7 +104,7 @@ public class AnalyseHostUnVisitedUrls {
     /**
      * 实现 基于 ID 更新 unvisitedUrls
      */
-    public static synchronized int updateUnVisitedUrlsById(UnVisitedUrlsModel unVisitedUrlsModel) {
+    public static synchronized int updateUnVisitedUrlsByModel(UnVisitedUrlsModel unVisitedUrlsModel) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE " + AnalyseHostResultTable.tableName +"  SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;";
