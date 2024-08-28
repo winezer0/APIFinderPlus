@@ -21,7 +21,7 @@ public class AnalyseUrlResultTable {
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + "msg_hash TEXT UNIQUE,\n"  //请求Hash信息
             + "req_url TEXT NOT NULL,\n"  //请求URL
-            + "req_host_port TEXT NOT NULL,\n"  //请求HOST PORT
+            + "root_url TEXT NOT NULL,\n"  //请求HOST PORT
 
             + "find_url TEXT DEFAULT '',\n"    //分析出来的URL信息 (Json格式)
             + "find_url_num INTEGER DEFAULT -1,\n"     //发现URL的数量
@@ -70,14 +70,14 @@ public class AnalyseUrlResultTable {
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO "+ tableName +"" +
-                        " (msg_hash, req_url, req_host_port, find_url, find_url_num, find_path, find_path_num," +
+                        " (msg_hash, req_url, root_url, find_url, find_url_num, find_path, find_path_num," +
                         " find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status, has_important)" +
                         " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, msgInfo.getMsgHash());
                     stmt2.setString(2, msgInfo.getUrlInfo().getRawUrlUsual());
-                    stmt2.setString(3, msgInfo.getUrlInfo().getHostPort());
+                    stmt2.setString(3, msgInfo.getUrlInfo().getRootUrlUsual());
 
                     stmt2.setString(4, CastUtils.toJsonString(analyseInfo.getUrlList()));
                     stmt2.setInt(5, analyseInfo.getUrlList().size());
@@ -231,7 +231,7 @@ public class AnalyseUrlResultTable {
                 FindPathModel findPathModel =  new FindPathModel(
                         rs.getInt("id"),
                         rs.getString("req_url"),
-                        rs.getString("req_host_port"),
+                        rs.getString("root_url"),
                         rs.getString("find_path")
                 );
 

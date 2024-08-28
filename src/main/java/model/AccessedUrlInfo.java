@@ -3,14 +3,14 @@ package model;
 import static utils.CastUtils.calcCRC32;
 
 public  class AccessedUrlInfo {
+    public String rootUrl;
     public String reqUrl;
     public String urlHash;
-    public String reqHostPort;
     public int respStatusCode;
 
-    public AccessedUrlInfo(String reqUrl, String reqHostPort, int respStatusCode) {
+    public AccessedUrlInfo(String reqUrl, String rootUrl, int respStatusCode) {
         this.reqUrl = reqUrl;
-        this.reqHostPort = reqHostPort;
+        this.rootUrl = rootUrl;
         this.respStatusCode = respStatusCode;
         this.urlHash = calcCRC32(reqUrl);
     }
@@ -23,8 +23,8 @@ public  class AccessedUrlInfo {
         return reqUrl;
     }
 
-    public String getReqHostPort() {
-        return reqHostPort;
+    public String getRootUrl() {
+        return rootUrl;
     }
 
     public int getRespStatusCode() {

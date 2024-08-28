@@ -5,29 +5,26 @@ import java.util.zip.CRC32;
 
 public class RecordPathModel {
     private String reqHash;
-    private String reqProto;
-    private String reqHostPort;
+    private String rootUrl;
     private String reqPathDir;
     private int respStatusCode;
 
-    public RecordPathModel(String reqProto, String reqHostPort, String reqPathDir, int respStatusCode) {
-        this.reqProto = reqProto;
-        this.reqHostPort = reqHostPort;
+    public RecordPathModel(String rootUrl, String reqPathDir, int respStatusCode) {
+        this.rootUrl = rootUrl;
         this.reqPathDir = reqPathDir;
         this.respStatusCode = respStatusCode;
         this.reqHash = getCalcCRC32();
     }
 
     public RecordPathModel(HttpUrlInfo urlInfo, int respStatusCode) {
-        this.reqProto = urlInfo.getProto();
-        this.reqHostPort = urlInfo.getHostPort();
+        this.rootUrl = urlInfo.getRootUrlUsual();
         this.reqPathDir = urlInfo.getPathToDir();
         this.respStatusCode = respStatusCode;
         this.reqHash = getCalcCRC32();
     }
 
     private String getCalcCRC32() {
-        return calcCRC32(String.format("%s|%s|%s|%s", reqProto, reqHostPort, reqPathDir, respStatusCode));
+        return calcCRC32(String.format("%s|%s|%s", this.rootUrl, this.reqPathDir, this.respStatusCode));
     }
 
     /**
@@ -46,13 +43,6 @@ public class RecordPathModel {
         return Long.toHexString(crc32.getValue()).toLowerCase();
     }
 
-    public String getReqProto() {
-        return reqProto;
-    }
-
-    public String getReqHostPort() {
-        return reqHostPort;
-    }
 
     public String getReqPathDir() {
         return reqPathDir;
@@ -64,5 +54,9 @@ public class RecordPathModel {
 
     public String getReqHash() {
         return reqHash;
+    }
+
+    public String getRootUrl() {
+        return rootUrl;
     }
 }

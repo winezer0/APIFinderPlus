@@ -110,7 +110,7 @@ public class RespFieldCompareutils {
      */
     public static List<String> generateTestUrls(HttpUrlInfo urlInfo) {
         //获取当前的URL 生成几个测试URL
-        String rootUrlSimple = urlInfo.getRootUrlSimple();   //当前请求 http://xxx.com
+        String rootUrlSimple = urlInfo.getRootUrlNotSlash();   //当前请求 http://xxx.com
         String pathToFile = urlInfo.getPathToFile();   //当前请求文件路径  /user/login.php
         String pathToDir = urlInfo.getPathToDir();  //当前请求目录  /user/
         String suffix = urlInfo.getSuffixUsual();   //当前请求后缀  .php

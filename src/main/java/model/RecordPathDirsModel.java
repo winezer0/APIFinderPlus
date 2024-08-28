@@ -1,23 +1,17 @@
 package model;
 
 public class RecordPathDirsModel {
-    private String reqProto;
-    private String reqHostPort;
+    private String rootUrl;
     private String reqPathDirs;
 
     // 构造函数
-    public RecordPathDirsModel(String reqProto, String reqHostPort, String reqPathDirs) {
-        this.reqProto = reqProto;
-        this.reqHostPort = reqHostPort;
+    public RecordPathDirsModel(String rootUrl, String reqPathDirs) {
+        this.rootUrl = rootUrl;
         this.reqPathDirs = reqPathDirs;
     }
 
-    public String getReqProto() {
-        return reqProto;
-    }
-
-    public String getReqHostPort() {
-        return reqHostPort;
+    public String getRootUrl() {
+        return rootUrl;
     }
 
     public String getReqPathDirs() {

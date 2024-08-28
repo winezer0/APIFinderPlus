@@ -492,8 +492,8 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                CommonSql.deleteDataByUrlToHosts(urlList, PathTreeTable.tableName);
-                                CommonSql.deleteDataByUrlToHosts(urlList, RecordPathTable.tableName);
+                                CommonSql.deleteDataByUrlToRootUrls(urlList, PathTreeTable.tableName);
+                                CommonSql.deleteDataByUrlToRootUrls(urlList, RecordPathTable.tableName);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -714,14 +714,12 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                 //解析URL列表, 生成 rootUrls 列表
                                 Set<String> rootUrls = new LinkedHashSet<>();
                                 for (String url :urlList){
-                                    String rootUrlSimple = new HttpUrlInfo(url).getRootUrlSimple();
-                                    rootUrls.add(rootUrlSimple);
+                                    rootUrls.add(new HttpUrlInfo(url).getRootUrlUsual());
                                 }
 
                                 for (String rootUrl:rootUrls){
-                                    String getHostPort = new HttpUrlInfo(rootUrl).getHostPort();
                                     //查询host 对应的树
-                                    PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByReqHostPort(getHostPort);
+                                    PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(rootUrl);
                                     if (isNotEmptyObj(pathTreeModel)){
                                         JSONObject currPathTree = pathTreeModel.getPathTree();
                                         if (isNotEmptyObj(currPathTree)  && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))){

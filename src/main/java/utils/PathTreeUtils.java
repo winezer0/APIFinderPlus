@@ -295,8 +295,7 @@ public class PathTreeUtils {
             JSONObject newPathTree = createRootTree(filterPaths);
             if (isNotEmptyObj(newPathTree)){
                 pathTreeModel = new PathTreeModel(
-                        recordPathModel.getReqProto(),
-                        recordPathModel.getReqHostPort(),
+                        recordPathModel.getRootUrl(),
                         reqPathDirsToPaths.length,
                         newPathTree
                 );

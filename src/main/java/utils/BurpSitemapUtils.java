@@ -22,7 +22,7 @@ public class BurpSitemapUtils {
      */
     public static void addSiteMapUrlsToRecord(boolean isRecordUrl){
         // 1、获取所有有关的 urlPrefix
-        Set<String> urlPrefixes = PathTreeTable.fetchAllRecordPathUrlPrefix();
+        Set<String> urlPrefixes = PathTreeTable.fetchAllRecordPathRootUrls();
         for (String urlPrefix:urlPrefixes){
             //插入一个标记,表明这个主机已经插入过滤
             String insertedFlag = isRecordUrl ? urlPrefix + "/RecordUrl" : urlPrefix + "/RecordPath";

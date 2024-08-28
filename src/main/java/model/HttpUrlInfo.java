@@ -1,7 +1,6 @@
 package model;
 
 import utilbox.DomainUtils;
-import utils.CastUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,7 +32,7 @@ public class HttpUrlInfo {
 
     private String rootUrl = null;
     private String rootUrlUsual = null;
-    private String rootUrlSimple = null;
+    private String rootUrlNotSlash = null;
 
     private String urlToFile = null;
     private String urlToPath = null;
@@ -67,7 +66,7 @@ public class HttpUrlInfo {
             //获取前缀URL // http://www.baidu.com/
             rootUrlUsual = String.format("%s://%s/", proto, hostPortUsual);
             //获取前缀URL // http://www.baidu.com
-            rootUrlSimple = String.format("%s://%s", proto, hostPortUsual);
+            rootUrlNotSlash = String.format("%s://%s", proto, hostPortUsual);
 
             //解析请求文件的后缀 php html
             suffix = parseUrlExtStrict(file); //严重错误,域名中是有.符号的,因此不能直接截断域名
@@ -181,7 +180,7 @@ public class HttpUrlInfo {
         return rootUrlUsual;
     }
 
-    public String getRootUrl() {
+    private String getRootUrl() {
         return rootUrl;
     }
 
@@ -249,8 +248,8 @@ public class HttpUrlInfo {
         return urlToPath;
     }
 
-    public String getRootUrlSimple() {
-        return rootUrlSimple;
+    public String getRootUrlNotSlash() {
+        return rootUrlNotSlash;
     }
 
     /**

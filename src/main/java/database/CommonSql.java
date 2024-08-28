@@ -116,30 +116,29 @@ public class CommonSql {
     /**
      * 基于 host 列表 同时删除多行
      */
-    public static synchronized int deleteDataByHosts(List<String> reqHostPortList, String tableName) {
-        if (isEmptyObj(reqHostPortList)) return 0;
+    public static synchronized int deleteDataByHosts(List<String> rootUrls, String tableName) {
+        if (isEmptyObj(rootUrls)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName +"  WHERE req_host_port IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(reqHostPortList.size()));
+        String deleteSQL = "DELETE FROM "+ tableName +"  WHERE root_url IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
-        return runDeleteSql(deleteSQL, reqHostPortList, tableName);
+        return runDeleteSql(deleteSQL, rootUrls, tableName);
     }
 
     /**
      * 基于 URL 列表 同时删除多行 复用 deleteDataByHosts
      */
-    public static synchronized int deleteDataByUrlToHosts(List<String> urlList, String tableName) {
+    public static synchronized int deleteDataByUrlToRootUrls(List<String> urlList, String tableName) {
         //获取所有URL的HOST列表
         Set<String> set = new HashSet<>();
         for (String url: urlList){
-            HttpUrlInfo urlInfo = new HttpUrlInfo(url);
-            set.add(urlInfo.getHostPort());
+            set.add(new HttpUrlInfo(url).getRootUrlUsual());
         }
-        ArrayList<String> reqHostPortList = new ArrayList<>(set);
+        ArrayList<String> rootUrls = new ArrayList<>(set);
 
-        if (isEmptyObj(reqHostPortList)) return 0;
-        return deleteDataByHosts(reqHostPortList, tableName);
+        if (isEmptyObj(rootUrls)) return 0;
+        return deleteDataByHosts(rootUrls, tableName);
     }
 
     /**
@@ -158,12 +157,12 @@ public class CommonSql {
     /**
      * 执行删除数据行的SQL语句
      */
-    private static int runDeleteSql(String deleteSQL, List<String> msgHashList, String tableName) {
+    private static int runDeleteSql(String deleteSQL, List<String> stringList, String tableName) {
         int totalRowsAffected = 0;
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             // 设置SQL语句中的参数值 i+1表示从第一个?号开始设置
-            for (int i = 0; i < msgHashList.size(); i++) {
-                stmt.setString(i + 1, msgHashList.get(i));
+            for (int i = 0; i < stringList.size(); i++) {
+                stmt.setString(i + 1, stringList.get(i));
             }
             // 执行删除操作
             totalRowsAffected = stmt.executeUpdate();

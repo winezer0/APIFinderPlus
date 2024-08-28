@@ -17,8 +17,8 @@ public class UnionTableSql {
         List<FindPathModel> findPathModels = new ArrayList<>();
 
         // 首先选取一条记录的ID 状态是已经分析完毕,并且 当前 PathTree 的 基本路径数量 大于 生成分析数据时的 基本路径数量
-        String selectSQL = ("SELECT A.id, A.req_url,A.req_host_port, A.find_path " +
-                "From $tableName1$ A LEFT JOIN $tableName2$ B ON A.req_host_port = B.req_host_port " +
+        String selectSQL = ("SELECT A.id, A.req_url,A.root_url, A.find_path " +
+                "From $tableName1$ A LEFT JOIN $tableName2$ B ON A.root_url = B.root_url " +
                 "WHERE A.run_status = ? AND B.basic_path_num > A.basic_path_num Limit ?;")
                 .replace("$tableName1$", AnalyseUrlResultTable.tableName)
                 .replace("$tableName2$", PathTreeTable.tableName);
@@ -32,7 +32,7 @@ public class UnionTableSql {
                     FindPathModel  findPathModel = new FindPathModel(
                             rs.getInt("id"),
                             rs.getString("req_url"),
-                            rs.getString("req_host_port"),
+                            rs.getString("root_url"),
                             rs.getString("find_path")
                     );
                     findPathModels.add(findPathModel);

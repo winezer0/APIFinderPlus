@@ -293,7 +293,7 @@ public class IProxyScanner implements IProxyListener {
     /**
      * 合并添加请求数据和请求信息为一个函数
      */
-    static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
+    private static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
         //防止响应体过大
         if (msgInfo.getRespBytes().length > MaxRespBodyLen){
             byte[] respBytes = Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen);
@@ -419,10 +419,10 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //任务2、从path记录表中读取新增的网站路径，用于更新PathTree信息, 为动态计算 path to url 做准备
-                    List<Integer> ids = RecordPathTable.fetchIdsByRunStatusIsWait(maxPoolSize * 2);
-                    if (ids.size() > 0){
+                    List<Integer> recordPathIds = RecordPathTable.fetchIdsByRunStatusIsWait(maxPoolSize * 2);
+                    if (recordPathIds.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        RecordPathTable.updateStatusRunIngByIds(ids);
+                        RecordPathTable.updateStatusRunIngByIds(recordPathIds);
                         //由于数据不是很大，可以一次性获取需要处理的结果
                         List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchStatusRunIngPathRecords();
                         for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
@@ -432,11 +432,11 @@ public class IProxyScanner implements IProxyListener {
                                 //合并|插入新的路径树
                                 int pathTreeIndex = PathTreeTable.insertOrUpdatePathTree(pathTreeModel);
                                 if (pathTreeIndex > 0)
-                                    stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
+                                    stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getRootUrl()));
                             }
                         }
                         //更新对应的ids为检查完毕
-                        RecordPathTable.updateStatusRunEndByIds(ids);
+                        RecordPathTable.updateStatusRunEndByIds(recordPathIds);
                     }
 
                     if (autoPathsToUrlsIsOpen){
@@ -457,15 +457,15 @@ public class IProxyScanner implements IProxyListener {
 //                            return;
 //                        }
 
-//                        //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
-//                        List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
-//                        if (findPathModelList.size()>0){
-//                            for (FindPathModel findPathModel:findPathModelList) {
-//                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
-//                                pathsToUrlsByPathTree(findPathModel);
-//                            }
-//                            return;
-//                        }
+                        //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
+                        List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
+                        if (findPathModelList.size()>0){
+                            for (FindPathModel findPathModel:findPathModelList) {
+                                stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));
+                                pathsToUrlsByPathTree(findPathModel);
+                            }
+                            return;
+                        }
                     }
 
 //                    // 自动递归查询功能
@@ -596,15 +596,16 @@ public class IProxyScanner implements IProxyListener {
         if (findPathModel != null) {
             int id = findPathModel.getId();
             String reqUrl = findPathModel.getReqUrl();
-            String reqHostPort = findPathModel.getReqHostPort();
+            HttpUrlInfo httpUrlInfo = new HttpUrlInfo(reqUrl);
+            String reqRootUrl = httpUrlInfo.getRootUrlUsual();
             JSONArray findPathArray = findPathModel.getFindPath();
 
-            // 从数据库中获取当前 reqHostPort 的 PathTree
-            PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByReqHostPort(reqHostPort);
+            // 从数据库中获取当前 reqRootUrl 的 PathTree
+            PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(reqRootUrl);
             //如果 PATH TREE都没有添加过, pathTreeModel 就是空的
             if (pathTreeModel == null){
                 //如果 PATH TREE 不应该是空的,因为任务二已经添加过了,
-                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [host:%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!", reqHostPort));
+                stderr_println(LOG_ERROR, String.format("[!] 获取 HOST [host:%s] 对应的 PathTree 失败!!! 可能需要手动生成PathTree!!!", reqRootUrl));
                 return;
             }
 
@@ -618,7 +619,7 @@ public class IProxyScanner implements IProxyListener {
             ) {
                 List<String> findUrlsList = new ArrayList<>();
                 //遍历路径列表,开始进行查询
-                String reqBaseUrl = new HttpUrlInfo(reqUrl).getUrlToFileUsual();
+                String reqBaseUrl = httpUrlInfo.getUrlToFileUsual();
 
                 for (Object findPath: findPathArray){
                     JSONArray nodePath = PathTreeUtils.findNodePathInTree(currPathTree, (String) findPath);

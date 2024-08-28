@@ -20,30 +20,26 @@ public class PathTreeTable {
     //创建 基于 record_urls 生成的每个域名的 路径结构 树
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS "+ tableName +" (\n"
             + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
-            + " req_proto TEXT NOT NULL,\n"
-            + " req_host_port TEXT NOT NULL,\n"    //请求域名:端口
+            + " root_url TEXT NOT NULL,\n"
             + " path_tree TEXT NOT NULL,\n"   //根树的序列化Json数据
             + " basic_path_num INTEGER NOT NULL DEFAULT 0\n"  //基于多少个路径计算出来的根树,最好使用根树的稳定 hash
             + ");";
 
     //插入数据库
     public static synchronized int insertOrUpdatePathTree(PathTreeModel pathTreeModel) {
-        String reqProto = pathTreeModel.getReqProto();
-        String reqHostPort = pathTreeModel.getReqHostPort();
+        String rootUrl = pathTreeModel.getRootUrl();
         Integer newBasicPathNum = pathTreeModel.getBasicPathNum();
         JSONObject newPathTree = pathTreeModel.getPathTree();
 
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         //查询 是否已存在记录
-        String checkSql = "SELECT id,path_tree,basic_path_num FROM "+ tableName +" WHERE req_host_port = ? and req_proto = ?;";
+        String checkSql = "SELECT id,path_tree,basic_path_num FROM " + tableName + " WHERE root_url = ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-            checkStmt.setString(1, reqHostPort);
-            checkStmt.setString(2, reqProto);
+            checkStmt.setString(1, rootUrl);
 
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
-
                 int selectedId = rs.getInt("id");
                 String oldPathTree = rs.getString("path_tree");
                 int oldBasicPathNum = rs.getInt("basic_path_num");
@@ -58,7 +54,7 @@ public class PathTreeTable {
                 }
 
                 //更新索引对应的数据
-                String updateSQL = "UPDATE  "+ tableName +"  SET path_tree = ?, basic_path_num = ? WHERE id = ?;";
+                String updateSQL = "UPDATE  "+ tableName +" SET path_tree = ?, basic_path_num = ? WHERE id = ?;";
                 try (PreparedStatement updateStatement = conn.prepareStatement(updateSQL)) {
                     updateStatement.setString(1, newPathTree.toJSONString());
                     updateStatement.setInt(2, newBasicPathNum);
@@ -70,12 +66,11 @@ public class PathTreeTable {
                 }
             } else {
                 // 记录不存在，插入新记录
-                String insertSql = "INSERT INTO "+ tableName +" (req_proto, req_host_port, path_tree, basic_path_num) VALUES (?, ?, ?, ?);";
+                String insertSql = "INSERT INTO "+ tableName +" (root_url, path_tree, basic_path_num) VALUES (?, ?, ?);";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, reqProto);
-                    insertStmt.setString(2, reqHostPort);
-                    insertStmt.setString(3, newPathTree.toJSONString());
-                    insertStmt.setInt(4, newBasicPathNum);
+                    insertStmt.setString(1, rootUrl);
+                    insertStmt.setString(2, newPathTree.toJSONString());
+                    insertStmt.setInt(3, newBasicPathNum);
 
                     int affectedRows = insertStmt.executeUpdate();
 
@@ -99,34 +94,33 @@ public class PathTreeTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
-    //根据域名查询对应的Host
-    public static synchronized List<PathTreeModel> fetchPathTreeByReqHostPortList(List<String> reqHostList) {
+    //根据域名查询对应的路径树
+    public static synchronized List<PathTreeModel> fetchPathTreeByRootUrls(List<String> rootUrls) {
         List<PathTreeModel> pathTreeModels = new ArrayList<>();
 
-        if (reqHostList.isEmpty()) return pathTreeModels;
+        if (rootUrls.isEmpty()) return pathTreeModels;
 
         //查询
-        String selectSql = "SELECT req_proto, req_host_port, path_tree, basic_path_num FROM "+ tableName +" WHERE req_host_port IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(reqHostList.size()));
+        String selectSql = "SELECT root_url, path_tree, basic_path_num FROM "+ tableName +" WHERE root_url IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
 
-            for (int i = 0; i < reqHostList.size(); i++) {
-                stmt.setString(i + 1, reqHostList.get(i));
+            for (int i = 0; i < rootUrls.size(); i++) {
+                stmt.setString(i + 1, rootUrls.get(i));
             }
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 PathTreeModel pathTreeModel = new PathTreeModel(
-                        rs.getString("req_proto"),
-                        rs.getString("req_host_port"),
+                        rs.getString("root_url"),
                         rs.getInt("basic_path_num"),
                         rs.getString("path_tree")
                 );
                 pathTreeModels.add(pathTreeModel);
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error Fetch [%s] Path Tree By Req Host Port List: %s", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error Fetch [%s] Data By Req Host Port List: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -135,20 +129,19 @@ public class PathTreeTable {
 
 
     //根据域名查询对应的Host
-    public static synchronized PathTreeModel fetchPathTreeByReqHostPort(String reqHost) {
+    public static synchronized PathTreeModel fetchPathTreeByRootUrl(String rootUrl) {
         PathTreeModel pathTreeModel= null;
 
         //查询
-        String selectSql = "SELECT req_proto, req_host_port, path_tree, basic_path_num FROM "+ tableName +" WHERE req_host_port = ? LIMIT 1;";
+        String selectSql = "SELECT root_url, path_tree, basic_path_num FROM "+ tableName +" WHERE root_url = ? LIMIT 1;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
-            stmt.setString(1, reqHost);
+            stmt.setString(1, rootUrl);
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 pathTreeModel = new PathTreeModel(
-                        rs.getString("req_proto"),
-                        rs.getString("req_host_port"),
+                        rs.getString("root_url"),
                         rs.getInt("basic_path_num"),
                         rs.getString("path_tree")
                         );
@@ -166,19 +159,18 @@ public class PathTreeTable {
      * 获取 所有 表中记录的 URL前置
      * @return
      */
-    public static synchronized Set<String> fetchAllRecordPathUrlPrefix(){
+    public static synchronized Set<String> fetchAllRecordPathRootUrls(){
         Set<String> set = new HashSet<>();
-        String selectSQL = "SELECT DISTINCT req_proto || '://' || req_host_port AS  url_prefix FROM "+ tableName + ";";
+        String selectSQL = "SELECT DISTINCT root_url FROM "+ tableName + ";";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                String urlPrefix = rs.getString("url_prefix");
-                urlPrefix = urlPrefix.replace(":-1", "");
+                String urlPrefix = rs.getString("root_url");
                 set.add(urlPrefix);
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch [%s] All Record Path Url Prefix: %s", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error fetch [%s] All Root URL: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
 

@@ -18,9 +18,8 @@ public class RecordPathTable {
     //创建用于存储所有 访问成功的 URL的数据库 record_urls
     static String creatTableSQL = "CREATE TABLE IF NOT EXISTS "+ tableName +" (\n"
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"  //自增的id
-            + "req_hash TEXT UNIQUE, \n"  // 添加一列 req_hash 作为 req_proto req_host_port req_path_dir resp_status_code 的 特征值
-            + "req_proto TEXT NOT NULL,\n"
-            + "req_host_port TEXT NOT NULL,\n"
+            + "req_hash TEXT UNIQUE, \n"  // 添加一列 req_hash 作为 root_url req_path_dir resp_status_code 的 特征值
+            + "root_url TEXT NOT NULL,\n"
             + "req_path_dir TEXT NOT NULL,\n"
             + "resp_status_code TEXT NOT NULL, \n"
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'"
@@ -42,19 +41,17 @@ public class RecordPathTable {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 // 记录存在，忽略操作
-                // stdout_println(LOG_DEBUG, String.format("[*] Ignore Update %s ->  %s %s %s %s", tableName, reqProto, reqHostPort, reqPathDir, respStatusCode));
                 return 0;
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO "+ tableName +
-                        " (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash)" +
-                        " VALUES (?, ?, ?, ?, ?);";
+                        " (root_url, req_path_dir, resp_status_code, req_hash)" +
+                        " VALUES (?, ?, ?, ?);";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                    insertStmt.setString(1, recordPathModel.getReqProto());
-                    insertStmt.setString(2, recordPathModel.getReqHostPort());
-                    insertStmt.setString(3, recordPathModel.getReqPathDir());
-                    insertStmt.setInt(4, recordPathModel.getRespStatusCode());
-                    insertStmt.setString(5, recordPathModel.getReqHash());
+                    insertStmt.setString(1, recordPathModel.getRootUrl());
+                    insertStmt.setString(2, recordPathModel.getReqPathDir());
+                    insertStmt.setInt(3, recordPathModel.getRespStatusCode());
+                    insertStmt.setString(4, recordPathModel.getReqHash());
                     insertStmt.executeUpdate();
 
                     // 获取生成的键值
@@ -97,28 +94,26 @@ public class RecordPathTable {
         int[] generatedIds = null;
 
         String insertSql = "INSERT INTO "+ tableName +
-                " (req_proto, req_host_port, req_path_dir, resp_status_code, req_hash)" +
-                " VALUES (?, ?, ?, ?, ?)" +
+                " (root_url, req_path_dir, resp_status_code, req_hash)" +
+                " VALUES (?, ?, ?, ?)" +
                 " ON CONFLICT(req_hash) DO NOTHING";
 
-        //ON CONFLICT(req_proto, req_host_port, req_path_dir, resp_status_code) DO NOTHING
         // 这个语句的作用是在尝试向表中插入一条记录时，如果发现有与之冲突的唯一约束
-        // （即在 req_proto, req_host_port, req_path_dir, resp_status_code 这些字段上已经存在相同的值组合），
+        // （即在 root_url, req_path_dir, resp_status_code 这些字段上已经存在相同的值组合），
         // 那么数据库将不会执行任何操作，也不会抛出错误，而是简单地跳过这条记录的插入。
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
             conn.setAutoCommit(false); // 开启事务处理
             for (RecordPathModel record : recordPathModels) {
-                insertStmt.setString(1, record.getReqProto());
-                insertStmt.setString(2, record.getReqHostPort());
-                insertStmt.setString(3, record.getReqPathDir());
-                insertStmt.setInt(4, record.getRespStatusCode());
-                insertStmt.setString(5, record.getReqHash());
+                insertStmt.setString(1, record.getRootUrl());
+                insertStmt.setString(2, record.getReqPathDir());
+                insertStmt.setInt(3, record.getRespStatusCode());
+                insertStmt.setString(4, record.getReqHash());
                 insertStmt.addBatch(); // 添加到批处理
             }
             generatedIds = insertStmt.executeBatch();
             conn.commit(); // 提交事务
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error executing batch insert/update table [%s] : [%s]",tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error [%s] executing batch insert/update: %s",tableName, e.getMessage()));
             e.printStackTrace();
         }
         return generatedIds;
@@ -132,8 +127,7 @@ public class RecordPathTable {
         for (String findUrl: findUrls){
             HttpUrlInfo urlInfo = new HttpUrlInfo(findUrl);
             RecordPathModel recordPathModel = new RecordPathModel(
-                    urlInfo.getProto(),
-                    urlInfo.getHostPort(),
+                    urlInfo.getRootUrlUsual(),
                     urlInfo.getPathToDir(),
                     respStatusCode
             );
@@ -171,8 +165,8 @@ public class RecordPathTable {
         // 创建一个列表或集合来存储查询结果
         List<RecordPathDirsModel> recordPathModels = new ArrayList<>();
 
-        String selectSQL = "SELECT req_proto,req_host_port,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
-                "FROM "+ tableName +" WHERE run_status = ? GROUP BY req_proto,req_host_port;";
+        String selectSQL = "SELECT root_url,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
+                "FROM "+ tableName +" WHERE run_status = ? GROUP BY root_url;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);){
             //2、获取 解析中 状态的 Host、数据、ID列表
@@ -183,8 +177,7 @@ public class RecordPathTable {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 RecordPathDirsModel recordPathDirsModel = new RecordPathDirsModel(
-                        rs.getString("req_proto"),
-                        rs.getString("req_host_port"),
+                        rs.getString("root_url"),
                         rs.getString("req_path_dirs")
                 );
                 recordPathModels.add(recordPathDirsModel);

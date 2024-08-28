@@ -5,14 +5,14 @@ import com.alibaba.fastjson2.JSONArray;
 public class FindPathModel {
     private int id;
     private String reqUrl;
-    private String reqHostPort;
+    private String rootUrl;
     private JSONArray findPath;
 
 
-    public FindPathModel(int id, String reqUrl, String reqHostPort, String findPath) {
+    public FindPathModel(int id, String reqUrl, String rootUrl, String findPath) {
         this.id = id;
         this.reqUrl = reqUrl;
-        this.reqHostPort = reqHostPort;
+        this.rootUrl = rootUrl;
         this.findPath = JSONArray.parse(findPath);
     }
 
@@ -24,8 +24,8 @@ public class FindPathModel {
         return reqUrl;
     }
 
-    public String getReqHostPort() {
-        return reqHostPort;
+    public String getRootUrl() {
+        return rootUrl;
     }
 
     public JSONArray getFindPath() {
