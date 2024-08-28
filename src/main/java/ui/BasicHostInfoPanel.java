@@ -752,8 +752,8 @@ public class BasicHostInfoPanel extends JPanel {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                CommonSql.deleteDataByRootUrls(rootUrls, PathTreeTable.tableName);
-                                CommonSql.deleteDataByRootUrls(rootUrls, RecordPathTable.tableName);
+                                CommonSql.deleteDataByRootUrls(PathTreeTable.tableName, rootUrls);
+                                CommonSql.deleteDataByRootUrls(RecordPathTable.tableName, rootUrls);
                                 refreshBasicHostTableModel(false);
                                 return null;
                             }
@@ -786,9 +786,9 @@ public class BasicHostInfoPanel extends JPanel {
                                 RuleConfigPanel.saveConfigToDefaultJson();
 
                                 //2、删除 Root URL 对应的 结果数据
-                                int countReq = CommonSql.batchDeleteDataByLikeRootUrls(rootUrls, ReqDataTable.tableName);
-                                int countUrl = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseUrlResultTable.tableName);
-                                int countHost = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseHostResultTable.tableName);
+                                int countReq = CommonSql.batchDeleteDataByLikeRootUrls(ReqDataTable.tableName, rootUrls);
+                                int countUrl = CommonSql.deleteDataByRootUrls(AnalyseUrlResultTable.tableName, rootUrls);
+                                int countHost = CommonSql.deleteDataByRootUrls(AnalyseHostResultTable.tableName, rootUrls);
                                 stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s, delete Analyse Url Result Count:%s", countReq, countHost, countUrl));
 
                                 //3、刷新表格

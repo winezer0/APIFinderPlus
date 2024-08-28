@@ -406,9 +406,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                 RuleConfigPanel.saveConfigToDefaultJson();
 
                                 //2、删除 Root URL 对应的 结果数据
-                                int countReq = CommonSql.batchDeleteDataByLikeRootUrls(rootUrls, ReqDataTable.tableName);
-                                int countUrl = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseUrlResultTable.tableName);
-                                int countHost = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseHostResultTable.tableName);
+                                int countReq = CommonSql.batchDeleteDataByLikeRootUrls(ReqDataTable.tableName, rootUrls);
+                                int countUrl = CommonSql.deleteDataByRootUrls(AnalyseUrlResultTable.tableName, rootUrls);
+                                int countHost = CommonSql.deleteDataByRootUrls(AnalyseHostResultTable.tableName, rootUrls);
                                 stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s, delete Analyse Url Result Count:%s", countReq, countHost, countUrl));
 
                                 //3、刷新表格

@@ -11,9 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
@@ -120,16 +118,6 @@ public class AnalyseUrlResultTable {
      */
     public static synchronized List<String> fetchMsgHashByRunStatusIsWait(int limit){
         return CommonSql.fetchMsgHashByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
-    }
-
-    //更新数据对应状态
-    public static int updateStatusRunIngByMsgHashList(List<String> msgHashList) {
-        return CommonSql.updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_ING);
-    }
-
-    //更新数据对对应状态
-    public static int updateStatusRunEndByMsgHashList(List<String> msgHashList) {
-        return CommonSql.updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_END);
     }
 
     /**
