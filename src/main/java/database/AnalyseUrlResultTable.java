@@ -1,14 +1,19 @@
 package database;
 
-import com.alibaba.fastjson2.JSONArray;
-import model.*;
+import model.AnalyseUrlResultModel;
+import model.BasicUrlTableTabDataModel;
+import model.FindPathModel;
+import model.HttpMsgInfo;
 import utils.CastUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 
