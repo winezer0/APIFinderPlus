@@ -812,7 +812,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                     //逐个清理 UnvisitedURls 中的 findApiUrl
 
                                     //根据 msgHash值 查询api分析结果数据
-                                    UrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseUrlResultByMsgHash(msgHash);
+                                    UrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
                                     if (tabDataModel != null) {
 
                                         //1、获取 msgHash 对应的 UnvisitedURls
@@ -1406,7 +1406,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
         responseTextEditor.setMessage(responseData, false);
 
         //根据 msgHash值 查询api分析结果数据
-        UrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchAnalyseUrlResultByMsgHash(msgHash);
+        UrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
         if (tabDataModel != null) {
             //String msgHash = analyseResult.getMsgHash();
             String findInfo = tabDataModel.getFindInfo();

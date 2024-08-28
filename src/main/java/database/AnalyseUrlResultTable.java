@@ -126,7 +126,7 @@ public class AnalyseUrlResultTable {
     }
 
     /**
-     * 根据运行状态取获取对应请求ID
+     * 根据运行状态取获取对应请求 msghash
      * @return
      */
     public static synchronized List<String> fetchMsgHashByRunStatus(int limit, String analyseStatus) {
@@ -141,7 +141,7 @@ public class AnalyseUrlResultTable {
                 msgHashList.add(msgHash);
             }
         } catch (Exception e) {
-            stderr_println(LOG_DEBUG, String.format("[-] Error fetching and marking id list from Analysis: %s", e.getMessage()));
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetching [%s] MsgHash List from Analysis: %s",tableName, e.getMessage()));
         }
         return msgHashList;
     }
@@ -154,11 +154,10 @@ public class AnalyseUrlResultTable {
         return fetchMsgHashByRunStatus(limit, Constants.ANALYSE_WAIT);
     }
 
-
     /**
      * 更新多个 msgHash 的状态
      */
-    private static synchronized int updateUrlResultStatusByMsgHashList(List<String> msgHashList, String updateStatus) {
+    private static synchronized int updateStatusByMsgHashList(List<String> msgHashList, String updateStatus) {
         int updatedCount = -1;
 
         String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_hash IN $buildInParamList$;"
@@ -183,20 +182,20 @@ public class AnalyseUrlResultTable {
     }
 
     //更新数据对应状态
-    public static int updateUrlResultStatusRunIngByMsgHashList(List<String> msgHashList) {
-        return updateUrlResultStatusByMsgHashList(msgHashList, Constants.ANALYSE_ING);
+    public static int updateStatusRunIngByMsgHashList(List<String> msgHashList) {
+        return updateStatusByMsgHashList(msgHashList, Constants.ANALYSE_ING);
     }
 
     //更新数据对对应状态
-    public static int updateUrlResultStatusRunEndByMsgHashList(List<String> msgHashList) {
-        return updateUrlResultStatusByMsgHashList(msgHashList, Constants.ANALYSE_END);
+    public static int updateStatusRunEndByMsgHashList(List<String> msgHashList) {
+        return updateStatusByMsgHashList(msgHashList, Constants.ANALYSE_END);
     }
 
     /**
      * 获取 指定 msgHashList 对应的 所有 分析结果 数据
      * @return
      */
-    public static synchronized List<AnalyseUrlResultModel> fetchAnalyseUrlResultByMsgHashList(List<String> msgHashList){
+    public static synchronized List<AnalyseUrlResultModel> fetchResultByMsgHashList(List<String> msgHashList){
         List<AnalyseUrlResultModel> AnalyseUrlResultModels = new ArrayList<>();
 
         if (msgHashList.isEmpty()) return AnalyseUrlResultModels;
@@ -222,7 +221,7 @@ public class AnalyseUrlResultTable {
                 AnalyseUrlResultModels.add(tabDataModel);
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch Analyse Url Result Data By MsgHash List: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] Result Data By MsgHash List: %s",tableName, e.getMessage()));
         }
         return AnalyseUrlResultModels;
     }
@@ -231,7 +230,7 @@ public class AnalyseUrlResultTable {
     /**
      * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
      */
-    public static synchronized UrlTableTabDataModel fetchAnalyseUrlResultByMsgHash(String msgHash){
+    public static synchronized UrlTableTabDataModel fetchResultByMsgHash(String msgHash){
         UrlTableTabDataModel tabDataModel = null;
 
         String selectSQL = "SELECT * FROM "+ tableName +" WHERE msg_hash = ?;";
@@ -285,7 +284,7 @@ public class AnalyseUrlResultTable {
                 findPathModelList.add(findPathModel);
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch Path Data By MsgHash List: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] Path Data By MsgHash List: %s", tableName, e.getMessage()));
         }
         return findPathModelList ;
     }
@@ -312,7 +311,7 @@ public class AnalyseUrlResultTable {
                 );
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch path_to_url and unvisited_url By Id: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] path_to_url and unvisited_url By Id: %s", tableName, e.getMessage()));
         }
         return dynamicUrlsModel;
     }
@@ -403,7 +402,7 @@ public class AnalyseUrlResultTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch All UnVisited Urls: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] All UnVisited Urls: %s", tableName, e.getMessage()));
         }
         return list;
     }
@@ -585,7 +584,7 @@ public class AnalyseUrlResultTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetching UnVisited Urls By MsgHash List: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching [%s] UnVisited Urls By MsgHash List: %s", tableName, e.getMessage()));
         }
 
         return unVisitedUrlsModels;
@@ -615,7 +614,7 @@ public class AnalyseUrlResultTable {
                 }
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetching " + columnName + " Urls By MsgHash List: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching [%s] [%s] Urls By MsgHash List: %s",tableName, columnName, e.getMessage()));
         }
 
         return urlsSet;

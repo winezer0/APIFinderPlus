@@ -335,7 +335,7 @@ public class IProxyScanner implements IProxyListener {
                         BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, CastUtils.toJsonString(urlCompareMap));
                     }
 
-                    //任务1、获取需要解析的响应体数据并进行解析 然后插入到URL结果分析表
+                    //获取需要解析的响应体数据并进行分析 然后插入到URL结果分析表
                     List<Integer> msgDataIndexList = ReqDataTable.fetchMsgIdListWhereRunWait(maxPoolSize);
                     if (msgDataIndexList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
@@ -375,21 +375,21 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
-                    // 新增任务1、获取URL分析结果表中的数据，将其加入到HOST分析结果表
+                    // 新增 获取URL分析结果表中的数据，将其加入到HOST分析结果表
                     // 判断 URL分析结果数据表 中 是否存在没有加入到 HOST分析结果表的数据 waiting状态
                     List<String> urlResultMsgHashList = AnalyseUrlResultTable.fetchMsgHashByRunStatusIsWait(maxPoolSize);
                     if (urlResultMsgHashList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        AnalyseUrlResultTable.updateUrlResultStatusRunIngByMsgHashList(urlResultMsgHashList);
+                        AnalyseUrlResultTable.updateStatusRunIngByMsgHashList(urlResultMsgHashList);
                         //由于数据不是很大，可以一次性获取需要处理的结果
-                        List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchAnalyseUrlResultByMsgHashList(urlResultMsgHashList);
+                        List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchResultByMsgHashList(urlResultMsgHashList);
                         //循环插入数据 到HOST结果表
                         for (AnalyseUrlResultModel analyseUrlResultModel : AnalyseUrlResultModels){
                             AnalyseHostResultModel analyseHostResultModel = new AnalyseHostResultModel(analyseUrlResultModel);
                             AnalyseHostResultTable.insertOrUpdateAnalyseHostResult(analyseHostResultModel);
                         }
                         //更新对应的ids为分析完成,实际上没啥用
-                        AnalyseUrlResultTable.updateUrlResultStatusRunEndByMsgHashList(urlResultMsgHashList);
+                        AnalyseUrlResultTable.updateStatusRunEndByMsgHashList(urlResultMsgHashList);
                         return;
                     }
 
@@ -418,12 +418,15 @@ public class IProxyScanner implements IProxyListener {
                         return;
                     }
 
-                    //任务2、如果没有需要分析的数据,就更新 PathTree 信息 为动态计算 path to url 做准备
-                    //获取需要更新的所有URL记录
-                    List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchAllNotAddToTreeRecords();
-                    if (recordPathDirsModels.size()>0){
+                    //任务2、从path记录表中读取新增的网站路径，用于更新PathTree信息, 为动态计算 path to url 做准备
+                    List<Integer> ids = RecordPathTable.fetchIdsByRunStatusIsWait(maxPoolSize * 2);
+                    if (ids.size() > 0){
+                        //更新对应的ids为检查中 防止其他进程获取这些数据
+                        RecordPathTable.updateStatusRunIngByIds(ids);
+                        //由于数据不是很大，可以一次性获取需要处理的结果
+                        List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchStatusRunIngPathRecords();
                         for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
-                            //生成新的路径树
+                            //根据新增的路径生成路径树
                             PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
                             if (pathTreeModel != null){
                                 //合并|插入新的路径树
@@ -432,8 +435,8 @@ public class IProxyScanner implements IProxyListener {
                                     stdout_println(LOG_DEBUG, String.format("[+] Path Tree Update Success: %s",pathTreeModel.getReqHostPort()));
                             }
                         }
-                        //更新数据后先返回,优先进行之前的操作
-                        return;
+                        //更新对应的ids为检查完毕
+                        RecordPathTable.updateStatusRunEndByIds(ids);
                     }
 
                     if (autoPathsToUrlsIsOpen){

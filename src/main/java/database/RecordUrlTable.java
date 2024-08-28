@@ -141,7 +141,7 @@ public class RecordUrlTable {
             }
 
     } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch All Accessed Url By reqHostPort On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error fetch [%s] All Accessed Url By reqHostPort: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -164,7 +164,7 @@ public class RecordUrlTable {
             }
 
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch All Accessed Url On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error fetch [%s] All Accessed Url: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
         return uniqueURLs;

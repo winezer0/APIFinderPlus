@@ -83,83 +83,6 @@ public class RecordPathTable {
         return insertOrUpdateRecordPath(recordPathModel);
     }
 
-    //判断是否存在需要处理的URL
-    public static synchronized int fetchUnhandledRecordPathId(){
-        // 考虑开启事务
-        int dataIndex = -1;
-
-        String selectSQL = "SELECT id FROM "+ tableName + " WHERE run_status = ? LIMIT 1;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, Constants.ANALYSE_WAIT);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                dataIndex = rs.getInt("id");
-            }
-        } catch (Exception e) {
-            stderr_println(String.format("[-] Error Check Record Urls Status Is Wait: %s", e.getMessage()));
-            e.printStackTrace();
-        }
-
-        return dataIndex;
-    }
-
-    //获取所有需要处理的URl数据，并且标记
-    public static synchronized List<RecordPathDirsModel> fetchAllNotAddToTreeRecords() {
-        // 创建一个列表或集合来存储查询结果
-        List<RecordPathDirsModel> recordPathModels = new ArrayList<>();
-
-        //1、标记需要处理的数据 更新状态为解析中
-        String updateMarkSQL1 = "UPDATE "+ tableName +" SET run_status = ?" +
-                " WHERE id in (SELECT id FROM "+ tableName +" WHERE run_status = ?);";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement Stmt1 = conn.prepareStatement(updateMarkSQL1);){
-            Stmt1.setString(1, Constants.ANALYSE_ING);
-            Stmt1.setString(2, Constants.ANALYSE_WAIT);
-
-            int affectedRows = Stmt1.executeUpdate();
-            if (affectedRows > 0) {
-                //2、获取 解析中 状态的 Host、数据、ID列表
-                String selectSQL = "SELECT req_proto,req_host_port,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
-                        "FROM "+ tableName +" WHERE run_status == ? GROUP BY req_proto,req_host_port;";
-
-                try (PreparedStatement stmt2 = conn.prepareStatement(selectSQL)){
-                    stmt2.setString(1, Constants.SPLIT_SYMBOL);
-                    stmt2.setString(2, Constants.ANALYSE_ING);
-
-                    //获取查询数据
-                    ResultSet rs = stmt2.executeQuery();
-                    while (rs.next()) {
-                        RecordPathDirsModel recordPathDirsModel = new RecordPathDirsModel(
-                                rs.getString("req_proto"),
-                                rs.getString("req_host_port"),
-                                rs.getString("req_path_dirs")
-                        );
-
-                        recordPathModels.add(recordPathDirsModel);
-                    }
-
-                    //3、更新 解析中 对应的状态为解析完成
-                    String updateMarkSQL2 = "UPDATE "+ tableName +" SET run_status = ?" +
-                            " WHERE id in (SELECT id FROM " + tableName + " WHERE run_status = ?);";
-
-                    try (PreparedStatement updateMarkSQL2Stmt = conn.prepareStatement(updateMarkSQL2)){
-                        updateMarkSQL2Stmt.setString(1, Constants.ANALYSE_END);
-                        updateMarkSQL2Stmt.setString(2, Constants.ANALYSE_ING);
-
-                        updateMarkSQL2Stmt.executeUpdate();
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch And Mark Url Record Data To Analysis: %s", e.getMessage()));
-            e.printStackTrace();
-        }
-
-        return recordPathModels;
-    }
-
     //批量插入 recordPathModels
     public static int[] batchInsertOrUpdateRecordPath(List<RecordPathModel> recordPathModels) {
         int[] generatedIds = null;
@@ -182,9 +105,9 @@ public class RecordPathTable {
                 insertStmt.setInt(4, record.getRespStatusCode());
                 insertStmt.setString(5, record.getReqHash());
                 insertStmt.addBatch(); // 添加到批处理
-                }
-                generatedIds = insertStmt.executeBatch();
-                conn.commit(); // 提交事务
+            }
+            generatedIds = insertStmt.executeBatch();
+            conn.commit(); // 提交事务
         } catch (Exception e) {
             stderr_println(String.format("[-] Error executing batch insert/update table [%s] : [%s]",tableName, e.getMessage()));
             e.printStackTrace();
@@ -195,7 +118,6 @@ public class RecordPathTable {
     //简单复用 实现批量插入
     public static int[] batchInsertOrUpdateRecordPath(List<String> findUrls, int respStatusCode) {
         List<RecordPathModel> recordPathModels = new ArrayList<>();
-
         for (String findUrl: findUrls){
             HttpUrlInfo urlInfo = new HttpUrlInfo(findUrl);
             RecordPathModel recordPathModel = new RecordPathModel(
@@ -206,9 +128,143 @@ public class RecordPathTable {
             );
             recordPathModels.add(recordPathModel);
         }
-
         return batchInsertOrUpdateRecordPath(recordPathModels);
     }
 
+    /**
+     * 根据运行状态取获取对应请求ID
+     */
+    public static synchronized List<Integer> fetchIdsByRunStatus(int limit, String analyseStatus) {
+        List<Integer> ids = new ArrayList<>();
+        String selectSQL = "SELECT id FROM " + tableName + " WHERE run_status = ? ORDER BY id ASC LIMIT ?;";
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, analyseStatus);
+            stmt.setInt(2, limit); // Set the limit parameter
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                ids.add(id);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetching [%s] id list from Analysis: %s", tableName, e.getMessage()));
+        }
+        return ids;
+    }
 
+    /**
+     * 获取id为waiting的数据
+     */
+    public static List<Integer> fetchIdsByRunStatusIsWait(int limit) {
+        return fetchIdsByRunStatus(limit, Constants.ANALYSE_WAIT);
+    }
+
+    /**
+     * 更新多个 ID列表 的状态
+     */
+    private static synchronized int updateStatusByIds(List<Integer> ids, String updateStatus) {
+        int updatedCount = -1;
+
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
+            stmtUpdate.setString(1, updateStatus);
+
+            for (int i = 0; i < ids.size(); i++) {
+                stmtUpdate.setInt(i + 2, ids.get(i));
+            }
+
+            updatedCount = stmtUpdate.executeUpdate();
+
+            if (updatedCount != ids.size()) {
+                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error updating [%s] Data Status: %s",tableName, e.getMessage()));
+        }
+        return updatedCount;
+    }
+
+    /**
+     * 修改ID对应的数据状态 为 分析中
+     */
+    public static int updateStatusRunIngByIds(List<Integer> ids) {
+        return updateStatusByIds(ids, Constants.ANALYSE_ING);
+    }
+
+    /**
+     * 修改ID对应的数据状态 为 分析完成
+     */
+    public static int updateStatusRunEndByIds(List<Integer> ids) {
+        return updateStatusByIds(ids, Constants.ANALYSE_END);
+    }
+
+    //获取 指定状态的数据 并封装为 路径模型
+    public static List<RecordPathDirsModel> fetchPathRecordsByStatus(String analyseStatus) {
+        // 创建一个列表或集合来存储查询结果
+        List<RecordPathDirsModel> recordPathModels = new ArrayList<>();
+
+        String selectSQL = "SELECT req_proto,req_host_port,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
+                "FROM "+ tableName +" WHERE run_status = ? GROUP BY req_proto,req_host_port;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);){
+            //2、获取 解析中 状态的 Host、数据、ID列表
+            stmt.setString(1, Constants.SPLIT_SYMBOL);
+            stmt.setString(2, analyseStatus);
+
+            //获取查询数据
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                RecordPathDirsModel recordPathDirsModel = new RecordPathDirsModel(
+                        rs.getString("req_proto"),
+                        rs.getString("req_host_port"),
+                        rs.getString("req_path_dirs")
+                );
+                recordPathModels.add(recordPathDirsModel);
+            }
+
+        } catch (Exception e) {
+            stderr_println(String.format("[-] Error fetch [%s] Data To Analysis: %s", tableName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return recordPathModels;
+    }
+
+    //获取 ANALYSE_ING 状态的数据 并封装为 路径模型
+    public static List<RecordPathDirsModel> fetchStatusRunIngPathRecords() {
+        return fetchPathRecordsByStatus(Constants.ANALYSE_ING);
+    }
+
+
+
+//    /**
+//     * 将ID对应的数据查出来，封装为 RecordPathDirsModel 并返回列表
+//     */
+//    public static List<RecordPathDirsModel> fetchPathRecordsByIds(List<Integer> ids) {
+//        List<RecordPathDirsModel> pathRecords = new ArrayList<>();
+//
+//        String selectSQL = "SELECT req_proto, req_host_port, GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
+//                "FROM " + tableName + " WHERE id IN $buildInParamList$;"
+//                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
+//
+//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+//            stmt.setString(1, Constants.SPLIT_SYMBOL);
+//            for (int i = 0; i < ids.size(); i++) {
+//                stmt.setInt(i + 2, ids.get(i));
+//            }
+//            ResultSet rs = stmt.executeQuery();
+//            while (rs.next()) {
+//                RecordPathDirsModel recordPathDirsModel = new RecordPathDirsModel(
+//                        rs.getString("req_proto"),
+//                        rs.getString("req_host_port"),
+//                        rs.getString("req_path_dirs")
+//                );
+//                pathRecords.add(recordPathDirsModel);
+//            }
+//        } catch (SQLException e) {
+//            stderr_println(String.format("[-] Error fetching records by IDs: %s", e.getMessage()));
+//            e.printStackTrace();
+//        }
+//        return pathRecords;
+//    }
 }

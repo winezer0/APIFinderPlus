@@ -126,7 +126,7 @@ public class PathTreeTable {
                 pathTreeModels.add(pathTreeModel);
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error Fetch Path Tree By Req Host Port List On table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error Fetch [%s] Path Tree By Req Host Port List: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -154,7 +154,7 @@ public class PathTreeTable {
                         );
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error Fetch One table [%s] -> Error:[%s]", tableName, e.getMessage()));
+            stderr_println(String.format("[-] Error Fetch [%s] Data: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
 
@@ -178,7 +178,7 @@ public class PathTreeTable {
                 set.add(urlPrefix);
             }
         } catch (Exception e) {
-            stderr_println(String.format("[-] Error fetch All Record Path Url Prefix: %s", e.getMessage()));
+            stderr_println(String.format("[-] Error fetch [%s] All Record Path Url Prefix: %s", tableName, e.getMessage()));
             e.printStackTrace();
         }
 

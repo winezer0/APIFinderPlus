@@ -290,7 +290,7 @@ public class UnionTableSql {
             }
 
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetching and concatenating URLs: %s", e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching and concatenating [%s] [%s] URLs: %s",tableName,columnName, e.getMessage()));
             e.printStackTrace();
         }
         return concatenatedURLs;

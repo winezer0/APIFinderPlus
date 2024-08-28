@@ -95,7 +95,7 @@ public class ReqDataTable {
                 msgDataIndexList.add(msgDataIndex);
             }
         } catch (Exception e) {
-            stderr_println(LOG_DEBUG, String.format("[-] Error fetching and marking Req Data Indices for Analysis: %s", e.getMessage()));
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetching [%s] Req Data Index: %s",tableName, e.getMessage()));
         }
         return msgDataIndexList;
     }
