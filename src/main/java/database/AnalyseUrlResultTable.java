@@ -125,70 +125,24 @@ public class AnalyseUrlResultTable {
         return generatedId; //返回ID值，无论是更新还是插入
     }
 
-    /**
-     * 根据运行状态取获取对应请求 msghash
-     * @return
-     */
-    public static synchronized List<String> fetchMsgHashByRunStatus(int limit, String analyseStatus) {
-        List<String> msgHashList = new ArrayList<>();
-        String selectSQL = "SELECT msg_hash FROM " + tableName + " WHERE run_status = ? ORDER BY id ASC LIMIT ?;";
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, analyseStatus);
-            stmt.setInt(2, limit); // Set the limit parameter
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                String msgHash = rs.getString("msg_hash");
-                msgHashList.add(msgHash);
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_DEBUG, String.format("[-] Error fetching [%s] MsgHash List from Analysis: %s",tableName, e.getMessage()));
-        }
-        return msgHashList;
-    }
 
     /**
      * 根据运行状态取获取对应请求ID
      * @return
      */
     public static synchronized List<String> fetchMsgHashByRunStatusIsWait(int limit){
-        return fetchMsgHashByRunStatus(limit, Constants.ANALYSE_WAIT);
+        return CommonSql.fetchMsgHashByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
     }
 
-    /**
-     * 更新多个 msgHash 的状态
-     */
-    private static synchronized int updateStatusByMsgHashList(List<String> msgHashList, String updateStatus) {
-        int updatedCount = -1;
-
-        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_hash IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
-            stmtUpdate.setString(1, updateStatus);
-
-            for (int i = 0; i < msgHashList.size(); i++) {
-                stmtUpdate.setString(i + 2, msgHashList.get(i));
-            }
-
-            updatedCount = stmtUpdate.executeUpdate();
-
-            if (updatedCount != msgHashList.size()) {
-                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error updating Analyse Url Result Data Status: %s", e.getMessage()));
-        }
-        return updatedCount;
-    }
 
     //更新数据对应状态
     public static int updateStatusRunIngByMsgHashList(List<String> msgHashList) {
-        return updateStatusByMsgHashList(msgHashList, Constants.ANALYSE_ING);
+        return CommonSql.updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_ING);
     }
 
     //更新数据对对应状态
     public static int updateStatusRunEndByMsgHashList(List<String> msgHashList) {
-        return updateStatusByMsgHashList(msgHashList, Constants.ANALYSE_END);
+        return CommonSql.updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_END);
     }
 
     /**
@@ -484,12 +438,10 @@ public class AnalyseUrlResultTable {
             JSONArray emptyArray = new JSONArray();
             stmt.setString(1, emptyArray.toJSONString());
 
-            // 循环设置消息哈希参数
-            int index = 2; // 开始于第二个参数位置，第一个参数已被设置
-            for (String msgHash : msgHashList) {
-                stmt.setString(index++, msgHash);
+            // 循环设置参数 // 开始于第二个参数位置，第一个参数已被设置
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 2, msgHashList.get(i));
             }
-
             // 执行更新操作并获取受影响行数
             totalRowsAffected = stmt.executeUpdate();
 
@@ -515,10 +467,9 @@ public class AnalyseUrlResultTable {
             JSONArray emptyArray = new JSONArray();
             stmt.setString(1, emptyArray.toJSONString());
 
-            // 循环设置消息哈希参数
-            int index = 2; // 开始于第二个参数位置，第一个参数已被设置
-            for (String msgHash : msgHashList) {
-                stmt.setString(index++, msgHash);
+            // 循环设置参数 // 开始于第二个参数位置，第一个参数已被设置
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 2, msgHashList.get(i));
             }
 
             // 执行更新操作并获取受影响行数
@@ -529,32 +480,6 @@ public class AnalyseUrlResultTable {
         }
         return totalRowsAffected;
     }
-
-//    /**
-//     * 实现 基于 msgHash 获取 unvisitedUrls
-//     */
-//    public static synchronized UnVisitedUrlsModel fetchUnVisitedUrlsByMsgHash(String msgHash) {
-//        UnVisitedUrlsModel unVisitedUrlsModel = null;
-//
-//        String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash = ?;";
-//
-//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-//            stmt.setString(1, msgHash);
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                while (rs.next()) {
-//                    unVisitedUrlsModel = new UnVisitedUrlsModel(
-//                            rs.getInt("id"),
-//                            rs.getString("msg_hash"),
-//                            rs.getString("req_url"),
-//                            rs.getString("unvisited_url")
-//                    );
-//                }
-//            }
-//        } catch (Exception e) {
-//            stderr_println(LOG_ERROR, String.format("[-] Error fetch UnVisited Urls By MsgHash: %s", e.getMessage()));
-//        }
-//        return unVisitedUrlsModel;
-//    }
 
     /**
      * 实现 基于 msgHash 列表 获取 unvisitedUrls 列表

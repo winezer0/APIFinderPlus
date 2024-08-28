@@ -343,7 +343,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                UnionTableSql.deleteDataByIds(ids, ReqDataTable.tableName);
+                                CommonSql.deleteDataByIds(ids, ReqDataTable.tableName);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -492,8 +492,8 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                UnionTableSql.deleteDataByUrlToHosts(urlList, PathTreeTable.tableName);
-                                UnionTableSql.deleteDataByUrlToHosts(urlList, RecordPathTable.tableName);
+                                CommonSql.deleteDataByUrlToHosts(urlList, PathTreeTable.tableName);
+                                CommonSql.deleteDataByUrlToHosts(urlList, RecordPathTable.tableName);
                                 refreshTableModel(false);
                                 return null;
                             }
@@ -558,8 +558,8 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                 RuleConfigPanel.saveConfigToDefaultJson();
 
                                 //2、删除 Root URL 对应的 结果数据
-                                int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
-                                int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
+                                int count1 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, ReqDataTable.tableName);
+                                int count2 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
                                 stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
 
                                 //3、刷新表格
@@ -1599,7 +1599,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                     // 获取所有 已经被访问过得URL列表
                     //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
                     //获取所有由reqHash组成的字符串
-                    String accessedUrlHashes = UnionTableSql.fetchConcatColumnToString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
+                    String accessedUrlHashes = CommonSql.fetchConcatColumnToString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
                     // 遍历 unVisitedUrlsModels 进行更新
                     for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
                         //更新 unVisitedUrls 对象
@@ -1640,7 +1640,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
             return;
 
         //设置已加入数据库的数量
-        MsgInfoConfigPanel.lbTaskerCount.setText(String.valueOf(UnionTableSql.getTableCounts(ReqDataTable.tableName)));
+        MsgInfoConfigPanel.lbTaskerCount.setText(String.valueOf(CommonSql.getTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
         MsgInfoConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 

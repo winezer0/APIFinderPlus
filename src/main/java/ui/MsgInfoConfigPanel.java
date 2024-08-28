@@ -708,8 +708,8 @@ public class MsgInfoConfigPanel extends JPanel {
                                     RuleConfigPanel.saveConfigToDefaultJson();
                                     //2、删除 Root URL 对应的 结果数据
                                     java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);
-                                    int count1 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, ReqDataTable.tableName);
-                                    int count2 = UnionTableSql.batchDeleteDataByRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
+                                    int count1 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, ReqDataTable.tableName);
+                                    int count2 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
                                     stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
                                     //3、刷新表格
                                     MsgInfoPanel.getInstance().refreshTableModel(false);

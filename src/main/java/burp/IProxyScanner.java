@@ -323,7 +323,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //定时清理URL记录表 防止无用数据占用空间过大
-                    if (UnionTableSql.getTableCounts(RecordUrlTable.tableName) > 500){
+                    if (CommonSql.getTableCounts(RecordUrlTable.tableName) > 500){
                         stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
                         DBService.clearRecordUrlTable();
                     }
