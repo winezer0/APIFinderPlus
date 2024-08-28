@@ -61,13 +61,4 @@ public class CommonUpdateStatus {
         return updatedCount;
     }
 
-    //更新数据对对应状态 updateStatusRunEndByMsgHashList
-    public static int updateStatusRunEndByMsgHashList(String tableName, List<String> msgHashList) {
-        return updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_END);
-    }
-
-    //更新数据对应状态 updateStatusRunIngByMsgHashList
-    public static int updateStatusRunIngByMsgHashList(String tableName, List<String> msgHashList) {
-        return updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_ING);
-    }
 }

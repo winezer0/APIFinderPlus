@@ -387,7 +387,7 @@ public class IProxyScanner implements IProxyListener {
                     List<String> urlResultMsgHashList = CommonFetchData.fetchMsgHashByRunStatus(AnalyseUrlResultTable.tableName, Constants.ANALYSE_WAIT, maxPoolSize);
                     if (urlResultMsgHashList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        CommonUpdateStatus.updateStatusRunIngByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
+                        CommonUpdateStatus.updateStatusByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList, Constants.ANALYSE_ING);
                         //由于数据不是很大，可以一次性获取需要处理的结果
                         List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchUrlResultByMsgHashList(urlResultMsgHashList);
                         //循环插入数据 到HOST结果表
@@ -396,7 +396,7 @@ public class IProxyScanner implements IProxyListener {
                             AnalyseHostResultTable.insertOrUpdateAnalyseHostResult(analyseHostResultModel);
                         }
                         //更新对应的ids为分析完成,实际上没啥用
-                        CommonUpdateStatus.updateStatusRunEndByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
+                        CommonUpdateStatus.updateStatusByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList, Constants.ANALYSE_END);
                         return;
                     }
 
