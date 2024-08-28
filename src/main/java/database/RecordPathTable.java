@@ -168,10 +168,4 @@ public class RecordPathTable {
         return recordPathModels;
     }
 
-    /**
-     * 获取 ANALYSE_ING 状态的数据 并封装为 路径模型 复用 fetchPathRecordsByStatus
-     */
-    public static List<RecordPathDirsModel> fetchStatusRunIngPathRecords() {
-        return fetchPathRecordsByStatus(Constants.ANALYSE_ING);
-    }
 }

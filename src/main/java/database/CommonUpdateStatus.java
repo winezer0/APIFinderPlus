@@ -34,16 +34,6 @@ public class CommonUpdateStatus {
         return updatedCount;
     }
 
-    //修改ID对应的数据状态 为 分析中
-    public static int updateStatusRunIngByIds(String tableName, List<Integer> ids) {
-        return updateStatusByIds(tableName, ids, Constants.ANALYSE_ING);
-    }
-
-    // 修改ID对应的数据状态 为 分析完成
-    public static int updateStatusRunEndByIds(String tableName, List<Integer> ids) {
-        return updateStatusByIds(tableName, ids, Constants.ANALYSE_END);
-    }
-
     /**
      * 更新多个 msgHash 的状态
      */

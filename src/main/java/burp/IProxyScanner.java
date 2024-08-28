@@ -429,9 +429,9 @@ public class IProxyScanner implements IProxyListener {
                     List<Integer> recordPathIds = CommonFetchData.fetchIdsByRunStatus(RecordPathTable.tableName, Constants.ANALYSE_WAIT, maxPoolSize * 2);
                     if (recordPathIds.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        CommonUpdateStatus.updateStatusRunIngByIds(RecordPathTable.tableName, recordPathIds);
+                        CommonUpdateStatus.updateStatusByIds(RecordPathTable.tableName, recordPathIds, Constants.ANALYSE_ING);
                         //由于数据不是很大，可以一次性获取需要处理的结果
-                        List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchStatusRunIngPathRecords();
+                        List<RecordPathDirsModel> recordPathDirsModels = RecordPathTable.fetchPathRecordsByStatus(Constants.ANALYSE_ING);
                         for (RecordPathDirsModel recordPathModel : recordPathDirsModels) {
                             //根据新增的路径生成路径树
                             PathTreeModel pathTreeModel = PathTreeUtils.genPathsTree(recordPathModel);
@@ -443,7 +443,7 @@ public class IProxyScanner implements IProxyListener {
                             }
                         }
                         //更新对应的ids为检查完毕
-                        CommonUpdateStatus.updateStatusRunEndByIds(RecordPathTable.tableName,recordPathIds);
+                        CommonUpdateStatus.updateStatusByIds(RecordPathTable.tableName,recordPathIds, Constants.ANALYSE_END);
                     }
 
                     if (autoPathsToUrlsIsOpen){
