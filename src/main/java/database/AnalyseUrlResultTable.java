@@ -41,8 +41,8 @@ public class AnalyseUrlResultTable {
 
             + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
-            + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'"
-            .replace("ANALYSE_WAIT", Constants.ANALYSE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'"
+            .replace("RUN_STATUS", Constants.ANALYSE_WAIT)
 
             + ");";
 
