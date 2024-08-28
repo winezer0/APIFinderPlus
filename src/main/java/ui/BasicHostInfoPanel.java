@@ -388,7 +388,7 @@ public class BasicHostInfoPanel extends JPanel {
             return;
 
         //设置已加入数据库的数量
-        BasicHostConfigPanel.lbTaskerCountOnHost.setText(String.valueOf(CommonSql.getTableCounts(ReqDataTable.tableName)));
+        BasicHostConfigPanel.lbTaskerCountOnHost.setText(String.valueOf(CommonFetchData.fetchTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
         BasicHostConfigPanel.lbAnalysisEndCountOnHost.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
@@ -526,7 +526,7 @@ public class BasicHostInfoPanel extends JPanel {
                     // 获取所有 已经被访问过得URL列表
                     //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
                     //获取所有由reqHash组成的字符串
-                    String accessedUrlHashes = CommonSql.fetchColumnGroupConcatString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
+                    String accessedUrlHashes = CommonFetchData.fetchColumnGroupConcatString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
                     // 遍历 unVisitedUrlsModels 进行更新
                     for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
                         //更新 unVisitedUrls 对象

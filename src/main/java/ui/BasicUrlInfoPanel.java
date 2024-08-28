@@ -712,7 +712,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             return;
 
         //设置已加入数据库的数量
-        BasicUrlConfigPanel.lbTaskerCountOnUrl.setText(String.valueOf(CommonSql.getTableCounts(ReqDataTable.tableName)));
+        BasicUrlConfigPanel.lbTaskerCountOnUrl.setText(String.valueOf(CommonFetchData.fetchTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
         BasicUrlConfigPanel.lbAnalysisEndCountOnUrl.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 

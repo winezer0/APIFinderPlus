@@ -8,15 +8,31 @@ import java.util.List;
 
 import static utils.BurpPrintUtils.*;
 
-public class CommonSql {
+public class CommonFetchData {
     /**
-     * 存储通用的SQL查询类
+     * 统计数据表行数大小
      */
+    public static synchronized int fetchTableCounts(String tableName) {
+        int count = 0;
+
+        String selectSQL = "SELECT COUNT(*) FROM  "+ tableName +" ;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("Error Counts [%s]: %s",tableName, e.getMessage() ));
+        }
+        return count;
+    }
 
     /**
      * 根据运行状态取获取对应 ID list
      */
-    public static synchronized List<Integer> fetchIdsByRunStatus(String tableName, int limit, String analyseStatus) {
+    public static synchronized List<Integer> fetchIdsByRunStatus(String tableName, String analyseStatus, int limit) {
         List<Integer> ids = new ArrayList<>();
         String selectSQL = "SELECT id FROM " + tableName + " WHERE run_status = ? ORDER BY id ASC LIMIT ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -37,7 +53,7 @@ public class CommonSql {
      * 根据运行状态取获取对应请求 msghash list
      * @return
      */
-    public static synchronized List<String> fetchMsgHashByRunStatus(String tableName, int limit, String analyseStatus) {
+    public static synchronized List<String> fetchMsgHashByRunStatus(String tableName, String analyseStatus, int limit) {
         List<String> msgHashList = new ArrayList<>();
         String selectSQL = "SELECT msg_hash FROM " + tableName + " WHERE run_status = ? ORDER BY id ASC LIMIT ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -53,32 +69,6 @@ public class CommonSql {
         }
         return msgHashList;
     }
-
-    //根据运行状态取获取对应请求ID
-    public static synchronized List<String> fetchMsgHashByRunStatusIsWait(String tableName, int limit){
-        return fetchMsgHashByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
-    }
-
-    /**
-     * 统计数据表行数大小
-     */
-    public static synchronized int getTableCounts(String tableName) {
-        int count = 0;
-
-        String selectSQL = "SELECT COUNT(*) FROM  "+ tableName +" ;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);
-             ResultSet rs = stmt.executeQuery()) {
-
-            if (rs.next()) {
-                count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
-            }
-        } catch (Exception e) {
-            stderr_println(String.format("Error Counts [%s]: %s",tableName, e.getMessage() ));
-        }
-        return count;
-    }
-
 
     /////////////////////////////
     /**

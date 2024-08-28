@@ -136,14 +136,6 @@ public class RecordPathTable {
         return batchInsertOrUpdateRecordPath(recordPathModels);
     }
 
-
-    /**
-     * 获取id为waiting的数据
-     */
-    public static List<Integer> fetchIdsByRunStatusIsWait(int limit) {
-        return CommonSql.fetchIdsByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
-    }
-
     /**
      * 获取 指定状态的数据 并封装为 路径模型
      */

@@ -330,7 +330,7 @@ public class IProxyScanner implements IProxyListener {
                         return;
 
                     //定时清理URL记录表 防止无用数据占用空间过大
-                    if (CommonSql.getTableCounts(RecordUrlTable.tableName) > 500){
+                    if (CommonFetchData.fetchTableCounts(RecordUrlTable.tableName) > 500){
                         stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
                         DBService.clearRecordUrlTable();
                     }
@@ -384,7 +384,7 @@ public class IProxyScanner implements IProxyListener {
 
                     // 新增 获取URL分析结果表中的数据，将其加入到HOST分析结果表
                     // 判断 URL分析结果数据表 中 是否存在没有加入到 HOST分析结果表的数据 waiting状态
-                    List<String> urlResultMsgHashList = CommonSql.fetchMsgHashByRunStatusIsWait(AnalyseUrlResultTable.tableName, maxPoolSize);
+                    List<String> urlResultMsgHashList = CommonFetchData.fetchMsgHashByRunStatus(AnalyseUrlResultTable.tableName, Constants.ANALYSE_WAIT, maxPoolSize);
                     if (urlResultMsgHashList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
                         CommonUpdateStatus.updateStatusRunIngByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
@@ -426,7 +426,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //任务2、从path记录表中读取新增的网站路径，用于更新PathTree信息, 为动态计算 path to url 做准备
-                    List<Integer> recordPathIds = RecordPathTable.fetchIdsByRunStatusIsWait(maxPoolSize * 2);
+                    List<Integer> recordPathIds = CommonFetchData.fetchIdsByRunStatus(RecordPathTable.tableName, Constants.ANALYSE_WAIT, maxPoolSize * 2);
                     if (recordPathIds.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
                         CommonUpdateStatus.updateStatusRunIngByIds(RecordPathTable.tableName, recordPathIds);
