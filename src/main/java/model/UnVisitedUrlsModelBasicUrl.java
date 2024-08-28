@@ -4,6 +4,7 @@ import utils.CastUtils;
 
 import java.util.List;
 
+//TODO 待删除基于URL的未访问URL记录
 public class UnVisitedUrlsModelBasicUrl {
     private int id;
     private String reqUrl;

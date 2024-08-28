@@ -182,8 +182,8 @@ public class AnalyseUrlResultTable {
     /**
      * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
      */
-    public static synchronized UrlTableTabDataModel fetchResultByMsgHash(String msgHash){
-        UrlTableTabDataModel tabDataModel = null;
+    public static synchronized TableTabDataModelBasicUrl fetchResultByMsgHash(String msgHash){
+        TableTabDataModelBasicUrl tabDataModel = null;
 
         String selectSQL = "SELECT * FROM "+ tableName +" WHERE msg_hash = ?;";
 
@@ -191,7 +191,7 @@ public class AnalyseUrlResultTable {
             stmt.setString(1, msgHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    tabDataModel = new UrlTableTabDataModel(
+                    tabDataModel = new TableTabDataModelBasicUrl(
                             rs.getString("msg_hash"),
                             rs.getString("find_url"),
                             rs.getString("find_path"),
