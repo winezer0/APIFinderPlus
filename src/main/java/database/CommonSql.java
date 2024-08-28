@@ -252,7 +252,7 @@ public class CommonSql {
     /**
      * 获取任意表的任意列的字符串列表 【基于msgHashList】
      */
-    public static synchronized List<String> fetchColumnStrListByMsgHashList(List<String> msgHashList, String tableName, String columnName) {
+    public static synchronized List<String> fetchColumnStrListByMsgHashList(String tableName, String columnName, List<String> msgHashList) {
         List<String> stringList = new ArrayList<>();
 
         if (msgHashList.isEmpty())
