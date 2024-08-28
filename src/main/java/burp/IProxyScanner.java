@@ -27,7 +27,7 @@ public class IProxyScanner implements IProxyListener {
 
     public static ThreadPoolExecutor executorService = null;
     public static ScheduledExecutorService monitorExecutor;
-    private static int monitorExecutorServiceNumberOfIntervals = 5; //自动处理任务的时间频率,性能越低,频率越应该慢
+    private static int monitorExecutorServiceNumberOfIntervals = 4; //自动处理任务的时间频率,性能越低,频率越应该慢
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -67,13 +67,16 @@ public class IProxyScanner implements IProxyListener {
     public IProxyScanner() {
         //加载缓存过滤器
         urlCompareMap = BurpFileUtils.LoadJsonFromFile(urlCompareMapCacheFile);
+
         // 获取操作系统内核数量
         int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        // 高性能模式  //控制ScheduledExecutorService中任务的执行频率或周期。 //大于等于 4个 线程时 处理频率为2s,否则为4s
+        monitorExecutorServiceNumberOfIntervals = availableProcessors >= 4 ? 2 : 4;
+
         int coreCount = Math.min(availableProcessors, 16);
         maxPoolSize = coreCount * 2;
 
-        // 高性能模式  //控制ScheduledExecutorService中任务的执行频率或周期。
-        monitorExecutorServiceNumberOfIntervals = (availableProcessors > 6) ? 1 : monitorExecutorServiceNumberOfIntervals;
         long keepAliveTime = 60L;
 
         // 创建一个足够大的队列来处理您的任务
