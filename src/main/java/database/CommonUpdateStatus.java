@@ -87,4 +87,45 @@ public class CommonUpdateStatus {
         }
         return updatedCount;
     }
+
+    /**
+     * 当达到某个状态条件时 更新 msgHash 对应数据 的状态
+     */
+    public static synchronized int updateStatusWhenStatusByMsgHash(String tableName, String msgHash, String updateStatus, String whenStatus) {
+        int updatedCount = -1;
+
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE run_status = ? and msg_hash = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
+            stmtUpdate.setString(1, updateStatus);
+            stmtUpdate.setString(2, whenStatus);
+            stmtUpdate.setString(3, msgHash);
+
+            updatedCount = stmtUpdate.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] updateStatusWhenStatusByMsgHash: [%s] Error->: %s",tableName, e.getMessage()));
+        }
+        return updatedCount;
+    }
+
+    /**
+     * 当达到某个状态条件时 更新 root_url 对应数据 的状态
+     */
+    public static synchronized int updateStatusWhenStatusByRootUrl(String tableName, String rootUrl, String updateStatus, String whenStatus) {
+        int updatedCount = -1;
+
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE run_status = ? and root_url = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
+            stmtUpdate.setString(1, updateStatus);
+            stmtUpdate.setString(2, whenStatus);
+            stmtUpdate.setString(3, rootUrl);
+
+            updatedCount = stmtUpdate.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] updateStatusWhenStatusByRootUrl: [%s] Error->: %s",tableName, e.getMessage()));
+        }
+        return updatedCount;
+    }
+
 }

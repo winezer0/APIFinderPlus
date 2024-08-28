@@ -332,6 +332,8 @@ public class BasicHostInfoPanel extends JPanel {
         });
     }
 
+    private String recordRootUrl;
+
     /**
      * 更新表格行对应的下方数据信息
      * @param row
@@ -341,18 +343,33 @@ public class BasicHostInfoPanel extends JPanel {
         clearBasicHostMsgTabsShowData();
 
         //1、获取当前行的 rootUrl
-        String rootUrl = null;
+        String currentRootUrl = null;
         try {
             //实现排序后 视图行 数据的正确获取
-            rootUrl = UiUtils.getStringAtActualRow(basicHostMsgTableUI, row, 1);
+            currentRootUrl = UiUtils.getStringAtActualRow(basicHostMsgTableUI, row, 1);
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage()));
         }
 
-        if (CastUtils.isEmptyObj(rootUrl)) return;
+        //更新之前 msgHash Date为 处理中 注意 要修改 ReqDataTable
+        if (isNotEmptyObj(recordRootUrl)){
+            //当原来的状态是手动处理中时，就修改状态为处理完成
+            CommonUpdateStatus.updateStatusWhenStatusByRootUrl(AnalyseHostResultTable.tableName, recordRootUrl, Constants.HANDLE_END, Constants.HANDLE_ING);
+            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", recordRootUrl,Constants.HANDLE_END));
+        }
+
+        //更新当前 msgHash Date为 处理中
+        if (isNotEmptyObj(currentRootUrl) ){
+            //当原来的状态是自动分析完成时,就修改请求状态为手工处理中
+            CommonUpdateStatus.updateStatusWhenStatusByRootUrl(AnalyseHostResultTable.tableName, currentRootUrl, Constants.HANDLE_ING, Constants.HANDLE_WAIT);
+            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", currentRootUrl, Constants.HANDLE_ING));
+            recordRootUrl = currentRootUrl;
+        } else {
+            return;
+        }
 
         //查询路径树信息 并美化输出
-        PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(rootUrl);
+        PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(currentRootUrl);
         if (pathTreeModel!=null){
             JSONObject pathTree = pathTreeModel.getPathTree();
             String prettyJson = JSON.toJSONString(pathTree, JSONWriter.Feature.PrettyFormat);
@@ -360,7 +377,7 @@ public class BasicHostInfoPanel extends JPanel {
         }
 
         //查询详细数据
-        BasicHostTableTabDataModel tabDataModel = AnalyseHostResultTable.fetchHostResultByRootUrl(rootUrl);
+        BasicHostTableTabDataModel tabDataModel = AnalyseHostResultTable.fetchHostResultByRootUrl(currentRootUrl);
         if (tabDataModel != null) {
             //格式化为可输出的类型
             String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());

@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
+import static utils.CastUtils.isNotEmptyObj;
 
 public class BasicUrlInfoPanel extends JPanel implements IMessageEditorController {
     private static volatile BasicUrlInfoPanel instance; //实现单例模式
@@ -576,6 +577,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         });
     }
 
+    //记录当前所处的行号
+    private String recordMsgHash = null;
+
     /**
      * 更新表格行对应的下方数据信息
      * @param row
@@ -588,21 +592,36 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         msgViewerAutoSetSplitCenter();
 
         //1、获取当前行的msgHash
-        String msgHash = null;
+        String currentMsgHash = null;
         try {
             //msgHash = (String) table.getModel().getValueAt(row, 1);
             //stdout_println(String.format("当前点击第[%s]行 获取 msgHash [%s]",row, msgHash));
 
             //实现排序后 视图行 数据的正确获取
-            msgHash = UiUtils.getStringAtActualRow(basicUrlMsgTableUI, row, 2);
+            currentMsgHash = UiUtils.getStringAtActualRow(basicUrlMsgTableUI, row, 2);
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
         }
 
-        if (CastUtils.isEmptyObj(msgHash)) return;
+        //更新之前 msgHash Date为 处理中 注意 要修改 ReqDataTable
+        if (isNotEmptyObj(recordMsgHash)){
+            //当原来的状态是手动处理中时，就修改状态为处理完成
+            CommonUpdateStatus.updateStatusWhenStatusByMsgHash(ReqDataTable.tableName, recordMsgHash, Constants.HANDLE_END, Constants.HANDLE_ING);
+            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", recordMsgHash,Constants.HANDLE_END));
+        }
+
+        //更新当前 msgHash Date为 处理中
+        if (isNotEmptyObj(currentMsgHash) ){
+            //当原来的状态是自动分析完成时,就修改请求状态为手工处理中
+            CommonUpdateStatus.updateStatusWhenStatusByMsgHash(ReqDataTable.tableName, currentMsgHash, Constants.HANDLE_ING, Constants.ANALYSE_END);
+            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", recordMsgHash, Constants.HANDLE_ING));
+            recordMsgHash = currentMsgHash;
+        } else {
+            return;
+        }
 
         //根据 msgHash值 查询对应的请求体响应体数据
-        ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+        ReqMsgDataModel msgData = ReqMsgDataTable.fetchMsgDataByMsgHash(currentMsgHash);
         if (CastUtils.isNotEmptyObj(msgData)) {
             String requestUrl = msgData.getReqUrl();
             requestsData = msgData.getReqBytes();
@@ -612,12 +631,12 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             requestTextEditor.setMessage(requestsData, false);
             responseTextEditor.setMessage(responseData, false);
         } else {
-            stderr_println(LOG_ERROR, String.format("[!] fetch Msg Data By MsgHash [%s] is null", msgHash));
+            stderr_println(LOG_ERROR, String.format("[!] fetch Msg Data By MsgHash [%s] is null", currentMsgHash));
             return;
         }
 
         //根据 msgHash值 查询api分析结果数据
-        BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchUrlResultByMsgHash(msgHash);
+        BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchUrlResultByMsgHash(currentMsgHash);
         if (tabDataModel != null) {
             //格式化为可输出的类型
             String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());

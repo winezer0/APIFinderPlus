@@ -146,7 +146,7 @@ public class RecordPathTable {
         String selectSQL = "SELECT root_url,GROUP_CONCAT(req_path_dir, ?) AS req_path_dirs " +
                 "FROM "+ tableName +" WHERE run_status = ? GROUP BY root_url;";
 
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL);){
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)){
             //2、获取 解析中 状态的 Host、数据、ID列表
             stmt.setString(1, Constants.SPLIT_SYMBOL);
             stmt.setString(2, analyseStatus);
