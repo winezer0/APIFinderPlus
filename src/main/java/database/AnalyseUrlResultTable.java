@@ -111,20 +111,11 @@ public class AnalyseUrlResultTable {
         return generatedId; //返回ID值，无论是更新还是插入
     }
 
-
-    /**
-     * 根据运行状态取获取对应请求ID
-     * @return
-     */
-    public static synchronized List<String> fetchMsgHashByRunStatusIsWait(int limit){
-        return CommonSql.fetchMsgHashByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
-    }
-
     /**
      * 获取 指定 msgHashList 对应的 所有 分析结果 数据
      * @return
      */
-    public static synchronized List<AnalyseUrlResultModel> fetchResultByMsgHashList(List<String> msgHashList){
+    public static synchronized List<AnalyseUrlResultModel> fetchUrlResultByMsgHashList(List<String> msgHashList){
         List<AnalyseUrlResultModel> AnalyseUrlResultModels = new ArrayList<>();
 
         if (msgHashList.isEmpty()) return AnalyseUrlResultModels;
@@ -155,11 +146,10 @@ public class AnalyseUrlResultTable {
         return AnalyseUrlResultModels;
     }
 
-
     /**
      * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
      */
-    public static synchronized BasicUrlTableTabDataModel fetchResultByMsgHash(String msgHash){
+    public static synchronized BasicUrlTableTabDataModel fetchUrlResultByMsgHash(String msgHash){
         BasicUrlTableTabDataModel tabDataModel = null;
 
         String selectSQL = "SELECT * FROM "+ tableName +" WHERE msg_hash = ?;";

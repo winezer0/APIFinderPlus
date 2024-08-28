@@ -82,6 +82,11 @@ public class CommonSql {
         return msgHashList;
     }
 
+    //根据运行状态取获取对应请求ID
+    public static synchronized List<String> fetchMsgHashByRunStatusIsWait(String tableName, int limit){
+        return fetchMsgHashByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
+    }
+
     /**
      * 更新多个 msgHash 的状态
      */
@@ -285,7 +290,5 @@ public class CommonSql {
         }
         return concatenatedURLs;
     }
-
-
 
 }

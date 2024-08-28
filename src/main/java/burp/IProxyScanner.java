@@ -384,12 +384,12 @@ public class IProxyScanner implements IProxyListener {
 
                     // 新增 获取URL分析结果表中的数据，将其加入到HOST分析结果表
                     // 判断 URL分析结果数据表 中 是否存在没有加入到 HOST分析结果表的数据 waiting状态
-                    List<String> urlResultMsgHashList = AnalyseUrlResultTable.fetchMsgHashByRunStatusIsWait(maxPoolSize);
+                    List<String> urlResultMsgHashList = CommonSql.fetchMsgHashByRunStatusIsWait(AnalyseUrlResultTable.tableName, maxPoolSize);
                     if (urlResultMsgHashList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
                         CommonSql.updateStatusRunIngByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList);
                         //由于数据不是很大，可以一次性获取需要处理的结果
-                        List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchResultByMsgHashList(urlResultMsgHashList);
+                        List<AnalyseUrlResultModel> AnalyseUrlResultModels = AnalyseUrlResultTable.fetchUrlResultByMsgHashList(urlResultMsgHashList);
                         //循环插入数据 到HOST结果表
                         for (AnalyseUrlResultModel analyseUrlResultModel : AnalyseUrlResultModels){
                             AnalyseHostResultModel analyseHostResultModel = new AnalyseHostResultModel(analyseUrlResultModel);

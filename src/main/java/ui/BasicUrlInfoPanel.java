@@ -617,7 +617,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         }
 
         //根据 msgHash值 查询api分析结果数据
-        BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
+        BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchUrlResultByMsgHash(msgHash);
         if (tabDataModel != null) {
             //格式化为可输出的类型
             String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());
