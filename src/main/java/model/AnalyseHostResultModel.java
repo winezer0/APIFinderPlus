@@ -36,9 +36,7 @@ public class AnalyseHostResultModel {
         this.pathList = analyseUrlResultModel.getPathList();
         this.apiList = analyseUrlResultModel.getApiList();
         this.hasImportant = analyseUrlResultModel.getHasImportant();
-
         this.unvisitedUrlList = CastUtils.listAddList(this.urlList, this.apiList);
-
     }
 
     public String getRootUrl() {

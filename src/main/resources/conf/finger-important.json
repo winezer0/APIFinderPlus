@@ -109,7 +109,6 @@
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
-				"testphp.vulnweb.com"
 			],
 			"location": "config",
 			"match": "keyword",
