@@ -227,37 +227,4 @@ public class AnalyseUrlResultTable {
         return findPathModelList ;
     }
 
-
-
-    /**
-     * 实现 基于 msgHash 列表 获取 XXX Urls 列表
-     */
-    public static synchronized Set<String> fetchSpecialUrlsByMsgHashList(String columnName, List<String> msgHashList) {
-        Set<String> urlsSet = new LinkedHashSet<>();
-        if (msgHashList.isEmpty()) return urlsSet;
-
-        String selectSQL = "SELECT " + columnName + " FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
-                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-
-            for (int i = 0; i < msgHashList.size(); i++) {
-                stmt.setString(i + 1, msgHashList.get(i));
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    String urlJson = rs.getString(columnName);
-                    List<String> urlList = CastUtils.toStringList(urlJson);
-                    urlsSet.addAll(urlList);
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetching [%s] [%s] Urls By MsgHash List: %s",tableName, columnName, e.getMessage()));
-        }
-
-        return urlsSet;
-    }
-
-
 }

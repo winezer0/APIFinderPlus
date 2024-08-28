@@ -526,7 +526,7 @@ public class BasicHostInfoPanel extends JPanel {
                     // 获取所有 已经被访问过得URL列表
                     //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
                     //获取所有由reqHash组成的字符串
-                    String accessedUrlHashes = CommonSql.fetchConcatColumnToString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
+                    String accessedUrlHashes = CommonSql.fetchColumnGroupConcatString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
                     // 遍历 unVisitedUrlsModels 进行更新
                     for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
                         //更新 unVisitedUrls 对象

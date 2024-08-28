@@ -217,49 +217,6 @@ public class CommonSql {
         return count;
     }
 
-    /**
-     * 获取任意表的任意列的字符串拼接
-     */
-    public static synchronized String fetchConcatColumnToString(String tableName, String columnName) {
-        String concatenatedURLs = null;
-
-        String concatSQL = "SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +";"
-                .replace("$columnName$",columnName);
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                concatenatedURLs = rs.getString("concatenated_urls");
-            }
-
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetching [%s] concatenating [%s]: %s",tableName, columnName, e.getMessage()));
-            e.printStackTrace();
-        }
-        return concatenatedURLs;
-    }
-
-//    /**
-//     * 基于 url前缀 列表 删除行
-//     */
-//    public static synchronized int deleteDataByLikeRootUrl(String rootUrl, String tableName) {
-//        if (isEmptyObj(rootUrl)) return 0;
-//
-//        int totalRowsAffected = 0;
-//
-//        // 构建SQL语句，使用占位符 ? 来代表每个ID
-//        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE req_url like ?;";
-//
-//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
-//            // 执行删除操作
-//            stmt.setString(1, rootUrl+"%");
-//            totalRowsAffected= stmt.executeUpdate();
-//        } catch (Exception e) {
-//            stderr_println(String.format("[-] Error deleting [%s] Data By Starts With rootUrl: %s", tableName, e.getMessage()));
-//            e.printStackTrace();
-//        }
-//        return totalRowsAffected;
-//    }
 
     /**
      * 基于 多个url前缀 列表 删除行
@@ -290,4 +247,54 @@ public class CommonSql {
         }
         return totalRowsAffected;
     }
+
+    /////////////////////////////
+    /**
+     * 获取任意表的任意列的字符串列表 【基于msgHashList】
+     */
+    public static synchronized List<String> fetchColumnStrListByMsgHashList(List<String> msgHashList, String tableName, String columnName) {
+        List<String> stringList = new ArrayList<>();
+
+        if (msgHashList.isEmpty())
+            return stringList;
+
+        String selectSQL = "SELECT " + columnName + " FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
+                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            for (int i = 0; i < msgHashList.size(); i++) {
+                stmt.setString(i + 1, msgHashList.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    stringList.add(rs.getString(columnName));
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] fetchColumnStrListByMsgHashList: [%s] [%s] -> Error: %s",tableName, columnName, e.getMessage()));
+        }
+        return stringList;
+    }
+
+    /**
+     * 获取任意表的任意列的字符串拼接 【获取所有行】
+     */
+    public static synchronized String fetchColumnGroupConcatString(String tableName, String columnName) {
+        String concatenatedURLs = null;
+
+        String concatSQL = "SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +";"
+                .replace("$columnName$",columnName);
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                concatenatedURLs = rs.getString("concatenated_urls");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetching [%s] concatenating [%s]: %s",tableName, columnName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return concatenatedURLs;
+    }
+
 }
