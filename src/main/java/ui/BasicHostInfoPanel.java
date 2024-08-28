@@ -355,14 +355,12 @@ public class BasicHostInfoPanel extends JPanel {
         if (isNotEmptyObj(recordRootUrl)){
             //当原来的状态是手动处理中时，就修改状态为处理完成
             CommonUpdateStatus.updateStatusWhenStatusByRootUrl(AnalyseHostResultTable.tableName, recordRootUrl, Constants.HANDLE_END, Constants.HANDLE_ING);
-            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", recordRootUrl,Constants.HANDLE_END));
         }
 
         //更新当前 msgHash Date为 处理中
         if (isNotEmptyObj(currentRootUrl) ){
             //当原来的状态是自动分析完成时,就修改请求状态为手工处理中
             CommonUpdateStatus.updateStatusWhenStatusByRootUrl(AnalyseHostResultTable.tableName, currentRootUrl, Constants.HANDLE_ING, Constants.HANDLE_WAIT);
-            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", currentRootUrl, Constants.HANDLE_ING));
             recordRootUrl = currentRootUrl;
         } else {
             return;

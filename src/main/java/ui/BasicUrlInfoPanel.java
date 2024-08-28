@@ -313,7 +313,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                     try {
                                         Map<String, Object> dynamicFilterMap = RespFieldCompareutils.generateDynamicFilterMap(msgInfo,true);
                                         IProxyScanner.urlCompareMap.put(msgInfo.getUrlInfo().getRootUrlUsual(), dynamicFilterMap);
-                                        System.out.println(String.format("主动动态规则生成完毕:%s", CastUtils.toJsonString(dynamicFilterMap)));
+                                        stdout_println(LOG_DEBUG, String.format("主动动态规则生成完毕:%s", CastUtils.toJsonString(dynamicFilterMap)));
                                     } catch (Exception e){
                                         e.printStackTrace();
                                     }
@@ -607,14 +607,12 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         if (isNotEmptyObj(recordMsgHash)){
             //当原来的状态是手动处理中时，就修改状态为处理完成
             CommonUpdateStatus.updateStatusWhenStatusByMsgHash(ReqDataTable.tableName, recordMsgHash, Constants.HANDLE_END, Constants.HANDLE_ING);
-            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", recordMsgHash,Constants.HANDLE_END));
         }
 
         //更新当前 msgHash Date为 处理中
         if (isNotEmptyObj(currentMsgHash) ){
             //当原来的状态是自动分析完成时,就修改请求状态为手工处理中
             CommonUpdateStatus.updateStatusWhenStatusByMsgHash(ReqDataTable.tableName, currentMsgHash, Constants.HANDLE_ING, Constants.ANALYSE_END);
-            System.out.println(String.format("自动触发更新 [%s] 状态为 [%s]", recordMsgHash, Constants.HANDLE_ING));
             recordMsgHash = currentMsgHash;
         } else {
             return;

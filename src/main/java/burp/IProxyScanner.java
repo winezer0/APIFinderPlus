@@ -21,13 +21,13 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 public class IProxyScanner implements IProxyListener {
     public static int totalRequestCount = 0;  //记录所有经过插件的请求数量
-    public static final int MaxRespBodyLen = 500000; //最大支持存储的响应 比特长度
+    public static final int MaxRespBodyLen = 1000000; //最大支持存储的响应 比特长度
 
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL 防止重复扫描
 
     public static ThreadPoolExecutor executorService = null;
     public static ScheduledExecutorService monitorExecutor;
-    private static int monitorExecutorServiceNumberOfIntervals = 2;
+    private static int monitorExecutorServiceNumberOfIntervals = 5; //自动处理任务的时间频率,性能越低,频率越应该慢
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -460,7 +460,6 @@ public class IProxyScanner implements IProxyListener {
 
                     // 自动递归查询功能
                     if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
-                        System.out.println("已开启 自动递归查询功能");
                         //获取一个未访问URL列表
                         executorService.submit(() -> {
                             //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
