@@ -11,7 +11,7 @@ public class CommonDeleteLine {
     /**
      * 执行删除数据行的SQL语句
      */
-    private static int runDeleteSql(String tableName, List<String> stringList, String deleteSQL) {
+    private static int runDeleteByStringsSQL(String tableName, List<String> stringList, String deleteSQL) {
         int totalRowsAffected = 0;
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             // 设置SQL语句中的参数值 i+1表示从第一个?号开始设置
@@ -27,40 +27,39 @@ public class CommonDeleteLine {
         return totalRowsAffected;
     }
 
-
     //基于 rootUrls 列表 同时删除多行
-    public static synchronized int deleteDataByRootUrls(String tableName, List<String> rootUrls) {
+    public static synchronized int deleteLineByRootUrls(String tableName, List<String> rootUrls) {
         if (isEmptyObj(rootUrls)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = "DELETE FROM "+ tableName +"  WHERE root_url IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
-        return runDeleteSql(tableName, rootUrls, deleteSQL);
+        return runDeleteByStringsSQL(tableName, rootUrls, deleteSQL);
     }
 
     //基于 msgHash 列表 同时删除多个 行
-    public static synchronized int deleteDataByMsgHashList(String tableName, List<String> msgHashList) {
+    public static synchronized int deleteLineByMsgHashList(String tableName, List<String> msgHashList) {
         if (isEmptyObj(msgHashList)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = "DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
-        return runDeleteSql(tableName, msgHashList, deleteSQL);
+        return runDeleteByStringsSQL(tableName, msgHashList, deleteSQL);
     }
 
 
     /**
      * 基于 id 列表 同时删除多个 行
      */
-    public static synchronized int deleteDataByIds(List<Integer> ids, String tableName) {
+    public static synchronized int deleteLineByIds(List<Integer> ids, String tableName) {
         int totalRowsAffected = 0;
 
         if (ids.isEmpty()) return totalRowsAffected;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE id IN $buildInParamList$;"
+        String deleteSQL = "DELETE FROM "+ tableName + " WHERE id IN $buildInParamList$;"
                 .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
@@ -82,7 +81,7 @@ public class CommonDeleteLine {
     /**
      * 基于 多个url前缀 列表 删除行
      */
-    public static synchronized int batchDeleteDataByLikeRootUrls(String tableName,List<String> rootUrlList) {
+    public static synchronized int deleteLineByUrlLikeRootUrls(String tableName, List<String> rootUrlList) {
         if (isEmptyObj(rootUrlList)) return 0;
 
         int totalRowsAffected = 0;

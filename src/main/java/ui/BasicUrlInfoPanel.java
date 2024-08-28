@@ -248,7 +248,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                     new SwingWorker<Void, Void>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                            CommonDeleteLine.deleteDataByIds(ids, ReqDataTable.tableName);
+                            CommonDeleteLine.deleteLineByIds(ids, ReqDataTable.tableName);
                             refreshBasicUrlTableModel(false);
                             return null;
                         }
@@ -406,9 +406,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                 RuleConfigPanel.saveConfigToDefaultJson();
 
                                 //2、删除 Root URL 对应的 结果数据
-                                int countReq = CommonDeleteLine.batchDeleteDataByLikeRootUrls(ReqDataTable.tableName, rootUrls);
-                                int countUrl = CommonDeleteLine.deleteDataByRootUrls(AnalyseUrlResultTable.tableName, rootUrls);
-                                int countHost = CommonDeleteLine.deleteDataByRootUrls(AnalyseHostResultTable.tableName, rootUrls);
+                                int countReq = CommonDeleteLine.deleteLineByUrlLikeRootUrls(ReqDataTable.tableName, rootUrls);
+                                int countUrl = CommonDeleteLine.deleteLineByRootUrls(AnalyseUrlResultTable.tableName, rootUrls);
+                                int countHost = CommonDeleteLine.deleteLineByRootUrls(AnalyseHostResultTable.tableName, rootUrls);
                                 stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s, delete Analyse Url Result Count:%s", countReq, countHost, countUrl));
 
                                 //3、刷新表格
