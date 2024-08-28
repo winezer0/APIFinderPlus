@@ -23,7 +23,7 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     //联合 获取所有行数据
-    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataBySQl(String selectSQL){
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineBySQl(String selectSQL){
         ArrayList<BasicUrlTableLineDataModel> apiDataModels = new ArrayList<>();
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -55,37 +55,37 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     // 获取当前所有记录
-    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataAll() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineAll() {
         String selectSQL = genUrlTableSqlByWhereCondition(null);
-        return  fetchUrlTableLineDataBySQl(selectSQL);
+        return  fetchUrlTableLineBySQl(selectSQL);
     }
 
     //获取有效数据的行
-    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataHasData() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineHasInfoOrUri() {
         // 获取当前所有记录的数据
         String WhereCondition = "Where find_url_num>0 or find_path_num>0 or find_info_num>0";
         String selectSQL = genUrlTableSqlByWhereCondition(WhereCondition);
-        return  fetchUrlTableLineDataBySQl(selectSQL);
+        return  fetchUrlTableLineBySQl(selectSQL);
     }
 
     //获取存在敏感信息的行
-    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataHasInfo() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineHasInfo() {
         // 获取当前所有记录的数据
         String WhereCondition = "where find_info_num>0";
         String selectSQL = genUrlTableSqlByWhereCondition(WhereCondition);
-        return  fetchUrlTableLineDataBySQl(selectSQL);
+        return  fetchUrlTableLineBySQl(selectSQL);
     }
 
     //获取没有数据的行,备用,用于后续删除数据
-    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataIsNull() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineAnyIsNull() {
         // 获取当前所有记录的数据
         String WhereCondition = "where (find_url_num is null and find_path_num is null and find_info_num is null) or (find_url_num <1  and find_path_num <1 and find_info_num <1) ";
         String selectSQL = genUrlTableSqlByWhereCondition(WhereCondition);
-        return  fetchUrlTableLineDataBySQl(selectSQL);
+        return  fetchUrlTableLineBySQl(selectSQL);
     }
 
     //获取没有数据的行,备用,用于后续删除数据
-    public static synchronized int clearUselessUrlTableData() {
+    public static synchronized int clearUrlTableLineAnyIsNull() {
         int rowsAffected = -1;
 
         // 获取当前所有记录的数据

@@ -343,7 +343,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //获取需要解析的响应体数据并进行分析 然后插入到URL结果分析表
-                    List<Integer> msgDataIndexList = ReqDataTable.fetchMsgIdListWhereRunWait(maxPoolSize);
+                    List<Integer> msgDataIndexList = ReqDataTable.fetchMsgDataIndexListByRunStatus(maxPoolSize, Constants.ANALYSE_WAIT);
                     if (msgDataIndexList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
                         CommonUpdateStatus.updateStatusByMsgDataIndexList(ReqDataTable.tableName, msgDataIndexList, Constants.ANALYSE_ING);
@@ -448,7 +448,7 @@ public class IProxyScanner implements IProxyListener {
 
                     if (autoPathsToUrlsIsOpen){
                         //任务 获取 基准路径树 小于 PathTree基准的数据进行更新
-                        List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
+                        List<FindPathModel> findPathModelList = UnionTableSql.fetchHostTableNeedUpdatePathDataList(maxPoolSize);
                         if (findPathModelList.size()>0){
                             for (FindPathModel findPathModel:findPathModelList) {
                                 stdout_println(LOG_DEBUG, String.format("[*] 获取动态更新PATHTree进行重计算 PathNum: %s", findPathModel.getFindPath().size()));

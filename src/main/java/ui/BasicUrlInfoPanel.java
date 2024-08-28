@@ -100,7 +100,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<BasicUrlTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataAll();
+                ArrayList<BasicUrlTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicUrlSQL.fetchUrlTableLineAll();
                 //将数据赋值给表模型
                 basicUrlPopulateModelFromList(tableModel, allReqAnalyseData);
             }
@@ -664,17 +664,17 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
 
                 switch (selectOption) {
                     case "显示有效内容":
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataHasData();
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineHasInfoOrUri();
                         break;
                     case "显示敏感内容":
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataHasInfo();
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineHasInfo();
                         break;
                     case "显示无效内容":
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataIsNull();
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineAnyIsNull();
                         break;
                     case "显示全部内容":
                     default:
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataAll();
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineAll();
                         break;
                 }
 

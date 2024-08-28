@@ -93,7 +93,6 @@ public class ReqMsgDataTable {
         return msgData;
     }
 
-
     /**
      * 根据消息ID查询请求内容
      * @return
@@ -117,6 +116,33 @@ public class ReqMsgDataTable {
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By Msg Hash: %s -> %s", msgHash, e.getMessage()));
+        }
+        return msgData;
+    }
+
+    /**
+     * 根据 RootUrl 查询请求内容 最新的一条
+     * @return
+     */
+    public static ReqMsgDataModel fetchMsgDataByRootUrlDesc(String rootUrl) {
+        ReqMsgDataModel msgData = null;
+
+        String sql = "SELECT * FROM "+ tableName + " WHERE req_url like ? ORDER BY id DESC Limit 1;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, rootUrl + '%');
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                msgData = new ReqMsgDataModel(
+                        rs.getString("msg_hash"),
+                        rs.getString("req_url"),
+                        rs.getBytes("req_bytes"),
+                        rs.getBytes("resp_bytes")
+                );
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By rootUrl: %s -> %s", rootUrl, e.getMessage()));
         }
         return msgData;
     }
@@ -153,26 +179,4 @@ public class ReqMsgDataTable {
         return reqMsgDataModelList;
     }
 
-    public static ReqMsgDataModel fetchMsgDataByRootUrlDesc(String rootUrl) {
-        ReqMsgDataModel msgData = null;
-
-        String sql = "SELECT * FROM "+ tableName + " WHERE req_url like ? ORDER BY id DESC Limit 1;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, rootUrl + '%');
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                msgData = new ReqMsgDataModel(
-                        rs.getString("msg_hash"),
-                        rs.getString("req_url"),
-                        rs.getBytes("req_bytes"),
-                        rs.getBytes("resp_bytes")
-                );
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Msg Data By rootUrl: %s -> %s", rootUrl, e.getMessage()));
-        }
-        return msgData;
-    }
 }

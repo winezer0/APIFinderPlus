@@ -101,7 +101,7 @@ public class BasicHostInfoPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据 查询 HOST信息表
-                ArrayList<BasicHostTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
+                ArrayList<BasicHostTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineAll();
                 //将数据赋值给表模型
                 basicHostPopulateModelFromList(tableModel, allReqAnalyseData);
             }
@@ -461,20 +461,20 @@ public class BasicHostInfoPanel extends JPanel {
 
                 switch (selectOption) {
                     case "显示有效内容":
-                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineDataHasData();
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasInfoOrUri();
                         break;
                     case "显示敏感内容":
-                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineDataHasInfo();
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasInfo();
                         break;
                     case "显示未访问路径":
-                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineDataHasUnVisitedUrls();
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasUnVisitedUrls();
                         break;
                     case "显示无效内容":
-                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineDataIsNull();
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineAnyIsNull();
                         break;
                     case "显示全部内容":
                     default:
-                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineAll();
                         break;
                 }
 

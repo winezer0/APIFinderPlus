@@ -571,7 +571,7 @@ public class UiUtils {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的无效数据
-                TableLineDataModelBasicUrlSQL.clearUselessUrlTableData();
+                TableLineDataModelBasicUrlSQL.clearUrlTableLineAnyIsNull();
                 BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
                 BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }

@@ -100,12 +100,4 @@ public class ReqDataTable {
         return msgDataIndexList;
     }
 
-    /**
-     * 获取未处理的消息的 MsgDataIndexList
-     */
-    public static synchronized List<Integer> fetchMsgIdListWhereRunWait(int limit){
-        return fetchMsgDataIndexListByRunStatus(limit, Constants.ANALYSE_WAIT);
-    }
-
-
 }
