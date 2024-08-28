@@ -53,7 +53,7 @@ public class CommonDeleteLine {
     /**
      * 基于 id 列表 同时删除多个 行
      */
-    public static synchronized int deleteLineByIds(List<Integer> ids, String tableName) {
+    public static synchronized int deleteLineByIds(String tableName, List<Integer> ids) {
         int totalRowsAffected = 0;
 
         if (ids.isEmpty()) return totalRowsAffected;

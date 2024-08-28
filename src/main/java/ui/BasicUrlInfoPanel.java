@@ -248,7 +248,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                     new SwingWorker<Void, Void>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                            CommonDeleteLine.deleteLineByIds(ids, ReqDataTable.tableName);
+                            CommonDeleteLine.deleteLineByIds(ReqDataTable.tableName, ids);
                             refreshBasicUrlTableModel(false);
                             return null;
                         }

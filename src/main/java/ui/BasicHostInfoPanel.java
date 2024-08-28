@@ -604,7 +604,7 @@ public class BasicHostInfoPanel extends JPanel {
                     new SwingWorker<Void, Void>() {
                         @Override
                         protected Void doInBackground() throws Exception {
-                            CommonDeleteLine.deleteLineByIds(ids, AnalyseHostResultTable.tableName);
+                            CommonDeleteLine.deleteLineByIds(AnalyseHostResultTable.tableName, ids);
                             refreshBasicHostTableModel(false);
                             return null;
                         }
