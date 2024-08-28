@@ -30,6 +30,27 @@ public class CommonFetchData {
     }
 
     /**
+     * 统计所有已经识别完成的URL的数量
+     * @return
+     */
+    public static synchronized int fetchTableCountsByStatus(String analyseStatus) {
+        int count = 0;
+
+        String selectSQL = "SELECT COUNT(*) FROM "+ ReqDataTable.tableName + " WHERE run_status = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)){
+            stmt.setString(1, analyseStatus);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1); // 获取第一列的值，即 COUNT(*) 的结果
+            }
+        } catch (Exception e) {
+            stderr_println(String.format("Counts Table [%s] Error: %s", ReqDataTable.tableName, e.getMessage() ));
+        }
+        return count;
+    }
+
+    /**
      * 根据运行状态取获取对应 ID list
      */
     public static synchronized List<Integer> fetchIdsByRunStatus(String tableName, String analyseStatus, int limit) {
@@ -118,5 +139,4 @@ public class CommonFetchData {
         }
         return concatenatedURLs;
     }
-
 }

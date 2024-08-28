@@ -61,4 +61,30 @@ public class CommonUpdateStatus {
         return updatedCount;
     }
 
+    /**
+     * 基于 msgDataIndexList 更新 状态
+     */
+    public static synchronized int updateStatusByMsgDataIndexList(String tableName, List<Integer> msgDataIndexList, String updateStatus) {
+        int updatedCount = -1;
+
+        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(msgDataIndexList.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
+            stmtUpdate.setString(1, updateStatus);
+
+            for (int i = 0; i < msgDataIndexList.size(); i++) {
+                stmtUpdate.setInt(i + 2, msgDataIndexList.get(i));
+            }
+
+            updatedCount = stmtUpdate.executeUpdate();
+
+            if (updatedCount != msgDataIndexList.size()) {
+                stderr_println(LOG_DEBUG, "[!] Number of updated rows does not match number of selected rows.");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error updating Req Data Status: %s", e.getMessage()));
+        }
+        return updatedCount;
+    }
 }

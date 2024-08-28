@@ -346,7 +346,7 @@ public class IProxyScanner implements IProxyListener {
                     List<Integer> msgDataIndexList = ReqDataTable.fetchMsgIdListWhereRunWait(maxPoolSize);
                     if (msgDataIndexList.size() > 0){
                         //更新对应的ids为检查中 防止其他进程获取这些数据
-                        ReqDataTable.updateReqDataStatusRunIngByMsgId(msgDataIndexList);
+                        CommonUpdateStatus.updateStatusByMsgDataIndexList(ReqDataTable.tableName, msgDataIndexList, Constants.ANALYSE_ING);
 
                         //循环进行数据获取和分析操作
                         for (int msgDataIndex : msgDataIndexList){
@@ -378,7 +378,7 @@ public class IProxyScanner implements IProxyListener {
                             }
                         }
                         //更新对应的ids为分析完成,实际上没啥用
-                        ReqDataTable.updateReqDataStatusRunEndByMsgId(msgDataIndexList);
+                        CommonUpdateStatus.updateStatusByMsgDataIndexList(ReqDataTable.tableName, msgDataIndexList, Constants.ANALYSE_END);
                         return;
                     }
 

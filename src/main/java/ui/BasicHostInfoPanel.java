@@ -390,7 +390,7 @@ public class BasicHostInfoPanel extends JPanel {
         //设置已加入数据库的数量
         BasicHostConfigPanel.lbTaskerCountOnHost.setText(String.valueOf(CommonFetchData.fetchTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
-        BasicHostConfigPanel.lbAnalysisEndCountOnHost.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
+        BasicHostConfigPanel.lbAnalysisEndCountOnHost.setText(String.valueOf(CommonFetchData.fetchTableCountsByStatus(Constants.ANALYSE_END)));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (checkAutoRefreshButtonStatus && basicHostAutoRefreshIsOpen) {
