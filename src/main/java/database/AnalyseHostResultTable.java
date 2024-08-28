@@ -1,9 +1,7 @@
 package database;
 
 import com.alibaba.fastjson2.JSONArray;
-import model.AnalyseHostResultModel;
-import model.PathToUrlsModel;
-import model.UnVisitedUrlsModelBasicHost;
+import model.*;
 import utils.CastUtils;
 
 import java.sql.Connection;
@@ -261,9 +259,10 @@ public class AnalyseHostResultTable {
     public static synchronized List<UnVisitedUrlsModelBasicHost> fetchOneUnVisitedUrls(Integer limit){
         List<UnVisitedUrlsModelBasicHost> list = new ArrayList<>();
 
-        String selectSQL = "SELECT id,root_url,unvisited_url FROM "+ tableName + " WHERE unvisited_url_num > 0 ORDER BY id ASC Limit 1;";
+        String selectSQL = "SELECT id,root_url,unvisited_url FROM "+ tableName + " WHERE unvisited_url_num > 0 ORDER BY id ASC Limit ?;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setInt(1, limit);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 UnVisitedUrlsModelBasicHost unVisitedUrlsModel = new UnVisitedUrlsModelBasicHost(
@@ -278,7 +277,6 @@ public class AnalyseHostResultTable {
         }
         return list;
     }
-
 
     /**
      * 实现 基于 rootUrl 清空 未访问的URL列表
@@ -298,4 +296,5 @@ public class AnalyseHostResultTable {
         }
         return affectedRows;
     }
+
 }

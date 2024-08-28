@@ -1,7 +1,5 @@
 package utils;
 
-import model.TableLineDataModelBasicUrl;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
@@ -10,11 +8,9 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
-import static utils.CastUtils.isEmptyObj;
 
 public class UiUtils {
     public static ImageIcon getImageIcon(String iconPath, int xWidth, int yWidth){
@@ -47,77 +43,26 @@ public class UiUtils {
                 .replace("/", "&#x2F;");
     }
 
-
     /**
-     * 把 jsonArray 赋值到 model 中
-     * @param model
-     * @param jsonArray
+     * 获取当前显示行的 number
      */
-    public static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<TableLineDataModelBasicUrl> jsonArray) {
-        if (isEmptyObj(jsonArray)) return;
-
-        Iterator<TableLineDataModelBasicUrl> iterator = jsonArray.iterator();
-        while (iterator.hasNext()) {
-            TableLineDataModelBasicUrl apiDataModel = iterator.next();
-            Object[] rowData = apiDataModel.toRowDataArray();
-            model.addRow(rowData);
-        }
-        //刷新表数据模型
-        model.fireTableDataChanged();
-    }
-
-
-    /**
-     * 获取当前显示行的ID
-     *
-     * @param table
-     * @param row
-     * @return
-     */
-    public static int getIdAtActualRow(JTable table, int row) {
+    public static int getIdAtActualRow(JTable table, int row, int columnIndex) {
         TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
         int modelRow = sorter.convertRowIndexToModel(row);
-        int columnIndex = 0;
         int id = (int) table.getModel().getValueAt(modelRow, columnIndex);
         return id;
     }
 
-    /**
-     * 获取当前显示行的hash
-     * @param row
-     * @return
-     */
-    public static String getMsgHashAtActualRow(JTable table, int row) {
-        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-        int modelRow = sorter.convertRowIndexToModel(row);
-        int columnIndex = 2;
-        String msgHash = (String) table.getModel().getValueAt(modelRow, columnIndex);
-        return msgHash;
-    }
 
     /**
-     * 获取当前显示行的 url
-     * @param row
-     * @return
+     * 批量获取所有行列表相关的 numbers 列表 默认在第1列
      */
-    public static String getUrlAtActualRow(JTable table, int row) {
-        // 获取实际的行索引，因为JTable的 getSelectedRows 返回的是视图索引
-        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
-        int modelRow = sorter.convertRowIndexToModel(row);
-        int columnIndex = 3;
-        String url = (String) table.getModel().getValueAt(modelRow, columnIndex);
-        return url;
-    }
-
-    /**
-     * 批量获取所有行列表相关的 Id 列表
-     */
-    public static List<Integer> getIdsAtActualRows(JTable table, int[] selectedRows) {
+    public static List<Integer> getIdsAtActualRows(JTable table, int[] selectedRows, int columnIndex) {
         List<Integer> ids = new ArrayList<>();
         if (selectedRows.length > 0) {
             for (int selectedRow : selectedRows) {
                 if (selectedRow != -1){
-                    ids.add(getIdAtActualRow(table, selectedRow));
+                    ids.add(getIdAtActualRow(table, selectedRow, columnIndex));
                 }
             }
         }
@@ -125,34 +70,33 @@ public class UiUtils {
     }
 
     /**
-     * 批量获取所有行列表相关的 URl 列表
+     * 获取当前显示行的 String
      */
-    public static List<String> getUrlsAtActualRows(JTable table, int[] selectedRows) {
+    public static String getStringAtActualRow(JTable table, int row, int columnIndex) {
+        // 获取实际的行索引，因为JTable的 getSelectedRows 返回的是视图索引
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) table.getRowSorter();
+        int modelRow = sorter.convertRowIndexToModel(row);
+        String url = (String) table.getModel().getValueAt(modelRow, columnIndex);
+        return url;
+    }
+
+
+    /**
+     * 批量获取所有行列表相关的 String 列表
+     */
+    public static List<String> geStringListAtActualRows(JTable table, int[] selectedRows, int columnIndex) {
         List<String> urls = new ArrayList<>();
         if (selectedRows.length > 0){
             // 遍历所有选定的行
             for (int selectedRow : selectedRows) {
                 if (selectedRow != -1)
-                    urls.add(getUrlAtActualRow(table, selectedRow));
+                    urls.add(getStringAtActualRow(table, selectedRow, columnIndex));
             }
         }
         return urls;
     }
 
-    /**
-     * 批量获取所有行列表相关的 MsgHash 列表
-     */
-    public static List<String> getMsgHashListAtActualRows(JTable table, int[] selectedRows) {
-        List<String> msgHashList = new ArrayList<>();
-        if (selectedRows.length > 0){
-            // 遍历所有选定的行
-            for (int selectedRow : selectedRows) {
-                if (selectedRow != -1)
-                    msgHashList.add(getMsgHashAtActualRow(table, selectedRow));
-            }
-        }
-        return msgHashList;
-    }
+
 
     /**
      * 把字符串传递到系统剪贴板

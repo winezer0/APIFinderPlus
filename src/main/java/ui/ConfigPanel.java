@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.*;
 
-public class MsgInfoConfigPanel extends JPanel {
+public class ConfigPanel extends JPanel {
     public static JLabel lbRequestCount;   //记录所有加入到URL的请求
     public static JLabel lbTaskerCount;    //记录所有加入数据库的请求
     public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
@@ -29,7 +29,7 @@ public class MsgInfoConfigPanel extends JPanel {
     private static JLabel autoRefreshText; //自动刷新按钮显示的文本
     public static int timerDelay = 15;  //定时器刷新间隔,单位秒
 
-    public MsgInfoConfigPanel() {
+    public ConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
         //GridBagLayout 允许以网格形式布局容器中的组件，同时为每个组件提供独立的定位和大小控制，非常适用于需要复杂布局设计的GUI界面。
         // 列数，行数  //表示容器被划分为两列，每一列的初始宽度均为0。
@@ -417,7 +417,7 @@ public class MsgInfoConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String searchText = urlSearchBox.getText();
-                String selectedOption = (String) MsgInfoConfigPanel.choicesComboBox.getSelectedItem();
+                String selectedOption = (String) ConfigPanel.choicesComboBox.getSelectedItem();
                 MsgInfoPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
             }
@@ -428,7 +428,7 @@ public class MsgInfoConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String searchText = urlSearchBox.getText();
-                String selectedOption = (String) MsgInfoConfigPanel.choicesComboBox.getSelectedItem();
+                String selectedOption = (String) ConfigPanel.choicesComboBox.getSelectedItem();
                 MsgInfoPanel.showDataTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
             }
@@ -516,7 +516,7 @@ public class MsgInfoConfigPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的无效数据
-                UnionTableSql.clearUselessData();
+                TableLineDataModelBasicUrlSQL.clearUselessUrlTableData();
                 setAutoRefreshOpen();
             }
         });
@@ -746,6 +746,6 @@ public class MsgInfoConfigPanel extends JPanel {
 
 
     public static String getComboBoxSelectedOption() {
-        return (String) MsgInfoConfigPanel.choicesComboBox.getSelectedItem();
+        return (String) ConfigPanel.choicesComboBox.getSelectedItem();
     }
 }

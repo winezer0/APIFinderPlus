@@ -159,7 +159,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         if (iProxyScanner.executorService != null) {
             // 尝试立即关闭所有正在执行的任务
             List<Runnable> notExecutedTasks = iProxyScanner.executorService.shutdownNow();
-            stdout_println(LOG_DEBUG, "[+] Try to Stop All Tasks, The Number of Not Executed Tasks：[%s]" + notExecutedTasks.size());
+            stdout_println(LOG_DEBUG, "[+] Try to Stop All Tasks, The Number of Not Executed Tasks：" + notExecutedTasks.size());
         }
 
         //更新插件状态

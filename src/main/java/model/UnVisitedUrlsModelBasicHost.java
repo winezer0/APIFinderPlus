@@ -32,8 +32,4 @@ public class UnVisitedUrlsModelBasicHost {
     public List<String> getUnvisitedUrls() {
         return unvisitedUrls;
     }
-
-    public void setUnvisitedUrls(List<String> unvisitedUrls) {
-        this.unvisitedUrls = unvisitedUrls;
-    }
 }
