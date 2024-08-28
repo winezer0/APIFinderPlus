@@ -134,7 +134,6 @@ public class AnalyseUrlResultTable {
         return CommonSql.fetchMsgHashByRunStatus(tableName, limit, Constants.ANALYSE_WAIT);
     }
 
-
     //更新数据对应状态
     public static int updateStatusRunIngByMsgHashList(List<String> msgHashList) {
         return CommonSql.updateStatusByMsgHashList(tableName, msgHashList, Constants.ANALYSE_ING);
@@ -179,7 +178,6 @@ public class AnalyseUrlResultTable {
         }
         return AnalyseUrlResultModels;
     }
-
 
     /**
      * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
@@ -247,15 +245,15 @@ public class AnalyseUrlResultTable {
      * 获取 所有未访问URl (unvisited_url_num > 0)
      * @return
      */
-    public static synchronized List<UnVisitedUrlsModel> fetchAllUnVisitedUrls( ){
-        List<UnVisitedUrlsModel> list = new ArrayList<>();
+    public static synchronized List<UnVisitedUrlsModelBasicUrl> fetchAllUnVisitedUrls( ){
+        List<UnVisitedUrlsModelBasicUrl> list = new ArrayList<>();
 
         String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM  "+ tableName + " WHERE unvisited_url_num > 0 ORDER BY id ASC;";
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(
+                    UnVisitedUrlsModelBasicUrl unVisitedUrlsModel = new UnVisitedUrlsModelBasicUrl(
                             rs.getInt("id"),
                             rs.getString("msg_hash"),
                             rs.getString("req_url"),
@@ -275,7 +273,7 @@ public class AnalyseUrlResultTable {
      * @param unVisitedUrlsModel
      * @return
      */
-    public static synchronized int updateUnVisitedUrlsById(UnVisitedUrlsModel unVisitedUrlsModel) {
+    public static synchronized int updateUnVisitedUrlsById(UnVisitedUrlsModelBasicUrl unVisitedUrlsModel) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE " + tableName +"  SET unvisited_url = ?, unvisited_url_num = ? WHERE id = ?;";
@@ -296,7 +294,7 @@ public class AnalyseUrlResultTable {
      * @param unVisitedUrlsModel
      * @return
      */
-    public static synchronized int updateUnVisitedUrlsByMsgHash(UnVisitedUrlsModel unVisitedUrlsModel) {
+    public static synchronized int updateUnVisitedUrlsByMsgHash(UnVisitedUrlsModelBasicUrl unVisitedUrlsModel) {
         int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE " + tableName +"  SET unvisited_url = ?, unvisited_url_num = ? WHERE msg_hash = ?;";
@@ -308,25 +306,6 @@ public class AnalyseUrlResultTable {
             affectedRows = stmt.executeUpdate();
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls By MsgHash: %s", e.getMessage()));
-        }
-        return affectedRows;
-    }
-
-    /**
-     * 实现 基于 msgHash 删除 unvisitedUrls
-     */
-    public static synchronized int clearUnVisitedUrlsByMsgHash(String msgHash) {
-        int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
-
-        String updateSQL = "UPDATE "+ tableName +"  SET unvisited_url = ?, unvisited_url_num = 0 WHERE msg_hash = ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
-            JSONArray emptyArray = new JSONArray();
-            stmt.setString(1, emptyArray.toJSONString());
-            stmt.setString(2, msgHash);
-            affectedRows = stmt.executeUpdate();
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update unvisited Urls: %s", e.getMessage()));
         }
         return affectedRows;
     }
@@ -393,8 +372,8 @@ public class AnalyseUrlResultTable {
     /**
      * 实现 基于 msgHash 列表 获取 unvisitedUrls 列表
      */
-    public static synchronized List<UnVisitedUrlsModel> fetchUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
-        List<UnVisitedUrlsModel> unVisitedUrlsModels = new ArrayList<>();
+    public static synchronized List<UnVisitedUrlsModelBasicUrl> fetchUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
+        List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels = new ArrayList<>();
         if (msgHashList.isEmpty()) return unVisitedUrlsModels;
 
         String selectSQL = "SELECT id, msg_hash, req_url, unvisited_url FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
@@ -408,7 +387,7 @@ public class AnalyseUrlResultTable {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(
+                    UnVisitedUrlsModelBasicUrl unVisitedUrlsModel = new UnVisitedUrlsModelBasicUrl(
                             rs.getInt("id"),
                             rs.getString("msg_hash"),
                             rs.getString("req_url"),

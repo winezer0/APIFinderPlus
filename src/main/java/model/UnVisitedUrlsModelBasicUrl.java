@@ -4,20 +4,20 @@ import utils.CastUtils;
 
 import java.util.List;
 
-public class UnVisitedUrlsModel {
+public class UnVisitedUrlsModelBasicUrl {
     private int id;
     private String reqUrl;
     private String msgHash;
     private List<String> unvisitedUrls;
 
-    public UnVisitedUrlsModel(int id, String msgHash, String reqUrl, String unvisitedUrl) {
+    public UnVisitedUrlsModelBasicUrl(int id, String msgHash, String reqUrl, String unvisitedUrl) {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
         this.unvisitedUrls =  CastUtils.toStringList(unvisitedUrl);
     }
 
-    public UnVisitedUrlsModel(int id, String msgHash, String reqUrl, List<String> unvisitedUrl) {
+    public UnVisitedUrlsModelBasicUrl(int id, String msgHash, String reqUrl, List<String> unvisitedUrl) {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;

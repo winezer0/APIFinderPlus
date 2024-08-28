@@ -3,12 +3,14 @@ package database;
 import com.alibaba.fastjson2.JSONArray;
 import model.AnalyseHostResultModel;
 import model.PathToUrlsModel;
+import model.UnVisitedUrlsModelBasicHost;
 import utils.CastUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import static utils.BurpPrintUtils.LOG_ERROR;
@@ -252,5 +254,48 @@ public class AnalyseHostResultTable {
         return generatedId; // 返回ID值，无论是更新还是插入
     }
 
+    /**
+     * 获取 所有未访问URl (unvisited_url_num > 0)
+     * @return
+     */
+    public static synchronized List<UnVisitedUrlsModelBasicHost> fetchOneUnVisitedUrls(Integer limit){
+        List<UnVisitedUrlsModelBasicHost> list = new ArrayList<>();
 
+        String selectSQL = "SELECT id,root_url,unvisited_url FROM "+ tableName + " WHERE unvisited_url_num > 0 ORDER BY id ASC Limit 1;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                UnVisitedUrlsModelBasicHost unVisitedUrlsModel = new UnVisitedUrlsModelBasicHost(
+                        rs.getInt("id"),
+                        rs.getString("root_url"),
+                        rs.getString("unvisited_url")
+                );
+                list.add(unVisitedUrlsModel);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] All UnVisited Urls: %s", tableName, e.getMessage()));
+        }
+        return list;
+    }
+
+
+    /**
+     * 实现 基于 rootUrl 清空 未访问的URL列表
+     */
+    public static synchronized int clearUnVisitedUrlsByRootUrl(String rootUrl) {
+        int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE "+ tableName +"  SET unvisited_url = ?, unvisited_url_num = 0 WHERE root_url = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+            JSONArray emptyArray = new JSONArray();
+            stmt.setString(1, emptyArray.toJSONString());
+            stmt.setString(2, rootUrl);
+            affectedRows = stmt.executeUpdate();
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update [%s] unvisited Urls: %s",tableName, e.getMessage()));
+        }
+        return affectedRows;
+    }
 }

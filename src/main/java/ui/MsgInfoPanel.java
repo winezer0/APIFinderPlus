@@ -431,11 +431,11 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
+                                List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
 
                                 //整合所有结果URL到一个Set
                                 Set<String> unvisitedUrlsSet = new HashSet<>();
-                                for (UnVisitedUrlsModel unVisitedUrlsModel:unVisitedUrlsModels){
+                                for (UnVisitedUrlsModelBasicUrl unVisitedUrlsModel:unVisitedUrlsModels){
                                     List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
                                     unvisitedUrlsSet.addAll(unvisitedUrls);
                                 }
@@ -572,37 +572,39 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
             }
         });
 
-        // 添加 accessUnVisitedItem 事件监听器
-        accessUnVisitedItem.setToolTipText("[多行]访问选定行对应的当前所有未访问URL");
-        accessUnVisitedItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = msgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
-                                //批量访问所有URL模型
-                                for (UnVisitedUrlsModel unVisitedUrlsModel: unVisitedUrlsModels){
-                                    IProxyScanner.accessUnVisitedUrlsModel(unVisitedUrlsModel, false);
-                                }
-                                //标记所有扫描结果数据为空
-                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshTableModel(false);
-                                return null;
-                            }
-                        }.execute();
 
-                    }
-                }
-            }
-        });
+//TODO 需要移动到基于主机的面板的右键功能中
+//        // 添加 accessUnVisitedItem 事件监听器
+//        accessUnVisitedItem.setToolTipText("[多行]访问选定行对应的当前所有未访问URL");
+//        accessUnVisitedItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (listSelectionModel >= 0) {
+//                    int[] selectedRows = msgTableUI.getSelectedRows();
+//                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                //获取所有msgHash相关的结果
+//                                List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
+//                                //批量访问所有URL模型
+//                                for (UnVisitedUrlsModelBasicUrl unVisitedUrlsModel: unVisitedUrlsModels){
+//                                    IProxyScanner.accessUnVisitedUrlsModel(unVisitedUrlsModel, false);
+//                                }
+//                                //标记所有扫描结果数据为空
+//                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
+//                                refreshTableModel(false);
+//                                return null;
+//                            }
+//                        }.execute();
+//
+//                    }
+//                }
+//            }
+//        });
 
         // 添加 addRootUrlToNotAutoRecurseItem 事件监听器
         addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表 CONF_BLACK_AUTO_RECURSE_SCAN");
@@ -829,7 +831,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                                         unvisitedUrlList = CastUtils.listReduceList(unvisitedUrlList, findApiList);
 
                                         //4、更新 UnvisitedURls 到数据库
-                                        UnVisitedUrlsModel unVisitedUrlsModel = new UnVisitedUrlsModel(-1, msgHash, null, unvisitedUrlList);
+                                        UnVisitedUrlsModelBasicUrl unVisitedUrlsModel = new UnVisitedUrlsModelBasicUrl(-1, msgHash, null, unvisitedUrlList);
                                         AnalyseUrlResultTable.updateUnVisitedUrlsByMsgHash(unVisitedUrlsModel);
                                     }
                                 }
@@ -1584,7 +1586,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
             @Override
             protected Void doInBackground() throws Exception {
                 // 获取所有未访问URl 注意需要大于0
-                List<UnVisitedUrlsModel> unVisitedUrlsModels;
+                List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels;
                 if (msgHashList == null || msgHashList.isEmpty()) {
                     //更新所有的结果
                     unVisitedUrlsModels = AnalyseUrlResultTable.fetchAllUnVisitedUrls();
@@ -1599,7 +1601,7 @@ public class MsgInfoPanel extends JPanel implements IMessageEditorController {
                     //获取所有由reqHash组成的字符串
                     String accessedUrlHashes = CommonSql.fetchConcatColumnToString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
                     // 遍历 unVisitedUrlsModels 进行更新
-                    for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
+                    for (UnVisitedUrlsModelBasicUrl urlsModel : unVisitedUrlsModels) {
                         //更新 unVisitedUrls 对象
                         List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
                         //List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);

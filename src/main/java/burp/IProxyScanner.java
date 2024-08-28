@@ -440,25 +440,8 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     if (autoPathsToUrlsIsOpen){
-                        System.out.println("已开启 autoPathsToUrlsIsOpen");
-//                        //任务3、判断是否存在未处理的Path路径,没有的话就根据树生成计算新的URL
-//                        //获取多条需要分析【状态为待解析】的数据
-//                        List<Integer> findPathIds = AnalyseUrlResultTable.fetchUnhandledPathDataIds(maxPoolSize);
-//                        if (findPathIds.size()>0){
-//                            //更新ids对应的状态,防止其他线程读取
-//                            int updateCount = AnalyseUrlResultTable.updatePathDataStatusByIds(findPathIds);
-//                            if (updateCount>0){
-//                                //一次性 获取实际的数据进行修改
-//                                List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByIds(findPathIds);
-//                                for (FindPathModel findPathModel:findPathModelList){
-//                                    stdout_println(LOG_DEBUG, String.format("[*] 获取未处理PATH数据进行URL计算 PathNum: %s", findPathModel.getFindPath().size()));
-//                                    pathsToUrlsByPathTree(findPathModel);
-//                                }
-//                            }
-//                            return;
-//                        }
-
-                        //任务4、如果没有获取成功, 就获取 基准路径树 小于 PathTree基准的数据进行更新
+                        System.out.println("已开启 自动根据路径生成URL的功能");
+                        //任务 获取 基准路径树 小于 PathTree基准的数据进行更新
                         List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
                         if (findPathModelList.size()>0){
                             for (FindPathModel findPathModel:findPathModelList) {
@@ -469,16 +452,19 @@ public class IProxyScanner implements IProxyListener {
                         }
                     }
 
-//                    // 自动递归查询功能
-//                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
-//                        //获取一个未访问URL列表
-//                        executorService.submit(() -> {
-//                            //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
-//                            UnVisitedUrlsModel unVisitedUrlsModel =  AnalyseUrlResultTable.fetchOneUnVisitedUrls( );
-//                            accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
-//                        });
-//                        return;
-//                    }
+                    // 自动递归查询功能
+                    if (autoRecursiveIsOpen && executorService.getActiveCount() < 2){
+                        System.out.println("已开启 自动递归查询功能");
+                        //获取一个未访问URL列表
+                        executorService.submit(() -> {
+                            //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
+                            List<UnVisitedUrlsModelBasicHost> unVisitedUrlsModels =  AnalyseHostResultTable.fetchOneUnVisitedUrls(1);
+                            for (UnVisitedUrlsModelBasicHost unVisitedUrlsModel: unVisitedUrlsModels){
+                                accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
+                            }
+                        });
+                        return;
+                    }
 
                 } catch (Exception e) {
                     stderr_println(String.format("[!] scheduleAtFixedRate error: %s", e.getMessage()));
@@ -493,18 +479,18 @@ public class IProxyScanner implements IProxyListener {
      * @param unVisitedUrlsModel 需要进行访问的URL数据
      * @param ignoreBlackRecurseHost 是否不递归黑名单限制的域名
      */
-    public static void accessUnVisitedUrlsModel(UnVisitedUrlsModel unVisitedUrlsModel, boolean ignoreBlackRecurseHost) {
+    public static void accessUnVisitedUrlsModel(UnVisitedUrlsModelBasicHost unVisitedUrlsModel, boolean ignoreBlackRecurseHost) {
         if (unVisitedUrlsModel != null){
             //获取URL
+            String rootUrl = unVisitedUrlsModel.getRootUrl();
             List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
 
-            //获取这个MsgHash对应的请求体和响应体
+            //获取 这个Root URL 对应的最新的 请求体和响应体
             List<String> referHeaders = null;
-            String msgHash = unVisitedUrlsModel.getMsgHash();
-            ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByMsgHash(msgHash);
+            ReqMsgDataModel reqMsgDataModel = ReqMsgDataTable.fetchMsgDataByRootUrlDesc(rootUrl);
             if (isEmptyObj(reqMsgDataModel)){
-                stderr_println(LOG_ERROR, String.format("[!] fetch MsgData By MsgHash is NuLL: [%s]", msgHash));
-            }else {
+                stderr_println(LOG_ERROR, String.format("[!] fetch MsgData By Like [%s] is NULL", rootUrl));
+            } else {
                 //获取请求头作为参考数据
                 HelperPlus helperPlus = HelperPlus.getInstance();
                 referHeaders = helperPlus.getHeaderList(true, reqMsgDataModel.getReqBytes());
@@ -584,9 +570,11 @@ public class IProxyScanner implements IProxyListener {
                     }
                 }
             }
-            //标记数据为空 如果很多都没扫描的话,就不要清理了,影响实际使用
-            if (!ignoreBlackRecurseHost)
-                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
+
+            //如果没有配置忽略黑名单主机，表明是右键调用，此时需要强制清空未访问数据
+            if (!ignoreBlackRecurseHost){
+                AnalyseHostResultTable.clearUnVisitedUrlsByRootUrl(rootUrl);
+            }
         }
     }
 
