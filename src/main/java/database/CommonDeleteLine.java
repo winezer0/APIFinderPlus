@@ -49,7 +49,6 @@ public class CommonDeleteLine {
         return runDeleteByStringsSQL(tableName, msgHashList, deleteSQL);
     }
 
-
     /**
      * 基于 id 列表 同时删除多个 行
      */

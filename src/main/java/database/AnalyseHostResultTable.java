@@ -196,7 +196,7 @@ public class AnalyseHostResultTable {
     /**
      * 基于ID更新动态URl数据
      */
-    public static synchronized int updateDynamicUrlsModelById(PathToUrlsModel dynamicUrlModel){
+    public static synchronized int updateDynamicUrlsDataByUrlModel(PathToUrlsModel dynamicUrlModel){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE "+ tableName +
@@ -228,7 +228,7 @@ public class AnalyseHostResultTable {
     /**
      * 基于ID更新 PathToUrl 的基础计数数据
      */
-    public static synchronized int updateDynamicUrlsBasicNum(int id, int basicPathNum){
+    public static synchronized int updateDynamicUrlsBasicNumById(int id, int basicPathNum){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE "+ tableName +"  SET basic_path_num = ? WHERE id = ?;";
@@ -280,35 +280,6 @@ public class AnalyseHostResultTable {
             stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] Path Data By RootUrl List: %s", tableName, e.getMessage()));
         }
         return findPathModelList ;
-    }
-
-    /**
-     * 实现 基于 rootUrls 清空 FindApiUrl
-     */
-    public static synchronized int clearFindApiUrlsByRootUrls(List<String> rootUrls) {
-        int totalRowsAffected = 0;
-        if (rootUrls.isEmpty()) return totalRowsAffected;
-
-        // 构建SQL语句
-        String updateSQL = "UPDATE "+ tableName + " SET find_api = ?, find_api_num = 0 WHERE root_url IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
-            // 设置第一个参数为JSON数组的toJSONString()
-            stmt.setString(1, new JSONArray().toJSONString());
-
-            // 循环设置参数 // 开始于第二个参数位置，第一个参数已被设置
-            for (int i = 0; i < rootUrls.size(); i++) {
-                stmt.setString(i + 2, rootUrls.get(i));
-            }
-
-            // 执行更新操作并获取受影响行数
-            totalRowsAffected = stmt.executeUpdate();
-
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error clearing FindApi URLs by RootUrls: %s", e.getMessage()));
-        }
-        return totalRowsAffected;
     }
 
     /**
