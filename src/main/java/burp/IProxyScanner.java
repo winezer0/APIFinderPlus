@@ -447,7 +447,6 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     if (autoPathsToUrlsIsOpen){
-                        System.out.println("已开启 自动根据路径生成URL的功能");
                         //任务 获取 基准路径树 小于 PathTree基准的数据进行更新
                         List<FindPathModel> findPathModelList = UnionTableSql.fetchNeedUpdatePathDataList(maxPoolSize);
                         if (findPathModelList.size()>0){

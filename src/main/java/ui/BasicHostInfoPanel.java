@@ -786,9 +786,10 @@ public class BasicHostInfoPanel extends JPanel {
                                 RuleConfigPanel.saveConfigToDefaultJson();
 
                                 //2、删除 Root URL 对应的 结果数据
-                                int count2 = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseHostResultTable.tableName);
-                                int count1 = CommonSql.batchDeleteDataByLikeRootUrls(rootUrls, ReqDataTable.tableName);
-                                stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s", count1, count2));
+                                int countReq = CommonSql.batchDeleteDataByLikeRootUrls(rootUrls, ReqDataTable.tableName);
+                                int countUrl = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseUrlResultTable.tableName);
+                                int countHost = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseHostResultTable.tableName);
+                                stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s, delete Analyse Url Result Count:%s", countReq, countHost, countUrl));
 
                                 //3、刷新表格
                                 refreshBasicHostTableModel(false);

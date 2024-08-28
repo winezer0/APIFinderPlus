@@ -218,32 +218,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         JPopupMenu popupMenu = new JPopupMenu();
 
         JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-
-        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加ATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
-
-        JMenuItem genDynaPathFilterItem = new JMenuItem("基于当前URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
-
-        //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
-        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-
-        JMenuItem calcSingleLayerNodeItemOnUrl = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-
-        popupMenu.add(copyUrlItem);
-        popupMenu.add(deleteItem);
-
-
-        popupMenu.add(addUrlPathToRecordPathItem);
-
-        popupMenu.add(genDynaPathFilterItem);
-
-        popupMenu.add(copySingleLayerNodeItem);
-        popupMenu.add(calcSingleLayerNodeItemOnUrl);
-
-        // 将右键菜单添加到表格
-        tableUI.setComponentPopupMenu(popupMenu);
-
-
         // 添加 copyUrlItem 事件监听器
         copyUrlItem.setToolTipText("[多行]复制选定行对应的请求URL到剪贴板");
         copyUrlItem.addActionListener(new ActionListener() {
@@ -259,6 +233,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
+        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
         // 添加 deleteItem 事件监听器
         deleteItem.setToolTipText("[多行]删除选定行对应的ReqDataTable表数据");
         deleteItem.addActionListener(new ActionListener() {
@@ -267,23 +242,23 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //多行选定模式
                 if (selectModel >= 0){
                     int[] selectedRows = tableUI.getSelectedRows();
-                        List<Integer> ids = getIdsAtActualRows(tableUI, selectedRows);
+                    List<Integer> ids = getIdsAtActualRows(tableUI, selectedRows);
 
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                CommonSql.deleteDataByIds(ids, ReqDataTable.tableName);
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            CommonSql.deleteDataByIds(ids, ReqDataTable.tableName);
+                            refreshBasicUrlTableModel(false);
+                            return null;
+                        }
+                    }.execute();
 
                 }
             }
         });
 
-
+        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加ATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 addUrlPathToRecordPathItem 事件监听器
         addUrlPathToRecordPathItem.setToolTipText("[多行]添加选定行对应的请求PATH到RecordPath表 用于计算PathTree");
         addUrlPathToRecordPathItem.addActionListener(new ActionListener() {
@@ -308,8 +283,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-
-
+        JMenuItem genDynaPathFilterItem = new JMenuItem("基于当前URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
         // 添加 genDynaPathFilterItem 事件监听器
         genDynaPathFilterItem.setToolTipText("[多行]基于选定行对应的URL生成对应HOST的动态响应过滤条件 过滤无效响应不完善时使用");
         genDynaPathFilterItem.addActionListener(new ActionListener() {
@@ -351,7 +325,8 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-
+        //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
+        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         //copySingleLayerNodeItem
         copySingleLayerNodeItem.setToolTipText("[多行]复制选定行对应的提取PATH中的单层(无目录)路径到剪贴板 并弹框");
         copySingleLayerNodeItem.addActionListener(new ActionListener() {
@@ -380,6 +355,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
+        JMenuItem calcSingleLayerNodeItemOnUrl = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         //calcSingleLayerNodeItem
         calcSingleLayerNodeItemOnUrl.setToolTipText("[多行]基于选定行对应的提取PATH中的单层(无目录)PATH和用户输入的URL前缀计算新的URL");
         calcSingleLayerNodeItemOnUrl.addActionListener(new ActionListener() {
@@ -402,6 +378,67 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 }
             }
         });
+
+        JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        // 添加 addRootUrlToBlackUrlRootItem 事件监听器
+        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单 CONF_BLACK_URL_ROOT");
+        addRootUrlToBlackUrlRootItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList = getUrlsAtActualRows(tableUI, selectedRows);
+                    if (!urlList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //获取所有URL的HOST列表
+                                Set<String> set = new HashSet<>();
+                                for (String url: urlList){set.add(new HttpUrlInfo(url).getRootUrlUsual());}
+                                ArrayList<String> rootUrls = new ArrayList<>(set);
+
+                                // 合并 rootUrls 到 BurpExtender.CONF_BLACK_URL_ROOT 保持唯一性
+                                BurpExtender.CONF_BLACK_URL_ROOT =CastUtils.listAddList(rootUrls, BurpExtender.CONF_BLACK_URL_ROOT);
+
+                                //保存Json
+                                RuleConfigPanel.saveConfigToDefaultJson();
+
+                                //2、删除 Root URL 对应的 结果数据
+                                int countReq = CommonSql.batchDeleteDataByLikeRootUrls(rootUrls, ReqDataTable.tableName);
+                                int countUrl = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseUrlResultTable.tableName);
+                                int countHost = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseHostResultTable.tableName);
+                                stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s, delete Analyse Url Result Count:%s", countReq, countHost, countUrl));
+
+                                //3、刷新表格
+                                refreshBasicUrlTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+        //复制URL
+        popupMenu.add(copyUrlItem);
+        //删除航数据
+        popupMenu.add(deleteItem);
+        //添加到有效PATHTree
+        popupMenu.add(addUrlPathToRecordPathItem);
+        //添加Url对应的RootUrl到黑名单
+        popupMenu.add(addRootUrlToBlackUrlRootItem);
+        //生成动态过滤条件
+        popupMenu.add(genDynaPathFilterItem);
+        //仅复制单层路径
+        popupMenu.add(copySingleLayerNodeItem);
+        //输入指定根URL 计算单层路径的根URL
+        popupMenu.add(calcSingleLayerNodeItemOnUrl);
+
+        // 将右键菜单添加到表格
+        tableUI.setComponentPopupMenu(popupMenu);
     }
 
 
