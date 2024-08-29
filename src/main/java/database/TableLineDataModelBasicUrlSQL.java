@@ -1,6 +1,6 @@
 package database;
 
-import model.TableLineDataModelBasicUrl;
+import model.BasicUrlTableLineDataModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,13 +23,13 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     //联合 获取所有行数据
-    public static synchronized ArrayList<TableLineDataModelBasicUrl> fetchUrlTableLineDataBySQl(String selectSQL){
-        ArrayList<TableLineDataModelBasicUrl> apiDataModels = new ArrayList<>();
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataBySQl(String selectSQL){
+        ArrayList<BasicUrlTableLineDataModel> apiDataModels = new ArrayList<>();
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    TableLineDataModelBasicUrl apiDataModel = new TableLineDataModelBasicUrl(
+                    BasicUrlTableLineDataModel apiDataModel = new BasicUrlTableLineDataModel(
                             rs.getInt("id"),
                             rs.getString("msg_hash"),
                             rs.getString("req_url"),
@@ -57,13 +57,13 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     // 获取当前所有记录
-    public static synchronized ArrayList<TableLineDataModelBasicUrl> fetchUrlTableLineDataAll() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataAll() {
         String selectSQL = genSqlByWhereCondition(null);
         return  fetchUrlTableLineDataBySQl(selectSQL);
     }
 
     //获取有效数据的行
-    public static synchronized ArrayList<TableLineDataModelBasicUrl> fetchUrlTableLineDataHasData() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineDataHasData() {
         // 获取当前所有记录的数据
         String WhereCondition = "Where find_url_num>0 or find_path_num>0 or find_info_num>0";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
@@ -71,7 +71,7 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     //获取还有未访问完毕的URL的行
-    public static synchronized ArrayList<TableLineDataModelBasicUrl> fetchTableLineDataHasUnVisitedUrls() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchTableLineDataHasUnVisitedUrls() {
         // 获取当前所有记录的数据
         String WhereCondition = "where unvisited_url_num>0";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
@@ -79,7 +79,7 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     //获取存在敏感信息的行
-    public static synchronized ArrayList<TableLineDataModelBasicUrl> fetchTableLineDataHasInfo() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchTableLineDataHasInfo() {
         // 获取当前所有记录的数据
         String WhereCondition = "where find_info_num>0";
         String selectSQL = genSqlByWhereCondition(WhereCondition);
@@ -87,7 +87,7 @@ public class TableLineDataModelBasicUrlSQL {
     }
 
     //获取没有数据的行,备用,用于后续删除数据
-    public static synchronized ArrayList<TableLineDataModelBasicUrl> fetchTableLineDataIsNull() {
+    public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchTableLineDataIsNull() {
         // 获取当前所有记录的数据
         String WhereCondition = "where (find_url_num is null and find_path_num is null and find_info_num is null) or (find_url_num <1  and find_path_num <1 and find_info_num <1) ";
         String selectSQL = genSqlByWhereCondition(WhereCondition);

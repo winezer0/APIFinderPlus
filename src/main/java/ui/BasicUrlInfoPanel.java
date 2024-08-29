@@ -109,7 +109,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
-                ArrayList<TableLineDataModelBasicUrl> allReqAnalyseData  = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataAll();
+                ArrayList<BasicUrlTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataAll();
                 //将数据赋值给表模型
                 populateModelFromJsonArray(tableModel, allReqAnalyseData);
             }
@@ -121,12 +121,12 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      * @param model
      * @param jsonArray
      */
-    private static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<TableLineDataModelBasicUrl> jsonArray) {
+    private void populateModelFromJsonArray(DefaultTableModel model, ArrayList<BasicUrlTableLineDataModel> jsonArray) {
         if (isEmptyObj(jsonArray)) return;
 
-        Iterator<TableLineDataModelBasicUrl> iterator = jsonArray.iterator();
+        Iterator<BasicUrlTableLineDataModel> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
-            TableLineDataModelBasicUrl apiDataModel = iterator.next();
+            BasicUrlTableLineDataModel apiDataModel = iterator.next();
             Object[] rowData = apiDataModel.toRowDataArray();
             model.addRow(rowData);
         }
@@ -215,7 +215,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         baseUrlMsgTableUI.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
 
         //为表格添加点击显示下方的消息动作
-        urlTableAddActionSetMsgTabData();
+        basicUrlTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
         tableAddRightClickMenu(listSelectionModel);
@@ -821,7 +821,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                     //逐个清理 UnvisitedURls 中的 findApiUrl
 
                                     //根据 msgHash值 查询api分析结果数据
-                                    TableTabDataModelBasicUrl tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
+                                    BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
                                     if (tabDataModel != null) {
 
                                         //1、获取 msgHash 对应的 UnvisitedURls
@@ -1204,7 +1204,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     /**
      * 清空当前Msg tabs中显示的数据
      */
-    private static void clearTabsMsgData() {
+    private static void clearBasicUrlMsgTabsData() {
         iHttpService = null; // 清空当前显示的项
         requestsData = null;
         responseData = null;
@@ -1224,7 +1224,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     /**
      * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
      */
-    private void urlTableAddActionSetMsgTabData() {
+    private void basicUrlTableAddActionSetMsgTabData() {
         //为表格 添加 鼠标监听器
         //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
         baseUrlMsgTableUI.addMouseListener(new MouseAdapter() {
@@ -1279,7 +1279,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      */
     private void updateComponentsBasedOnSelectedRow(int row) {
         //清理下方数据内容
-        clearTabsMsgData();
+        clearBasicUrlMsgTabsData();
 
         //动态设置UI宽度
         msgViewerAutoSetSplitCenter();
@@ -1314,7 +1314,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         }
 
         //根据 msgHash值 查询api分析结果数据
-        TableTabDataModelBasicUrl tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
+        BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
         if (tabDataModel != null) {
             //格式化为可输出的类型
             String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());
@@ -1378,7 +1378,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             });
 
             // 还可以清空编辑器中的数据
-            clearTabsMsgData();
+            clearBasicUrlMsgTabsData();
         }
     }
 
@@ -1396,7 +1396,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 baseUrlMsgTableModel.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<TableLineDataModelBasicUrl> apiDataModels =null;
+                ArrayList<BasicUrlTableLineDataModel> apiDataModels =null;
 
                 switch (selectOption) {
                     case "显示有效内容":
@@ -1418,7 +1418,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 }
 
                 // 遍历apiDataModelMap
-                for (TableLineDataModelBasicUrl apiDataModel : apiDataModels) {
+                for (BasicUrlTableLineDataModel apiDataModel : apiDataModels) {
                     String url = apiDataModel.getReqUrl();
                     //是否包含关键字,当输入了关键字时,使用本函数再次进行过滤
                     if (url.toLowerCase().contains(searchText.toLowerCase())) {

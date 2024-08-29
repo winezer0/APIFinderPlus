@@ -9,8 +9,8 @@ import com.alibaba.fastjson2.JSONWriter;
 import database.PathTreeTable;
 import database.TableLineDataModelBasicHostSQL;
 import model.PathTreeModel;
-import model.TableLineDataModelBasicHost;
-import model.TableTabDataModelBasicHost;
+import model.BasicHostTableLineDataModel;
+import model.BasicHostTableTabDataModel;
 import ui.MainTabRender.TableHeaderWithTips;
 import ui.MainTabRender.importantCellRenderer;
 import utils.CastUtils;
@@ -108,7 +108,7 @@ public class BasicHostInfoPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据 查询 HOST信息表
-                ArrayList<TableLineDataModelBasicHost> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
+                ArrayList<BasicHostTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
                 //将数据赋值给表模型
                 populateModelFromJsonArray(tableModel, allReqAnalyseData);
             }
@@ -120,12 +120,12 @@ public class BasicHostInfoPanel extends JPanel {
      * @param model
      * @param jsonArray
      */
-    private static void populateModelFromJsonArray(DefaultTableModel model, ArrayList<TableLineDataModelBasicHost> jsonArray) {
+    private void populateModelFromJsonArray(DefaultTableModel model, ArrayList<BasicHostTableLineDataModel> jsonArray) {
         if (isEmptyObj(jsonArray)) return;
 
-        Iterator<TableLineDataModelBasicHost> iterator = jsonArray.iterator();
+        Iterator<BasicHostTableLineDataModel> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
-            TableLineDataModelBasicHost apiDataModel = iterator.next();
+            BasicHostTableLineDataModel apiDataModel = iterator.next();
             Object[] rowData = apiDataModel.toRowDataArray();
             model.addRow(rowData);
         }
@@ -198,7 +198,7 @@ public class BasicHostInfoPanel extends JPanel {
         baseHostMsgTableUI.getColumnModel().getColumn(2).setCellRenderer(havingImportantRenderer);
 
         //为表格添加点击显示下方的消息动作
-        hostTableAddActionSetMsgTabData();
+        basicHostTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
         tableAddRightClickMenu(listSelectionModel);
@@ -242,7 +242,7 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 清空当前Msg tabs中显示的数据
      */
-    private static void clearTabsMsgData() {
+    private static void clearBasicHostMsgTabsShowData() {
         findInfoTextPane.setText("");
         respFindUrlTEditor.setText(new byte[0]);
         respFindPathTEditor.setText(new byte[0]);
@@ -256,7 +256,7 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
      */
-    private void hostTableAddActionSetMsgTabData() {
+    private void basicHostTableAddActionSetMsgTabData() {
         //为表格 添加 鼠标监听器
         //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
         baseHostMsgTableUI.addMouseListener(new MouseAdapter() {
@@ -311,7 +311,7 @@ public class BasicHostInfoPanel extends JPanel {
      */
     private void updateComponentsBasedOnSelectedRow(int row) {
         //清理下方数据内容
-        clearTabsMsgData();
+        clearBasicHostMsgTabsShowData();
 
         //1、获取当前行的 id 号
         String rootUrl = null;
@@ -333,7 +333,7 @@ public class BasicHostInfoPanel extends JPanel {
         }
 
         //查询详细数据
-        TableTabDataModelBasicHost tabDataModel = TableLineDataModelBasicHostSQL.fetchResultByRootUrl(rootUrl);
+        BasicHostTableTabDataModel tabDataModel = TableLineDataModelBasicHostSQL.fetchResultByRootUrl(rootUrl);
         if (tabDataModel != null) {
             //格式化为可输出的类型
             String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());

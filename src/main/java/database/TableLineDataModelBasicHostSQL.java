@@ -1,7 +1,7 @@
 package database;
 
-import model.TableLineDataModelBasicHost;
-import model.TableTabDataModelBasicHost;
+import model.BasicHostTableLineDataModel;
+import model.BasicHostTableTabDataModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,13 +24,13 @@ public class TableLineDataModelBasicHostSQL {
 
 
     //联合 获取所有行数据
-    public static synchronized ArrayList<TableLineDataModelBasicHost> fetchHostTableLineDataBySQl(String selectSQL){
-        ArrayList<TableLineDataModelBasicHost> apiDataModels = new ArrayList<>();
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataBySQl(String selectSQL){
+        ArrayList<BasicHostTableLineDataModel> apiDataModels = new ArrayList<>();
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    TableLineDataModelBasicHost apiDataModel = new TableLineDataModelBasicHost(
+                    BasicHostTableLineDataModel apiDataModel = new BasicHostTableLineDataModel(
                             rs.getInt("id"),
                             rs.getString("root_url"),
                             rs.getInt("find_info_num"),
@@ -54,7 +54,7 @@ public class TableLineDataModelBasicHostSQL {
 
 
     // 获取当前所有记录
-    public static synchronized ArrayList<TableLineDataModelBasicHost> fetchHostTableLineDataAll() {
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataAll() {
         String selectSQL = genSqlByWhereCondition(null);
         return  fetchHostTableLineDataBySQl(selectSQL);
     }
@@ -62,14 +62,14 @@ public class TableLineDataModelBasicHostSQL {
     /**
      * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
      */
-    public static synchronized TableTabDataModelBasicHost fetchResultByRootUrl(String rootUrl){
-        TableTabDataModelBasicHost tabDataModel = null;
+    public static synchronized BasicHostTableTabDataModel fetchResultByRootUrl(String rootUrl){
+        BasicHostTableTabDataModel tabDataModel = null;
         String selectSQL = "SELECT * FROM " + AnalyseHostResultTable.tableName +" WHERE root_url = ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, rootUrl);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    tabDataModel = new TableTabDataModelBasicHost(
+                    tabDataModel = new BasicHostTableTabDataModel(
                             rs.getString("root_url"),
                             rs.getString("find_info"),
                             rs.getString("find_url"),

@@ -1,7 +1,7 @@
 package model;
 
 
-public class TableLineDataModelBasicHost {
+public class BasicHostTableLineDataModel {
     private Integer id;
     private String rootUrl;
 
@@ -18,7 +18,7 @@ public class TableLineDataModelBasicHost {
     private String runStatus;
 
     // 构造函数
-    public TableLineDataModelBasicHost(int id, String rootUrl,
+    public BasicHostTableLineDataModel(int id, String rootUrl,
                                        int findInfoNum, boolean hasImportant,
                                        int findUrlNum, int findPathNum, int findApiNum,
                                        int pathToUrlNum, int unvisitedUrlNum,

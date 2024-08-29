@@ -1,6 +1,6 @@
 package model;
 
-public class TableTabDataModelBasicHost {
+public class BasicHostTableTabDataModel {
     private String rootUrl;
 
     private String findInfo;
@@ -12,7 +12,7 @@ public class TableTabDataModelBasicHost {
     private String unvisitedUrl;
 
 
-    public TableTabDataModelBasicHost(String rootUrl, String findInfo, String findUrl, String findPath,
+    public BasicHostTableTabDataModel(String rootUrl, String findInfo, String findUrl, String findPath,
                                       String findApi, String pathToUrl, String unvisitedUrl) {
         this.rootUrl = rootUrl;
         this.findUrl = findUrl;
