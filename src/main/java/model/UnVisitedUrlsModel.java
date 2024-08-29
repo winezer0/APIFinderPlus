@@ -15,12 +15,6 @@ public class UnVisitedUrlsModel {
         this.unvisitedUrls =  CastUtils.toStringList(unvisitedUrl);
     }
 
-    public UnVisitedUrlsModel(int id, String rootUrl, List<String> unvisitedUrl) {
-        this.id = id;
-        this.rootUrl = rootUrl;
-        this.unvisitedUrls =  unvisitedUrl;
-    }
-
     public int getId() {
         return id;
     }
