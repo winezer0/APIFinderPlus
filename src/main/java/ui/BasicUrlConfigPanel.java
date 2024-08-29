@@ -146,7 +146,7 @@ public class BasicUrlConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
         // 开关 是否开启代理流量监听 //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启\
-        proxyListenButtonOnUrl = getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
+        proxyListenButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
         proxyListenButtonOnUrl.setToolTipText("Proxy模块流量监听开关");
 
         proxyListenButtonOnUrl.addActionListener(new ActionListener() {
@@ -218,7 +218,7 @@ public class BasicUrlConfigPanel extends JPanel {
 
         // 开关 是否开启自动记录PATH
         JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        autoRecordPathButton = getToggleButtonByDefaultValue(IProxyScanner.autoRecordPathIsOpenDefault);
+        autoRecordPathButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecordPathIsOpenDefault);
         autoRecordPathButton.setToolTipText("自动保存有效请求PATH");
 
         autoRecordPathButton.addActionListener(new ActionListener() {
@@ -232,7 +232,7 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启复杂的动态PATH过滤
-        JToggleButton dynamicPathFilterButton = getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
+        JToggleButton dynamicPathFilterButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
         dynamicPathFilterButton.setToolTipText("开启智能响应过滤(访问随机URL获取目标的404页面的条件)");
 
         //TODO 暂时关闭智能响应过滤功能、目前过滤方案不完善
@@ -247,7 +247,7 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
 
-        JToggleButton autoPathsToUrlsButton = getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
+        JToggleButton autoPathsToUrlsButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
         autoPathsToUrlsButton.setToolTipText("自动基于PathTree结合FindPath生成URL");
 
         autoPathsToUrlsButton.addActionListener(new ActionListener() {
@@ -261,7 +261,7 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动刷新未访问URL
-        JToggleButton autoRefreshUnvisitedButton = getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
+        JToggleButton autoRefreshUnvisitedButton = UiUtils.getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
 
         autoRefreshUnvisitedButton.addActionListener(new ActionListener() {
@@ -275,7 +275,7 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启对提取URL进行发起请求
-        JToggleButton autoRecursiveButton = getToggleButtonByDefaultValue(IProxyScanner.autoRecursiveIsOpenDefault);
+        JToggleButton autoRecursiveButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecursiveIsOpenDefault);
         autoRecursiveButton.setToolTipText("自动测试未访问URL");
         autoRecursiveButton.addActionListener(new ActionListener() {
             @Override
@@ -459,25 +459,6 @@ public class BasicUrlConfigPanel extends JPanel {
             }
         });
  }
-
-    private JToggleButton getToggleButtonByDefaultValue(boolean IsOpenDefault) {
-        JToggleButton toggleButton;
-        //根据默认条件设置UI
-        if (IsOpenDefault){
-            toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-            toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-        }else {
-            toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
-            toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
-        }
-
-        toggleButton.setPreferredSize(new Dimension(50, 24));
-        toggleButton.setBorder(null);  // 设置无边框
-        toggleButton.setFocusPainted(false);  // 移除焦点边框
-        toggleButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-
-        return toggleButton;
-    }
 
     //创建功能按钮内容和对应事件
     private JPopupMenu createMoreMenuWithAction() {

@@ -393,4 +393,26 @@ public class UiUtils {
             }
         });
     }
+
+    /**
+     * 创建常用的开关UI
+     */
+    public static JToggleButton getToggleButtonByDefaultValue(boolean IsOpenDefault) {
+        JToggleButton toggleButton;
+        //根据默认条件设置UI
+        if (IsOpenDefault){
+            toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+            toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+        }else {
+            toggleButton = new JToggleButton(UiUtils.getImageIcon("/icon/shutdownButtonIcon.png", 40, 24));
+            toggleButton.setSelectedIcon(UiUtils.getImageIcon("/icon/openButtonIcon.png", 40, 24));
+        }
+
+        toggleButton.setPreferredSize(new Dimension(50, 24));
+        toggleButton.setBorder(null);  // 设置无边框
+        toggleButton.setFocusPainted(false);  // 移除焦点边框
+        toggleButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+
+        return toggleButton;
+    }
 }
