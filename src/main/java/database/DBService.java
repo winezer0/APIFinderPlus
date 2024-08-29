@@ -145,7 +145,7 @@ public class DBService {
         clearTable(PathTreeTable.tableName);
         clearTable(RecordPathTable.tableName);
         clearTable(RecordUrlTable.tableName);
-        //clearTable(AnalyseHostResultTable.tableName);
+        clearTable(AnalyseHostResultTable.tableName);
     }
 
 

@@ -56,6 +56,10 @@ public class IProxyScanner implements IProxyListener {
     public static boolean proxyListenIsOpenDefault = false;
     public static boolean proxyListenIsOpen = proxyListenIsOpenDefault;
 
+    //自动刷新未访问URL的功能
+    public static boolean autoRefreshUnvisitedIsOpenDefault = false;
+    public static boolean autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault;
+
     //设置最大进程数量
     private int maxPoolSize;
 

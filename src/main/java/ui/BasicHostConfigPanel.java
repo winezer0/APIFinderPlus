@@ -1,15 +1,17 @@
 package ui;
 
-import burp.BurpExtender;
 import burp.IProxyScanner;
-import database.*;
-import utils.CastUtils;
+import database.DBService;
+import database.TableLineDataModelBasicUrlSQL;
+import utils.BurpSitemapUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.*;
@@ -26,7 +28,13 @@ public class BasicHostConfigPanel extends JPanel {
     private static JLabel autoRefreshTextOnHost; //自动刷新按钮显示的文本
     public static int timerDelayOnHost = 15;  //定时器刷新间隔,单位秒
 
+    //用于两端联动使用
     public static JToggleButton proxyListenButtonOnHost;
+    public static JToggleButton autoRecordPathButtonOnHost; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
+    public static JToggleButton dynamicPathFilterButtonOnHost;
+    public static JToggleButton autoPathsToUrlsButtonOnHost;
+    public static JToggleButton autoRefreshUnvisitedButtonOnHost;
+    public static JToggleButton autoRecursiveButtonOnHost;
 
     public BasicHostConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -145,7 +153,6 @@ public class BasicHostConfigPanel extends JPanel {
         // 开关 是否开启代理流量监听 //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
         proxyListenButtonOnHost = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
         proxyListenButtonOnHost.setToolTipText("Proxy模块流量监听开关");
-
         proxyListenButtonOnHost.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -165,11 +172,9 @@ public class BasicHostConfigPanel extends JPanel {
         clickRefreshButtonOnHost.setFocusPainted(false);  // 移除焦点边框
         clickRefreshButtonOnHost.setContentAreaFilled(false);  // 移除选中状态下的背景填充
         clickRefreshButtonOnHost.setToolTipText("点击强制刷新表格");
-
         // 手动刷新按钮监听事件
         clickRefreshButtonOnHost.addActionListener(new ActionListener() {
             private boolean canClick = true;
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (canClick) {
@@ -214,75 +219,80 @@ public class BasicHostConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动记录PATH
-        JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        autoRecordPathButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecordPathIsOpenDefault);
-        autoRecordPathButton.setToolTipText("自动保存有效请求PATH");
+        autoRecordPathButtonOnHost = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecordPathIsOpenDefault);
+        autoRecordPathButtonOnHost.setToolTipText("自动保存有效请求PATH");
+        autoRecordPathButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRecordPathButtonOnHost.isSelected();
+                IProxyScanner.autoRecordPathIsOpen = IProxyScanner.autoRecordPathIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRecordPathIsOpen: %s", IProxyScanner.autoRecordPathIsOpen));
 
-//        autoRecordPathButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
-//                boolean selected = autoRecordPathButton.isSelected();
-//                IProxyScanner.autoRecordPathIsOpen = IProxyScanner.autoRecordPathIsOpenDefault ? !selected : selected;
-//                stdout_println(LOG_DEBUG, String.format("autoRecordPathIsOpen: %s", IProxyScanner.autoRecordPathIsOpen));
-//            }
-//        });
+                BasicUrlConfigPanel.autoRecordPathButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+
+            }
+        });
 
         // 开关 是否开启复杂的动态PATH过滤
-        JToggleButton dynamicPathFilterButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
-        dynamicPathFilterButton.setToolTipText("开启智能响应过滤(访问随机URL获取目标的404页面的条件)");
+        dynamicPathFilterButtonOnHost = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
+        dynamicPathFilterButtonOnHost.setToolTipText("开启智能响应过滤(访问随机URL获取目标的404页面的条件)");
+        dynamicPathFilterButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = dynamicPathFilterButtonOnHost.isSelected();
+                IProxyScanner.dynamicPathFilterIsOpen = IProxyScanner.dynamicPathFilterIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("dynamicPathFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
 
-//        //TODO 暂时关闭智能响应过滤功能、目前过滤方案不完善
-//        dynamicPathFilterButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
-//                boolean selected = dynamicPathFilterButton.isSelected();
-//                IProxyScanner.dynamicPathFilterIsOpen = IProxyScanner.dynamicPathFilterIsOpenDefault ? !selected : selected;
-//                stdout_println(LOG_DEBUG, String.format("dynamicPathFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
-//            }
-//        });
+                BasicUrlConfigPanel.dynamicPathFilterButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+            }
+        });
 
 
-        JToggleButton autoPathsToUrlsButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
-        autoPathsToUrlsButton.setToolTipText("自动基于PathTree结合FindPath生成URL");
-
-//        autoPathsToUrlsButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
-//                boolean selected = autoPathsToUrlsButton.isSelected();
-//                IProxyScanner.autoPathsToUrlsIsOpen = IProxyScanner.autoPathsToUrlsIsOpenDefault ? !selected : selected;
-//                stdout_println(LOG_DEBUG, String.format("autoPathsToUrlsIsOpen: %s", IProxyScanner.autoPathsToUrlsIsOpen));
-//            }
-//        });
+        autoPathsToUrlsButtonOnHost = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
+        autoPathsToUrlsButtonOnHost.setToolTipText("自动基于PathTree结合FindPath生成URL");
+        autoPathsToUrlsButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoPathsToUrlsButtonOnHost.isSelected();
+                IProxyScanner.autoPathsToUrlsIsOpen = IProxyScanner.autoPathsToUrlsIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoPathsToUrlsIsOpen: %s", IProxyScanner.autoPathsToUrlsIsOpen));
+                BasicUrlConfigPanel.autoPathsToUrlsButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+            }
+        });
 
         // 开关 是否开启自动刷新未访问URL
-        JToggleButton autoRefreshUnvisitedButton = UiUtils.getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
-        autoRefreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
+        autoRefreshUnvisitedButtonOnHost = UiUtils.getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
+        autoRefreshUnvisitedButtonOnHost.setToolTipText("自动刷新未访问URL");
+        autoRefreshUnvisitedButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRefreshUnvisitedButtonOnHost.isSelected();
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                IProxyScanner.autoRefreshUnvisitedIsOpen = IProxyScanner.autoRefreshUnvisitedIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRefreshUnvisitedIsOpen: %s", IProxyScanner.autoRefreshUnvisitedIsOpen));
 
-//        autoRefreshUnvisitedButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
-//                boolean selected = autoRefreshUnvisitedButton.isSelected();
-//                BasicUrlInfoPanel.autoRefreshUnvisitedIsOpen = BasicUrlInfoPanel.autoRefreshUnvisitedIsOpenDefault ? !selected : selected;
-//                stdout_println(LOG_DEBUG, String.format("autoRefreshUnvisitedIsOpen: %s", BasicUrlInfoPanel.autoRefreshUnvisitedIsOpen));
-//            }
-//        });
+                BasicUrlConfigPanel.autoRefreshUnvisitedButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+            }
+        });
 
         // 开关 是否开启对提取URL进行发起请求
-        JToggleButton autoRecursiveButton = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecursiveIsOpenDefault);
-        autoRecursiveButton.setToolTipText("自动测试未访问URL");
-//        autoRecursiveButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
-//                boolean selected = autoRecursiveButton.isSelected();
-//                IProxyScanner.autoRecursiveIsOpen = IProxyScanner.autoRecursiveIsOpenDefault ? !selected : selected;
-//                stdout_println(LOG_DEBUG, String.format("autoRecursiveIsOpen: %s", IProxyScanner.autoRecursiveIsOpen));
-//            }
-//        });
+        autoRecursiveButtonOnHost = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecursiveIsOpenDefault);
+        autoRecursiveButtonOnHost.setToolTipText("自动测试未访问URL");
+        autoRecursiveButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRecursiveButtonOnHost.isSelected();
+                IProxyScanner.autoRecursiveIsOpen = IProxyScanner.autoRecursiveIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRecursiveIsOpen: %s", IProxyScanner.autoRecursiveIsOpen));
+
+                BasicUrlConfigPanel.autoRecursiveButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+            }
+        });
 
 
         // 刷新按钮按钮
@@ -297,6 +307,21 @@ public class BasicHostConfigPanel extends JPanel {
         // 刷新文本
         autoRefreshTextOnHost = new JLabel(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
 
+        // 自动刷新按钮监听事件
+        autoRefreshButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 检查按钮的选中状态
+                if (autoRefreshButtonOnHost.isSelected()) {
+                    BasicHostInfoPanel.baseHostAutoRefreshIsOpen = autoRefreshButtonOnHost.isSelected();
+                    autoRefreshTextOnHost.setText(String.format("自动每%s秒刷新表格", timerDelayOnHost));
+                } else {
+                    BasicHostInfoPanel.baseHostAutoRefreshIsOpen = !autoRefreshButtonOnHost.isSelected();
+                    autoRefreshTextOnHost.setText(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
+                }
+            }
+        });
+
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
         gbc_buttons.insets = new Insets(0, 5, 0, 5);
@@ -309,24 +334,24 @@ public class BasicHostConfigPanel extends JPanel {
 
         // 自动记录有效的PATH到path表中 功能开关
         gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
-        FilterPanel.add(autoRecordPathButton, gbc_buttons);
+        FilterPanel.add(autoRecordPathButtonOnHost, gbc_buttons);
 
         // 高级动态有效路径过滤 功能开关
         gbc_buttons.gridx = 9;
-        FilterPanel.add(dynamicPathFilterButton, gbc_buttons);
+        FilterPanel.add(dynamicPathFilterButtonOnHost, gbc_buttons);
 
         // 高级动态有效路径过滤 功能开关
         gbc_buttons.gridx = 10;
-        FilterPanel.add(autoPathsToUrlsButton, gbc_buttons);
+        FilterPanel.add(autoPathsToUrlsButtonOnHost, gbc_buttons);
 
 
         // 自动刷新 未访问URL列表
         gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
-        FilterPanel.add(autoRefreshUnvisitedButton, gbc_buttons);
+        FilterPanel.add(autoRefreshUnvisitedButtonOnHost, gbc_buttons);
 
         // 自动递归 开关
         gbc_buttons.gridx = 12; // 设置按钮的横坐标位置
-        FilterPanel.add(autoRecursiveButton, gbc_buttons);
+        FilterPanel.add(autoRecursiveButtonOnHost, gbc_buttons);
 
         // 定时刷新按钮
         gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
@@ -392,359 +417,80 @@ public class BasicHostConfigPanel extends JPanel {
         gbc_btnMore.gridy = 0;
         FilterPanel.add(moreButton, gbc_btnMore);
 
-//        // 功能按钮 弹出选项
-//        JPopupMenu moreMenu = createMoreMenuWithAction();
 
-//        // 自动刷新按钮监听事件
-//        autoRefreshButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // 检查按钮的选中状态
-//                if (autoRefreshButton.isSelected()) {
-//                    BasicUrlInfoPanel.autoRefreshIsOpen = autoRefreshButton.isSelected();
-//                    autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
-//                } else {
-//                    BasicUrlInfoPanel.autoRefreshIsOpen = !autoRefreshButton.isSelected();
-//                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
-//                }
-//            }
-//        });
-
-//        // 快速选择框的监听事件
-//        choicesComboBox.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                try{
-//                    // 触发显示所有行事件
-//                    String searchText = urlSearchBox.getText();
-//                    if(searchText.isEmpty()){
-//                        searchText = "";
-//                    }
-//                    String selectedOption = (String)choicesComboBox.getSelectedItem();
-//                    BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText);
-//                } catch (Exception ex) {
-//                    stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
-//                }
-//            }
-//        });
-
-//        // 检索按钮事件监听器
-//        searchButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                String searchText = urlSearchBox.getText();
-//                String selectedOption = (String) BasicHostConfigPanel.choicesComboBox.getSelectedItem();
-//                BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText);
-//                setAutoRefreshClose();
-//            }
-//        });
-//
-//        //搜索框的回车事件
-//        urlSearchBox.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                String searchText = urlSearchBox.getText();
-//                String selectedOption = (String) BasicHostConfigPanel.choicesComboBox.getSelectedItem();
-//                BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText);
-//                setAutoRefreshClose();
-//            }
-//        });
-
-//        // 点击”功能“的监听事件
-//        moreButton.addMouseListener(new MouseAdapter() {
-//            public void mouseClicked(MouseEvent e) {
-//                moreMenu.show(e.getComponent(), e.getX(), e.getY());
-//            }
-//        });
- }
-
-
-
-//    //创建功能按钮内容和对应事件
-//    private JPopupMenu createMoreMenuWithAction() {
-//        JPopupMenu moreMenu = new JPopupMenu("功能");
-//
-//        JMenuItem addRootUrlToAllowListen = new JMenuItem("添加到RootUrl白名单");
-//        addRootUrlToAllowListen.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-//        moreMenu.add(addRootUrlToAllowListen);
-//
-//        JMenuItem addRootUrlToBlackUrlRoot = new JMenuItem("添加到RootUrl黑名单");
-//        addRootUrlToBlackUrlRoot.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-//        moreMenu.add(addRootUrlToBlackUrlRoot);
-//
-//        JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
-//        addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-//        moreMenu.add(addUrlToRecordPath);
-//
-//        JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
-//        addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-//        moreMenu.add(addUrlToRecordUrl);
-//
-//        JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
-//        loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
-//        moreMenu.add(loadSitemapToRecordPath);
-//
-//        JMenuItem loadSitemapToRecordUrl = new JMenuItem("加载SiteMap到Url记录");
-//        loadSitemapToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
-//        moreMenu.add(loadSitemapToRecordUrl);
-//
-//        JMenuItem clearUselessData = new JMenuItem("清除无用数据");
-//        clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-//        moreMenu.add(clearUselessData);
-//
-//        JMenuItem clearModelTableData = new JMenuItem("清除表格数据表");
-//        clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-//        moreMenu.add(clearModelTableData);
-//
-//        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据表");
-//        clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-//        moreMenu.add(clearRecordTableData);
-//
-//        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录表");
-//        clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-//        moreMenu.add(clearRecordUrlTableData);
-//
-//
-//        JMenuItem clearAllTableData = new JMenuItem("清空所有数据表");
-//        clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-//        moreMenu.add(clearAllTableData);
-//
-//
-////        // 为 功能 菜单项 清除无用数据 添加 Action Listener
-////        clearUselessData.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                // 清空表格模型中的无效数据
-////                TableLineDataModelBasicUrlSQL.clearUselessUrlTableData();
-////                setAutoRefreshOpen();
-////            }
-////        });
-////
-////        // 为 功能 菜单项 清除数据表数据 添加 Action Listener
-////        clearModelTableData.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                // 清空表格模型中的所有行数据
-////                BasicUrlInfoPanel.clearModelData(false);
-////                setAutoRefreshOpen();
-////            }
-////        });
-////
-////        // 为 功能 菜单项 清除所有表数据 添加 Action Listener
-////        clearAllTableData.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                // 清空表格模型中的所有行数据
-////                BasicUrlInfoPanel.clearModelData(true);
-////                setAutoRefreshOpen();
-////            }
-////        });
-////
-////        // 清除记录URL PATH TREE 数据
-////        clearRecordTableData.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                DBService.clearRecordTables();
-////                setAutoRefreshOpen();
-////            }
-////        });
-////
-////        // 清除记录URL数据
-////        clearRecordUrlTableData.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                DBService.clearRecordUrlTable();
-////                setAutoRefreshOpen();
-////            }
-////        });
-////
-////
-////        // 为 功能 菜单项 加载站点地图到PATH记录 添加 Action Listener
-////        loadSitemapToRecordPath.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                new SwingWorker<Void, Void>() {
-////                    @Override
-////                    protected Void doInBackground() throws Exception {
-////                        BurpSitemapUtils.addSiteMapUrlsToRecord(false);
-////                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Path Table End.");
-////                        return null;
-////                    }
-////                }.execute();
-////            }
-////        });
-////
-////        // 为 功能 菜单项 加载站点地图到URL记录 添加 Action Listener
-////        loadSitemapToRecordUrl.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                new SwingWorker<Void, Void>() {
-////                    @Override
-////                    protected Void doInBackground() throws Exception {
-////                        BurpSitemapUtils.addSiteMapUrlsToRecord(true);
-////                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Url Table End.");
-////                        return null;
-////                    }
-////                }.execute();
-////            }
-////        });
-////
-////        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-////        addUrlToRecordPath.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                creatTextDialogForAddRecord("添加有效PATH至PATH记录", "addUrlToRecordPath");
-////            }
-////        });
-////
-////        // 为 功能 菜单项 输入URL列表到数据框 从而加入到 URL记录
-////        addUrlToRecordUrl.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                creatTextDialogForAddRecord("添加URL至已访问URL记录", "addUrlToRecordUrl");
-////            }
-////        });
-////
-////        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-////        addRootUrlToAllowListen.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                creatTextDialogForAddRecord("添加到RootUrl白名单", "addRootUrlToAllowListen");
-////            }
-////        });
-////
-////        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-////        addRootUrlToBlackUrlRoot.addActionListener(new ActionListener() {
-////            @Override
-////            public void actionPerformed(ActionEvent e) {
-////                creatTextDialogForAddRecord("添加到RootUrl黑名单", "addRootUrlToBlackUrlRoot");
-////            }
-////        });
-//        return moreMenu;
-//    }
-
-    /**
-     * 创建加入URL和PATh表的对话框函数
-     * @param title
-     * @param RecordType 分支类型
-     */
-    private void creatTextDialogForAddRecord(String title, String RecordType) {
-        //创建一个对话框,便于输入url数据
-        JDialog dialog = new JDialog();
-        dialog.setTitle(title);
-        dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
-
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
-        // 添加第一行提示
-        JLabel urlJLabel = new JLabel("输入数据:");
-        constraints.gridx = 0; // 第1列
-        constraints.gridy = 0; // 第1行
-        constraints.gridwidth = 2; // 占据两列的空间
-        dialog.add(urlJLabel, constraints);
-
-        JTextArea customParentPathArea = new JTextArea(5, 20);
-        customParentPathArea.setText("");
-        customParentPathArea.setLineWrap(true); // 自动换行
-        customParentPathArea.setWrapStyleWord(true); //断行不断字
-        constraints.gridy = 1; // 第2行
-        constraints.gridx = 0; // 第1列
-        dialog.add(new JScrollPane(customParentPathArea), constraints); // 添加滚动条
-
-        // 添加按钮面板
-        JPanel buttonPanel = new JPanel();
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
-        buttonPanel.add(confirmButton);
-        buttonPanel.add(cancelButton);
-
-        constraints.gridx = 0; // 第一列
-        constraints.gridy = 2; // 第三行
-        constraints.gridwidth = 2; // 占据两列的空间
-        dialog.add(buttonPanel, constraints);
-
-        dialog.pack(); // 调整对话框大小以适应其子组件
-        dialog.setLocationRelativeTo(null); // 居中显示
-        dialog.setVisible(true); // 显示对话框
-
-        // 取消按钮事件
-        cancelButton.addActionListener(new ActionListener() {
+        // 快速选择框的监听事件
+        choicesComboBoxOnHost.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dialog.dispose(); // 关闭对话框
+                try{
+                    // 触发显示所有行事件
+                    String searchText = urlSearchBoxOnHost.getText();
+                    if(searchText.isEmpty()){
+                        searchText = "";
+                    }
+                    String selectedOption = (String) choicesComboBoxOnHost.getSelectedItem();
+                    BasicHostInfoPanel.showDataHostTableByFilter(selectedOption, searchText);
+                } catch (Exception ex) {
+                    stderr_println(String.format("[!] choicesComboBoxOnHost: %s", ex.getMessage()));
+                }
             }
         });
 
-        // 不同的 确认按钮动作
-        confirmButton.addActionListener(new ActionListener() {
+        // 检索按钮事件监听器
+        searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 获取用户输入
-                String inputText = customParentPathArea.getText();
-                dialog.dispose(); // 关闭对话框
-                //调用新的动作
-                java.util.List<String> urlList = CastUtils.getUniqueLines(inputText);
-                if (!urlList.isEmpty()){
-                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                    new SwingWorker<Void, Void>() {
-                        @Override
-                        protected Void doInBackground() throws Exception {
-                            switch (RecordType){
-                                case "addUrlToRecordUrl":
-                                    RecordUrlTable.batchInsertOrUpdateAccessedUrls(urlList, 299);
-                                    break;
-                                case "addUrlToRecordPath":
-                                    RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
-                                    break;
-                                case "addRootUrlToAllowListen":
-                                    BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
-                                    RuleConfigPanel.saveConfigToDefaultJson();
-                                    break;
-                                case "addRootUrlToBlackUrlRoot":
-                                    //1、修改配置文件
-                                    BurpExtender.CONF_BLACK_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_BLACK_URL_ROOT);
-                                    RuleConfigPanel.saveConfigToDefaultJson();
-                                    //2、删除 Root URL 对应的 结果数据
-                                    java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);
-                                    int count1 = CommonSql.batchDeleteDataByLikeRootUrls(rootUrlList, ReqDataTable.tableName);
-                                    int count2 = CommonSql.batchDeleteDataByLikeRootUrls(rootUrlList, AnalyseUrlResultTable.tableName);
-                                    stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
-                                    //3、刷新表格
-                                    BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
-                                    break;
-                            }
-                            return null;
-                        }
-                    }.execute();
-                }
+                String searchText = urlSearchBoxOnHost.getText();
+                String selectedOption = (String) BasicHostConfigPanel.choicesComboBoxOnHost.getSelectedItem();
+                BasicHostInfoPanel.showDataHostTableByFilter(selectedOption, searchText);
+                setAutoRefreshCloseOnHost();
+            }
+        });
+
+        //搜索框的回车事件
+        urlSearchBoxOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchText = urlSearchBoxOnHost.getText();
+                String selectedOption = (String) BasicHostConfigPanel.choicesComboBoxOnHost.getSelectedItem();
+                BasicHostInfoPanel.showDataHostTableByFilter(selectedOption, searchText);
+                setAutoRefreshCloseOnHost();
+            }
+        });
+
+        // 功能按钮 弹出选项
+        JPopupMenu moreMenu = UiUtils.createMoreMenuWithAction();
+        // 点击”功能“的监听事件
+        moreButton.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                moreMenu.show(e.getComponent(), e.getX(), e.getY());
             }
         });
     }
 
+
     //设置打开自动刷新
-    public static void setAutoRefreshOpen(){
+    public static void setAutoRefreshOpenOnHost(){
         autoRefreshButtonOnHost.setSelected(true);
         autoRefreshTextOnHost.setText(String.format("自动每%s秒刷新表格", timerDelayOnHost));
     }
 
     //设置关闭自动刷新
-    public static void setAutoRefreshClose(){
+    public static void setAutoRefreshCloseOnHost(){
         autoRefreshButtonOnHost.setSelected(false);
         autoRefreshTextOnHost.setText(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
         BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
     }
 
-    public static String getUrlSearchBoxText() {
+    public static String getUrlSearchBoxTextOnHost() {
         return urlSearchBoxOnHost.getText();
     }
 
-    public static void setUrlSearchBoxText(String string) {
+    public static void setUrlSearchBoxTextOnHost(String string) {
         urlSearchBoxOnHost.setText(string);
     }
 
-
-    public static String getComboBoxSelectedOption() {
+    public static String getComboBoxSelectedOptionOnHost() {
         return (String) BasicHostConfigPanel.choicesComboBoxOnHost.getSelectedItem();
     }
 }

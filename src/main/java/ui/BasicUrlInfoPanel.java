@@ -677,7 +677,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     /**
      * 清空当前Msg tabs中显示的数据
      */
-    private static void clearBasicUrlMsgTabsData() {
+    public static void clearBasicUrlMsgTabsData() {
         iHttpService = null; // 清空当前显示的项
         requestsData = null;
         responseData = null;
@@ -817,42 +817,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         });
     }
 
-    /**
-     * 清理所有数据
-     */
-    public static void clearModelData(boolean clearAllTable){
-        synchronized (baseUrlMsgTableModel) {
-            // 清空model
-            baseUrlMsgTableModel.setRowCount(0);
 
-            //清空记录变量的内容
-            IProxyScanner.urlScanRecordMap = new RecordHashMap();
-
-            BasicUrlConfigPanel.lbRequestCountOnUrl.setText("0");
-            BasicUrlConfigPanel.lbTaskerCountOnUrl.setText("0");
-            BasicUrlConfigPanel.lbAnalysisEndCountOnUrl.setText("0/0");
-
-
-            //置空 过滤数据
-            IProxyScanner.urlCompareMap.clear();
-
-            //清空数据库内容
-            if (clearAllTable) {
-                DBService.clearAllTables();
-            } else {
-                DBService.clearModelTables();
-            }
-            // 清空检索框的内容
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    BasicUrlConfigPanel.setUrlSearchBoxText("");
-                }
-            });
-
-            // 还可以清空编辑器中的数据
-            clearBasicUrlMsgTabsData();
-        }
-    }
 
     /**
      * 基于过滤选项 和 搜索框内容 显示结果
@@ -927,14 +892,14 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (checkAutoRefreshButtonStatus && baseUrlAutoRefreshIsOpen) {
             if (Duration.between(baseUrlOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                BasicUrlConfigPanel.setAutoRefreshOpen();
+                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
             }
             return;
         }
 
         // 获取搜索框和搜索选项
-        final String searchText = BasicUrlConfigPanel.getUrlSearchBoxText();
-        final String selectedOption = BasicUrlConfigPanel.getComboBoxSelectedOption();
+        final String searchText = BasicUrlConfigPanel.getUrlSearchBoxTextOnUrl();
+        final String selectedOption = BasicUrlConfigPanel.getComboBoxSelectedOptionOnUrl();
 
         // 使用SwingWorker来处理数据更新，避免阻塞EDT
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1000,6 +965,10 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
 
     private List<Integer> getIdsAtActualRows(JTable tableUI, int[] selectedRows) {
         return UiUtils.getIdsAtActualRows(tableUI, selectedRows, 0);
+    }
+
+    public static void clearBaseUrlMsgTableModel(){
+        baseUrlMsgTableModel.setRowCount(0);
     }
 }
 

@@ -34,14 +34,14 @@ public class BasicHostInfoPanel extends JPanel {
     private static JTable baseHostMsgTableUI; //表格UI
     private static DefaultTableModel baseHostMsgTableModel; // 存储表格数据
 
-    private static JEditorPane basicHostFindInfoTextPane;  //敏感信息文本面板
-    private static ITextEditor basicHostRespFindUrlTEditor; //显示找到的URL
-    private static ITextEditor basicHostRespFindPathTEditor; //显示找到的PATH
-    private static ITextEditor basicHostDirectPath2UrlTEditor; //基于PATH计算出的URL
-    private static ITextEditor basicHostSmartPath2UrlTEditor; //基于树算法计算出的URL
-    private static ITextEditor basicHostUnvisitedUrlTEditor; //未访问过的URL
+    private static JEditorPane baseHostFindInfoTextPane;  //敏感信息文本面板
+    private static ITextEditor baseHostRespFindUrlTEditor; //显示找到的URL
+    private static ITextEditor baseHostRespFindPathTEditor; //显示找到的PATH
+    private static ITextEditor baseHostDirectPath2UrlTEditor; //基于PATH计算出的URL
+    private static ITextEditor baseHostSmartPath2UrlTEditor; //基于树算法计算出的URL
+    private static ITextEditor baseHostUnvisitedUrlTEditor; //未访问过的URL
 
-    private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
+    private static ITextEditor baseHostPathTreeTEditor; //当前目标的路径树信息
 
     public static Timer baseHostTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
     public static LocalDateTime baseHostOperationStartTime = LocalDateTime.now(); //操作开始时间
@@ -248,23 +248,23 @@ public class BasicHostInfoPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
 
         //敏感信息结果面板 使用 "text/html" 可用于 html 渲染颜色
-        basicHostFindInfoTextPane = new JEditorPane("text/html", "");
+        baseHostFindInfoTextPane = new JEditorPane("text/html", "");
 
         // 提取到URL的面板
-        basicHostRespFindUrlTEditor = callbacks.createTextEditor();
-        basicHostRespFindPathTEditor = callbacks.createTextEditor();
-        basicHostDirectPath2UrlTEditor = callbacks.createTextEditor();
-        basicHostSmartPath2UrlTEditor = callbacks.createTextEditor();
-        basicHostUnvisitedUrlTEditor = callbacks.createTextEditor();
-        basicHostPathTreeTEditor = callbacks.createTextEditor();
+        baseHostRespFindUrlTEditor = callbacks.createTextEditor();
+        baseHostRespFindPathTEditor = callbacks.createTextEditor();
+        baseHostDirectPath2UrlTEditor = callbacks.createTextEditor();
+        baseHostSmartPath2UrlTEditor = callbacks.createTextEditor();
+        baseHostUnvisitedUrlTEditor = callbacks.createTextEditor();
+        baseHostPathTreeTEditor = callbacks.createTextEditor();
 
-        tabs.addTab("RespFindInfo",null, basicHostFindInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
-        tabs.addTab("RespFindUrl",null, basicHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("RespFindPath",null, basicHostRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
-        tabs.addTab("DirectPath2Url",null, basicHostDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
-        tabs.addTab("SmartPath2Url",null, basicHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("UnvisitedUrl",null, basicHostUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
-        tabs.addTab("PathTreeInfo",null, basicHostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
+        tabs.addTab("RespFindInfo",null, baseHostFindInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
+        tabs.addTab("RespFindUrl",null, baseHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("RespFindPath",null, baseHostRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("DirectPath2Url",null, baseHostDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("SmartPath2Url",null, baseHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("UnvisitedUrl",null, baseHostUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
+        tabs.addTab("PathTreeInfo",null, baseHostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
         return tabs;
     }
 
@@ -272,13 +272,13 @@ public class BasicHostInfoPanel extends JPanel {
      * 清空当前Msg tabs中显示的数据
      */
     private static void clearBasicHostMsgTabsShowData() {
-        basicHostFindInfoTextPane.setText("");
-        basicHostRespFindUrlTEditor.setText(new byte[0]);
-        basicHostRespFindPathTEditor.setText(new byte[0]);
-        basicHostDirectPath2UrlTEditor.setText(new byte[0]);
-        basicHostSmartPath2UrlTEditor.setText(new byte[0]);
-        basicHostUnvisitedUrlTEditor.setText(new byte[0]);
-        basicHostPathTreeTEditor.setText(new byte[0]);
+        baseHostFindInfoTextPane.setText("");
+        baseHostRespFindUrlTEditor.setText(new byte[0]);
+        baseHostRespFindPathTEditor.setText(new byte[0]);
+        baseHostDirectPath2UrlTEditor.setText(new byte[0]);
+        baseHostSmartPath2UrlTEditor.setText(new byte[0]);
+        baseHostUnvisitedUrlTEditor.setText(new byte[0]);
+        baseHostPathTreeTEditor.setText(new byte[0]);
     }
 
     /**
@@ -357,7 +357,7 @@ public class BasicHostInfoPanel extends JPanel {
         if (pathTreeModel!=null){
             JSONObject pathTree = pathTreeModel.getPathTree();
             String prettyJson = JSON.toJSONString(pathTree, JSONWriter.Feature.PrettyFormat);
-            basicHostPathTreeTEditor.setText(prettyJson.getBytes());
+            baseHostPathTreeTEditor.setText(prettyJson.getBytes());
         }
 
         //查询详细数据
@@ -371,12 +371,12 @@ public class BasicHostInfoPanel extends JPanel {
             String pathToUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getPathToUrl());
             String unvisitedUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getUnvisitedUrl());
 
-            basicHostFindInfoTextPane.setText(findInfo);
-            basicHostRespFindUrlTEditor.setText(findUrl.getBytes());
-            basicHostRespFindPathTEditor.setText(findPath.getBytes());
-            basicHostDirectPath2UrlTEditor.setText(findApi.getBytes());
-            basicHostSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
-            basicHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
+            baseHostFindInfoTextPane.setText(findInfo);
+            baseHostRespFindUrlTEditor.setText(findUrl.getBytes());
+            baseHostRespFindPathTEditor.setText(findPath.getBytes());
+            baseHostDirectPath2UrlTEditor.setText(findApi.getBytes());
+            baseHostSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
+            baseHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
 
@@ -396,14 +396,14 @@ public class BasicHostInfoPanel extends JPanel {
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (checkAutoRefreshButtonStatus && baseHostAutoRefreshIsOpen) {
             if (Duration.between(baseHostOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                BasicHostConfigPanel.setAutoRefreshOpen();
+                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }
             return;
         }
 
         // 获取搜索框和搜索选项
-        final String searchText = BasicHostConfigPanel.getUrlSearchBoxText();
-        final String selectedOption = BasicHostConfigPanel.getComboBoxSelectedOption();
+        final String searchText = BasicHostConfigPanel.getUrlSearchBoxTextOnHost();
+        final String selectedOption = BasicHostConfigPanel.getComboBoxSelectedOptionOnHost();
 
         // 使用SwingWorker来处理数据更新，避免阻塞EDT
         SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -1004,6 +1004,24 @@ public class BasicHostInfoPanel extends JPanel {
         // 将右键菜单添加到表格
         tableUI.setComponentPopupMenu(popupMenu);
 
+    }
+
+
+    /**
+     * 清空当前Msg tabs中显示的数据
+     */
+    public static void clearBasicHostMsgTabsData() {
+        baseHostFindInfoTextPane.setText("");
+        baseHostRespFindUrlTEditor.setText(new byte[0]);
+        baseHostRespFindPathTEditor.setText(new byte[0]);
+        baseHostDirectPath2UrlTEditor.setText(new byte[0]);
+        baseHostSmartPath2UrlTEditor.setText(new byte[0]);
+        baseHostUnvisitedUrlTEditor.setText(new byte[0]);
+        baseHostPathTreeTEditor.setText(new byte[0]);
+    }
+
+    public static void clearBaseHostMsgTableModel(){
+        baseHostMsgTableModel.setRowCount(0);
     }
 }
 
