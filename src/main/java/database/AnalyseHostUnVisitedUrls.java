@@ -13,7 +13,7 @@ import java.util.List;
 import static utils.BurpPrintUtils.LOG_ERROR;
 import static utils.BurpPrintUtils.stderr_println;
 
-public class UnVisitedUrlsSQL {
+public class AnalyseHostUnVisitedUrls {
 
     /**
      * 实现 基于 rootUrls 列表 删除 unvisitedUrls
