@@ -689,8 +689,8 @@ public class UiUtils {
      */
     public static void clearModelData(boolean clearAllTable){
         // 清空model
-        BasicUrlInfoPanel.clearBaseUrlMsgTableModel();
-        BasicHostInfoPanel.clearBaseHostMsgTableModel();
+        BasicUrlInfoPanel.clearBasicUrlMsgTableModel();
+        BasicHostInfoPanel.clearBasicHostMsgTableModel();
 
         //清空记录变量的内容
         IProxyScanner.urlScanRecordMap = new RecordHashMap();

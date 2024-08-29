@@ -201,9 +201,9 @@ public class AnalyseInfoUtils {
         String newUrl;
         try {
             //使用当前请求的reqUrl创建URI对象
-            URI baseUrl = new URI(reqUrl);
+            URI basicUrl = new URI(reqUrl);
             //计算出新的绝对URL//如果baseUrl是http://example.com/，而url是/about 计算结果就是 http://example.com/about。
-            newUrl = baseUrl.resolve(path).toString();
+            newUrl = basicUrl.resolve(path).toString();
             //stdout_println(LOG_DEBUG, String.format("[+] Path: %s -> New Url: %s", path, newUrl));
         } catch (Exception e) {
             //stderr_println(LOG_DEBUG, String.format("[!] Concat URL:[%s] + PATH:[%s] -> Error: %s", reqUrl, path, e.getMessage()));

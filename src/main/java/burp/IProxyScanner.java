@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
+import ui.BasicHostConfigPanel;
 import ui.BasicUrlConfigPanel;
 import utilbox.HelperPlus;
 import utils.*;
@@ -105,6 +106,7 @@ public class IProxyScanner implements IProxyListener {
             //记录并更新UI面板中的扫描计数
             totalRequestCount += 1;
             BasicUrlConfigPanel.lbRequestCountOnUrl.setText(String.valueOf(totalRequestCount));
+            BasicHostConfigPanel.lbRequestCountOnHost.setText(String.valueOf(totalRequestCount));
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
@@ -158,6 +160,7 @@ public class IProxyScanner implements IProxyListener {
             //记录并更新UI面板中的扫描计数
             totalRequestCount += 1;
             BasicUrlConfigPanel.lbRequestCountOnUrl.setText(String.valueOf(totalRequestCount));
+            BasicHostConfigPanel.lbRequestCountOnHost.setText(String.valueOf(totalRequestCount));
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
@@ -255,7 +258,7 @@ public class IProxyScanner implements IProxyListener {
             executorService.submit(() -> {
                 //保存网站相关的所有 PATH, 便于后续path反查的使用 当响应状态 In [200 | 403 | 405] 说明路径存在 方法不准确, 暂时关闭
                 RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                stdout_println(LOG_DEBUG, String.format("[*] Direct Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                stdout_println(LOG_DEBUG, String.format("[*] Direct Record req Base Url: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
             });
         } else {
             String reqRootUrl = msgInfo.getUrlInfo().getRootUrlUsual();
@@ -286,7 +289,7 @@ public class IProxyScanner implements IProxyListener {
                         //插入数据库记录 当过滤条件为空时直接插入路径、过滤条件不为空时,就保存所有正常状态的结果
                         if (currentFilterMap.isEmpty() || !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)) {
                             RecordPathTable.insertOrUpdateRecordPath(msgInfo);
-                            stdout_println(LOG_DEBUG, String.format("[+] Dynamic Compare Record reqBaseUrl: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
+                            stdout_println(LOG_DEBUG, String.format("[+] Dynamic Compare Record req Base Url: %s", msgInfo.getUrlInfo().getUrlToPathUsual()));
                         }
                     });
                 }
@@ -411,7 +414,7 @@ public class IProxyScanner implements IProxyListener {
                                 if(isNotEmptyObj(currentFilterMap) && !RespFieldCompareutils.sameFieldValueIsEquals(respFieldsMap, currentFilterMap, false)){
                                     int setStatusCode = respFieldsMap.get("StatusCode") == null ? 299: (int) respFieldsMap.get("StatusCode");
                                     RecordPathTable.insertOrUpdateRecordPath(reqUrl, setStatusCode);
-                                    stdout_println(LOG_DEBUG, String.format("[+] Insert Temp Record reqBaseUrl: %s", reqUrl));
+                                    stdout_println(LOG_DEBUG, String.format("[+] Insert Temp Record req Base Url: %s", reqUrl));
                                 }
                             }else {
                                 urlCompareMap.put(rootUrl, new HashMap<>());

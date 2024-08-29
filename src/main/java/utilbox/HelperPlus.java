@@ -424,30 +424,6 @@ public class HelperPlus {
     }
 
     /**
-     * return Type is URL,not String.
-     * use equal() function to compare URL object.
-     * the string contains default port or not both OK, but the path(/) is sensitive
-     * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
-     * <p>
-     * result example:
-     * http://bit4woo.com/ 不包含默认端口；包含默认path(/)
-     * 是符合通常浏览器中使用格式的
-     *
-     * @return http://www.baidu.com/  不包含默认端口；包含默认path(/)
-     */
-    public static URL getBaseURL(IHttpRequestResponse messageInfo) {
-        if (null == messageInfo) return null;
-        IHttpService service = messageInfo.getHttpService();
-        String shortUrlString = getBaseURL(service);
-        try {
-            return new URL(shortUrlString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * @param service
      * @return http://www.baidu.com/  不包含默认端口；包含默认path(/)
      */
@@ -461,33 +437,6 @@ public class HelperPlus {
         shortUrlString = removeUrlDefaultPort(shortUrlString);
         return shortUrlString;
     }
-
-    /**
-     * return Type is URL,not String.
-     * use equal() function to compare URL object.
-     * the string contains default port or not both OK, but the path(/) is sensitive
-     * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
-     * <p>
-     * result example:
-     * <p>
-     * eg. http://bit4woo.com:80/ 包含默认端口和默认path(/)
-     *
-     * @param messageInfo
-     * @return
-     */
-    public static URL getBaseURLWithDefaultPort(IHttpRequestResponse messageInfo) {
-        if (null == messageInfo) return null;
-        IHttpService service = messageInfo.getHttpService();
-        String shortUrlString = getBaseURL(service);
-        shortUrlString = addUrlDefaultPort(shortUrlString);
-        try {
-            return new URL(shortUrlString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
 
     /**
      * return Type is URL,not String.

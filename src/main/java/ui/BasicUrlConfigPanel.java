@@ -1,10 +1,6 @@
 package ui;
 
-import burp.BurpExtender;
 import burp.IProxyScanner;
-import database.*;
-import utils.BurpSitemapUtils;
-import utils.CastUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -260,7 +256,7 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动刷新未访问URL
-        autoRefreshUnvisitedButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
+        autoRefreshUnvisitedButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButtonOnUrl.setToolTipText("自动刷新未访问URL");
         autoRefreshUnvisitedButtonOnUrl.addActionListener(new ActionListener() {
             @Override
@@ -308,10 +304,10 @@ public class BasicUrlConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
                 if (autoRefreshButtonOnUrl.isSelected()) {
-                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = autoRefreshButtonOnUrl.isSelected();
+                    BasicUrlInfoPanel.basicUrlAutoRefreshIsOpen = autoRefreshButtonOnUrl.isSelected();
                     autoRefreshTextOnUrl.setText(String.format("自动每%s秒刷新表格", timerDelayOnUrl));
                 } else {
-                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = !autoRefreshButtonOnUrl.isSelected();
+                    BasicUrlInfoPanel.basicUrlAutoRefreshIsOpen = !autoRefreshButtonOnUrl.isSelected();
                     autoRefreshTextOnUrl.setText(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
                 }
             }
@@ -473,7 +469,7 @@ public class BasicUrlConfigPanel extends JPanel {
     public static void setAutoRefreshCloseOnUrl(){
         autoRefreshButtonOnUrl.setSelected(false);
         autoRefreshTextOnUrl.setText(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
-        BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
+        BasicUrlInfoPanel.basicUrlOperationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxTextOnUrl() {

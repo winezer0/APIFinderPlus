@@ -1,9 +1,6 @@
 package ui;
 
 import burp.IProxyScanner;
-import database.DBService;
-import database.TableLineDataModelBasicUrlSQL;
-import utils.BurpSitemapUtils;
 import utils.UiUtils;
 
 import javax.swing.*;
@@ -264,7 +261,7 @@ public class BasicHostConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动刷新未访问URL
-        autoRefreshUnvisitedButtonOnHost = UiUtils.getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
+        autoRefreshUnvisitedButtonOnHost = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButtonOnHost.setToolTipText("自动刷新未访问URL");
         autoRefreshUnvisitedButtonOnHost.addActionListener(new ActionListener() {
             @Override
@@ -313,10 +310,10 @@ public class BasicHostConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
                 if (autoRefreshButtonOnHost.isSelected()) {
-                    BasicHostInfoPanel.baseHostAutoRefreshIsOpen = autoRefreshButtonOnHost.isSelected();
+                    BasicHostInfoPanel.basicHostAutoRefreshIsOpen = autoRefreshButtonOnHost.isSelected();
                     autoRefreshTextOnHost.setText(String.format("自动每%s秒刷新表格", timerDelayOnHost));
                 } else {
-                    BasicHostInfoPanel.baseHostAutoRefreshIsOpen = !autoRefreshButtonOnHost.isSelected();
+                    BasicHostInfoPanel.basicHostAutoRefreshIsOpen = !autoRefreshButtonOnHost.isSelected();
                     autoRefreshTextOnHost.setText(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
                 }
             }
@@ -479,7 +476,7 @@ public class BasicHostConfigPanel extends JPanel {
     public static void setAutoRefreshCloseOnHost(){
         autoRefreshButtonOnHost.setSelected(false);
         autoRefreshTextOnHost.setText(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
-        BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
+        BasicUrlInfoPanel.basicUrlOperationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxTextOnHost() {

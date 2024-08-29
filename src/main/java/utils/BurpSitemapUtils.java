@@ -59,7 +59,7 @@ public class BurpSitemapUtils {
                                 }
                             }
                         } catch (Exception e){
-                            stderr_println(String.format("Record SiteMap Urls (isRecordUrl:%s) reqBaseUrl:%s -> Error: %s", isRecordUrl, reqBaseUrl, e.getMessage()));
+                            stderr_println(String.format("Record SiteMap Urls (isRecordUrl:%s) req Base Url:%s -> Error: %s", isRecordUrl, reqBaseUrl, e.getMessage()));
                         }
 
                     }

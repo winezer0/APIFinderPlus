@@ -147,19 +147,19 @@ public class AnalyseUriFilter {
 
     /**
      * 过滤提取出的URL列表 仅保留自身域名的
-     * @param baseHost
+     * @param basicHost
      * @param matchUrlList
      * @return
      */
-    public static List<String> filterUrlByMainHost(String baseHost, List<String> matchUrlList){
-        if (isEmptyObj(baseHost) || isEmptyObj(matchUrlList)) return matchUrlList;
+    public static List<String> filterUrlByMainHost(String basicHost, List<String> matchUrlList){
+        if (isEmptyObj(basicHost) || isEmptyObj(matchUrlList)) return matchUrlList;
 
         List<String> newUrlList = new ArrayList<>();
         for (String matchUrl : matchUrlList){
             //对比提取出来的URL和请求URL的域名部分是否相同，不相同的一般不是
             try {
                 String newHost = (new URL(matchUrl)).getHost();
-                if (!newHost.contains(baseHost))
+                if (!newHost.contains(basicHost))
                     continue;
             } catch (Exception e) {
                 stderr_println(LOG_DEBUG, String.format("[!] new URL(%s) -> Error: %s", matchUrl, e.getMessage()));

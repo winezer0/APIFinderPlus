@@ -166,7 +166,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         EXTENSION_IS_LOADED = false;
 
         // 停止面板更新器
-        BasicUrlInfoPanel.baseUrlTimer.stop();
+        BasicUrlInfoPanel.basicUrlTimer.stop();
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();

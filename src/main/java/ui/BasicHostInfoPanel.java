@@ -31,25 +31,22 @@ import static utils.CastUtils.isNotEmptyObj;
 public class BasicHostInfoPanel extends JPanel {
     private static volatile BasicHostInfoPanel instance; //实现单例模式
 
-    private static JTable baseHostMsgTableUI; //表格UI
-    private static DefaultTableModel baseHostMsgTableModel; // 存储表格数据
+    private static JTable basicHostMsgTableUI; //表格UI
+    private static DefaultTableModel basicHostMsgTableModel; // 存储表格数据
 
-    private static JEditorPane baseHostFindInfoTextPane;  //敏感信息文本面板
-    private static ITextEditor baseHostRespFindUrlTEditor; //显示找到的URL
-    private static ITextEditor baseHostRespFindPathTEditor; //显示找到的PATH
-    private static ITextEditor baseHostDirectPath2UrlTEditor; //基于PATH计算出的URL
-    private static ITextEditor baseHostSmartPath2UrlTEditor; //基于树算法计算出的URL
-    private static ITextEditor baseHostUnvisitedUrlTEditor; //未访问过的URL
+    private static JEditorPane basicHostFindInfoTextPane;  //敏感信息文本面板
+    private static ITextEditor basicHostRespFindUrlTEditor; //显示找到的URL
+    private static ITextEditor basicHostRespFindPathTEditor; //显示找到的PATH
+    private static ITextEditor basicHostDirectPath2UrlTEditor; //基于PATH计算出的URL
+    private static ITextEditor basicHostSmartPath2UrlTEditor; //基于树算法计算出的URL
+    private static ITextEditor basicHostUnvisitedUrlTEditor; //未访问过的URL
 
-    private static ITextEditor baseHostPathTreeTEditor; //当前目标的路径树信息
+    private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
-    public static Timer baseHostTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
-    public static LocalDateTime baseHostOperationStartTime = LocalDateTime.now(); //操作开始时间
+    public static Timer basicHostTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
+    public static LocalDateTime basicHostOperationStartTime = LocalDateTime.now(); //操作开始时间
 
-    public static boolean baseHostAutoRefreshUnvisitedIsOpenDefault = false;
-    public static boolean baseHostAutoRefreshUnvisitedIsOpen = baseHostAutoRefreshUnvisitedIsOpenDefault; //自动刷新未访问URL
-
-    public static boolean baseHostAutoRefreshIsOpen = false;
+    public static boolean basicHostAutoRefreshIsOpen = false;
 
     public static BasicHostInfoPanel getInstance() {
         if (instance == null) {
@@ -79,7 +76,7 @@ public class BasicHostInfoPanel extends JPanel {
         initBasicHostDataTableUI();
 
         //将包含table的滚动面板的upScrollPane 设置为另一个组件mainSplitPane的上半部分。
-        basicHostMainSplitPane.setTopComponent(new JScrollPane(baseHostMsgTableUI));
+        basicHostMainSplitPane.setTopComponent(new JScrollPane(basicHostMsgTableUI));
 
         //获取下方的消息面板
         JTabbedPane basicHostMsgTabs = getBasicHostMsgTabs();
@@ -90,7 +87,7 @@ public class BasicHostInfoPanel extends JPanel {
         add(basicHostMainSplitPane, BorderLayout.CENTER);
 
         //初始化表格数据
-        initBasicHostDataTableUIData(baseHostMsgTableModel);
+        initBasicHostDataTableUIData(basicHostMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
         initBasicHostTimer(BasicHostConfigPanel.timerDelayOnHost * 1000);
@@ -106,7 +103,7 @@ public class BasicHostInfoPanel extends JPanel {
                 //获取所有数据 查询 HOST信息表
                 ArrayList<BasicHostTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
                 //将数据赋值给表模型
-                baseHostPopulateModelFromList(tableModel, allReqAnalyseData);
+                basicHostPopulateModelFromList(tableModel, allReqAnalyseData);
             }
         });
     }
@@ -116,7 +113,7 @@ public class BasicHostInfoPanel extends JPanel {
      * @param model
      * @param arrayList
      */
-    private void baseHostPopulateModelFromList(DefaultTableModel model, ArrayList<BasicHostTableLineDataModel> arrayList) {
+    private void basicHostPopulateModelFromList(DefaultTableModel model, ArrayList<BasicHostTableLineDataModel> arrayList) {
         if (isEmptyObj(arrayList)) return;
 
         Iterator<BasicHostTableLineDataModel> iterator = arrayList.iterator();
@@ -134,7 +131,7 @@ public class BasicHostInfoPanel extends JPanel {
      */
     private void initBasicHostDataTableUI() {
         // 数据展示面板
-        baseHostMsgTableModel = new DefaultTableModel(new Object[]{
+        basicHostMsgTableModel = new DefaultTableModel(new Object[]{
                 "id",
                 "root_url",
                 "important",
@@ -154,11 +151,11 @@ public class BasicHostInfoPanel extends JPanel {
             }
         };
 
-        baseHostMsgTableUI = UiUtils.creatTableUiWithTips(baseHostMsgTableModel);
+        basicHostMsgTableUI = UiUtils.creatTableUiWithTips(basicHostMsgTableModel);
 
         // 设置列选中模式
         int listSelectionModel = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
-        baseHostMsgTableUI.setSelectionMode(listSelectionModel);
+        basicHostMsgTableUI.setSelectionMode(listSelectionModel);
 
         //自己实现TableHeader 支持请求头提示
         String[] basicHostColHeaderTooltips = new String[]{
@@ -175,29 +172,29 @@ public class BasicHostInfoPanel extends JPanel {
                 "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
 
-        TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(baseHostMsgTableUI.getColumnModel(), basicHostColHeaderTooltips);
-        baseHostMsgTableUI.setTableHeader(basicHostTableHeader);
+        TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(basicHostMsgTableUI.getColumnModel(), basicHostColHeaderTooltips);
+        basicHostMsgTableUI.setTableHeader(basicHostTableHeader);
 
         //添加表头排序功能
-        UiUtils.tableAddActionSortByHeader(baseHostMsgTableUI, baseHostMsgTableModel);
+        UiUtils.tableAddActionSortByHeader(basicHostMsgTableUI, basicHostMsgTableModel);
 
         //设置数据表的宽度
-        UiUtils.tableSetColumnMaxWidth(baseHostMsgTableUI, 0, 50);
-        UiUtils.tableSetColumnMinWidth(baseHostMsgTableUI, 1, 200);
+        UiUtils.tableSetColumnMaxWidth(basicHostMsgTableUI, 0, 50);
+        UiUtils.tableSetColumnMinWidth(basicHostMsgTableUI, 1, 200);
 
         //设置表格每列的对齐设置
         List<Integer> leftColumns = Arrays.asList(1);
-        UiUtils.tableSetColumnsAlignRender(baseHostMsgTableUI, leftColumns);
+        UiUtils.tableSetColumnsAlignRender(basicHostMsgTableUI, leftColumns);
 
         //为重要信息列添加额外的渲染
         importantCellRenderer havingImportantRenderer = new importantCellRenderer();
-        baseHostMsgTableUI.getColumnModel().getColumn(2).setCellRenderer(havingImportantRenderer);
+        basicHostMsgTableUI.getColumnModel().getColumn(2).setCellRenderer(havingImportantRenderer);
 
         //为表格添加点击显示下方的消息动作
         basicHostTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
-        basicHostTableAddRightClickMenu(baseHostMsgTableUI, listSelectionModel);
+        basicHostTableAddRightClickMenu(basicHostMsgTableUI, listSelectionModel);
     }
 
 
@@ -208,7 +205,7 @@ public class BasicHostInfoPanel extends JPanel {
     private void initBasicHostTimer(int delay) {
         // 创建一个每10秒触发一次的定时器
         //int delay = 10000; // 延迟时间，单位为毫秒
-        baseHostTimer = new Timer(delay, new ActionListener() {
+        basicHostTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
@@ -235,7 +232,7 @@ public class BasicHostInfoPanel extends JPanel {
         });
 
         // 启动定时器
-        baseHostTimer.start();
+        basicHostTimer.start();
     }
 
     /**
@@ -248,23 +245,23 @@ public class BasicHostInfoPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
 
         //敏感信息结果面板 使用 "text/html" 可用于 html 渲染颜色
-        baseHostFindInfoTextPane = new JEditorPane("text/html", "");
+        basicHostFindInfoTextPane = new JEditorPane("text/html", "");
 
         // 提取到URL的面板
-        baseHostRespFindUrlTEditor = callbacks.createTextEditor();
-        baseHostRespFindPathTEditor = callbacks.createTextEditor();
-        baseHostDirectPath2UrlTEditor = callbacks.createTextEditor();
-        baseHostSmartPath2UrlTEditor = callbacks.createTextEditor();
-        baseHostUnvisitedUrlTEditor = callbacks.createTextEditor();
-        baseHostPathTreeTEditor = callbacks.createTextEditor();
+        basicHostRespFindUrlTEditor = callbacks.createTextEditor();
+        basicHostRespFindPathTEditor = callbacks.createTextEditor();
+        basicHostDirectPath2UrlTEditor = callbacks.createTextEditor();
+        basicHostSmartPath2UrlTEditor = callbacks.createTextEditor();
+        basicHostUnvisitedUrlTEditor = callbacks.createTextEditor();
+        basicHostPathTreeTEditor = callbacks.createTextEditor();
 
-        tabs.addTab("RespFindInfo",null, baseHostFindInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
-        tabs.addTab("RespFindUrl",null, baseHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("RespFindPath",null, baseHostRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
-        tabs.addTab("DirectPath2Url",null, baseHostDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
-        tabs.addTab("SmartPath2Url",null, baseHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("UnvisitedUrl",null, baseHostUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
-        tabs.addTab("PathTreeInfo",null, baseHostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
+        tabs.addTab("RespFindInfo",null, basicHostFindInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
+        tabs.addTab("RespFindUrl",null, basicHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("RespFindPath",null, basicHostRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("DirectPath2Url",null, basicHostDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("SmartPath2Url",null, basicHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("UnvisitedUrl",null, basicHostUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
+        tabs.addTab("PathTreeInfo",null, basicHostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
         return tabs;
     }
 
@@ -272,13 +269,13 @@ public class BasicHostInfoPanel extends JPanel {
      * 清空当前Msg tabs中显示的数据
      */
     private static void clearBasicHostMsgTabsShowData() {
-        baseHostFindInfoTextPane.setText("");
-        baseHostRespFindUrlTEditor.setText(new byte[0]);
-        baseHostRespFindPathTEditor.setText(new byte[0]);
-        baseHostDirectPath2UrlTEditor.setText(new byte[0]);
-        baseHostSmartPath2UrlTEditor.setText(new byte[0]);
-        baseHostUnvisitedUrlTEditor.setText(new byte[0]);
-        baseHostPathTreeTEditor.setText(new byte[0]);
+        basicHostFindInfoTextPane.setText("");
+        basicHostRespFindUrlTEditor.setText(new byte[0]);
+        basicHostRespFindPathTEditor.setText(new byte[0]);
+        basicHostDirectPath2UrlTEditor.setText(new byte[0]);
+        basicHostSmartPath2UrlTEditor.setText(new byte[0]);
+        basicHostUnvisitedUrlTEditor.setText(new byte[0]);
+        basicHostPathTreeTEditor.setText(new byte[0]);
     }
 
     /**
@@ -287,7 +284,7 @@ public class BasicHostInfoPanel extends JPanel {
     private void basicHostTableAddActionSetMsgTabData() {
         //为表格 添加 鼠标监听器
         //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
-        baseHostMsgTableUI.addMouseListener(new MouseAdapter() {
+        basicHostMsgTableUI.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 只有在双击时才执行
@@ -295,12 +292,12 @@ public class BasicHostInfoPanel extends JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
-                            int row = baseHostMsgTableUI.rowAtPoint(e.getPoint());
+                            int row = basicHostMsgTableUI.rowAtPoint(e.getPoint());
                             if (row >= 0) {
                                 updateComponentsBasedOnSelectedRow(row);
                             }
                         }catch (Exception ef) {
-                            BurpExtender.getStderr().println("[-] Error click table: " + baseHostMsgTableUI.rowAtPoint(e.getPoint()));
+                            BurpExtender.getStderr().println("[-] Error click table: " + basicHostMsgTableUI.rowAtPoint(e.getPoint()));
                             ef.printStackTrace(BurpExtender.getStderr());
                         }
                     }
@@ -310,7 +307,7 @@ public class BasicHostInfoPanel extends JPanel {
 
         //为表格 添加 键盘按键释放事件监听器
         //获取按键事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
-        baseHostMsgTableUI.addKeyListener(new KeyAdapter() {
+        basicHostMsgTableUI.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 //关注向上 和向下 的按键事件
@@ -318,7 +315,7 @@ public class BasicHostInfoPanel extends JPanel {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             try {
-                                int row = baseHostMsgTableUI.getSelectedRow();
+                                int row = basicHostMsgTableUI.getSelectedRow();
                                 if (row >= 0) {
                                     updateComponentsBasedOnSelectedRow(row);
                                 }
@@ -345,7 +342,7 @@ public class BasicHostInfoPanel extends JPanel {
         String rootUrl = null;
         try {
             //实现排序后 视图行 数据的正确获取
-            rootUrl = UiUtils.getStringAtActualRow(baseHostMsgTableUI, row, 1);
+            rootUrl = UiUtils.getStringAtActualRow(basicHostMsgTableUI, row, 1);
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage()));
         }
@@ -357,7 +354,7 @@ public class BasicHostInfoPanel extends JPanel {
         if (pathTreeModel!=null){
             JSONObject pathTree = pathTreeModel.getPathTree();
             String prettyJson = JSON.toJSONString(pathTree, JSONWriter.Feature.PrettyFormat);
-            baseHostPathTreeTEditor.setText(prettyJson.getBytes());
+            basicHostPathTreeTEditor.setText(prettyJson.getBytes());
         }
 
         //查询详细数据
@@ -371,12 +368,12 @@ public class BasicHostInfoPanel extends JPanel {
             String pathToUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getPathToUrl());
             String unvisitedUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getUnvisitedUrl());
 
-            baseHostFindInfoTextPane.setText(findInfo);
-            baseHostRespFindUrlTEditor.setText(findUrl.getBytes());
-            baseHostRespFindPathTEditor.setText(findPath.getBytes());
-            baseHostDirectPath2UrlTEditor.setText(findApi.getBytes());
-            baseHostSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
-            baseHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
+            basicHostFindInfoTextPane.setText(findInfo);
+            basicHostRespFindUrlTEditor.setText(findUrl.getBytes());
+            basicHostRespFindPathTEditor.setText(findPath.getBytes());
+            basicHostDirectPath2UrlTEditor.setText(findApi.getBytes());
+            basicHostSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
+            basicHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
 
@@ -394,8 +391,8 @@ public class BasicHostInfoPanel extends JPanel {
         BasicHostConfigPanel.lbAnalysisEndCountOnHost.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (checkAutoRefreshButtonStatus && baseHostAutoRefreshIsOpen) {
-            if (Duration.between(baseHostOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
+        if (checkAutoRefreshButtonStatus && basicHostAutoRefreshIsOpen) {
+            if (Duration.between(basicHostOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
                 BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }
             return;
@@ -427,7 +424,7 @@ public class BasicHostInfoPanel extends JPanel {
                     // 更新UI组件
                     SwingUtilities.invokeLater(() -> {
                         try {
-                            baseHostMsgTableModel.fireTableDataChanged(); // 通知模型数据发生了变化
+                            basicHostMsgTableModel.fireTableDataChanged(); // 通知模型数据发生了变化
                         } catch (Exception e) {
                             // 处理更新UI组件时可能出现的异常
                             System.err.println("Error while updating UI: " + e.getMessage());
@@ -455,7 +452,7 @@ public class BasicHostInfoPanel extends JPanel {
             @Override
             protected Void doInBackground() throws Exception {
                 // 构建一个新的表格模型
-                baseHostMsgTableModel.setRowCount(0);
+                basicHostMsgTableModel.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
                 ArrayList<BasicHostTableLineDataModel> apiDataModels;
@@ -486,7 +483,7 @@ public class BasicHostInfoPanel extends JPanel {
                     if (url.toLowerCase().contains(searchText.toLowerCase())) {
                         Object[] rowData = apiDataModel.toRowDataArray();
                         //model.insertRow(0, rowData); //插入到首行
-                        baseHostMsgTableModel.insertRow(baseHostMsgTableModel.getRowCount(), rowData); //插入到最后一行
+                        basicHostMsgTableModel.insertRow(basicHostMsgTableModel.getRowCount(), rowData); //插入到最后一行
                     }
                 }
                 return null;
@@ -1011,17 +1008,17 @@ public class BasicHostInfoPanel extends JPanel {
      * 清空当前Msg tabs中显示的数据
      */
     public static void clearBasicHostMsgTabsData() {
-        baseHostFindInfoTextPane.setText("");
-        baseHostRespFindUrlTEditor.setText(new byte[0]);
-        baseHostRespFindPathTEditor.setText(new byte[0]);
-        baseHostDirectPath2UrlTEditor.setText(new byte[0]);
-        baseHostSmartPath2UrlTEditor.setText(new byte[0]);
-        baseHostUnvisitedUrlTEditor.setText(new byte[0]);
-        baseHostPathTreeTEditor.setText(new byte[0]);
+        basicHostFindInfoTextPane.setText("");
+        basicHostRespFindUrlTEditor.setText(new byte[0]);
+        basicHostRespFindPathTEditor.setText(new byte[0]);
+        basicHostDirectPath2UrlTEditor.setText(new byte[0]);
+        basicHostSmartPath2UrlTEditor.setText(new byte[0]);
+        basicHostUnvisitedUrlTEditor.setText(new byte[0]);
+        basicHostPathTreeTEditor.setText(new byte[0]);
     }
 
-    public static void clearBaseHostMsgTableModel(){
-        baseHostMsgTableModel.setRowCount(0);
+    public static void clearBasicHostMsgTableModel(){
+        basicHostMsgTableModel.setRowCount(0);
     }
 }
 
