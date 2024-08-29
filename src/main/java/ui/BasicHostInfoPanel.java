@@ -313,13 +313,13 @@ public class BasicHostInfoPanel extends JPanel {
         //清理下方数据内容
         clearBasicHostMsgTabsShowData();
 
-        //1、获取当前行的 id 号
+        //1、获取当前行的 rootUrl
         String rootUrl = null;
         try {
             //实现排序后 视图行 数据的正确获取
             rootUrl = UiUtils.getStringAtActualRow(baseHostMsgTableUI, row, 1);
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage() ));
+            stderr_println(LOG_ERROR, String.format("[!] Table get Value At Row [%s] Error:%s", row, e.getMessage()));
         }
 
         if (CastUtils.isEmptyObj(rootUrl)) return;
