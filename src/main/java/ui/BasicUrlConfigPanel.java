@@ -242,7 +242,7 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动刷新未访问URL
-        JToggleButton autoRefreshUnvisitedButton = getToggleButtonByDefaultValue(BasicUrlInfoPanel.autoRefreshUnvisitedIsOpenDefault);
+        JToggleButton autoRefreshUnvisitedButton = getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
 
         autoRefreshUnvisitedButton.addActionListener(new ActionListener() {
@@ -250,8 +250,8 @@ public class BasicUrlConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = autoRefreshUnvisitedButton.isSelected();
-                BasicUrlInfoPanel.autoRefreshUnvisitedIsOpen = BasicUrlInfoPanel.autoRefreshUnvisitedIsOpenDefault ? !selected : selected;
-                stdout_println(LOG_DEBUG, String.format("autoRefreshUnvisitedIsOpen: %s", BasicUrlInfoPanel.autoRefreshUnvisitedIsOpen));
+                BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpen = BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRefreshUnvisitedIsOpen: %s", BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpen));
             }
         });
 
@@ -385,10 +385,10 @@ public class BasicUrlConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
                 if (autoRefreshButton.isSelected()) {
-                    BasicUrlInfoPanel.autoRefreshIsOpen = autoRefreshButton.isSelected();
+                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = autoRefreshButton.isSelected();
                     autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
                 } else {
-                    BasicUrlInfoPanel.autoRefreshIsOpen = !autoRefreshButton.isSelected();
+                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = !autoRefreshButton.isSelected();
                     autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
                 }
             }
@@ -733,7 +733,7 @@ public class BasicUrlConfigPanel extends JPanel {
     public static void setAutoRefreshClose(){
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
-        BasicUrlInfoPanel.operationStartTime = LocalDateTime.now();
+        BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxText() {

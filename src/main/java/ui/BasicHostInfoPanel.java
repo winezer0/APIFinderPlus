@@ -75,31 +75,27 @@ public class BasicHostInfoPanel extends JPanel {
 
         // 主分隔面板
         // JSplitPane可以包含两个（或更多）子组件，允许用户通过拖动分隔条来改变两个子组件的相对大小。
-        JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane basicHostMainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         // 首行配置面板
         BasicHostConfigPanel basicHostConfigPanel = new BasicHostConfigPanel();
 
         // 数据表格
-        initDataTableUI();
+        initBasicHostDataTableUI();
 
-        // JScrollPane是一个可滚动的视图容器，通常用于包裹那些内容可能超出其显示区域的组件，比如表格(JTable)、文本区(JTextArea)等。
-        // 这里，它包裹 table（一个JTable实例），使得当表格内容超出显示范围时，用户可以通过滚动条查看所有数据。
-        JScrollPane upScrollPane = new JScrollPane(baseHostMsgTableUI);
-        // 将upScrollPane作为mainSplitPane的上半部分
         //将包含table的滚动面板的upScrollPane 设置为另一个组件mainSplitPane的上半部分。
-        mainSplitPane.setTopComponent(upScrollPane);
+        basicHostMainSplitPane.setTopComponent(new JScrollPane(baseHostMsgTableUI));
 
         //获取下方的消息面板
-        JTabbedPane tabs = getMsgTabs();
-        mainSplitPane.setBottomComponent(tabs);
+        JTabbedPane basicHostMsgTabs = getBasicHostMsgTabs();
+        basicHostMainSplitPane.setBottomComponent(basicHostMsgTabs);
 
         //组合最终的内容面板
         add(basicHostConfigPanel, BorderLayout.NORTH);
-        add(mainSplitPane, BorderLayout.CENTER);
+        add(basicHostMainSplitPane, BorderLayout.CENTER);
 
         //初始化表格数据
-        initDataTableUIData(baseHostMsgTableModel);
+        initBasicHostDataTableUIData(baseHostMsgTableModel);
 
 //        // 初始化定时刷新页面函数 单位是毫秒
 //        initTimer(ConfigPanel.timerDelay * 1000);
@@ -108,7 +104,7 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 查询 TableLineDataModelBasicHostSQL 初始化 table 数据
      */
-    private void initDataTableUIData(DefaultTableModel tableModel) {
+    private void initBasicHostDataTableUIData(DefaultTableModel tableModel) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据 查询 HOST信息表
@@ -140,7 +136,7 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 初始化Table
      */
-    private void initDataTableUI() {
+    private void initBasicHostDataTableUI() {
         // 数据展示面板
         baseHostMsgTableModel = new DefaultTableModel(new Object[]{
                 "id",
@@ -216,7 +212,7 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 初始化创建表格下方的消息内容面板
      */
-    private JTabbedPane getMsgTabs() {
+    private JTabbedPane getBasicHostMsgTabs() {
         IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 
         // 将 结果消息面板 添加到窗口下方

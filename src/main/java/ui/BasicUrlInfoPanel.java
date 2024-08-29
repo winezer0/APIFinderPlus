@@ -35,25 +35,25 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     private static IMessageEditor requestTextEditor;  //请求消息面板
     private static IMessageEditor responseTextEditor; //响应消息面板
 
-    private static JEditorPane findInfoTextPane;  //敏感信息文本面板
+    private static JEditorPane baseUrlFindInfoTextPane;  //敏感信息文本面板
 
-    private static ITextEditor respFindUrlTEditor; //显示找到的URL
-    private static ITextEditor respFindPathTEditor; //显示找到的PATH
-    private static ITextEditor directPath2UrlTEditor; //基于PATH计算出的URL
-    private static ITextEditor smartPath2UrlTEditor; //基于树算法计算出的URL
-    private static ITextEditor unvisitedUrlTEditor; //未访问过的URL
+    private static ITextEditor baseUrlRespFindUrlTEditor; //显示找到的URL
+    private static ITextEditor baseUrlRespFindPathTEditor; //显示找到的PATH
+    private static ITextEditor baseUrlDirectPath2UrlTEditor; //基于PATH计算出的URL
+    private static ITextEditor baseUrlSmartPath2UrlTEditor; //基于树算法计算出的URL
+    private static ITextEditor baseUrlUnvisitedUrlTEditor; //未访问过的URL
 
     private static byte[] requestsData; //请求数据,设置为全局变量,便于IMessageEditorController函数调用
     private static byte[] responseData; //响应数据,设置为全局变量,便于IMessageEditorController函数调用
     private static IHttpService iHttpService; //请求服务信息,设置为全局变量,便于IMessageEditorController函数调用
 
-    public static Timer timer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
-    public static LocalDateTime operationStartTime = LocalDateTime.now(); //操作开始时间
+    public static Timer baseUrlTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
+    public static LocalDateTime baseUrlOperationStartTime = LocalDateTime.now(); //操作开始时间
 
-    public static boolean autoRefreshUnvisitedIsOpenDefault = false;
-    public static boolean autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault; //自动刷新未访问URL
+    public static boolean baseUrlAutoRefreshUnvisitedIsOpenDefault = false;
+    public static boolean baseUrlAutoRefreshUnvisitedIsOpen = baseUrlAutoRefreshUnvisitedIsOpenDefault; //自动刷新未访问URL
 
-    public static boolean autoRefreshIsOpen = false;
+    public static boolean baseUrlAutoRefreshIsOpen = false;
 
     public static BasicUrlInfoPanel getInstance() {
         if (instance == null) {
@@ -72,44 +72,40 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         ////BorderLayout 将容器分为五个区域：北 南 东 西 中 每个区域可以放置一个组件，
         setLayout(new BorderLayout(0, 0));
 
-
         // 主分隔面板
         // JSplitPane可以包含两个（或更多）子组件，允许用户通过拖动分隔条来改变两个子组件的相对大小。
-        JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane basicUrlMainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         // 首行配置面板
         //TODO 需要实现配置面板的整合
-        BasicUrlConfigPanel configPanel = new BasicUrlConfigPanel();
+        BasicUrlConfigPanel baseUrlConfigPanel = new BasicUrlConfigPanel();
 
         // 数据表格
-        initDataTableUI();
+        initBaseUrlDataTableUI();
 
         // JScrollPane是一个可滚动的视图容器，通常用于包裹那些内容可能超出其显示区域的组件，比如表格(JTable)、文本区(JTextArea)等。
-        // 这里，它包裹 table（一个JTable实例），使得当表格内容超出显示范围时，用户可以通过滚动条查看所有数据。
-        JScrollPane upScrollPane = new JScrollPane(baseUrlMsgTableUI);
-        // 将upScrollPane作为mainSplitPane的上半部分
         //将包含table的滚动面板的upScrollPane 设置为另一个组件mainSplitPane的上半部分。
-        mainSplitPane.setTopComponent(upScrollPane);
+        basicUrlMainSplitPane.setTopComponent(new JScrollPane(baseUrlMsgTableUI));
 
         //获取下方的消息面板
-        JTabbedPane tabs = getMsgTabs();
-        mainSplitPane.setBottomComponent(tabs);
+        JTabbedPane baseUrlMsgInfoTabs = getBasicUrlMsgTabs();
+        basicUrlMainSplitPane.setBottomComponent(baseUrlMsgInfoTabs);
 
         //组合最终的内容面板
-        add(configPanel, BorderLayout.NORTH);
-        add(mainSplitPane, BorderLayout.CENTER);
+        add(baseUrlConfigPanel, BorderLayout.NORTH);
+        add(basicUrlMainSplitPane, BorderLayout.CENTER);
 
         //初始化表格数据
-        initDataTableUIData(baseUrlMsgTableModel);
+        initBasicUrlDataTableUIData(baseUrlMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimer(BasicUrlConfigPanel.timerDelay * 1000);
+        initBaiscUrlTimer(BasicUrlConfigPanel.timerDelay * 1000);
     }
 
     /**
      * 查询 TableLineDataModelBasicUrlSQL 初始化 table 数据
      */
-    private void initDataTableUIData(DefaultTableModel tableModel) {
+    private void initBasicUrlDataTableUIData(DefaultTableModel tableModel) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 //获取所有数据
@@ -141,7 +137,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     /**
      * 初始化Table
      */
-    private void initDataTableUI() {
+    private void initBaseUrlDataTableUI() {
         // 数据展示面板
         baseUrlMsgTableModel = new DefaultTableModel(new Object[]{
                 "id",
@@ -1149,27 +1145,27 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      * 初始化任务定时器
      * @param delay
      */
-    private void initTimer(int delay) {
+    private void initBaiscUrlTimer(int delay) {
         // 创建一个每10秒触发一次的定时器
         //int delay = 10000; // 延迟时间，单位为毫秒
-        timer = new Timer(delay, new ActionListener() {
+        baseUrlTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    refreshAllUnVisitedUrlsAndTableUI(true, autoRefreshUnvisitedIsOpen);
+                    refreshAllUnVisitedUrlsAndTableUI(true, baseUrlAutoRefreshUnvisitedIsOpen);
                 }
             }
         });
 
         // 启动定时器
-        timer.start();
+        baseUrlTimer.start();
     }
 
     /**
      * 初始化创建表格下方的消息内容面板
      */
-    private JTabbedPane getMsgTabs() {
+    private JTabbedPane getBasicUrlMsgTabs() {
         IBurpExtenderCallbacks callbacks = BurpExtender.getCallbacks();
 
         // 将 结果消息面板 添加到窗口下方
@@ -1185,22 +1181,22 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         msgInfoViewer.setRightComponent(responseTextEditor.getComponent());
 
         //敏感信息结果面板 使用 "text/html" 可用于 html 渲染颜色
-        findInfoTextPane = new JEditorPane("text/html", "");
+        baseUrlFindInfoTextPane = new JEditorPane("text/html", "");
 
         // 提取到URL的面板
-        respFindUrlTEditor = callbacks.createTextEditor();
-        respFindPathTEditor = callbacks.createTextEditor();
-        directPath2UrlTEditor = callbacks.createTextEditor();
-        smartPath2UrlTEditor = callbacks.createTextEditor();
-        unvisitedUrlTEditor = callbacks.createTextEditor();
+        baseUrlRespFindUrlTEditor = callbacks.createTextEditor();
+        baseUrlRespFindPathTEditor = callbacks.createTextEditor();
+        baseUrlDirectPath2UrlTEditor = callbacks.createTextEditor();
+        baseUrlSmartPath2UrlTEditor = callbacks.createTextEditor();
+        baseUrlUnvisitedUrlTEditor = callbacks.createTextEditor();
 
         tabs.addTab("MsgInfoViewer",null, msgInfoViewer, "原始请求响应信息"); //同时显示原始请求+原始响应
-        tabs.addTab("RespFindInfo",null, findInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
-        tabs.addTab("RespFindUrl",null, respFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("RespFindPath",null, respFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
-        tabs.addTab("DirectPath2Url",null, directPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
-        tabs.addTab("SmartPath2Url",null, smartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("UnvisitedUrl",null, unvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
+        tabs.addTab("RespFindInfo",null, baseUrlFindInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
+        tabs.addTab("RespFindUrl",null, baseUrlRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("RespFindPath",null, baseUrlRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("DirectPath2Url",null, baseUrlDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
+        tabs.addTab("SmartPath2Url",null, baseUrlSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
+        tabs.addTab("UnvisitedUrl",null, baseUrlUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
 
         return tabs;
     }
@@ -1216,12 +1212,12 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         requestTextEditor.setMessage(new byte[0], true); // 清空请求编辑器
         responseTextEditor.setMessage(new byte[0], false); // 清空响应编辑器
 
-        findInfoTextPane.setText("");
-        respFindUrlTEditor.setText(new byte[0]);
-        respFindPathTEditor.setText(new byte[0]);
-        directPath2UrlTEditor.setText(new byte[0]);
-        smartPath2UrlTEditor.setText(new byte[0]);
-        unvisitedUrlTEditor.setText(new byte[0]);
+        baseUrlFindInfoTextPane.setText("");
+        baseUrlRespFindUrlTEditor.setText(new byte[0]);
+        baseUrlRespFindPathTEditor.setText(new byte[0]);
+        baseUrlDirectPath2UrlTEditor.setText(new byte[0]);
+        baseUrlSmartPath2UrlTEditor.setText(new byte[0]);
+        baseUrlUnvisitedUrlTEditor.setText(new byte[0]);
     }
 
 
@@ -1328,12 +1324,12 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             String pathToUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getPathToUrl());
             String unvisitedUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getUnvisitedUrl());
 
-            findInfoTextPane.setText(findInfo);
-            respFindUrlTEditor.setText(findUrl.getBytes());
-            respFindPathTEditor.setText(findPath.getBytes());
-            directPath2UrlTEditor.setText(findApi.getBytes());
-            smartPath2UrlTEditor.setText(pathToUrl.getBytes());
-            unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
+            baseUrlFindInfoTextPane.setText(findInfo);
+            baseUrlRespFindUrlTEditor.setText(findUrl.getBytes());
+            baseUrlRespFindPathTEditor.setText(findPath.getBytes());
+            baseUrlDirectPath2UrlTEditor.setText(findApi.getBytes());
+            baseUrlSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
+            baseUrlUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
 
@@ -1546,8 +1542,8 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         BasicUrlConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (checkAutoRefreshButtonStatus && autoRefreshIsOpen) {
-            if (Duration.between(operationStartTime, LocalDateTime.now()).getSeconds() > 600) {
+        if (checkAutoRefreshButtonStatus && baseUrlAutoRefreshIsOpen) {
+            if (Duration.between(baseUrlOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
                 BasicUrlConfigPanel.setAutoRefreshOpen();
             }
             return;

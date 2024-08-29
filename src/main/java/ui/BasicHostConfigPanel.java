@@ -3,7 +3,6 @@ package ui;
 import burp.BurpExtender;
 import burp.IProxyScanner;
 import database.*;
-import utils.BurpSitemapUtils;
 import utils.CastUtils;
 import utils.UiUtils;
 
@@ -11,8 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.*;
@@ -242,7 +239,7 @@ public class BasicHostConfigPanel extends JPanel {
 //        });
 
         // 开关 是否开启自动刷新未访问URL
-        JToggleButton autoRefreshUnvisitedButton = getToggleButtonByDefaultValue(BasicUrlInfoPanel.autoRefreshUnvisitedIsOpenDefault);
+        JToggleButton autoRefreshUnvisitedButton = getToggleButtonByDefaultValue(BasicUrlInfoPanel.baseUrlAutoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButton.setToolTipText("自动刷新未访问URL");
 
 //        autoRefreshUnvisitedButton.addActionListener(new ActionListener() {
@@ -733,7 +730,7 @@ public class BasicHostConfigPanel extends JPanel {
     public static void setAutoRefreshClose(){
         autoRefreshButton.setSelected(false);
         autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
-        BasicUrlInfoPanel.operationStartTime = LocalDateTime.now();
+        BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxText() {
