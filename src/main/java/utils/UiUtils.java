@@ -1,13 +1,17 @@
 package utils;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
@@ -140,5 +144,136 @@ public class UiUtils {
                 title,
                 JOptionPane.INFORMATION_MESSAGE
         );
+    }
+
+
+
+    /**
+     * 为 数据模型创建捆绑的 tableUI 支持内容悬浮提示
+     */
+    public static JTable creatTableUiWithTips(DefaultTableModel tableModel) {
+        JTable tableUI = new JTable(tableModel) {
+            //通过匿名内部类创建JTable，用于在不单独创建一个子类的情况下，覆写或添加JTable的行为。
+            //覆写JTable的getToolTipText(MouseEvent e)方法。这个方法决定了当鼠标悬停在表格的某个单元格上时，将显示的工具提示文本内容。
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                int row = rowAtPoint(e.getPoint());
+                int col = columnAtPoint(e.getPoint());
+                //通过调用rowAtPoint(e.getPoint())和columnAtPoint(e.getPoint())方法，根据鼠标事件的坐标找到对应的行号和列号。
+                //检查行号和列号是否有效（大于-1），如果是，则获取该单元格的值
+                if (row > -1 && col > -1) {
+                    Object value = getValueAt(row, col);
+                    return value == null ? null : value.toString();
+                }
+                //如果找不到有效的行或列，最终调用超类的getToolTipText(e)方法，保持默认行为
+                return super.getToolTipText(e);
+            }
+        };
+
+        return tableUI;
+    }
+
+    /**
+     * 为表头添加点击排序功能
+     */
+    public static void tableAddActionSortByHeader(JTable tableUI,DefaultTableModel tableModel) {
+        //为 table添加排序功能
+        //创建并设置 TableRowSorter
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+        tableUI.setRowSorter(sorter);
+
+        // 设置列类型和比较器
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+            //Comparator.naturalOrder() 使用自然排序 是 Java 8 引入的一个实用方法，按字母顺序（对于字符串）或数值大小（对于数字类型）。
+            Comparator<?> comparator = Comparator.naturalOrder();
+            // 如果比较器不是 null，则设置该比较器
+            sorter.setComparator(i, comparator);
+        }
+
+        // 监听表头点击事件
+        tableUI.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int viewIndex = tableUI.columnAtPoint(e.getPoint());
+                if (viewIndex >= 0) {
+                    int modelIndex = tableUI.convertColumnIndexToModel(viewIndex);
+                    // 获取当前列的排序模式
+                    List<? extends RowSorter.SortKey> currentSortKeys = sorter.getSortKeys();
+                    RowSorter.SortKey currentSortKey = null;
+
+                    // 遍历当前排序键列表，查找当前列的排序键
+                    for (RowSorter.SortKey key : currentSortKeys) {
+                        if (key.getColumn() == modelIndex) {
+                            currentSortKey = key;
+                            break;
+                        }
+                    }
+
+                    // 确定新的排序类型
+                    SortOrder newSortOrder;
+                    if (currentSortKey == null) {
+                        // 如果当前列未排序，则默认为升序
+                        newSortOrder = SortOrder.ASCENDING;
+                    } else {
+                        // 如果当前列已排序，改变排序方向
+                        newSortOrder = currentSortKey.getSortOrder() == SortOrder.ASCENDING ?
+                                SortOrder.DESCENDING : SortOrder.ASCENDING;
+                    }
+
+                    // 清除旧的排序
+                    sorter.setSortKeys(null);
+
+                    // 应用新的排序
+                    List<RowSorter.SortKey> newSortKeys = new ArrayList<>();
+                    newSortKeys.add(new RowSorter.SortKey(modelIndex, newSortOrder));
+                    sorter.setSortKeys(newSortKeys);
+                }
+            }
+        });
+    }
+
+    /**
+     *  设置 table 的指定列的最大宽度
+     */
+    public static void tableSetColumnMaxWidth(JTable tableUI, int columnIndex, int maxWidth) {
+        // 获取表格的列数
+        tableUI.getColumnModel().getColumn(columnIndex).setMaxWidth(maxWidth);
+    }
+
+    /**
+     * 设置 table 的指定列的最小宽度
+     */
+    public static void tableSetColumnMinWidth(JTable tableUI, int columnIndex, int minWidth) {
+        // 获取表格的列数
+        tableUI.getColumnModel().getColumn(columnIndex).setMinWidth(minWidth);
+    }
+
+    /**
+     * 为UI的指定列设置左对齐，其他的设置居中对齐
+     */
+    public static void tableSetColumnsAlignRender(JTable tableUI, List<Integer> leftColumns) {
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer(); //居中对齐的单元格渲染器
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
+        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
+
+        // 获取表格的列数
+        int columnCount = tableUI.getColumnCount();
+
+        // 设置左对齐
+        for (Integer leftColumn : leftColumns) {
+            if (leftColumn < columnCount)
+                tableUI.getColumnModel().getColumn(leftColumn).setCellRenderer(leftRenderer);
+        }
+
+        // 设置居中对齐
+        for (int column = 0; column < columnCount; column++) {
+            if (!leftColumns.contains(column)) {
+                if (column < columnCount)
+                    tableUI.getColumnModel().getColumn(column).setCellRenderer(centerRenderer);
+            }
+        }
+
     }
 }

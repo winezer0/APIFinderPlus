@@ -11,8 +11,8 @@ public class Tabs implements ITab {
     private final JTabbedPane tabs;
     private final String name;
     private final RuleConfigPanel ruleConfigPanel;
-    private final MsgInfoPanel msgInfoPanel;
-    private final HostInfoPanel hostInfoPanel;
+    private final BasicUrlInfoPanel msgInfoPanel;
+    private final BasicHostInfoPanel hostInfoPanel;
 
     public Tabs(IBurpExtenderCallbacks callbacks, String name){
         this.name = name;
@@ -20,10 +20,10 @@ public class Tabs implements ITab {
         // 定义tab标签页
         this.tabs = new JTabbedPane();
 
-        this.hostInfoPanel = HostInfoPanel.getInstance();
+        this.hostInfoPanel = BasicHostInfoPanel.getInstance();
         this.tabs.add("聚合面板", this.hostInfoPanel);
 
-        this.msgInfoPanel = MsgInfoPanel.getInstance();
+        this.msgInfoPanel = BasicUrlInfoPanel.getInstance();
         this.tabs.add("请求详情", this.msgInfoPanel);
 
         this.ruleConfigPanel = RuleConfigPanel.getInstance();

@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import database.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
-import ui.MsgInfoPanel;
+import ui.BasicUrlInfoPanel;
 import ui.Tabs;
 import utils.BurpFileUtils;
 import utils.BurpPrintUtils;
@@ -166,7 +166,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         EXTENSION_IS_LOADED = false;
 
         // 停止面板更新器
-        MsgInfoPanel.timer.stop();
+        BasicUrlInfoPanel.timer.stop();
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();

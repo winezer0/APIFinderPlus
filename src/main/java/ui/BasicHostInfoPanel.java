@@ -19,9 +19,7 @@ import utils.UiUtils;
 import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -35,8 +33,8 @@ import static utils.BurpPrintUtils.LOG_ERROR;
 import static utils.BurpPrintUtils.stderr_println;
 import static utils.CastUtils.isEmptyObj;
 
-public class HostInfoPanel extends JPanel {
-    private static volatile HostInfoPanel instance; //实现单例模式
+public class BasicHostInfoPanel extends JPanel {
+    private static volatile BasicHostInfoPanel instance; //实现单例模式
 
     private static JTable baseHostMsgTableUI; //表格UI
     private static DefaultTableModel baseHostMsgTableModel; // 存储表格数据
@@ -58,18 +56,18 @@ public class HostInfoPanel extends JPanel {
 
     public static boolean autoRefreshIsOpen = false;
 
-    public static HostInfoPanel getInstance() {
+    public static BasicHostInfoPanel getInstance() {
         if (instance == null) {
-            synchronized (HostInfoPanel.class) {
+            synchronized (BasicHostInfoPanel.class) {
                 if (instance == null) {
-                    instance = new HostInfoPanel();
+                    instance = new BasicHostInfoPanel();
                 }
             }
         }
         return instance;
     }
 
-    public HostInfoPanel() {
+    public BasicHostInfoPanel() {
         // EmptyBorder 四周各有了5像素的空白边距
         setBorder(new EmptyBorder(5, 5, 5, 5));
         ////BorderLayout 将容器分为五个区域：北 南 东 西 中 每个区域可以放置一个组件，
@@ -80,7 +78,7 @@ public class HostInfoPanel extends JPanel {
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         // 首行配置面板
-//        ConfigPanel configPanel = new ConfigPanel();
+        BasicHostConfigPanel basicHostConfigPanel = new BasicHostConfigPanel();
 
         // 数据表格
         initDataTableUI();
@@ -97,26 +95,26 @@ public class HostInfoPanel extends JPanel {
         mainSplitPane.setBottomComponent(tabs);
 
         //组合最终的内容面板
-//        add(configPanel, BorderLayout.NORTH);
+        add(basicHostConfigPanel, BorderLayout.NORTH);
         add(mainSplitPane, BorderLayout.CENTER);
 
         //初始化表格数据
-        initDataTableUIData();
+        initDataTableUIData(baseHostMsgTableModel);
 
 //        // 初始化定时刷新页面函数 单位是毫秒
 //        initTimer(ConfigPanel.timerDelay * 1000);
     }
 
     /**
-     * 初始化 table 数据
+     * 查询 TableLineDataModelBasicHostSQL 初始化 table 数据
      */
-    private void initDataTableUIData() {
+    private void initDataTableUIData(DefaultTableModel tableModel) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                //获取所有数据
+                //获取所有数据 查询 HOST信息表
                 ArrayList<TableLineDataModelBasicHost> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
                 //将数据赋值给表模型
-                populateModelFromJsonArray(baseHostMsgTableModel, allReqAnalyseData);
+                populateModelFromJsonArray(tableModel, allReqAnalyseData);
             }
         });
     }
@@ -164,23 +162,8 @@ public class HostInfoPanel extends JPanel {
             }
         };
 
-        baseHostMsgTableUI = new JTable(baseHostMsgTableModel){
-            //通过匿名内部类创建JTable，用于在不单独创建一个子类的情况下，覆写或添加JTable的行为。
-            //覆写JTable的getToolTipText(MouseEvent e)方法。这个方法决定了当鼠标悬停在表格的某个单元格上时，将显示的工具提示文本内容。
-            @Override
-            public String getToolTipText(MouseEvent e) {
-                int row = rowAtPoint(e.getPoint());
-                int col = columnAtPoint(e.getPoint());
-                //通过调用rowAtPoint(e.getPoint())和columnAtPoint(e.getPoint())方法，根据鼠标事件的坐标找到对应的行号和列号。
-                //检查行号和列号是否有效（大于-1），如果是，则获取该单元格的值
-                if (row > -1 && col > -1) {
-                    Object value = getValueAt(row, col);
-                    return value == null ? null : value.toString();
-                }
-                //如果找不到有效的行或列，最终调用超类的getToolTipText(e)方法，保持默认行为
-                return super.getToolTipText(e);
-            }
-        };
+        baseHostMsgTableUI = UiUtils.creatTableUiWithTips(baseHostMsgTableModel);
+
         // 设置列选中模式
         int listSelectionModel = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
         baseHostMsgTableUI.setSelectionMode(listSelectionModel);
@@ -204,195 +187,31 @@ public class HostInfoPanel extends JPanel {
         baseHostMsgTableUI.setTableHeader(headerWithTooltips);
 
         //添加表头排序功能
-        tableAddActionSortByHeader();
+        UiUtils.tableAddActionSortByHeader(baseHostMsgTableUI, baseHostMsgTableModel);
 
-        //设置表格每列的宽度
-        tableSetColumnsWidth();
+        //设置数据表的宽度
+        UiUtils.tableSetColumnMaxWidth(baseHostMsgTableUI, 0, 50);
+        UiUtils.tableSetColumnMinWidth(baseHostMsgTableUI, 1, 200);
 
         //设置表格每列的对齐设置
-        tableSetColumnsRender();
+        List<Integer> leftColumns = Arrays.asList(1);
+        UiUtils.tableSetColumnsAlignRender(baseHostMsgTableUI, leftColumns);
+
+        //为重要信息列添加额外的渲染
+        importantCellRenderer havingImportantRenderer = new importantCellRenderer();
+        baseHostMsgTableUI.getColumnModel().getColumn(2).setCellRenderer(havingImportantRenderer);
 
         //为表格添加点击显示下方的消息动作
-        tableAddActionSetMsgTabData();
+        hostTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
         tableAddRightClickMenu(listSelectionModel);
     }
 
+
     //TODO 实现添加右键菜单
     private void tableAddRightClickMenu(int listSelectionModel) {
     }
-
-    /**
-     * 为 table 设置每一列的 宽度
-     */
-    private void tableSetColumnsWidth() {
-        //设置数据表的宽度 //前两列设置宽度 30px、60px
-        tableSetColumnMaxWidth(0, 50);
-        tableSetColumnMinWidth(1, 300);
-    }
-
-    /**
-     * 为 table 设置每一列的对齐方式
-     */
-    private void tableSetColumnsRender() {
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer(); //居中对齐的单元格渲染器
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer(); //左对齐的单元格渲染器
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-
-        List<Integer> leftColumns = Arrays.asList(1);
-        tableSetColumnRenders(leftColumns, leftRenderer);
-
-        List<Integer> centerColumns = Arrays.asList(0, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        tableSetColumnRenders(centerColumns, centerRenderer);
-
-        importantCellRenderer havingImportantRenderer = new importantCellRenderer();
-        baseHostMsgTableUI.getColumnModel().getColumn(2).setCellRenderer(havingImportantRenderer);
-    }
-
-    /**
-     * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
-     */
-    //TODO 实现鼠标点击或键盘移动到行时,自动更新下方的msgTab
-    private void tableAddActionSetMsgTabData() {
-        //为表格 添加 鼠标监听器
-        //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
-        baseHostMsgTableUI.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // 只有在双击时才执行
-                //if (e.getClickCount() == 2) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                int row = baseHostMsgTableUI.rowAtPoint(e.getPoint());
-                                if (row >= 0) {
-                                    updateComponentsBasedOnSelectedRow(row);
-                                }
-                            }catch (Exception ef) {
-                                BurpExtender.getStderr().println("[-] Error click table: " + baseHostMsgTableUI.rowAtPoint(e.getPoint()));
-                                ef.printStackTrace(BurpExtender.getStderr());
-                            }
-                        }
-                    });
-            }
-        });
-
-        //为表格 添加 键盘按键释放事件监听器
-        //获取按键事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
-        baseHostMsgTableUI.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                //关注向上 和向下 的按键事件
-                if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                int row = baseHostMsgTableUI.getSelectedRow();
-                                if (row >= 0) {
-                                    updateComponentsBasedOnSelectedRow(row);
-                                }
-                            }catch (Exception ef) {
-                                BurpExtender.getStderr().println("[-] Error KeyEvent.VK_UP OR  KeyEvent.VK_DOWN: ");
-                                ef.printStackTrace(BurpExtender.getStderr());
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    /**
-     * 为表头添加点击排序功能
-     */
-    private void tableAddActionSortByHeader() {
-        //为 table添加排序功能
-        //创建并设置 TableRowSorter
-        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(baseHostMsgTableModel);
-        baseHostMsgTableUI.setRowSorter(sorter);
-
-        // 设置列类型和比较器
-        for (int i = 0; i < baseHostMsgTableModel.getColumnCount(); i++) {
-            //Comparator.naturalOrder() 使用自然排序 是 Java 8 引入的一个实用方法，按字母顺序（对于字符串）或数值大小（对于数字类型）。
-            Comparator<?> comparator = Comparator.naturalOrder();
-            // 如果比较器不是 null，则设置该比较器
-            sorter.setComparator(i, comparator);
-        }
-
-        // 监听表头点击事件
-        baseHostMsgTableUI.getTableHeader().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int viewIndex = baseHostMsgTableUI.columnAtPoint(e.getPoint());
-                if (viewIndex >= 0) {
-                    int modelIndex = baseHostMsgTableUI.convertColumnIndexToModel(viewIndex);
-                    // 获取当前列的排序模式
-                    List<? extends RowSorter.SortKey> currentSortKeys = sorter.getSortKeys();
-                    RowSorter.SortKey currentSortKey = null;
-
-                    // 遍历当前排序键列表，查找当前列的排序键
-                    for (RowSorter.SortKey key : currentSortKeys) {
-                        if (key.getColumn() == modelIndex) {
-                            currentSortKey = key;
-                            break;
-                        }
-                    }
-
-                    // 确定新的排序类型
-                    SortOrder newSortOrder;
-                    if (currentSortKey == null) {
-                        // 如果当前列未排序，则默认为升序
-                        newSortOrder = SortOrder.ASCENDING;
-                    } else {
-                        // 如果当前列已排序，改变排序方向
-                        newSortOrder = currentSortKey.getSortOrder() == SortOrder.ASCENDING ?
-                                SortOrder.DESCENDING : SortOrder.ASCENDING;
-                    }
-
-                    // 清除旧的排序
-                    sorter.setSortKeys(null);
-
-                    // 应用新的排序
-                    List<RowSorter.SortKey> newSortKeys = new ArrayList<>();
-                    newSortKeys.add(new RowSorter.SortKey(modelIndex, newSortOrder));
-                    sorter.setSortKeys(newSortKeys);
-                }
-            }
-        });
-    }
-
-    /**
-     * 设置 table 的指定列的最小宽度
-     * @param columnIndex
-     * @param minWidth
-     */
-    private void tableSetColumnMinWidth(int columnIndex, int minWidth) {
-        baseHostMsgTableUI.getColumnModel().getColumn(columnIndex).setMinWidth(minWidth);
-    }
-
-    /**
-     *  设置 table 的指定列的最大宽度
-     * @param columnIndex
-     * @param maxWidth
-     */
-    private void tableSetColumnMaxWidth(int columnIndex, int maxWidth) {
-        baseHostMsgTableUI.getColumnModel().getColumn(columnIndex).setMaxWidth(maxWidth);
-    }
-
-    /**
-     * 设置指定多列的样式
-     * @param columns
-     * @param renderer
-     */
-    private void tableSetColumnRenders(List<Integer> columns, DefaultTableCellRenderer renderer) {
-        for (Integer column : columns) {
-            baseHostMsgTableUI.getColumnModel().getColumn(column).setCellRenderer(renderer);
-        }
-    }
-
 
     /**
      * 初始化创建表格下方的消息内容面板
@@ -422,6 +241,72 @@ public class HostInfoPanel extends JPanel {
         tabs.addTab("UnvisitedUrl",null, unvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
         tabs.addTab("PathTreeInfo",null, hostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
         return tabs;
+    }
+
+    /**
+     * 清空当前Msg tabs中显示的数据
+     */
+    private static void clearTabsMsgData() {
+        findInfoTextPane.setText("");
+        respFindUrlTEditor.setText(new byte[0]);
+        respFindPathTEditor.setText(new byte[0]);
+        directPath2UrlTEditor.setText(new byte[0]);
+        smartPath2UrlTEditor.setText(new byte[0]);
+        unvisitedUrlTEditor.setText(new byte[0]);
+        hostPathTreeTEditor.setText(new byte[0]);
+    }
+
+
+    /**
+     * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
+     */
+    private void hostTableAddActionSetMsgTabData() {
+        //为表格 添加 鼠标监听器
+        //获取点击事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
+        baseHostMsgTableUI.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // 只有在双击时才执行
+                //if (e.getClickCount() == 2) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            int row = baseHostMsgTableUI.rowAtPoint(e.getPoint());
+                            if (row >= 0) {
+                                updateComponentsBasedOnSelectedRow(row);
+                            }
+                        }catch (Exception ef) {
+                            BurpExtender.getStderr().println("[-] Error click table: " + baseHostMsgTableUI.rowAtPoint(e.getPoint()));
+                            ef.printStackTrace(BurpExtender.getStderr());
+                        }
+                    }
+                });
+            }
+        });
+
+        //为表格 添加 键盘按键释放事件监听器
+        //获取按键事件发生时鼠标所在行的索引 根据选中行的索引来更新其他组件的状态或内容。
+        baseHostMsgTableUI.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                //关注向上 和向下 的按键事件
+                if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {
+                                int row = baseHostMsgTableUI.getSelectedRow();
+                                if (row >= 0) {
+                                    updateComponentsBasedOnSelectedRow(row);
+                                }
+                            }catch (Exception ef) {
+                                BurpExtender.getStderr().println("[-] Error KeyEvent.VK_UP OR  KeyEvent.VK_DOWN: ");
+                                ef.printStackTrace(BurpExtender.getStderr());
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     /**
@@ -469,19 +354,6 @@ public class HostInfoPanel extends JPanel {
             smartPath2UrlTEditor.setText(pathToUrl.getBytes());
             unvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
-    }
-
-    /**
-     * 清空当前Msg tabs中显示的数据
-     */
-    private static void clearTabsMsgData() {
-        findInfoTextPane.setText("");
-        respFindUrlTEditor.setText(new byte[0]);
-        respFindPathTEditor.setText(new byte[0]);
-        directPath2UrlTEditor.setText(new byte[0]);
-        smartPath2UrlTEditor.setText(new byte[0]);
-        unvisitedUrlTEditor.setText(new byte[0]);
-        hostPathTreeTEditor.setText(new byte[0]);
     }
 
 }
