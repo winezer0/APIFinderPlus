@@ -110,7 +110,7 @@ public class BasicHostInfoPanel extends JPanel {
                 //获取所有数据 查询 HOST信息表
                 ArrayList<BasicHostTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicHostSQL.fetchHostTableLineDataAll();
                 //将数据赋值给表模型
-                populateModelFromJsonArray(tableModel, allReqAnalyseData);
+                baseHostPopulateModelFromList(tableModel, allReqAnalyseData);
             }
         });
     }
@@ -118,12 +118,12 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 把 jsonArray 赋值到 model 中
      * @param model
-     * @param jsonArray
+     * @param arrayList
      */
-    private void populateModelFromJsonArray(DefaultTableModel model, ArrayList<BasicHostTableLineDataModel> jsonArray) {
-        if (isEmptyObj(jsonArray)) return;
+    private void baseHostPopulateModelFromList(DefaultTableModel model, ArrayList<BasicHostTableLineDataModel> arrayList) {
+        if (isEmptyObj(arrayList)) return;
 
-        Iterator<BasicHostTableLineDataModel> iterator = jsonArray.iterator();
+        Iterator<BasicHostTableLineDataModel> iterator = arrayList.iterator();
         while (iterator.hasNext()) {
             BasicHostTableLineDataModel apiDataModel = iterator.next();
             Object[] rowData = apiDataModel.toRowDataArray();
@@ -179,8 +179,8 @@ public class BasicHostInfoPanel extends JPanel {
                 "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
 
-        TableHeaderWithTips headerWithTooltips = new TableHeaderWithTips(baseHostMsgTableUI.getColumnModel(), colHeaderTooltips);
-        baseHostMsgTableUI.setTableHeader(headerWithTooltips);
+        TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(baseHostMsgTableUI.getColumnModel(), colHeaderTooltips);
+        baseHostMsgTableUI.setTableHeader(basicHostTableHeader);
 
         //添加表头排序功能
         UiUtils.tableAddActionSortByHeader(baseHostMsgTableUI, baseHostMsgTableModel);

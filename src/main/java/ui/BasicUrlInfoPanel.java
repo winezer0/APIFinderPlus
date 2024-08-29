@@ -111,7 +111,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //获取所有数据
                 ArrayList<BasicUrlTableLineDataModel> allReqAnalyseData  = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataAll();
                 //将数据赋值给表模型
-                populateModelFromJsonArray(tableModel, allReqAnalyseData);
+                baseUrlPopulateModelFromList(tableModel, allReqAnalyseData);
             }
         });
     }
@@ -119,12 +119,12 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     /**
      * 把 jsonArray 赋值到 model 中
      * @param model
-     * @param jsonArray
+     * @param arrayList
      */
-    private void populateModelFromJsonArray(DefaultTableModel model, ArrayList<BasicUrlTableLineDataModel> jsonArray) {
-        if (isEmptyObj(jsonArray)) return;
+    private void baseUrlPopulateModelFromList(DefaultTableModel model, ArrayList<BasicUrlTableLineDataModel> arrayList) {
+        if (isEmptyObj(arrayList)) return;
 
-        Iterator<BasicUrlTableLineDataModel> iterator = jsonArray.iterator();
+        Iterator<BasicUrlTableLineDataModel> iterator = arrayList.iterator();
         while (iterator.hasNext()) {
             BasicUrlTableLineDataModel apiDataModel = iterator.next();
             Object[] rowData = apiDataModel.toRowDataArray();
@@ -195,8 +195,8 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 "当前【动态URL数量计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
                 "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
-        TableHeaderWithTips headerWithTooltips = new TableHeaderWithTips(baseUrlMsgTableUI.getColumnModel(), colHeaderTooltips);
-        baseUrlMsgTableUI.setTableHeader(headerWithTooltips);
+        TableHeaderWithTips basicUrlTableHeader = new TableHeaderWithTips(baseUrlMsgTableUI.getColumnModel(), colHeaderTooltips);
+        baseUrlMsgTableUI.setTableHeader(basicUrlTableHeader);
 
         //添加表头排序功能
         UiUtils.tableAddActionSortByHeader(baseUrlMsgTableUI, baseUrlMsgTableModel);
@@ -218,15 +218,13 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         basicUrlTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
-        tableAddRightClickMenu(listSelectionModel);
+        basicUrlTableAddRightClickMenu(listSelectionModel);
     }
-
-
 
     /**
      * 为 table 设置每一列的 右键菜单
      */
-    private void tableAddRightClickMenu(int listSelectionModel) {
+    private void basicUrlTableAddRightClickMenu(int listSelectionModel) {
         // 创建右键菜单
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
