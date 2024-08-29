@@ -177,7 +177,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         baseUrlMsgTableUI.setSelectionMode(listSelectionModel);
 
         //自己实现TableHeader 支持请求头提示
-        String[] colHeaderTooltips = new String[]{
+        String[] baseUrlColHeaderTooltips = new String[]{
                 "请求ID",
                 "请求来源",
                 "消息HASH",
@@ -195,7 +195,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 "当前【动态URL数量计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
                 "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
-        TableHeaderWithTips basicUrlTableHeader = new TableHeaderWithTips(baseUrlMsgTableUI.getColumnModel(), colHeaderTooltips);
+        TableHeaderWithTips basicUrlTableHeader = new TableHeaderWithTips(baseUrlMsgTableUI.getColumnModel(), baseUrlColHeaderTooltips);
         baseUrlMsgTableUI.setTableHeader(basicUrlTableHeader);
 
         //添加表头排序功能

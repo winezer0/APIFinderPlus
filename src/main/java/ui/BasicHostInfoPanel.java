@@ -165,7 +165,7 @@ public class BasicHostInfoPanel extends JPanel {
         baseHostMsgTableUI.setSelectionMode(listSelectionModel);
 
         //自己实现TableHeader 支持请求头提示
-        String[] colHeaderTooltips = new String[]{
+        String[] basicHostColHeaderTooltips = new String[]{
                 "请求ID",
                 "请求目标",
                 "是否存在匹配重要规则",
@@ -179,7 +179,7 @@ public class BasicHostInfoPanel extends JPanel {
                 "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
 
-        TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(baseHostMsgTableUI.getColumnModel(), colHeaderTooltips);
+        TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(baseHostMsgTableUI.getColumnModel(), basicHostColHeaderTooltips);
         baseHostMsgTableUI.setTableHeader(basicHostTableHeader);
 
         //添加表头排序功能
