@@ -36,12 +36,6 @@ public class AnalyseUrlResultTable {
             + "find_api TEXT DEFAULT '',\n"        //基于分析的不完整URI信息 直接拼接 出来的URL (Json格式)
             + "find_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
 
-            + "path_to_url TEXT DEFAULT '',\n"      //基于分析的不完整URI信息 智能计算 出来的URL (Json格式)
-            + "path_to_url_num INTEGER DEFAULT -1,\n"     //发现API的数量
-
-            + "unvisited_url TEXT DEFAULT '',\n"      //合并所有URL 并去除已经访问过的URL (Json格式)
-            + "unvisited_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 并去除已经访问过的URL的数量
-
             + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
             + "run_status TEXT NOT NULL DEFAULT 'ANALYSE_WAIT'"
@@ -71,8 +65,8 @@ public class AnalyseUrlResultTable {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO "+ tableName +"" +
                         " (msg_hash, req_url, root_url, find_url, find_url_num, find_path, find_path_num," +
-                        " find_info, find_info_num, find_api, find_api_num, unvisited_url, unvisited_url_num, run_status, has_important)" +
-                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        " find_info, find_info_num, find_api, find_api_num, run_status, has_important)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, msgInfo.getMsgHash());
@@ -91,21 +85,10 @@ public class AnalyseUrlResultTable {
                     stmt2.setString(10, CastUtils.toJsonString(analyseInfo.getApiList()));
                     stmt2.setInt(11, analyseInfo.getApiList().size());
 
-                    //TODO 需要删除 此处的 UnvisitedUrl 相关代码
-                    stmt2.setString(12, CastUtils.toJsonString(analyseInfo.getUnvisitedUrl()));
-                    stmt2.setInt(13, analyseInfo.getUnvisitedUrl().size());
-
-//                    //在这个响应中没有找到 PATH 数据,就修改状态为无需解析
-//                    if (analyseInfo.getPathList().size() > 0){
-//                        stmt2.setString(14, Constants.ANALYSE_WAIT);
-//                    } else {
-//                        stmt2.setString(14, Constants.ANALYSE_END);
-//                    }
-
                     //设置初始的响应状态为 等待处理
-                    stmt2.setString(14, Constants.ANALYSE_WAIT);
+                    stmt2.setString(12, Constants.ANALYSE_WAIT);
 
-                    stmt2.setBoolean(15, analyseInfo.getHasImportant());
+                    stmt2.setBoolean(13, analyseInfo.getHasImportant());
 
                     stmt2.executeUpdate();
 
@@ -197,9 +180,7 @@ public class AnalyseUrlResultTable {
                             rs.getString("find_url"),
                             rs.getString("find_path"),
                             rs.getString("find_info"),
-                            rs.getString("find_api"),
-                            rs.getString("path_to_url"),
-                            rs.getString("unvisited_url")
+                            rs.getString("find_api")
                     );
                 }
             }

@@ -6,18 +6,14 @@ public class BasicUrlTableTabDataModel {
     private String findPath;
     private String findInfo;
     private String findApi;
-    private String pathToUrl;
-    private String unvisitedUrl;
 
     public BasicUrlTableTabDataModel(String msgHash, String findUrl, String findPath, String findInfo,
-                                     String findApi, String pathToUrl, String unvisitedUrl) {
+                                     String findApi) {
         this.msgHash = msgHash;
         this.findUrl = findUrl;
         this.findPath = findPath;
         this.findInfo = findInfo;
         this.findApi = findApi;
-        this.pathToUrl = pathToUrl;  //TODO 后续需要删除
-        this.unvisitedUrl = unvisitedUrl; //TODO 后续需要删除
     }
 
     public String getMsgHash() {
@@ -38,13 +34,5 @@ public class BasicUrlTableTabDataModel {
 
     public String getFindApi() {
         return findApi;
-    }
-
-    public String getPathToUrl() {
-        return pathToUrl;
-    }
-
-    public String getUnvisitedUrl() {
-        return unvisitedUrl;
     }
 }

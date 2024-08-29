@@ -11,7 +11,6 @@ public class AnalyseUrlResultModel {
     private List<String> urlList;
     private List<String> pathList;
     private List<String> apiList;
-    private List<String> unvisitedUrl; //TODO 后续需要删除 unvisitedUrl ，在集成面板中显示即可
     private Boolean hasImportant;
 
     //新增一个URL类型的
@@ -21,7 +20,6 @@ public class AnalyseUrlResultModel {
         this.urlList = urlList;
         this.pathList = pathList;
         this.apiList = apiList;
-        this.unvisitedUrl = CastUtils.listAddList(this.urlList, this.apiList); //TODO 待删除
         this.hasImportant = hasImportant;
     }
 
@@ -31,7 +29,6 @@ public class AnalyseUrlResultModel {
         this.urlList = CastUtils.toStringList(urlListStr);
         this.pathList = CastUtils.toStringList(pathListStr);
         this.apiList = CastUtils.toStringList(apiListStr);
-        this.unvisitedUrl = CastUtils.listAddList(this.urlList, this.apiList); //TODO 待删除
         this.hasImportant = hasImportant;
     }
 
@@ -53,10 +50,6 @@ public class AnalyseUrlResultModel {
 
     public List<String> getApiList() {
         return apiList;
-    }
-
-    public List<String> getUnvisitedUrl() {
-        return unvisitedUrl;
     }
 
     public Boolean getHasImportant() {

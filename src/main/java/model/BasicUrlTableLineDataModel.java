@@ -12,8 +12,6 @@ public class BasicUrlTableLineDataModel {
     private Integer findPathNum;
     private Integer findInfoNum;
     private Integer findApiNum;
-    private Integer pathToUrlNum;
-    private Integer unvisitedUrlNum;
     private String runStatus;
     private Integer basicPathNum;
     private Integer respLength;
@@ -21,8 +19,7 @@ public class BasicUrlTableLineDataModel {
     // 构造函数
     public BasicUrlTableLineDataModel(int id, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
                                       String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
-                                      boolean hasImportant, int findApiNum, int pathToUrlNum, int unvisitedUrlNum,
-                                      String runStatus, int basicPathNum, int respLength) {
+                                      boolean hasImportant, int findApiNum, String runStatus, int basicPathNum, int respLength) {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
@@ -33,8 +30,6 @@ public class BasicUrlTableLineDataModel {
         this.findPathNum = findPathNum;
         this.findInfoNum = findInfoNum;
         this.findApiNum = findApiNum;
-        this.pathToUrlNum = pathToUrlNum;
-        this.unvisitedUrlNum = unvisitedUrlNum;
         this.runStatus = runStatus;
         this.basicPathNum = basicPathNum;
         this.respLength = respLength;
@@ -55,8 +50,6 @@ public class BasicUrlTableLineDataModel {
                 this.getFindUrlNum(),
                 this.getFindPathNum(),
                 this.getFindApiNum(),
-                this.getPathToUrlNum(),
-                this.getUnvisitedUrlNum(),
                 this.getBasicPathNum(),
                 this.getRunStatus()
         };
@@ -100,14 +93,6 @@ public class BasicUrlTableLineDataModel {
 
     public Integer getFindApiNum() {
         return findApiNum;
-    }
-
-    public Integer getPathToUrlNum() {
-        return pathToUrlNum;
-    }
-
-    public Integer getUnvisitedUrlNum() {
-        return unvisitedUrlNum;
     }
 
     public String getRunStatus() {

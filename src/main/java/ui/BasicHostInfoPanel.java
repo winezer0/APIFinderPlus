@@ -246,6 +246,8 @@ public class BasicHostInfoPanel extends JPanel {
 
         //敏感信息结果面板 使用 "text/html" 可用于 html 渲染颜色
         basicHostFindInfoTextPane = new JEditorPane("text/html", "");
+        JScrollPane basicHostFindInfoTextScrollPane = new JScrollPane(basicHostFindInfoTextPane);
+        basicHostFindInfoTextScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         // 提取到URL的面板
         basicHostRespFindUrlTEditor = callbacks.createTextEditor();
@@ -255,7 +257,7 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostUnvisitedUrlTEditor = callbacks.createTextEditor();
         basicHostPathTreeTEditor = callbacks.createTextEditor();
 
-        tabs.addTab("RespFindInfo",null, basicHostFindInfoTextPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
+        tabs.addTab("RespFindInfo",null, basicHostFindInfoTextScrollPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
         tabs.addTab("RespFindUrl",null, basicHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
         tabs.addTab("RespFindPath",null, basicHostRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
         tabs.addTab("DirectPath2Url",null, basicHostDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
