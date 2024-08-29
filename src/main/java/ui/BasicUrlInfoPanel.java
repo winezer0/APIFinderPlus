@@ -99,7 +99,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         initBasicUrlDataTableUIData(baseUrlMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initBaiscUrlTimer(BasicUrlConfigPanel.timerDelay * 1000);
+        initBaiscUrlTimer(BasicUrlConfigPanel.timerDelayOnUrl * 1000);
     }
 
     /**
@@ -218,18 +218,18 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         basicUrlTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
-        basicUrlTableAddRightClickMenu(listSelectionModel);
+        basicUrlTableAddRightClickMenu(baseUrlMsgTableUI, listSelectionModel);
     }
 
     /**
      * 为 table 设置每一列的 右键菜单
      */
-    private void basicUrlTableAddRightClickMenu(int listSelectionModel) {
+    private void basicUrlTableAddRightClickMenu(JTable tableUI, int selectModel) {
         // 创建右键菜单
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 
         JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 
         JMenuItem accessUnVisitedItem = new JMenuItem("访问当前未访问URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
         JMenuItem updateUnVisitedItem = new JMenuItem("刷新当前未访问URL", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
@@ -290,7 +290,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         popupMenu.add(CopyAllFindInfoItem);
 
         // 将右键菜单添加到表格
-        baseUrlMsgTableUI.setComponentPopupMenu(popupMenu);
+        tableUI.setComponentPopupMenu(popupMenu);
 
 
         // 添加 copyUrlItem 事件监听器
@@ -298,20 +298,10 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         copyUrlItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-/*
-                //单行模式下的调用
-                if (listSelectionModel == ListSelectionModel.SINGLE_SELECTION){
-                    int selectedRow = table.getSelectedRow();
-                    if (selectedRow != -1) {
-                        String url = UiUtils.getUrlAtActualRow(table, selectedRow);
-                        UiUtils.copyToSystemClipboard(url);
-                    }
-                }
-*/
                 //多行模式下的调用
-                if (listSelectionModel >= 0){
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urls = UiUtils.geStringListAtActualRows(baseUrlMsgTableUI,selectedRows, 3);
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urls = UiUtils.geStringListAtActualRows(tableUI,selectedRows, 3);
                     if (!urls.isEmpty())
                         UiUtils.copyToSystemClipboard(String.join("\n", urls));
                 }
@@ -323,35 +313,17 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         deleteItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-/*
-                if (listSelectionModel == ListSelectionModel.SINGLE_SELECTION) {
-                    int selectedRow = table.getSelectedRow();
-                    if (selectedRow != -1) {
-                        int id = UiUtils.getIdAtActualRow(table, selectedRow);
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                ReqDataTable.deleteReqDataById(id);
-                                refreshTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-*/
-
                 //多行选定模式
-                if (listSelectionModel >= 0){
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                        List<Integer> ids = UiUtils.getIdsAtActualRows(baseUrlMsgTableUI, selectedRows, 0);
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                        List<Integer> ids = UiUtils.getIdsAtActualRows(tableUI, selectedRows, 0);
 
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 CommonSql.deleteDataByIds(ids, ReqDataTable.tableName);
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -365,35 +337,17 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         ClearUnVisitedItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-/*
-                //行选择模式
-                if (listSelectionModel == ListSelectionModel.SINGLE_SELECTION) {
-                    int selectedRow = table.getSelectedRow();
-                    if (selectedRow != -1) {
-                        String msgHash = UiUtils.getMsgHashAtActualRow(table, selectedRow);
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
-                                refreshTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-*/
                 //多行选定模式
-                if (listSelectionModel >= 0){
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -429,9 +383,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
 */
 
                 //多行选定模式
-                if (listSelectionModel >= 0){
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -451,7 +405,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                 RecordUrlTable.batchInsertOrUpdateAccessedUrls(new ArrayList<>(unvisitedUrlsSet), 299);
                                 //批量删除所有msgHashList
                                 AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -467,16 +421,16 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 3);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -491,9 +445,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel>=0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 3);
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -501,7 +455,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                             protected Void doInBackground() throws Exception {
                                 CommonSql.deleteDataByUrlToRootUrls(urlList, PathTreeTable.tableName);
                                 CommonSql.deleteDataByUrlToRootUrls(urlList, RecordPathTable.tableName);
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -516,16 +470,16 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 updateUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -541,9 +495,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel>=0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 3);
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -570,7 +524,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                 stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
 
                                 //3、刷新表格
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -619,9 +573,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel>=0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 3);
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -644,9 +598,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel>=0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 3);
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -669,9 +623,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -710,9 +664,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel>=0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 3);
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -757,9 +711,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -784,9 +738,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -807,9 +761,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -845,7 +799,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                 //删除所有findApi
                                 AnalyseUrlResultTable.clearFindApiUrlsByMsgHashList(msgHashList);
                                 //刷新表单
-                                refreshTableModel(false);
+                                refreshBasicUrlTableModel(false);
                                 return null;
                             }
                         }.execute();
@@ -860,9 +814,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -888,9 +842,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -916,9 +870,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -944,9 +898,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -972,9 +926,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -1000,9 +954,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
-                if (listSelectionModel >= 0) {
-                    int[] selectedRows = baseUrlMsgTableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(baseUrlMsgTableUI, selectedRows, 2);
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -1354,9 +1308,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             //清空记录变量的内容
             IProxyScanner.urlScanRecordMap = new RecordHashMap();
 
-            BasicUrlConfigPanel.lbRequestCount.setText("0");
-            BasicUrlConfigPanel.lbTaskerCount.setText("0");
-            BasicUrlConfigPanel.lbAnalysisEndCount.setText("0/0");
+            BasicUrlConfigPanel.lbRequestCountOnUrl.setText("0");
+            BasicUrlConfigPanel.lbTaskerCountOnUrl.setText("0");
+            BasicUrlConfigPanel.lbAnalysisEndCountOnUrl.setText("0/0");
 
 
             //置空 过滤数据
@@ -1385,7 +1339,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      * @param selectOption
      * @param searchText
      */
-    public static void showDataTableByFilter(String selectOption, String searchText) {
+    public static void showDataUrlTableByFilter(String selectOption, String searchText) {
         // 在后台线程获取数据，避免冻结UI
         new SwingWorker<Void, Void>() {
             @Override
@@ -1394,20 +1348,17 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 baseUrlMsgTableModel.setRowCount(0);
 
                 // 获取数据库中的所有ApiDataModels
-                ArrayList<BasicUrlTableLineDataModel> apiDataModels =null;
+                ArrayList<BasicUrlTableLineDataModel> apiDataModels;
 
                 switch (selectOption) {
                     case "显示有效内容":
                         apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataHasData();
                         break;
                     case "显示敏感内容":
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchTableLineDataHasInfo();
-                        break;
-                    case "显示未访问路径":
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchTableLineDataHasUnVisitedUrls();
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataHasInfo();
                         break;
                     case "显示无效内容":
-                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchTableLineDataIsNull();
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineDataIsNull();
                         break;
                     case "显示全部内容":
                     default:
@@ -1457,7 +1408,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
 
         // 调用刷新表格的方法
         try{
-            BasicUrlInfoPanel.getInstance().refreshTableModel(checkAutoRefreshButtonStatus);
+            BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(checkAutoRefreshButtonStatus);
         } catch (Exception ep){
             stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
         }
@@ -1529,15 +1480,15 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     /**
      * 定时刷新表数据
      */
-    public void refreshTableModel(boolean checkAutoRefreshButtonStatus) {
+    public void refreshBasicUrlTableModel(boolean checkAutoRefreshButtonStatus) {
         //当已经卸载插件时,不要再进行刷新UI
         if (!BurpExtender.EXTENSION_IS_LOADED)
             return;
 
         //设置已加入数据库的数量
-        BasicUrlConfigPanel.lbTaskerCount.setText(String.valueOf(CommonSql.getTableCounts(ReqDataTable.tableName)));
+        BasicUrlConfigPanel.lbTaskerCountOnUrl.setText(String.valueOf(CommonSql.getTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
-        BasicUrlConfigPanel.lbAnalysisEndCount.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
+        BasicUrlConfigPanel.lbAnalysisEndCountOnUrl.setText(String.valueOf(ReqDataTable.getReqDataCountWhereStatusIsEnd()));
 
         // 刷新页面, 如果自动更新关闭，则不刷新页面内容
         if (checkAutoRefreshButtonStatus && baseUrlAutoRefreshIsOpen) {
@@ -1557,7 +1508,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             protected Void doInBackground() throws Exception {
                 try {
                     // 执行耗时的数据操作
-                    BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
+                    BasicUrlInfoPanel.showDataUrlTableByFilter(selectedOption, searchText.isEmpty() ? "" : searchText);
                 } catch (Exception e) {
                     // 处理数据操作中可能出现的异常
                     System.err.println("Error while updating data: " + e.getMessage());

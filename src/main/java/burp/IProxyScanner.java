@@ -100,7 +100,7 @@ public class IProxyScanner implements IProxyListener {
         if (true){
             //记录并更新UI面板中的扫描计数
             totalRequestCount += 1;
-            BasicUrlConfigPanel.lbRequestCount.setText(String.valueOf(totalRequestCount));
+            BasicUrlConfigPanel.lbRequestCountOnUrl.setText(String.valueOf(totalRequestCount));
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);
@@ -153,7 +153,7 @@ public class IProxyScanner implements IProxyListener {
         if (!messageIsRequest) {
             //记录并更新UI面板中的扫描计数
             totalRequestCount += 1;
-            BasicUrlConfigPanel.lbRequestCount.setText(String.valueOf(totalRequestCount));
+            BasicUrlConfigPanel.lbRequestCountOnUrl.setText(String.valueOf(totalRequestCount));
 
             //解析当前请求的信息
             HttpMsgInfo msgInfo = new HttpMsgInfo(iInterceptedProxyMessage);

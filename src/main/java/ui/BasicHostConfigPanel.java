@@ -15,16 +15,16 @@ import java.time.LocalDateTime;
 import static utils.BurpPrintUtils.*;
 
 public class BasicHostConfigPanel extends JPanel {
-    public static JLabel lbRequestCount;   //记录所有加入到URL的请求
-    public static JLabel lbTaskerCount;    //记录所有加入数据库的请求
-    public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
+    public static JLabel lbRequestCountOnHost;   //记录所有加入到URL的请求
+    public static JLabel lbTaskerCountOnHost;    //记录所有加入数据库的请求
+    public static JLabel lbAnalysisEndCountOnHost;   //记录所有已经分析完成的结果数量
 
-    private static JComboBox<String> choicesComboBox;   //数据表显示快速选择框
-    private static JTextField urlSearchBox;                 //URl搜索框
+    private static JComboBox<String> choicesComboBoxOnHost;   //数据表显示快速选择框
+    private static JTextField urlSearchBoxOnHost;                 //URl搜索框
 
-    private static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
-    private static JLabel autoRefreshText; //自动刷新按钮显示的文本
-    public static int timerDelay = 15;  //定时器刷新间隔,单位秒
+    private static JToggleButton autoRefreshButtonOnHost; //自动刷新开关按钮状态
+    private static JLabel autoRefreshTextOnHost; //自动刷新按钮显示的文本
+    public static int timerDelayOnHost = 15;  //定时器刷新间隔,单位秒
 
     public BasicHostConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -85,15 +85,15 @@ public class BasicHostConfigPanel extends JPanel {
         gbc_lbRequest.gridy = 0;
         FilterPanel.add(lbRequest, gbc_lbRequest);
 
-        lbRequestCount = new JLabel("0");
-        lbRequestCount.setForeground(new Color(0,0,255));
+        lbRequestCountOnHost = new JLabel("0");
+        lbRequestCountOnHost.setForeground(new Color(0,0,255));
         GridBagConstraints gbc_lbRequestCount = new GridBagConstraints();
         gbc_lbRequestCount.insets = new Insets(0, 0, 0, 5);
         gbc_lbRequestCount.fill = GridBagConstraints.HORIZONTAL;
         gbc_lbRequestCount.weightx = 0.0;
         gbc_lbRequestCount.gridx = 1;
         gbc_lbRequestCount.gridy = 0;
-        FilterPanel.add(lbRequestCount, gbc_lbRequestCount);
+        FilterPanel.add(lbRequestCountOnHost, gbc_lbRequestCount);
 
         // 转发成功url数，默认0
         JLabel lbTasker = new JLabel("Tasker Total:");
@@ -104,14 +104,14 @@ public class BasicHostConfigPanel extends JPanel {
         gbc_lbTasker.gridy = 0;
         FilterPanel.add(lbTasker, gbc_lbTasker);
 
-        lbTaskerCount = new JLabel("0");
-        lbTaskerCount.setForeground(new Color(0, 255, 0));
+        lbTaskerCountOnHost = new JLabel("0");
+        lbTaskerCountOnHost.setForeground(new Color(0, 255, 0));
         GridBagConstraints gbc_lbTaskerCount = new GridBagConstraints();
         gbc_lbTaskerCount.insets = new Insets(0, 0, 0, 5);
         gbc_lbTaskerCount.fill = 0;
         gbc_lbTaskerCount.gridx = 3;
         gbc_lbTaskerCount.gridy = 0;
-        FilterPanel.add(lbTaskerCount, gbc_lbTaskerCount);
+        FilterPanel.add(lbTaskerCountOnHost, gbc_lbTaskerCount);
 
         // 分析URL的数量
         JLabel lbAnalysisEnd = new JLabel("Analysis End:");
@@ -122,14 +122,14 @@ public class BasicHostConfigPanel extends JPanel {
         gbc_lbAnalysisEnd.gridy = 0;
         FilterPanel.add(lbAnalysisEnd, gbc_lbAnalysisEnd);
 
-        lbAnalysisEndCount = new JLabel("0");
-        lbAnalysisEndCount.setForeground(new Color(0, 0, 255)); // 蓝色
+        lbAnalysisEndCountOnHost = new JLabel("0");
+        lbAnalysisEndCountOnHost.setForeground(new Color(0, 0, 255)); // 蓝色
         GridBagConstraints gbc_lbAnalysisEndCount = new GridBagConstraints();
         gbc_lbAnalysisEndCount.insets = new Insets(0, 0, 0, 5);
         gbc_lbAnalysisEndCount.fill = 0;
         gbc_lbAnalysisEndCount.gridx = 5;
         gbc_lbAnalysisEndCount.gridy = 0;
-        FilterPanel.add(lbAnalysisEndCount, gbc_lbAnalysisEndCount);
+        FilterPanel.add(lbAnalysisEndCountOnHost, gbc_lbAnalysisEndCount);
 
         // 添加填充以在左侧占位
         Component horizontalBlank = Box.createHorizontalGlue(); //创建一个水平组件
@@ -267,16 +267,16 @@ public class BasicHostConfigPanel extends JPanel {
 
 
         // 刷新按钮按钮
-        autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
-        autoRefreshButton.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
-        autoRefreshButton.setPreferredSize(new Dimension(30, 30));
-        autoRefreshButton.setBorder(null);  // 设置无边框
-        autoRefreshButton.setFocusPainted(false);  // 移除焦点边框
-        autoRefreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        autoRefreshButton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
+        autoRefreshButtonOnHost = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
+        autoRefreshButtonOnHost.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
+        autoRefreshButtonOnHost.setPreferredSize(new Dimension(30, 30));
+        autoRefreshButtonOnHost.setBorder(null);  // 设置无边框
+        autoRefreshButtonOnHost.setFocusPainted(false);  // 移除焦点边框
+        autoRefreshButtonOnHost.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoRefreshButtonOnHost.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
 
         // 刷新文本
-        autoRefreshText = new JLabel(String.format("暂停每%s秒刷新表格", timerDelay));
+        autoRefreshTextOnHost = new JLabel(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
 
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
@@ -311,10 +311,10 @@ public class BasicHostConfigPanel extends JPanel {
 
         // 定时刷新按钮
         gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(autoRefreshButton, gbc_buttons);
+        FilterPanel.add(autoRefreshButtonOnHost, gbc_buttons);
         // 定时刷新按钮旁边的描述
         gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(autoRefreshText, gbc_buttons);
+        FilterPanel.add(autoRefreshTextOnHost, gbc_buttons);
 
         // 点击按钮 点击后刷新数据 含未访问数据
         gbc_buttons.gridx = 15; // 设置按钮的横坐标位置
@@ -329,7 +329,7 @@ public class BasicHostConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_rightFiller);
 
         // 全部按钮
-        choicesComboBox = new JComboBox<>(new String[]{
+        choicesComboBoxOnHost = new JComboBox<>(new String[]{
                 "显示有效内容",
                 "显示敏感内容",
                 "显示未访问路径",
@@ -341,16 +341,16 @@ public class BasicHostConfigPanel extends JPanel {
         gbc_btnall.fill = 0;
         gbc_btnall.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnall.gridy = 0;
-        FilterPanel.add(choicesComboBox, gbc_btnall);
+        FilterPanel.add(choicesComboBoxOnHost, gbc_btnall);
         // 检索框
-        urlSearchBox = new JTextField(15);
+        urlSearchBoxOnHost = new JTextField(15);
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
         gbc_btnSearchField.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
-        urlSearchBox.setToolTipText("搜索URL关键字");
-        FilterPanel.add(urlSearchBox, gbc_btnSearchField);
+        urlSearchBoxOnHost.setToolTipText("搜索URL关键字");
+        FilterPanel.add(urlSearchBoxOnHost, gbc_btnSearchField);
         // 检索按钮
         JButton searchButton = new JButton();
         searchButton.setIcon(UiUtils.getImageIcon("/icon/searchButton.png"));
@@ -373,8 +373,8 @@ public class BasicHostConfigPanel extends JPanel {
         gbc_btnMore.gridy = 0;
         FilterPanel.add(moreButton, gbc_btnMore);
 
-        // 功能按钮 弹出选项
-        JPopupMenu moreMenu = createMoreMenuWithAction();
+//        // 功能按钮 弹出选项
+//        JPopupMenu moreMenu = createMoreMenuWithAction();
 
 //        // 自动刷新按钮监听事件
 //        autoRefreshButton.addActionListener(new ActionListener() {
@@ -458,168 +458,168 @@ public class BasicHostConfigPanel extends JPanel {
         return toggleButton;
     }
 
-    //创建功能按钮内容和对应事件
-    private JPopupMenu createMoreMenuWithAction() {
-        JPopupMenu moreMenu = new JPopupMenu("功能");
-
-        JMenuItem addRootUrlToAllowListen = new JMenuItem("添加到RootUrl白名单");
-        addRootUrlToAllowListen.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addRootUrlToAllowListen);
-
-        JMenuItem addRootUrlToBlackUrlRoot = new JMenuItem("添加到RootUrl黑名单");
-        addRootUrlToBlackUrlRoot.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addRootUrlToBlackUrlRoot);
-
-        JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
-        addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addUrlToRecordPath);
-
-        JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
-        addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
-        moreMenu.add(addUrlToRecordUrl);
-
-        JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
-        loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
-        moreMenu.add(loadSitemapToRecordPath);
-
-        JMenuItem loadSitemapToRecordUrl = new JMenuItem("加载SiteMap到Url记录");
-        loadSitemapToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
-        moreMenu.add(loadSitemapToRecordUrl);
-
-        JMenuItem clearUselessData = new JMenuItem("清除无用数据");
-        clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearUselessData);
-
-        JMenuItem clearModelTableData = new JMenuItem("清除表格数据表");
-        clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearModelTableData);
-
-        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据表");
-        clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearRecordTableData);
-
-        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录表");
-        clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearRecordUrlTableData);
-
-
-        JMenuItem clearAllTableData = new JMenuItem("清空所有数据表");
-        clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
-        moreMenu.add(clearAllTableData);
-
-
-//        // 为 功能 菜单项 清除无用数据 添加 Action Listener
-//        clearUselessData.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // 清空表格模型中的无效数据
-//                TableLineDataModelBasicUrlSQL.clearUselessUrlTableData();
-//                setAutoRefreshOpen();
-//            }
-//        });
+//    //创建功能按钮内容和对应事件
+//    private JPopupMenu createMoreMenuWithAction() {
+//        JPopupMenu moreMenu = new JPopupMenu("功能");
 //
-//        // 为 功能 菜单项 清除数据表数据 添加 Action Listener
-//        clearModelTableData.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // 清空表格模型中的所有行数据
-//                BasicUrlInfoPanel.clearModelData(false);
-//                setAutoRefreshOpen();
-//            }
-//        });
+//        JMenuItem addRootUrlToAllowListen = new JMenuItem("添加到RootUrl白名单");
+//        addRootUrlToAllowListen.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+//        moreMenu.add(addRootUrlToAllowListen);
 //
-//        // 为 功能 菜单项 清除所有表数据 添加 Action Listener
-//        clearAllTableData.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                // 清空表格模型中的所有行数据
-//                BasicUrlInfoPanel.clearModelData(true);
-//                setAutoRefreshOpen();
-//            }
-//        });
+//        JMenuItem addRootUrlToBlackUrlRoot = new JMenuItem("添加到RootUrl黑名单");
+//        addRootUrlToBlackUrlRoot.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+//        moreMenu.add(addRootUrlToBlackUrlRoot);
 //
-//        // 清除记录URL PATH TREE 数据
-//        clearRecordTableData.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                DBService.clearRecordTables();
-//                setAutoRefreshOpen();
-//            }
-//        });
+//        JMenuItem addUrlToRecordPath = new JMenuItem("添加有效PATH到PathTree");
+//        addUrlToRecordPath.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+//        moreMenu.add(addUrlToRecordPath);
 //
-//        // 清除记录URL数据
-//        clearRecordUrlTableData.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                DBService.clearRecordUrlTable();
-//                setAutoRefreshOpen();
-//            }
-//        });
+//        JMenuItem addUrlToRecordUrl = new JMenuItem("添加已访问URL到访问记录");
+//        addUrlToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/addButtonIcon.png"));
+//        moreMenu.add(addUrlToRecordUrl);
+//
+//        JMenuItem loadSitemapToRecordPath = new JMenuItem("加载SiteMap到Path记录");
+//        loadSitemapToRecordPath.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
+//        moreMenu.add(loadSitemapToRecordPath);
+//
+//        JMenuItem loadSitemapToRecordUrl = new JMenuItem("加载SiteMap到Url记录");
+//        loadSitemapToRecordUrl.setIcon(UiUtils.getImageIcon("/icon/importItem.png"));
+//        moreMenu.add(loadSitemapToRecordUrl);
+//
+//        JMenuItem clearUselessData = new JMenuItem("清除无用数据");
+//        clearUselessData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+//        moreMenu.add(clearUselessData);
+//
+//        JMenuItem clearModelTableData = new JMenuItem("清除表格数据表");
+//        clearModelTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+//        moreMenu.add(clearModelTableData);
+//
+//        JMenuItem clearRecordTableData = new JMenuItem("清除记录数据表");
+//        clearRecordTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+//        moreMenu.add(clearRecordTableData);
+//
+//        JMenuItem clearRecordUrlTableData = new JMenuItem("清除访问记录表");
+//        clearRecordUrlTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+//        moreMenu.add(clearRecordUrlTableData);
 //
 //
-//        // 为 功能 菜单项 加载站点地图到PATH记录 添加 Action Listener
-//        loadSitemapToRecordPath.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                new SwingWorker<Void, Void>() {
-//                    @Override
-//                    protected Void doInBackground() throws Exception {
-//                        BurpSitemapUtils.addSiteMapUrlsToRecord(false);
-//                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Path Table End.");
-//                        return null;
-//                    }
-//                }.execute();
-//            }
-//        });
+//        JMenuItem clearAllTableData = new JMenuItem("清空所有数据表");
+//        clearAllTableData.setIcon(UiUtils.getImageIcon("/icon/deleteButton.png"));
+//        moreMenu.add(clearAllTableData);
 //
-//        // 为 功能 菜单项 加载站点地图到URL记录 添加 Action Listener
-//        loadSitemapToRecordUrl.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                new SwingWorker<Void, Void>() {
-//                    @Override
-//                    protected Void doInBackground() throws Exception {
-//                        BurpSitemapUtils.addSiteMapUrlsToRecord(true);
-//                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Url Table End.");
-//                        return null;
-//                    }
-//                }.execute();
-//            }
-//        });
 //
-//        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-//        addUrlToRecordPath.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                creatTextDialogForAddRecord("添加有效PATH至PATH记录", "addUrlToRecordPath");
-//            }
-//        });
-//
-//        // 为 功能 菜单项 输入URL列表到数据框 从而加入到 URL记录
-//        addUrlToRecordUrl.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                creatTextDialogForAddRecord("添加URL至已访问URL记录", "addUrlToRecordUrl");
-//            }
-//        });
-//
-//        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-//        addRootUrlToAllowListen.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                creatTextDialogForAddRecord("添加到RootUrl白名单", "addRootUrlToAllowListen");
-//            }
-//        });
-//
-//        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
-//        addRootUrlToBlackUrlRoot.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                creatTextDialogForAddRecord("添加到RootUrl黑名单", "addRootUrlToBlackUrlRoot");
-//            }
-//        });
-        return moreMenu;
-    }
+////        // 为 功能 菜单项 清除无用数据 添加 Action Listener
+////        clearUselessData.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                // 清空表格模型中的无效数据
+////                TableLineDataModelBasicUrlSQL.clearUselessUrlTableData();
+////                setAutoRefreshOpen();
+////            }
+////        });
+////
+////        // 为 功能 菜单项 清除数据表数据 添加 Action Listener
+////        clearModelTableData.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                // 清空表格模型中的所有行数据
+////                BasicUrlInfoPanel.clearModelData(false);
+////                setAutoRefreshOpen();
+////            }
+////        });
+////
+////        // 为 功能 菜单项 清除所有表数据 添加 Action Listener
+////        clearAllTableData.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                // 清空表格模型中的所有行数据
+////                BasicUrlInfoPanel.clearModelData(true);
+////                setAutoRefreshOpen();
+////            }
+////        });
+////
+////        // 清除记录URL PATH TREE 数据
+////        clearRecordTableData.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                DBService.clearRecordTables();
+////                setAutoRefreshOpen();
+////            }
+////        });
+////
+////        // 清除记录URL数据
+////        clearRecordUrlTableData.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                DBService.clearRecordUrlTable();
+////                setAutoRefreshOpen();
+////            }
+////        });
+////
+////
+////        // 为 功能 菜单项 加载站点地图到PATH记录 添加 Action Listener
+////        loadSitemapToRecordPath.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                new SwingWorker<Void, Void>() {
+////                    @Override
+////                    protected Void doInBackground() throws Exception {
+////                        BurpSitemapUtils.addSiteMapUrlsToRecord(false);
+////                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Path Table End.");
+////                        return null;
+////                    }
+////                }.execute();
+////            }
+////        });
+////
+////        // 为 功能 菜单项 加载站点地图到URL记录 添加 Action Listener
+////        loadSitemapToRecordUrl.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                new SwingWorker<Void, Void>() {
+////                    @Override
+////                    protected Void doInBackground() throws Exception {
+////                        BurpSitemapUtils.addSiteMapUrlsToRecord(true);
+////                        stdout_println(LOG_DEBUG, "Add SiteMap Urls To Record Url Table End.");
+////                        return null;
+////                    }
+////                }.execute();
+////            }
+////        });
+////
+////        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
+////        addUrlToRecordPath.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                creatTextDialogForAddRecord("添加有效PATH至PATH记录", "addUrlToRecordPath");
+////            }
+////        });
+////
+////        // 为 功能 菜单项 输入URL列表到数据框 从而加入到 URL记录
+////        addUrlToRecordUrl.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                creatTextDialogForAddRecord("添加URL至已访问URL记录", "addUrlToRecordUrl");
+////            }
+////        });
+////
+////        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
+////        addRootUrlToAllowListen.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                creatTextDialogForAddRecord("添加到RootUrl白名单", "addRootUrlToAllowListen");
+////            }
+////        });
+////
+////        // 为 功能 菜单项 输入有效URL列表到数据框 从而加入到PATH
+////        addRootUrlToBlackUrlRoot.addActionListener(new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent e) {
+////                creatTextDialogForAddRecord("添加到RootUrl黑名单", "addRootUrlToBlackUrlRoot");
+////            }
+////        });
+//        return moreMenu;
+//    }
 
     /**
      * 创建加入URL和PATh表的对话框函数
@@ -709,7 +709,7 @@ public class BasicHostConfigPanel extends JPanel {
                                     int count2 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
                                     stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
                                     //3、刷新表格
-                                    BasicUrlInfoPanel.getInstance().refreshTableModel(false);
+                                    BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
                                     break;
                             }
                             return null;
@@ -722,27 +722,27 @@ public class BasicHostConfigPanel extends JPanel {
 
     //设置打开自动刷新
     public static void setAutoRefreshOpen(){
-        autoRefreshButton.setSelected(true);
-        autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
+        autoRefreshButtonOnHost.setSelected(true);
+        autoRefreshTextOnHost.setText(String.format("自动每%s秒刷新表格", timerDelayOnHost));
     }
 
     //设置关闭自动刷新
     public static void setAutoRefreshClose(){
-        autoRefreshButton.setSelected(false);
-        autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
+        autoRefreshButtonOnHost.setSelected(false);
+        autoRefreshTextOnHost.setText(String.format("暂停每%s秒刷新表格", timerDelayOnHost));
         BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxText() {
-        return urlSearchBox.getText();
+        return urlSearchBoxOnHost.getText();
     }
 
     public static void setUrlSearchBoxText(String string) {
-        urlSearchBox.setText(string);
+        urlSearchBoxOnHost.setText(string);
     }
 
 
     public static String getComboBoxSelectedOption() {
-        return (String) BasicHostConfigPanel.choicesComboBox.getSelectedItem();
+        return (String) BasicHostConfigPanel.choicesComboBoxOnHost.getSelectedItem();
     }
 }

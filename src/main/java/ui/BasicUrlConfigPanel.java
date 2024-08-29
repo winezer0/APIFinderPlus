@@ -18,16 +18,16 @@ import java.time.LocalDateTime;
 import static utils.BurpPrintUtils.*;
 
 public class BasicUrlConfigPanel extends JPanel {
-    public static JLabel lbRequestCount;   //记录所有加入到URL的请求
-    public static JLabel lbTaskerCount;    //记录所有加入数据库的请求
-    public static JLabel lbAnalysisEndCount;   //记录所有已经分析完成的结果数量
+    public static JLabel lbRequestCountOnUrl;   //记录所有加入到URL的请求
+    public static JLabel lbTaskerCountOnUrl;    //记录所有加入数据库的请求
+    public static JLabel lbAnalysisEndCountOnUrl;   //记录所有已经分析完成的结果数量
 
-    private static JComboBox<String> choicesComboBox;   //数据表显示快速选择框
-    private static JTextField urlSearchBox;                 //URl搜索框
+    private static JComboBox<String> choicesComboBoxOnUrl;   //数据表显示快速选择框
+    private static JTextField urlSearchBoxOnUrl;                 //URl搜索框
 
-    private static JToggleButton autoRefreshButton; //自动刷新开关按钮状态
-    private static JLabel autoRefreshText; //自动刷新按钮显示的文本
-    public static int timerDelay = 15;  //定时器刷新间隔,单位秒
+    private static JToggleButton autoRefreshButtonOnUrl; //自动刷新开关按钮状态
+    private static JLabel autoRefreshTextOnUrl; //自动刷新按钮显示的文本
+    public static int timerDelayOnUrl = 15;  //定时器刷新间隔,单位秒
 
     public BasicUrlConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
@@ -88,15 +88,15 @@ public class BasicUrlConfigPanel extends JPanel {
         gbc_lbRequest.gridy = 0;
         FilterPanel.add(lbRequest, gbc_lbRequest);
 
-        lbRequestCount = new JLabel("0");
-        lbRequestCount.setForeground(new Color(0,0,255));
+        lbRequestCountOnUrl = new JLabel("0");
+        lbRequestCountOnUrl.setForeground(new Color(0,0,255));
         GridBagConstraints gbc_lbRequestCount = new GridBagConstraints();
         gbc_lbRequestCount.insets = new Insets(0, 0, 0, 5);
         gbc_lbRequestCount.fill = GridBagConstraints.HORIZONTAL;
         gbc_lbRequestCount.weightx = 0.0;
         gbc_lbRequestCount.gridx = 1;
         gbc_lbRequestCount.gridy = 0;
-        FilterPanel.add(lbRequestCount, gbc_lbRequestCount);
+        FilterPanel.add(lbRequestCountOnUrl, gbc_lbRequestCount);
 
         // 转发成功url数，默认0
         JLabel lbTasker = new JLabel("Tasker Total:");
@@ -107,14 +107,14 @@ public class BasicUrlConfigPanel extends JPanel {
         gbc_lbTasker.gridy = 0;
         FilterPanel.add(lbTasker, gbc_lbTasker);
 
-        lbTaskerCount = new JLabel("0");
-        lbTaskerCount.setForeground(new Color(0, 255, 0));
+        lbTaskerCountOnUrl = new JLabel("0");
+        lbTaskerCountOnUrl.setForeground(new Color(0, 255, 0));
         GridBagConstraints gbc_lbTaskerCount = new GridBagConstraints();
         gbc_lbTaskerCount.insets = new Insets(0, 0, 0, 5);
         gbc_lbTaskerCount.fill = 0;
         gbc_lbTaskerCount.gridx = 3;
         gbc_lbTaskerCount.gridy = 0;
-        FilterPanel.add(lbTaskerCount, gbc_lbTaskerCount);
+        FilterPanel.add(lbTaskerCountOnUrl, gbc_lbTaskerCount);
 
         // 分析URL的数量
         JLabel lbAnalysisEnd = new JLabel("Analysis End:");
@@ -125,14 +125,14 @@ public class BasicUrlConfigPanel extends JPanel {
         gbc_lbAnalysisEnd.gridy = 0;
         FilterPanel.add(lbAnalysisEnd, gbc_lbAnalysisEnd);
 
-        lbAnalysisEndCount = new JLabel("0");
-        lbAnalysisEndCount.setForeground(new Color(0, 0, 255)); // 蓝色
+        lbAnalysisEndCountOnUrl = new JLabel("0");
+        lbAnalysisEndCountOnUrl.setForeground(new Color(0, 0, 255)); // 蓝色
         GridBagConstraints gbc_lbAnalysisEndCount = new GridBagConstraints();
         gbc_lbAnalysisEndCount.insets = new Insets(0, 0, 0, 5);
         gbc_lbAnalysisEndCount.fill = 0;
         gbc_lbAnalysisEndCount.gridx = 5;
         gbc_lbAnalysisEndCount.gridy = 0;
-        FilterPanel.add(lbAnalysisEndCount, gbc_lbAnalysisEndCount);
+        FilterPanel.add(lbAnalysisEndCountOnUrl, gbc_lbAnalysisEndCount);
 
         // 添加填充以在左侧占位
         Component horizontalBlank = Box.createHorizontalGlue(); //创建一个水平组件
@@ -270,16 +270,16 @@ public class BasicUrlConfigPanel extends JPanel {
 
 
         // 刷新按钮按钮
-        autoRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
-        autoRefreshButton.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
-        autoRefreshButton.setPreferredSize(new Dimension(30, 30));
-        autoRefreshButton.setBorder(null);  // 设置无边框
-        autoRefreshButton.setFocusPainted(false);  // 移除焦点边框
-        autoRefreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        autoRefreshButton.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
+        autoRefreshButtonOnUrl = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
+        autoRefreshButtonOnUrl.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
+        autoRefreshButtonOnUrl.setPreferredSize(new Dimension(30, 30));
+        autoRefreshButtonOnUrl.setBorder(null);  // 设置无边框
+        autoRefreshButtonOnUrl.setFocusPainted(false);  // 移除焦点边框
+        autoRefreshButtonOnUrl.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        autoRefreshButtonOnUrl.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
 
         // 刷新文本
-        autoRefreshText = new JLabel(String.format("暂停每%s秒刷新表格", timerDelay));
+        autoRefreshTextOnUrl = new JLabel(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
 
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
@@ -314,10 +314,10 @@ public class BasicUrlConfigPanel extends JPanel {
 
         // 定时刷新按钮
         gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(autoRefreshButton, gbc_buttons);
+        FilterPanel.add(autoRefreshButtonOnUrl, gbc_buttons);
         // 定时刷新按钮旁边的描述
         gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(autoRefreshText, gbc_buttons);
+        FilterPanel.add(autoRefreshTextOnUrl, gbc_buttons);
 
         // 点击按钮 点击后刷新数据 含未访问数据
         gbc_buttons.gridx = 15; // 设置按钮的横坐标位置
@@ -332,10 +332,9 @@ public class BasicUrlConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_rightFiller);
 
         // 全部按钮
-        choicesComboBox = new JComboBox<>(new String[]{
+        choicesComboBoxOnUrl = new JComboBox<>(new String[]{
                 "显示有效内容",
                 "显示敏感内容",
-                "显示未访问路径",
                 "显示全部内容",
                 "显示无效内容",
         });
@@ -344,16 +343,16 @@ public class BasicUrlConfigPanel extends JPanel {
         gbc_btnall.fill = 0;
         gbc_btnall.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnall.gridy = 0;
-        FilterPanel.add(choicesComboBox, gbc_btnall);
+        FilterPanel.add(choicesComboBoxOnUrl, gbc_btnall);
         // 检索框
-        urlSearchBox = new JTextField(15);
+        urlSearchBoxOnUrl = new JTextField(15);
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
         gbc_btnSearchField.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
-        urlSearchBox.setToolTipText("搜索URL关键字");
-        FilterPanel.add(urlSearchBox, gbc_btnSearchField);
+        urlSearchBoxOnUrl.setToolTipText("搜索URL关键字");
+        FilterPanel.add(urlSearchBoxOnUrl, gbc_btnSearchField);
         // 检索按钮
         JButton searchButton = new JButton();
         searchButton.setIcon(UiUtils.getImageIcon("/icon/searchButton.png"));
@@ -380,32 +379,32 @@ public class BasicUrlConfigPanel extends JPanel {
         JPopupMenu moreMenu = createMoreMenuWithAction();
 
         // 自动刷新按钮监听事件
-        autoRefreshButton.addActionListener(new ActionListener() {
+        autoRefreshButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 检查按钮的选中状态
-                if (autoRefreshButton.isSelected()) {
-                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = autoRefreshButton.isSelected();
-                    autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
+                if (autoRefreshButtonOnUrl.isSelected()) {
+                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = autoRefreshButtonOnUrl.isSelected();
+                    autoRefreshTextOnUrl.setText(String.format("自动每%s秒刷新表格", timerDelayOnUrl));
                 } else {
-                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = !autoRefreshButton.isSelected();
-                    autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
+                    BasicUrlInfoPanel.baseUrlAutoRefreshIsOpen = !autoRefreshButtonOnUrl.isSelected();
+                    autoRefreshTextOnUrl.setText(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
                 }
             }
         });
 
         // 快速选择框的监听事件
-        choicesComboBox.addActionListener(new ActionListener() {
+        choicesComboBoxOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try{
                     // 触发显示所有行事件
-                    String searchText = urlSearchBox.getText();
+                    String searchText = urlSearchBoxOnUrl.getText();
                     if(searchText.isEmpty()){
                         searchText = "";
                     }
-                    String selectedOption = (String)choicesComboBox.getSelectedItem();
-                    BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText);
+                    String selectedOption = (String) choicesComboBoxOnUrl.getSelectedItem();
+                    BasicUrlInfoPanel.showDataUrlTableByFilter(selectedOption, searchText);
                 } catch (Exception ex) {
                     stderr_println(String.format("[!] choicesComboBox: %s", ex.getMessage()));
                 }
@@ -416,20 +415,20 @@ public class BasicUrlConfigPanel extends JPanel {
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String searchText = urlSearchBox.getText();
-                String selectedOption = (String) BasicUrlConfigPanel.choicesComboBox.getSelectedItem();
-                BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText);
+                String searchText = urlSearchBoxOnUrl.getText();
+                String selectedOption = (String) BasicUrlConfigPanel.choicesComboBoxOnUrl.getSelectedItem();
+                BasicUrlInfoPanel.showDataUrlTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
             }
         });
 
         //搜索框的回车事件
-        urlSearchBox.addActionListener(new ActionListener() {
+        urlSearchBoxOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String searchText = urlSearchBox.getText();
-                String selectedOption = (String) BasicUrlConfigPanel.choicesComboBox.getSelectedItem();
-                BasicUrlInfoPanel.showDataTableByFilter(selectedOption, searchText);
+                String searchText = urlSearchBoxOnUrl.getText();
+                String selectedOption = (String) BasicUrlConfigPanel.choicesComboBoxOnUrl.getSelectedItem();
+                BasicUrlInfoPanel.showDataUrlTableByFilter(selectedOption, searchText);
                 setAutoRefreshClose();
             }
         });
@@ -712,7 +711,7 @@ public class BasicUrlConfigPanel extends JPanel {
                                     int count2 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
                                     stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
                                     //3、刷新表格
-                                    BasicUrlInfoPanel.getInstance().refreshTableModel(false);
+                                    BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
                                     break;
                             }
                             return null;
@@ -725,27 +724,27 @@ public class BasicUrlConfigPanel extends JPanel {
 
     //设置打开自动刷新
     public static void setAutoRefreshOpen(){
-        autoRefreshButton.setSelected(true);
-        autoRefreshText.setText(String.format("自动每%s秒刷新表格", timerDelay));
+        autoRefreshButtonOnUrl.setSelected(true);
+        autoRefreshTextOnUrl.setText(String.format("自动每%s秒刷新表格", timerDelayOnUrl));
     }
 
     //设置关闭自动刷新
     public static void setAutoRefreshClose(){
-        autoRefreshButton.setSelected(false);
-        autoRefreshText.setText(String.format("暂停每%s秒刷新表格", timerDelay));
+        autoRefreshButtonOnUrl.setSelected(false);
+        autoRefreshTextOnUrl.setText(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
         BasicUrlInfoPanel.baseUrlOperationStartTime = LocalDateTime.now();
     }
 
     public static String getUrlSearchBoxText() {
-        return urlSearchBox.getText();
+        return urlSearchBoxOnUrl.getText();
     }
 
     public static void setUrlSearchBoxText(String string) {
-        urlSearchBox.setText(string);
+        urlSearchBoxOnUrl.setText(string);
     }
 
 
     public static String getComboBoxSelectedOption() {
-        return (String) BasicUrlConfigPanel.choicesComboBox.getSelectedItem();
+        return (String) BasicUrlConfigPanel.choicesComboBoxOnUrl.getSelectedItem();
     }
 }
