@@ -201,12 +201,12 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostTableAddActionSetMsgTabData();
 
         //为表的每一行添加右键菜单
-        tableAddRightClickMenu(listSelectionModel);
+        basicHostTableAddRightClickMenu(listSelectionModel);
     }
 
 
     //TODO 实现添加右键菜单
-    private void tableAddRightClickMenu(int listSelectionModel) {
+    private void basicHostTableAddRightClickMenu(int listSelectionModel) {
     }
 
     /**
