@@ -17,16 +17,6 @@ public class RespFieldsModel {
     private String respHashContent;     // 响应内容HASH
     private String respRedirectUrl;     // 响应重定向URL
 
-    //构造函数
-    public RespFieldsModel(int statusCode, int respLength, int respBodyLength, String respTextTitle, String respContentHash, String respRedirectUrl) {
-        this.statusCode = statusCode;
-        this.respLength = respLength;
-        this.respBodyLength = respBodyLength;
-        this.respTextTitle = respTextTitle;
-        this.respHashContent = respContentHash;
-        this.respRedirectUrl = respRedirectUrl;
-    }
-
     public RespFieldsModel(HttpRespInfo respInfo) {
         this.statusCode = respInfo.getStatusCode();
         this.respLength = respInfo.getRespLength();
@@ -34,30 +24,6 @@ public class RespFieldsModel {
         this.respTextTitle = respInfo.getRespTitle();
         this.respRedirectUrl = CastUtils.parseRespRedirectUrl(respInfo.getHeaderBytes());
         this.respHashContent = CastUtils.calcCRC32(respInfo.getBodyBytes());
-    }
-
-    public Integer getStatusCode() {
-        return statusCode;
-    }
-
-    public Integer getRespLength() {
-        return respLength;
-    }
-
-    public Integer getRespBodyLength() {
-        return respBodyLength;
-    }
-
-    public String getRespTextTitle() {
-        return respTextTitle;
-    }
-
-    public String getRespHashContent() {
-        return respHashContent;
-    }
-
-    public String getRespRedirectUrl() {
-        return respRedirectUrl;
     }
 
     public String toJSONString(){
