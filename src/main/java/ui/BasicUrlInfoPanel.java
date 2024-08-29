@@ -1,8 +1,6 @@
 package ui;
 
 import burp.*;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import database.*;
 import model.*;
 import ui.MainTabRender.TableHeaderWithTips;
@@ -23,7 +21,6 @@ import java.util.concurrent.ExecutionException;
 
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
-import static utils.CastUtils.isNotEmptyObj;
 
 public class BasicUrlInfoPanel extends JPanel implements IMessageEditorController {
     private static volatile BasicUrlInfoPanel instance; //实现单例模式
@@ -99,7 +96,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         initBasicUrlDataTableUIData(baseUrlMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initBaiscUrlTimer(BasicUrlConfigPanel.timerDelayOnUrl * 1000);
+        initBasicUrlTimer(BasicUrlConfigPanel.timerDelayOnUrl * 1000);
     }
 
     /**
@@ -231,63 +228,40 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         JMenuItem copyUrlItem = new JMenuItem("复制请求URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 
-        JMenuItem accessUnVisitedItem = new JMenuItem("访问当前未访问URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
-        JMenuItem updateUnVisitedItem = new JMenuItem("刷新当前未访问URL", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
-        JMenuItem ClearUnVisitedItem = new JMenuItem("清空当前未访问URL", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-        JMenuItem IgnoreUnVisitedItem = new JMenuItem("忽略当前未访问URL", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
-
         JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加ATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
-        JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
 
-        JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
-        JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到禁止自动递归目标", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
-        JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
         JMenuItem genDynaPathFilterItem = new JMenuItem("基于当前URL生成动态过滤条件", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
 
-        JMenuItem pathTreeToPathListItem = new JMenuItem("提取当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
         //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
         JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
-        JMenuItem calcSingleLayerNodeItem = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        JMenuItem calcSingleLayerNodeItemOnUrl = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
-        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-
-        JMenuItem CopyAllFindInfoItem = new JMenuItem("复制当前所有敏感信息", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem CopyAllFindUrlsItem = new JMenuItem("复制当前所有提取URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem CopyAllFindPathItem = new JMenuItem("复制当前所有提取PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem CopyAllFindApiItem = new JMenuItem("复制当前所有PATH拼接URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem CopyAllPath2UrlsItem = new JMenuItem("复制当前所有PATH计算URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem CopyAllUnVisitedUrlsItem = new JMenuItem("复制当前所有未访问URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+//        JMenuItem CopyAllFindInfoItem = new JMenuItem("复制当前所有敏感信息", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+//        JMenuItem CopyAllFindUrlsItem = new JMenuItem("复制当前所有提取URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+//        JMenuItem CopyAllFindPathItem = new JMenuItem("复制当前所有提取PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+//        JMenuItem CopyAllFindApiItem = new JMenuItem("复制当前所有PATH拼接URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+//        JMenuItem CopyAllPath2UrlsItem = new JMenuItem("复制当前所有PATH计算URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+//        JMenuItem CopyAllUnVisitedUrlsItem = new JMenuItem("复制当前所有未访问URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
 
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
-        popupMenu.add(accessUnVisitedItem);
-        popupMenu.add(updateUnVisitedItem);
-        popupMenu.add(ClearUnVisitedItem);
-        popupMenu.add(IgnoreUnVisitedItem);
 
         popupMenu.add(addUrlPathToRecordPathItem);
-        popupMenu.add(removeHostFromPathTreeItem);
 
-        popupMenu.add(addRootUrlToBlackUrlRootItem);
-        popupMenu.add(addRootUrlToNotAutoRecurseItem);
-        popupMenu.add(addRootUrlToAllowListenItem);
         popupMenu.add(genDynaPathFilterItem);
 
-        popupMenu.add(pathTreeToPathListItem);
         popupMenu.add(copySingleLayerNodeItem);
-        popupMenu.add(calcSingleLayerNodeItem);
-
-        popupMenu.add(removeFindApiIListItem);
+        popupMenu.add(calcSingleLayerNodeItemOnUrl);
 
 
-        popupMenu.add(CopyAllFindUrlsItem);
-        popupMenu.add(CopyAllFindPathItem);
-        popupMenu.add(CopyAllFindApiItem);
-        popupMenu.add(CopyAllPath2UrlsItem);
-        popupMenu.add(CopyAllUnVisitedUrlsItem);
-        popupMenu.add(CopyAllFindInfoItem);
+//        popupMenu.add(CopyAllFindUrlsItem);
+//        popupMenu.add(CopyAllFindPathItem);
+//        popupMenu.add(CopyAllFindApiItem);
+//        popupMenu.add(CopyAllPath2UrlsItem);
+//        popupMenu.add(CopyAllUnVisitedUrlsItem);
+//        popupMenu.add(CopyAllFindInfoItem);
 
         // 将右键菜单添加到表格
         tableUI.setComponentPopupMenu(popupMenu);
@@ -301,7 +275,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //多行模式下的调用
                 if (selectModel >= 0){
                     int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urls = UiUtils.geStringListAtActualRows(tableUI,selectedRows, 3);
+                    List<String> urls = getUrlsAtActualRows(tableUI, selectedRows);
                     if (!urls.isEmpty())
                         UiUtils.copyToSystemClipboard(String.join("\n", urls));
                 }
@@ -316,7 +290,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //多行选定模式
                 if (selectModel >= 0){
                     int[] selectedRows = tableUI.getSelectedRows();
-                        List<Integer> ids = UiUtils.getIdsAtActualRows(tableUI, selectedRows, 0);
+                        List<Integer> ids = getIdsAtActualRows(tableUI, selectedRows);
 
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -332,88 +306,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-        // 添加 ClearUnVisitedItem 事件监听器
-        ClearUnVisitedItem.setToolTipText("[多行]清空选定行对应的未访问URL");
-        ClearUnVisitedItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0){
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        // 添加 IgnoreUnVisitedItem 事件监听器
-        IgnoreUnVisitedItem.setToolTipText("[多行]标记选定行对应的未访问URL为已访问 并清空 当访问URL后依然无法过滤时使用");
-        IgnoreUnVisitedItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-/*
-                if (listSelectionModel == ListSelectionModel.SINGLE_SELECTION) {
-                    int selectedRow = table.getSelectedRow();
-                    if (selectedRow != -1) {
-                        String msgHash = UiUtils.getMsgHashAtActualRow(table, selectedRow);
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                UnVisitedUrlsModel unVisitedUrlsModel= AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHash(msgHash);
-                                List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
-                                RecordUrlTable.batchInsertOrUpdateAccessedUrls(unvisitedUrls, 299);
-                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHash(msgHash);
-                                refreshTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-*/
-
-                //多行选定模式
-                if (selectModel >= 0){
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
-
-                                //整合所有结果URL到一个Set
-                                Set<String> unvisitedUrlsSet = new HashSet<>();
-                                for (UnVisitedUrlsModelBasicUrl unVisitedUrlsModel:unVisitedUrlsModels){
-                                    List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
-                                    unvisitedUrlsSet.addAll(unvisitedUrls);
-                                }
-
-                                //批量插入所有URL
-                                RecordUrlTable.batchInsertOrUpdateAccessedUrls(new ArrayList<>(unvisitedUrlsSet), 299);
-                                //批量删除所有msgHashList
-                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-
-                    }
-                }
-            }
-        });
 
         // 添加 addUrlPathToRecordPathItem 事件监听器
         addUrlPathToRecordPathItem.setToolTipText("[多行]添加选定行对应的请求PATH到RecordPath表 用于计算PathTree");
@@ -423,7 +315,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //多行选定模式
                 if (selectModel >= 0) {
                     int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
+                    List<String> urlList = getUrlsAtActualRows(tableUI, selectedRows);
                     if (!urlList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -439,183 +331,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-        // 添加 removeHostFromPathTreeItem 事件监听器
-        removeHostFromPathTreeItem.setToolTipText("[多行]清空选定行对应的HOST在PathTree及RecordPath中的数据");
-        removeHostFromPathTreeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel>=0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
-                    if (!urlList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                CommonSql.deleteDataByUrlToRootUrls(urlList, PathTreeTable.tableName);
-                                CommonSql.deleteDataByUrlToRootUrls(urlList, RecordPathTable.tableName);
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
 
-        // 添加 updateUnVisitedItem 事件监听器
-        updateUnVisitedItem.setToolTipText("[多行]更新选定行对应的未访问URL情况");
-        updateUnVisitedItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                updateUnVisitedUrlsByMsgHashList(msgHashList);
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-
-                    }
-                }
-            }
-        });
-
-        // 添加 addRootUrlToBlackUrlRootItem 事件监听器
-        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单 CONF_BLACK_URL_ROOT");
-        addRootUrlToBlackUrlRootItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel>=0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
-                    if (!urlList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                //0、获取所有rootUrl
-                                Set<String> rootUrlSet = new HashSet<>();
-                                for (String url:urlList){
-                                    HttpUrlInfo urlInfo = new HttpUrlInfo(url);
-                                    rootUrlSet.add(urlInfo.getRootUrlUsual());
-                                }
-                                ArrayList<String> rootUrlList = new ArrayList<>(rootUrlSet);
-
-                                //1、加入到黑名单列表
-                                //合并原来的列表
-                                rootUrlSet.addAll(BurpExtender.CONF_BLACK_URL_ROOT);
-                                BurpExtender.CONF_BLACK_URL_ROOT = new ArrayList<>(rootUrlSet);
-                                //保存Json
-                                RuleConfigPanel.saveConfigToDefaultJson();
-
-                                //2、删除 Root URL 对应的 结果数据
-                                int count1 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, ReqDataTable.tableName);
-                                int count2 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
-                                stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
-
-                                //3、刷新表格
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-
-//TODO 需要移动到基于主机的面板的右键功能中
-//        // 添加 accessUnVisitedItem 事件监听器
-//        accessUnVisitedItem.setToolTipText("[多行]访问选定行对应的当前所有未访问URL");
-//        accessUnVisitedItem.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //多行选定模式
-//                if (listSelectionModel >= 0) {
-//                    int[] selectedRows = msgTableUI.getSelectedRows();
-//                    List<String> msgHashList =  UiUtils.getMsgHashListAtActualRows(msgTableUI, selectedRows);
-//                    if (!msgHashList.isEmpty()){
-//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-//                        new SwingWorker<Void, Void>() {
-//                            @Override
-//                            protected Void doInBackground() throws Exception {
-//                                //获取所有msgHash相关的结果
-//                                List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
-//                                //批量访问所有URL模型
-//                                for (UnVisitedUrlsModelBasicUrl unVisitedUrlsModel: unVisitedUrlsModels){
-//                                    IProxyScanner.accessUnVisitedUrlsModel(unVisitedUrlsModel, false);
-//                                }
-//                                //标记所有扫描结果数据为空
-//                                AnalyseUrlResultTable.clearUnVisitedUrlsByMsgHashList(msgHashList);
-//                                refreshTableModel(false);
-//                                return null;
-//                            }
-//                        }.execute();
-//
-//                    }
-//                }
-//            }
-//        });
-
-        // 添加 addRootUrlToNotAutoRecurseItem 事件监听器
-        addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表 CONF_BLACK_AUTO_RECURSE_SCAN");
-        addRootUrlToNotAutoRecurseItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel>=0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
-                    if (!urlList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                //0、获取所有rootUrl
-                                BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN);
-                                RuleConfigPanel.saveConfigToDefaultJson();
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        // 添加 addRootUrlToAllowListenItem 事件监听器
-        addRootUrlToAllowListenItem.setToolTipText("[多行]添加选定行对应的RootUrl到仅监听的白名单 CONF_WHITE_URL_ROOT");
-        addRootUrlToAllowListenItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel>=0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
-                    if (!urlList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
-                                //保存Json
-                                RuleConfigPanel.saveConfigToDefaultJson();
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
 
         // 添加 genDynaPathFilterItem 事件监听器
         genDynaPathFilterItem.setToolTipText("[多行]基于选定行对应的URL生成对应HOST的动态响应过滤条件 过滤无效响应不完善时使用");
@@ -625,7 +341,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //多行选定模式
                 if (selectModel >= 0) {
                     int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
+                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
@@ -658,52 +374,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-        //pathTreeToPathListItem
-        pathTreeToPathListItem.setToolTipText("[多行]复制选定行对应的RootUrl在PathTree中的路径数据到剪贴板 并弹框");
-        pathTreeToPathListItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel>=0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> urlList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 3);
-                    if (!urlList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                Set<String> pathSet = new LinkedHashSet<>();
-
-                                //解析URL列表, 生成 rootUrls 列表
-                                Set<String> rootUrls = new LinkedHashSet<>();
-                                for (String url :urlList){
-                                    rootUrls.add(new HttpUrlInfo(url).getRootUrlUsual());
-                                }
-
-                                for (String rootUrl:rootUrls){
-                                    //查询host 对应的树
-                                    PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(rootUrl);
-                                    if (isNotEmptyObj(pathTreeModel)){
-                                        JSONObject currPathTree = pathTreeModel.getPathTree();
-                                        if (isNotEmptyObj(currPathTree)  && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))){
-                                           List<String> pathList = PathTreeUtils.covertTreeToPaths(currPathTree);
-                                           for (String path:pathList){
-                                               pathSet.add(path.replace("ROOT", rootUrl) + "/");
-                                           }
-                                        }
-                                    }
-                                }
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(String.join("\n",pathSet), "所有路径信息");
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
 
         //copySingleLayerNodeItem
         copySingleLayerNodeItem.setToolTipText("[多行]复制选定行对应的提取PATH中的单层(无目录)路径到剪贴板 并弹框");
@@ -713,13 +383,14 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 //多行选定模式
                 if (selectModel >= 0) {
                     int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
+                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                Set<String> pathSet = fetchSingleLayerFindPathSet(msgHashList);
+                                List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByMsgHashList(msgHashList);
+                                Set<String> pathSet = FindPathModel.getSingleLayerPathSet(findPathModelList);
                                 //直接复制到用户的粘贴板
                                 UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
                                 //弹框让用户查看
@@ -733,20 +404,20 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         });
 
         //calcSingleLayerNodeItem
-        calcSingleLayerNodeItem.setToolTipText("[多行]基于选定行对应的提取PATH中的单层(无目录)PATH和用户输入的URL前缀计算新的URL");
-        calcSingleLayerNodeItem.addActionListener(new ActionListener() {
+        calcSingleLayerNodeItemOnUrl.setToolTipText("[多行]基于选定行对应的提取PATH中的单层(无目录)PATH和用户输入的URL前缀计算新的URL");
+        calcSingleLayerNodeItemOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //多行选定模式
                 if (selectModel >= 0) {
                     int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
+                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
                     if (!msgHashList.isEmpty()){
                         // 使用SwingWorker来处理数据更新，避免阻塞EDT
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                showInputBoxAndHandle(msgHashList, "calcSingleLayerNodeItem", "指定PATH生成单层节点URL");
+                                UiUtils.showInputBoxAndHandle(msgHashList, "calcSingleLayerNodeItemOnUrl", "指定PATH生成单层节点URL");
                                 return null;
                             }
                         }.execute();
@@ -755,349 +426,183 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-        //removeFindApiIListItem
-        removeFindApiIListItem.setToolTipText("[多行]移除选定行对应的PATH拼接URL内容及当前未访问URL中对应的内容 前后端分离时使用");
-        removeFindApiIListItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                for (String msgHash:msgHashList){
-                                    //逐个清理 UnvisitedURls 中的 findApiUrl
 
-                                    //根据 msgHash值 查询api分析结果数据
-                                    BasicUrlTableTabDataModel tabDataModel = AnalyseUrlResultTable.fetchResultByMsgHash(msgHash);
-                                    if (tabDataModel != null) {
+//        //复制当前所有提取URL
+//        CopyAllFindUrlsItem.setToolTipText("[多行]复制选定行对应的提取URL到剪贴板 并弹框");
+//        CopyAllFindUrlsItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                String columnName = "find_url";
+//                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+//                                //直接复制到用户的粘贴板
+//                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+//                                //弹框让用户查看
+//                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
 
-                                        //1、获取 msgHash 对应的 UnvisitedURls
-                                        String unvisitedUrl = tabDataModel.getUnvisitedUrl();
-                                        List<String> unvisitedUrlList = CastUtils.toStringList(unvisitedUrl);
-                                        //跳过处理未访问列表为空的情况
-                                        if (unvisitedUrlList.isEmpty()) continue;
+//        //复制当前所有提取PATH
+//        CopyAllFindPathItem.setToolTipText("[多行]复制选定行对应的提取PATH到剪贴板 并弹框");
+//        CopyAllFindPathItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                String columnName = "find_path";
+//                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+//                                //直接复制到用户的粘贴板
+//                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+//                                //弹框让用户查看
+//                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
 
-                                        //2、获取 msgHash 对应的 findApiUrl
-                                        String findApi = tabDataModel.getFindApi();
-                                        List<String> findApiList = CastUtils.toStringList(findApi);
-                                        //跳过处理findApi列表为空的情况
-                                        if (findApiList.isEmpty()) continue;
+//        //复制当前所有PATH拼接URL
+//        CopyAllFindApiItem.setToolTipText("[多行]复制选定行对应的PATH拼接URL到剪贴板 并弹框");
+//        CopyAllFindApiItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                String columnName = "find_api";
+//                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+//                                //直接复制到用户的粘贴板
+//                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+//                                //弹框让用户查看
+//                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
 
-                                        //3、计算差值 UnvisitedURls - findApiUrl
-                                        unvisitedUrlList = CastUtils.listReduceList(unvisitedUrlList, findApiList);
+//        //复制当前所有PATH计算URL
+//        CopyAllPath2UrlsItem.setToolTipText("[多行]复制选定行对应的PATH计算URL到剪贴板 并弹框");
+//        CopyAllPath2UrlsItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                String columnName = "path_to_url";
+//                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+//                                //直接复制到用户的粘贴板
+//                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+//                                //弹框让用户查看
+//                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
 
-                                        //4、更新 UnvisitedURls 到数据库
-                                        UnVisitedUrlsModelBasicUrl unVisitedUrlsModel = new UnVisitedUrlsModelBasicUrl(-1, msgHash, null, unvisitedUrlList);
-                                        AnalyseUrlResultTable.updateUnVisitedUrlsByMsgHash(unVisitedUrlsModel);
-                                    }
-                                }
-                                //删除所有findApi
-                                AnalyseUrlResultTable.clearFindApiUrlsByMsgHashList(msgHashList);
-                                //刷新表单
-                                refreshBasicUrlTableModel(false);
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
+//        //复制当前所有未访问URL
+//        CopyAllUnVisitedUrlsItem.setToolTipText("[多行]复制选定行对应的未访问URL到剪贴板 并弹框");
+//        CopyAllUnVisitedUrlsItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                String columnName = "unvisited_url";
+//                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+//                                //直接复制到用户的粘贴板
+//                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
+//                                //弹框让用户查看
+//                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
 
-        //复制当前所有提取URL
-        CopyAllFindUrlsItem.setToolTipText("[多行]复制选定行对应的提取URL到剪贴板 并弹框");
-        CopyAllFindUrlsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                String columnName = "find_url";
-                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        //复制当前所有提取PATH
-        CopyAllFindPathItem.setToolTipText("[多行]复制选定行对应的提取PATH到剪贴板 并弹框");
-        CopyAllFindPathItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                String columnName = "find_path";
-                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        //复制当前所有PATH拼接URL
-        CopyAllFindApiItem.setToolTipText("[多行]复制选定行对应的PATH拼接URL到剪贴板 并弹框");
-        CopyAllFindApiItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                String columnName = "find_api";
-                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        //复制当前所有PATH计算URL
-        CopyAllPath2UrlsItem.setToolTipText("[多行]复制选定行对应的PATH计算URL到剪贴板 并弹框");
-        CopyAllPath2UrlsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                String columnName = "path_to_url";
-                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        //复制当前所有未访问URL
-        CopyAllUnVisitedUrlsItem.setToolTipText("[多行]复制选定行对应的未访问URL到剪贴板 并弹框");
-        CopyAllUnVisitedUrlsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                String columnName = "unvisited_url";
-                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(String.join("\n", stringSet));
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(String.join("\n",stringSet), columnName + String.format(" => NUM %s", stringSet.size()));
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
-
-        //复制当前所有敏感信息
-        CopyAllFindInfoItem.setToolTipText("[多行]复制选定行对应的敏感信息到剪贴板 并弹框");
-        CopyAllFindInfoItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0) {
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> msgHashList =  UiUtils.geStringListAtActualRows(tableUI, selectedRows, 2);
-                    if (!msgHashList.isEmpty()){
-                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                        new SwingWorker<Void, Void>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                String columnName = "find_info";
-                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
-                                String infoJsonStringSetFormatText = CastUtils.infoJsonStringSetFormatText(stringSet);
-                                //直接复制到用户的粘贴板
-                                UiUtils.copyToSystemClipboard(infoJsonStringSetFormatText);
-                                //弹框让用户查看
-                                UiUtils.showOneMsgBoxToCopy(infoJsonStringSetFormatText, columnName + String.format(" => NUM %s", stringSet.size()));
-                                return null;
-                            }
-                        }.execute();
-                    }
-                }
-            }
-        });
+//        //复制当前所有敏感信息
+//        CopyAllFindInfoItem.setToolTipText("[多行]复制选定行对应的敏感信息到剪贴板 并弹框");
+//        CopyAllFindInfoItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+//                    if (!msgHashList.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                String columnName = "find_info";
+//                                Set<String> stringSet =  AnalyseUrlResultTable.fetchSpecialUrlsByMsgHashList(columnName, msgHashList);
+//                                String infoJsonStringSetFormatText = CastUtils.infoJsonStringSetFormatText(stringSet);
+//                                //直接复制到用户的粘贴板
+//                                UiUtils.copyToSystemClipboard(infoJsonStringSetFormatText);
+//                                //弹框让用户查看
+//                                UiUtils.showOneMsgBoxToCopy(infoJsonStringSetFormatText, columnName + String.format(" => NUM %s", stringSet.size()));
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
     }
 
-    /**
-     * 弹框 读取用户输入 弹框 输出到用户
-     * @param msgHashList
-     * @param itemType
-     * @param title
-     */
-    private void showInputBoxAndHandle(List<String> msgHashList, String itemType, String title) {
-        //弹出框,等待用户输入
-        //创建一个对话框,便于输入url数据
-        JDialog dialog = new JDialog();
-        dialog.setTitle(title);
-        dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
-
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
-        // 添加第一行提示
-        JLabel urlJLabel = new JLabel("输入数据:");
-        constraints.gridx = 0; // 第1列
-        constraints.gridy = 0; // 第1行
-        constraints.gridwidth = 2; // 占据两列的空间
-        dialog.add(urlJLabel, constraints);
-
-        JTextArea customParentPathArea = new JTextArea(15, 35);
-        customParentPathArea.setText("");
-        customParentPathArea.setLineWrap(true); // 自动换行
-        customParentPathArea.setWrapStyleWord(true); //断行不断字
-        constraints.gridy = 1; // 第2行
-        constraints.gridx = 0; // 第1列
-        dialog.add(new JScrollPane(customParentPathArea), constraints); // 添加滚动条
-
-        // 添加按钮面板
-        JPanel buttonPanel = new JPanel();
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
-        buttonPanel.add(confirmButton);
-        buttonPanel.add(cancelButton);
-
-        constraints.gridx = 0; // 第一列
-        constraints.gridy = 2; // 第三行
-        constraints.gridwidth = 2; // 占据两列的空间
-        dialog.add(buttonPanel, constraints);
-
-        dialog.pack(); // 调整对话框大小以适应其子组件
-        dialog.setLocationRelativeTo(null); // 居中显示
-        dialog.setVisible(true); // 显示对话框
-
-        // 取消按钮事件
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dialog.dispose(); // 关闭对话框
-            }
-        });
-
-        // 不同的 确认按钮动作
-        confirmButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // 获取用户输入
-                String inputText = customParentPathArea.getText();
-                dialog.dispose(); // 关闭对话框
-                //调用新的动作
-                java.util.List<String> urlList = CastUtils.getUniqueLines(inputText);
-                if (!urlList.isEmpty()){
-                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                    new SwingWorker<Void, Void>() {
-                        @Override
-                        protected Void doInBackground() throws Exception {
-                            switch (itemType){
-                                case "calcSingleLayerNodeItem":
-                                    //基于pathSet和用户输入组合URL
-                                    Set<String> urlSet = new LinkedHashSet<>();
-                                    Set<String> pathSet = fetchSingleLayerFindPathSet(msgHashList);
-                                    for (String prefix : urlList) {
-                                        List<String> urls = AnalyseInfoUtils.concatUrlAddPath(prefix, new ArrayList<>(pathSet));
-                                        if (urls.size() > 0) urlSet.addAll(urls);
-                                    }
-                                    //直接复制到用户的粘贴板
-                                    UiUtils.copyToSystemClipboard(String.join("\n", urlSet));
-                                    //弹框让用户查看
-                                    UiUtils.showOneMsgBoxToCopy(String.join("\n", urlSet), "单层路径生成URL");
-                                    break;
-                            }
-                            return null;
-                        }
-                    }.execute();
-                }
-            }
-        });
-    }
-
-    /**
-     * 复制 msgHashList 对应的 提取PATH 中的 单层（无目录）路径
-     */
-    private Set<String> fetchSingleLayerFindPathSet(List<String> msgHashList) {
-        Set<String> pathSet = new LinkedHashSet<>();
-        //查询msgHash列表对应的所有数据find path 数据
-        List<FindPathModel> findPathModelList = AnalyseUrlResultTable.fetchPathDataByMsgHashList(msgHashList);
-        for (FindPathModel findPathModel:findPathModelList){
-            //逐个提取PATH 并 加入 pathSet
-            JSONArray findPaths = findPathModel.getFindPath();
-            if (!findPaths.isEmpty()){
-                // 提取 path中的单层路径
-                for (Object uriPath : findPaths){
-                    List<String> uriPart = PathTreeUtils.getUrlPart((String) uriPath);
-                    if (uriPart.size() == 1){
-                        pathSet.add(PathTreeUtils.formatUriPath((String) uriPath));
-                    }
-                }
-            }
-        }
-        return pathSet;
-    }
 
     /**
      * 初始化任务定时器
      * @param delay
      */
-    private void initBaiscUrlTimer(int delay) {
+    private void initBasicUrlTimer(int delay) {
         // 创建一个每10秒触发一次的定时器
         //int delay = 10000; // 延迟时间，单位为毫秒
         baseUrlTimer = new Timer(delay, new ActionListener() {
@@ -1105,7 +610,23 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             public void actionPerformed(ActionEvent e) {
                 if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
                     //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    refreshAllUnVisitedUrlsAndTableUI(true, baseUrlAutoRefreshUnvisitedIsOpen);
+//                    // 调用更新未访问URL列的数据
+//                    try{
+//                        //当添加进程还比较多的时候,暂时不进行响应数据处理
+//                        updateUnVisitedUrlsByMsgHashList(null);
+//                    } catch (Exception ep){
+//                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+//                    }
+
+                    // 调用刷新表格的方法
+                    try{
+                        BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                    }
+
+                    //建议JVM清理内存
+                    System.gc();
                 }
             }
         });
@@ -1171,7 +692,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         baseUrlSmartPath2UrlTEditor.setText(new byte[0]);
         baseUrlUnvisitedUrlTEditor.setText(new byte[0]);
     }
-
 
     /**
      * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
@@ -1392,92 +912,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     }
 
     /**
-     * 刷新未访问的URL和数据表模型, 费内存的操作
-     * @param checkAutoRefreshButtonStatus 是否检查自动更新按钮的状态
-     * @param updateAllUnVisitedUrls 是否开启 updateUnVisitedUrls 函数的调用
-     */
-    public void refreshAllUnVisitedUrlsAndTableUI(boolean checkAutoRefreshButtonStatus, boolean updateAllUnVisitedUrls) {
-        // 调用更新未访问URL列的数据
-        if (updateAllUnVisitedUrls)
-            try{
-                //当添加进程还比较多的时候,暂时不进行响应数据处理
-                updateAllUnVisitedUrls();
-            } catch (Exception ep){
-                stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
-            }
-
-        // 调用刷新表格的方法
-        try{
-            BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(checkAutoRefreshButtonStatus);
-        } catch (Exception ep){
-            stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
-        }
-
-        //建议JVM清理内存
-        System.gc();
-    }
-
-    //复用 updateUnVisitedUrls
-    private void updateAllUnVisitedUrls(){
-        updateUnVisitedUrlsByMsgHashList(null);
-    }
-
-    /**
-     * 查询所有UnVisitedUrls并逐个进行过滤, 费内存的操作
-     * @param msgHashList updateUnVisitedUrls 目标列表, 为空 为Null时更新全部
-     */
-    private void updateUnVisitedUrlsByMsgHashList(List<String> msgHashList) {
-        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-        new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                // 获取所有未访问URl 注意需要大于0
-                List<UnVisitedUrlsModelBasicUrl> unVisitedUrlsModels;
-                if (msgHashList == null || msgHashList.isEmpty()) {
-                    //更新所有的结果
-                    unVisitedUrlsModels = AnalyseUrlResultTable.fetchAllUnVisitedUrls();
-                }else {
-                    //仅更新指定 msgHash 对应的未访问URL
-                    unVisitedUrlsModels = AnalyseUrlResultTable.fetchUnVisitedUrlsByMsgHashList(msgHashList);
-                }
-
-                if (unVisitedUrlsModels.size() > 0) {
-                    // 获取所有 已经被访问过得URL列表
-                    //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
-                    //获取所有由reqHash组成的字符串
-                    String accessedUrlHashes = CommonSql.fetchConcatColumnToString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
-                    // 遍历 unVisitedUrlsModels 进行更新
-                    for (UnVisitedUrlsModelBasicUrl urlsModel : unVisitedUrlsModels) {
-                        //更新 unVisitedUrls 对象
-                        List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
-                        //List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
-
-                        List<String> newUnVisitedUrls = new ArrayList<>();
-                        for (String url : rawUnVisitedUrls) {
-                            String urlHash = CastUtils.calcCRC32(url);
-                            if (!accessedUrlHashes.contains(urlHash)) {
-                                newUnVisitedUrls.add(url);
-                            }
-                        }
-
-                        //过滤黑名单中的URL 因为黑名单是不定时更新的
-                        newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getReqUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
-                        urlsModel.setUnvisitedUrls(newUnVisitedUrls);
-
-                        // 执行更新插入数据操作
-                        try {
-                            AnalyseUrlResultTable.updateUnVisitedUrlsById(urlsModel);
-                        } catch (Exception ex) {
-                            stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
-                        }
-                    }
-                }
-                return null;
-            }
-        }.execute();
-    }
-
-    /**
      * 定时刷新表数据
      */
     public void refreshBasicUrlTableModel(boolean checkAutoRefreshButtonStatus) {
@@ -1554,6 +988,18 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     @Override
     public IHttpService getHttpService() {
         return iHttpService;
+    }
+
+    private List<String> getUrlsAtActualRows(JTable tableUI, int[] selectedRows) {
+        return UiUtils.getStringListAtActualRows(tableUI, selectedRows, 3);
+    }
+
+    private List<String> getMsgHashListAtActualRows(JTable tableUI,int[] selectedRows) {
+        return UiUtils.getStringListAtActualRows(tableUI, selectedRows, 2);
+    }
+
+    private List<Integer> getIdsAtActualRows(JTable tableUI, int[] selectedRows) {
+        return UiUtils.getIdsAtActualRows(tableUI, selectedRows, 0);
     }
 }
 

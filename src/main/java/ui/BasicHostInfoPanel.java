@@ -1,8 +1,6 @@
 package ui;
 
-import burp.BurpExtender;
-import burp.IBurpExtenderCallbacks;
-import burp.ITextEditor;
+import burp.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
@@ -11,6 +9,7 @@ import model.*;
 import ui.MainTabRender.TableHeaderWithTips;
 import ui.MainTabRender.importantCellRenderer;
 import utils.CastUtils;
+import utils.PathTreeUtils;
 import utils.UiUtils;
 
 import javax.swing.Timer;
@@ -27,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
+import static utils.CastUtils.isNotEmptyObj;
 
 public class BasicHostInfoPanel extends JPanel {
     private static volatile BasicHostInfoPanel instance; //实现单例模式
@@ -92,9 +92,10 @@ public class BasicHostInfoPanel extends JPanel {
         //初始化表格数据
         initBasicHostDataTableUIData(baseHostMsgTableModel);
 
-//        // 初始化定时刷新页面函数 单位是毫秒
-//        initTimer(ConfigPanel.timerDelay * 1000);
+        // 初始化定时刷新页面函数 单位是毫秒
+        initBasicHostTimer(BasicHostConfigPanel.timerDelayOnHost * 1000);
     }
+
 
     /**
      * 查询 TableLineDataModelBasicHostSQL 初始化 table 数据
@@ -201,92 +202,41 @@ public class BasicHostInfoPanel extends JPanel {
 
 
     /**
-     * 为 table 设置每一列的 右键菜单
+     * 初始化任务定时器 定时刷新UI内容
+     * @param delay
      */
-    private void basicHostTableAddRightClickMenu(JTable tableUI, int selectModel) {
-        // 创建右键菜单
-        JPopupMenu popupMenu = new JPopupMenu();
-
-        JMenuItem copyUrlItem = new JMenuItem("复制RootURL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        // 添加 copyUrlItem 事件监听器
-        copyUrlItem.setToolTipText("[多行]复制选定行对应的RootURL到剪贴板");
-        copyUrlItem.addActionListener(new ActionListener() {
+    private void initBasicHostTimer(int delay) {
+        // 创建一个每10秒触发一次的定时器
+        //int delay = 10000; // 延迟时间，单位为毫秒
+        baseHostTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //多行模式下的调用
-                if (selectModel >= 0){
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<String> rootUrls = UiUtils.geStringListAtActualRows(tableUI,selectedRows, 1);
-                    if (!rootUrls.isEmpty())
-                        UiUtils.copyToSystemClipboard(String.join("\n", rootUrls));
+                if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
+                    //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
+                    // 调用更新未访问URL列的数据
+                    try{
+                        //当添加进程还比较多的时候,暂时不进行响应数据处理
+                        updateUnVisitedUrlsByRootUrls(null);
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+                    }
+
+                    // 调用刷新表格的方法
+                    try{
+                        BasicHostInfoPanel.getInstance().refreshBasicHostTableModel(false);
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                    }
+
+                    //建议JVM清理内存
+                    System.gc();
                 }
             }
         });
 
-        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-        // 添加 deleteItem 事件监听器
-        deleteItem.setToolTipText("[多行]删除选定行对应的ReqDataTable表数据");
-        deleteItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //多行选定模式
-                if (selectModel >= 0){
-                    int[] selectedRows = tableUI.getSelectedRows();
-                    List<Integer> ids = UiUtils.getIdsAtActualRows(tableUI, selectedRows, 0);
-                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
-                    new SwingWorker<Void, Void>() {
-                        @Override
-                        protected Void doInBackground() throws Exception {
-                            CommonSql.deleteDataByIds(ids, AnalyseHostResultTable.tableName);
-                            refreshBasicHostTableModel(false);
-                            return null;
-                        }
-                    }.execute();
-                }
-            }
-        });
-
-        JMenuItem accessUnVisitedItem = new JMenuItem("访问当前未访问URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
-        JMenuItem updateUnVisitedItem = new JMenuItem("刷新当前未访问URL", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
-        JMenuItem ClearUnVisitedItem = new JMenuItem("清空当前未访问URL", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-        JMenuItem IgnoreUnVisitedItem = new JMenuItem("忽略当前未访问URL", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
-
-        JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
-        JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
-        JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到禁止自动递归目标", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
-        JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
-
-        //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
-        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem calcSingleLayerNodeItem = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
-        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-
-        popupMenu.add(copyUrlItem);
-        popupMenu.add(deleteItem);
-
-        popupMenu.add(accessUnVisitedItem);
-        popupMenu.add(updateUnVisitedItem);
-        popupMenu.add(ClearUnVisitedItem);
-        popupMenu.add(IgnoreUnVisitedItem);
-
-        popupMenu.add(removeHostFromPathTreeItem);
-
-        popupMenu.add(addRootUrlToBlackUrlRootItem);
-        popupMenu.add(addRootUrlToNotAutoRecurseItem);
-        popupMenu.add(addRootUrlToAllowListenItem);
-
-        popupMenu.add(copySingleLayerNodeItem);
-        popupMenu.add(calcSingleLayerNodeItem);
-
-        popupMenu.add(removeFindApiIListItem);
-
-        // 将右键菜单添加到表格
-        tableUI.setComponentPopupMenu(popupMenu);
-
-
-
+        // 启动定时器
+        baseHostTimer.start();
     }
-
 
     /**
      * 初始化创建表格下方的消息内容面板
@@ -330,7 +280,6 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostUnvisitedUrlTEditor.setText(new byte[0]);
         basicHostPathTreeTEditor.setText(new byte[0]);
     }
-
 
     /**
      * 鼠标点击或键盘移动到行时,自动更新下方的msgTab
@@ -412,7 +361,7 @@ public class BasicHostInfoPanel extends JPanel {
         }
 
         //查询详细数据
-        BasicHostTableTabDataModel tabDataModel = TableLineDataModelBasicHostSQL.fetchHostResultByRootUrl(rootUrl);
+        BasicHostTableTabDataModel tabDataModel = AnalyseHostResultTable.fetchHostResultByRootUrl(rootUrl);
         if (tabDataModel != null) {
             //格式化为可输出的类型
             String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());
@@ -430,7 +379,6 @@ public class BasicHostInfoPanel extends JPanel {
             basicHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
         }
     }
-
 
     /**
      * 定时刷新表数据
@@ -556,7 +504,507 @@ public class BasicHostInfoPanel extends JPanel {
         }.execute();
     }
 
+    /**
+     * 查询所有 UnVisitedUrls 并逐个进行过滤
+     * @param rootUrls  rootUrls目标列表, 为空 为Null时更新全部
+     */
+    public void updateUnVisitedUrlsByRootUrls(List<String> rootUrls) {
+        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                // 获取所有未访问URl 注意需要大于0
+                List<UnVisitedUrlsModel> unVisitedUrlsModels;
+                if (rootUrls == null || rootUrls.isEmpty()) {
+                    //更新所有的结果
+                    unVisitedUrlsModels = UnVisitedUrlsSQL.fetchAllUnVisitedUrlsWithLimit(99);
+                }else {
+                    //仅更新指定 msgHash 对应的未访问URL
+                    unVisitedUrlsModels = UnVisitedUrlsSQL.fetchUnVisitedUrlsByRootUrls(rootUrls);
+                }
 
+                if (unVisitedUrlsModels.size() > 0) {
+                    // 获取所有 已经被访问过得URL列表
+                    //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
+                    //获取所有由reqHash组成的字符串
+                    String accessedUrlHashes = CommonSql.fetchConcatColumnToString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
+                    // 遍历 unVisitedUrlsModels 进行更新
+                    for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
+                        //更新 unVisitedUrls 对象
+                        List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
+                        //List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
+
+                        List<String> newUnVisitedUrls = new ArrayList<>();
+                        for (String url : rawUnVisitedUrls) {
+                            String urlHash = CastUtils.calcCRC32(url);
+                            if (!accessedUrlHashes.contains(urlHash)) {
+                                newUnVisitedUrls.add(url);
+                            }
+                        }
+
+                        //过滤黑名单中的URL 因为黑名单是不定时更新的
+                        newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getRootUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
+                        urlsModel.setUnvisitedUrls(newUnVisitedUrls);
+
+                        // 执行更新插入数据操作
+                        try {
+                            UnVisitedUrlsSQL.updateUnVisitedUrlsById(urlsModel);
+                        } catch (Exception ex) {
+                            stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+                        }
+                    }
+                }
+                return null;
+            }
+        }.execute();
+    }
+
+    private List<Integer> getIdsAtActualRows(JTable tableUI, int[] selectedRows) {
+        return UiUtils.getIdsAtActualRows(tableUI, selectedRows, 0);
+    }
+
+    private List<String> getRootUrlsAtActualRows(JTable tableUI, int[] selectedRows) {
+        return UiUtils.getStringListAtActualRows(tableUI, selectedRows, 1);
+    }
+
+
+    /**
+     * 为 table 设置每一列的 右键菜单
+     */
+    private void basicHostTableAddRightClickMenu(JTable tableUI, int selectModel) {
+        // 创建右键菜单
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        JMenuItem copyUrlItem = new JMenuItem("复制RootURL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        // 添加 copyUrlItem 事件监听器
+        copyUrlItem.setToolTipText("[多行]复制选定行对应的RootURL到剪贴板");
+        copyUrlItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行模式下的调用
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty())
+                        UiUtils.copyToSystemClipboard(String.join("\n", rootUrls));
+                }
+            }
+        });
+
+        JMenuItem deleteItem = new JMenuItem("删除数据行", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        // 添加 deleteItem 事件监听器
+        deleteItem.setToolTipText("[多行]删除选定行对应的聚合结果表数据");
+        deleteItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<Integer> ids = getIdsAtActualRows(tableUI, selectedRows);
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            CommonSql.deleteDataByIds(ids, AnalyseHostResultTable.tableName);
+                            refreshBasicHostTableModel(false);
+                            return null;
+                        }
+                    }.execute();
+                }
+            }
+        });
+
+        JMenuItem ClearUnVisitedItem = new JMenuItem("清空当前未访问URL", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+        // 添加 ClearUnVisitedItem 事件监听器
+        ClearUnVisitedItem.setToolTipText("[多行]清空选定行对应的未访问URL");
+        ClearUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                UnVisitedUrlsSQL.clearUnVisitedUrlsByRootUrls(rootUrls);
+                                refreshBasicHostTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        JMenuItem IgnoreUnVisitedItem = new JMenuItem("忽略当前未访问URL", UiUtils.getImageIcon("/icon/editButton.png", 15, 15));
+        // 添加 IgnoreUnVisitedItem 事件监听器
+        IgnoreUnVisitedItem.setToolTipText("[多行]标记选定行对应的未访问URL为已访问 并清空 当访问URL后依然无法过滤时使用");
+        IgnoreUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0){
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //获取所有msgHash相关的结果
+                                List<UnVisitedUrlsModel> unVisitedUrlsModels = UnVisitedUrlsSQL.fetchUnVisitedUrlsByRootUrls(rootUrls);
+
+                                //整合所有结果URL到一个Set
+                                Set<String> unvisitedUrlsSet = new HashSet<>();
+                                for (UnVisitedUrlsModel unVisitedUrlsModel:unVisitedUrlsModels){
+                                    List<String> unvisitedUrls = unVisitedUrlsModel.getUnvisitedUrls();
+                                    unvisitedUrlsSet.addAll(unvisitedUrls);
+                                }
+
+                                //批量插入所有URL
+                                RecordUrlTable.batchInsertOrUpdateAccessedUrls(new ArrayList<>(unvisitedUrlsSet), 299);
+                                //批量删除所有msgHashList
+                                UnVisitedUrlsSQL.clearUnVisitedUrlsByRootUrls(rootUrls);
+                                refreshBasicHostTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+
+                    }
+                }
+            }
+        });
+
+        JMenuItem updateUnVisitedItem = new JMenuItem("刷新当前未访问URL", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
+        // 添加 updateUnVisitedItem 事件监听器
+        updateUnVisitedItem.setToolTipText("[多行]更新选定行对应的未访问URL情况");
+        updateUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                updateUnVisitedUrlsByRootUrls(rootUrls);
+                                refreshBasicHostTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+
+                    }
+                }
+            }
+        });
+
+        JMenuItem accessUnVisitedItem = new JMenuItem("访问当前未访问URL", UiUtils.getImageIcon("/icon/urlIcon.png", 15, 15));
+        // 添加 accessUnVisitedItem 事件监听器
+
+        accessUnVisitedItem.setToolTipText("[多行]访问选定行对应的当前所有未访问URL");
+        accessUnVisitedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //获取所有msgHash相关的结果
+                                List<UnVisitedUrlsModel> unVisitedUrlsModels = UnVisitedUrlsSQL.fetchUnVisitedUrlsByRootUrls(rootUrls);
+                                //批量访问所有URL模型
+                                for (UnVisitedUrlsModel unVisitedUrlsModel: unVisitedUrlsModels){
+                                    IProxyScanner.accessUnVisitedUrlsModel(unVisitedUrlsModel, false);
+                                }
+                                //更新 检查 rootUrls 对应的 未访问URl情况
+                                updateUnVisitedUrlsByRootUrls(rootUrls);
+                                refreshBasicHostTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+
+                    }
+                }
+            }
+        });
+
+        JMenuItem removeHostFromPathTreeItem = new JMenuItem("清空HOST对应PathTree", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 removeHostFromPathTreeItem 事件监听器
+        removeHostFromPathTreeItem.setToolTipText("[多行]清空选定行对应的HOST在PathTree及RecordPath中的数据");
+        removeHostFromPathTreeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                CommonSql.deleteDataByRootUrls(rootUrls, PathTreeTable.tableName);
+                                CommonSql.deleteDataByRootUrls(rootUrls, RecordPathTable.tableName);
+                                refreshBasicHostTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+        JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        // 添加 addRootUrlToBlackUrlRootItem 事件监听器
+        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单 CONF_BLACK_URL_ROOT");
+        addRootUrlToBlackUrlRootItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                // 合并 rootUrls 到 BurpExtender.CONF_BLACK_URL_ROOT 保持唯一性
+                                BurpExtender.CONF_BLACK_URL_ROOT =CastUtils.listAddList(rootUrls, BurpExtender.CONF_BLACK_URL_ROOT);
+
+                                //保存Json
+                                RuleConfigPanel.saveConfigToDefaultJson();
+
+                                //2、删除 Root URL 对应的 结果数据
+                                int count2 = CommonSql.deleteDataByRootUrls(rootUrls, AnalyseHostResultTable.tableName);
+                                int count1 = CommonSql.batchDeleteDataByLikeRootUrls(rootUrls, ReqDataTable.tableName);
+                                stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s", count1, count2));
+
+                                //3、刷新表格
+                                refreshBasicHostTableModel(false);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        JMenuItem addRootUrlToNotAutoRecurseItem = new JMenuItem("添加到禁止自动递归目标", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
+        // 添加 addRootUrlToNotAutoRecurseItem 事件监听器
+        addRootUrlToNotAutoRecurseItem.setToolTipText("[多行]添加选定行对应的RootUrl加入到禁止自动递归列表 CONF_BLACK_AUTO_RECURSE_SCAN");
+        addRootUrlToNotAutoRecurseItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = CastUtils.listAddList(rootUrls, BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN);
+
+                                RuleConfigPanel.saveConfigToDefaultJson();
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
+        // 添加 addRootUrlToAllowListenItem 事件监听器
+        addRootUrlToAllowListenItem.setToolTipText("[多行]添加选定行对应的RootUrl到仅监听的白名单 CONF_WHITE_URL_ROOT");
+        addRootUrlToAllowListenItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls =  getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.listAddList(rootUrls, BurpExtender.CONF_WHITE_URL_ROOT);
+                                //保存Json
+                                RuleConfigPanel.saveConfigToDefaultJson();
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        JMenuItem pathTreeToPathListItem = new JMenuItem("提取当前HOST的所有PATH", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        //pathTreeToPathListItem
+        pathTreeToPathListItem.setToolTipText("[多行]复制选定行对应的RootUrl在PathTree中的路径数据到剪贴板 并弹框");
+        pathTreeToPathListItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel>=0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI,selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                Set<String> pathSet = new LinkedHashSet<>();
+
+                                for (String rootUrl:rootUrls){
+                                    //查询 rootUrl 对应的树
+                                    PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(rootUrl);
+                                    if (isNotEmptyObj(pathTreeModel)){
+                                        JSONObject currPathTree = pathTreeModel.getPathTree();
+                                        if (isNotEmptyObj(currPathTree)  && isNotEmptyObj(currPathTree.getJSONObject("ROOT"))){
+                                            List<String> pathList = PathTreeUtils.covertTreeToPaths(currPathTree);
+                                            for (String path:pathList){
+                                                pathSet.add(path.replace("ROOT", rootUrl) + "/");
+                                            }
+                                        }
+                                    }
+                                }
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",pathSet), "所有路径信息");
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+        //提取当前API结果的单层节点 单层节点没有办法通过PATH树计算,必须手动拼接测试
+        JMenuItem copySingleLayerNodeItem = new JMenuItem("提取当前PATH结果中的单层节点", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        //copySingleLayerNodeItem
+        copySingleLayerNodeItem.setToolTipText("[多行]复制选定行对应的提取PATH中的单层(无目录)路径到剪贴板 并弹框");
+        copySingleLayerNodeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                List<FindPathModel> findPathModelList = AnalyseHostResultTable.fetchPathDataByRootUrl(rootUrls);
+                                Set<String> pathSet = FindPathModel.getSingleLayerPathSet(findPathModelList);
+                                //直接复制到用户的粘贴板
+                                UiUtils.copyToSystemClipboard(String.join("\n", pathSet));
+                                //弹框让用户查看
+                                UiUtils.showOneMsgBoxToCopy(String.join("\n",pathSet), "单层路径信息");
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+        JMenuItem calcSingleLayerNodeItemOnHost = new JMenuItem("输入URL前缀生成单层节点对应URL", UiUtils.getImageIcon("/icon/copyIcon.png", 15, 15));
+        //calcSingleLayerNodeItem
+        calcSingleLayerNodeItemOnHost.setToolTipText("[多行]基于选定行对应的提取PATH中的单层(无目录)PATH和用户输入的URL前缀计算新的URL");
+        calcSingleLayerNodeItemOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                UiUtils.showInputBoxAndHandle(rootUrls, "calcSingleLayerNodeItemOnHost", "指定PATH生成单层节点URL");
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+//        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
+//        //removeFindApiIListItem
+//        removeFindApiIListItem.setToolTipText("[多行]移除选定行对应的PATH拼接URL内容 前后端分离时使用");
+//        removeFindApiIListItem.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //多行选定模式
+//                if (selectModel >= 0) {
+//                    int[] selectedRows = tableUI.getSelectedRows();
+//                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+//                    if (!rootUrls.isEmpty()){
+//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+//                        new SwingWorker<Void, Void>() {
+//                            @Override
+//                            protected Void doInBackground() throws Exception {
+//                                //删除所有findApi
+//                                AnalyseHostResultTable.clearFindApiUrlsByRootUrls(rootUrls);
+//                                //刷新表单
+//                                refreshBasicHostTableModel(false);
+//                                return null;
+//                            }
+//                        }.execute();
+//                    }
+//                }
+//            }
+//        });
+
+        popupMenu.add(copyUrlItem);
+        popupMenu.add(deleteItem);
+
+        popupMenu.add(accessUnVisitedItem);
+        popupMenu.add(updateUnVisitedItem);
+        popupMenu.add(ClearUnVisitedItem);
+        popupMenu.add(IgnoreUnVisitedItem);
+
+        popupMenu.add(removeHostFromPathTreeItem);
+
+        popupMenu.add(addRootUrlToBlackUrlRootItem);
+        popupMenu.add(addRootUrlToNotAutoRecurseItem);
+        popupMenu.add(addRootUrlToAllowListenItem);
+
+        popupMenu.add(pathTreeToPathListItem);
+
+
+        popupMenu.add(copySingleLayerNodeItem);
+        popupMenu.add(calcSingleLayerNodeItemOnHost);
+
+//        popupMenu.add(removeFindApiIListItem);
+
+        // 将右键菜单添加到表格
+        tableUI.setComponentPopupMenu(popupMenu);
+
+    }
 }
 
 

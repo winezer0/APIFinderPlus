@@ -1,6 +1,7 @@
 package utils;
 
 import burp.AnalyseInfo;
+import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.HttpUrlInfo;
@@ -298,7 +299,7 @@ public class CastUtils {
      * @param rawList 原始的配置文件列表
      * @return
      */
-     public static List<String> addRootUrlToList(List<String> newUrlList, List<String> rawList) {
+     public static List<String> addUrlsRootUrlToList(List<String> newUrlList, List<String> rawList) {
         //0、获取所有rootUrl
         Set<String> rootUrlSet = new HashSet<>();
         for (String url: newUrlList){

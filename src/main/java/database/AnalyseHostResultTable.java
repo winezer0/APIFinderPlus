@@ -168,7 +168,6 @@ public class AnalyseHostResultTable {
         return generatedId; //返回ID值，无论是更新还是插入
     }
 
-
     /**
      * 获取对应ID的动态 URL （当前是动态Path计算URL、未访问URL）
      */
@@ -193,7 +192,6 @@ public class AnalyseHostResultTable {
         }
         return pathToUrlsModel;
     }
-
 
     /**
      * 基于ID更新动态URl数据
@@ -253,48 +251,91 @@ public class AnalyseHostResultTable {
     }
 
     /**
-     * 获取 所有未访问URl (unvisited_url_num > 0)
-     * @return
+     * 获取多条 存在 Path 并且没有 动态计算过的 path数据
      */
-    public static synchronized List<UnVisitedUrlsModelBasicHost> fetchOneUnVisitedUrls(Integer limit){
-        List<UnVisitedUrlsModelBasicHost> list = new ArrayList<>();
+    public static synchronized List<FindPathModel> fetchPathDataByRootUrl(List<String> RootUrls){
+        List<FindPathModel> findPathModelList = new ArrayList<>();
 
-        String selectSQL = "SELECT id,root_url,unvisited_url FROM "+ tableName + " WHERE unvisited_url_num > 0 ORDER BY id ASC Limit ?;";
+        if (RootUrls.isEmpty()) return findPathModelList;
+
+        String selectSQL = "SELECT * FROM " + tableName + " WHERE root_url IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(RootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setInt(1, limit);
+            for (int i = 0; i < RootUrls.size(); i++) {
+                stmt.setString(i + 1, RootUrls.get(i));
+            }
             ResultSet rs = stmt.executeQuery();
+
             while (rs.next()) {
-                UnVisitedUrlsModelBasicHost unVisitedUrlsModel = new UnVisitedUrlsModelBasicHost(
+                FindPathModel findPathModel =  new FindPathModel(
                         rs.getInt("id"),
                         rs.getString("root_url"),
-                        rs.getString("unvisited_url")
+                        rs.getString("find_path")
                 );
-                list.add(unVisitedUrlsModel);
+
+                findPathModelList.add(findPathModel);
             }
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] All UnVisited Urls: %s", tableName, e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] Path Data By RootUrl List: %s", tableName, e.getMessage()));
         }
-        return list;
+        return findPathModelList ;
     }
 
     /**
-     * 实现 基于 rootUrl 清空 未访问的URL列表
+     * 实现 基于 rootUrls 清空 FindApiUrl
      */
-    public static synchronized int clearUnVisitedUrlsByRootUrl(String rootUrl) {
-        int affectedRows = -1; // 默认ID值，如果没有生成ID，则保持此值
+    public static synchronized int clearFindApiUrlsByRootUrls(List<String> rootUrls) {
+        int totalRowsAffected = 0;
+        if (rootUrls.isEmpty()) return totalRowsAffected;
 
-        String updateSQL = "UPDATE "+ tableName +"  SET unvisited_url = ?, unvisited_url_num = 0 WHERE root_url = ?;";
+        // 构建SQL语句
+        String updateSQL = "UPDATE "+ tableName + " SET find_api = ?, find_api_num = 0 WHERE root_url IN $buildInParamList$;"
+                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
-            JSONArray emptyArray = new JSONArray();
-            stmt.setString(1, emptyArray.toJSONString());
-            stmt.setString(2, rootUrl);
-            affectedRows = stmt.executeUpdate();
+            // 设置第一个参数为JSON数组的toJSONString()
+            stmt.setString(1, new JSONArray().toJSONString());
+
+            // 循环设置参数 // 开始于第二个参数位置，第一个参数已被设置
+            for (int i = 0; i < rootUrls.size(); i++) {
+                stmt.setString(i + 2, rootUrls.get(i));
+            }
+
+            // 执行更新操作并获取受影响行数
+            totalRowsAffected = stmt.executeUpdate();
+
         } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error update [%s] unvisited Urls: %s",tableName, e.getMessage()));
+            stderr_println(LOG_ERROR, String.format("[-] Error clearing FindApi URLs by RootUrls: %s", e.getMessage()));
         }
-        return affectedRows;
+        return totalRowsAffected;
+    }
+
+    /**
+     * 获取 指定 rootUrl 对应的 所有 分析结果 数据
+     */
+    public static synchronized BasicHostTableTabDataModel fetchHostResultByRootUrl(String rootUrl){
+        BasicHostTableTabDataModel tabDataModel = null;
+        String selectSQL = "SELECT * FROM " + AnalyseHostResultTable.tableName +" WHERE root_url = ?;";
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, rootUrl);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    tabDataModel = new BasicHostTableTabDataModel(
+                            rs.getString("root_url"),
+                            rs.getString("find_info"),
+                            rs.getString("find_url"),
+                            rs.getString("find_path"),
+                            rs.getString("find_api"),
+                            rs.getString("path_to_url"),
+                            rs.getString("unvisited_url")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Host Analyse Result Data By RootUrl: %s",  e.getMessage()));
+        }
+        return tabDataModel;
     }
 
 }

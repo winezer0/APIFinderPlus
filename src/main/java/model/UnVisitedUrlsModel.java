@@ -4,18 +4,18 @@ import utils.CastUtils;
 
 import java.util.List;
 
-public class UnVisitedUrlsModelBasicHost {
+public class UnVisitedUrlsModel {
     private int id;
     private String rootUrl;
     private List<String> unvisitedUrls;
 
-    public UnVisitedUrlsModelBasicHost(int id, String rootUrl, String unvisitedUrl) {
+    public UnVisitedUrlsModel(int id, String rootUrl, String unvisitedUrl) {
         this.id = id;
         this.rootUrl = rootUrl;
         this.unvisitedUrls =  CastUtils.toStringList(unvisitedUrl);
     }
 
-    public UnVisitedUrlsModelBasicHost(int id, String rootUrl, List<String> unvisitedUrl) {
+    public UnVisitedUrlsModel(int id, String rootUrl, List<String> unvisitedUrl) {
         this.id = id;
         this.rootUrl = rootUrl;
         this.unvisitedUrls =  unvisitedUrl;
@@ -31,5 +31,9 @@ public class UnVisitedUrlsModelBasicHost {
 
     public List<String> getUnvisitedUrls() {
         return unvisitedUrls;
+    }
+
+    public void setUnvisitedUrls(List<String> unvisitedUrls) {
+        this.unvisitedUrls = unvisitedUrls;
     }
 }

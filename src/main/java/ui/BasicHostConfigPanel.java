@@ -26,6 +26,8 @@ public class BasicHostConfigPanel extends JPanel {
     private static JLabel autoRefreshTextOnHost; //自动刷新按钮显示的文本
     public static int timerDelayOnHost = 15;  //定时器刷新间隔,单位秒
 
+    public static JToggleButton proxyListenButtonOnHost;
+
     public BasicHostConfigPanel() {
         GridBagLayout gridBagLayout = new GridBagLayout();
         //GridBagLayout 允许以网格形式布局容器中的组件，同时为每个组件提供独立的定位和大小控制，非常适用于需要复杂布局设计的GUI界面。
@@ -141,58 +143,75 @@ public class BasicHostConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
         // 开关 是否开启代理流量监听 //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
-        JToggleButton proxyListenButton = getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
-        proxyListenButton.setToolTipText("Proxy模块流量监听开关");
+        proxyListenButtonOnHost = getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
+        proxyListenButtonOnHost.setToolTipText("Proxy模块流量监听开关");
 
-//        proxyListenButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
-//                boolean selected = proxyListenButton.isSelected();
-//                IProxyScanner.proxyListenIsOpen = IProxyScanner.proxyListenIsOpenDefault ? !selected : selected;
-//                stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
-//            }
-//        });
+        proxyListenButtonOnHost.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = proxyListenButtonOnHost.isSelected();
+                IProxyScanner.proxyListenIsOpen = IProxyScanner.proxyListenIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
+
+                BasicUrlConfigPanel.proxyListenButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+            }
+        });
 
         // 刷新按钮按钮
-        JToggleButton clickRefreshButton = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton2.png", 24, 24));
-        clickRefreshButton.setPreferredSize(new Dimension(30, 30));
-        clickRefreshButton.setBorder(null);  // 设置无边框
-        clickRefreshButton.setFocusPainted(false);  // 移除焦点边框
-        clickRefreshButton.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        clickRefreshButton.setToolTipText("点击强制刷新表格");
+        JToggleButton clickRefreshButtonOnHost = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton2.png", 24, 24));
+        clickRefreshButtonOnHost.setPreferredSize(new Dimension(30, 30));
+        clickRefreshButtonOnHost.setBorder(null);  // 设置无边框
+        clickRefreshButtonOnHost.setFocusPainted(false);  // 移除焦点边框
+        clickRefreshButtonOnHost.setContentAreaFilled(false);  // 移除选中状态下的背景填充
+        clickRefreshButtonOnHost.setToolTipText("点击强制刷新表格");
 
-//        // 手动刷新按钮监听事件
-//        clickRefreshButton.addActionListener(new ActionListener() {
-//            private boolean canClick = true;
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                if (canClick) {
-//                    canClick = false;
-//                    ImageIcon originalIcon = (ImageIcon) clickRefreshButton.getIcon();  // 保存原始图标
-//                    String originalTip = clickRefreshButton.getToolTipText();   // 保存原始批注
-//
-//                    // 更换为新图标
-//                    clickRefreshButton.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
-//
-//                    //关键的代码
-//                    BasicUrlInfoPanel.getInstance().refreshAllUnVisitedUrlsAndTableUI(false, true);
-//
-//                    // 设置定时器，5秒后允许再次点击并恢复图标
-//                    Timer timer = new Timer(3000, new ActionListener() {
-//                        @Override
-//                        public void actionPerformed(ActionEvent ae) {
-//                            canClick = true;
-//                            clickRefreshButton.setIcon(originalIcon); // 恢复原始图标
-//                            clickRefreshButton.setToolTipText(originalTip); // 恢复原始批注
-//                        }
-//                    });
-//                    timer.setRepeats(false);
-//                    timer.start();
-//                }
-//            }
-//        });
+        // 手动刷新按钮监听事件
+        clickRefreshButtonOnHost.addActionListener(new ActionListener() {
+            private boolean canClick = true;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (canClick) {
+                    canClick = false;
+                    ImageIcon originalIcon = (ImageIcon) clickRefreshButtonOnHost.getIcon();  // 保存原始图标
+                    String originalTip = clickRefreshButtonOnHost.getToolTipText();   // 保存原始批注
+
+                    // 更换为新图标
+                    clickRefreshButtonOnHost.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
+
+                    //关键的代码
+                    // 调用更新未访问URL列的数据
+                    try{
+                        //当添加进程还比较多的时候,暂时不进行响应数据处理
+                        BasicHostInfoPanel.getInstance().updateUnVisitedUrlsByRootUrls(null);
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
+                    }
+
+                    // 调用刷新表格的方法
+                    try{
+                        BasicHostInfoPanel.getInstance().refreshBasicHostTableModel(false);
+                    } catch (Exception ep){
+                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                    }
+
+                    //建议JVM清理内存
+                    System.gc();
+                    // 设置定时器，5秒后允许再次点击并恢复图标
+                    Timer timer = new Timer(3000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            canClick = true;
+                            clickRefreshButtonOnHost.setIcon(originalIcon); // 恢复原始图标
+                            clickRefreshButtonOnHost.setToolTipText(originalTip); // 恢复原始批注
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            }
+        });
 
         // 开关 是否开启自动记录PATH
         JToggleButton autoRecordPathButton; //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启
@@ -286,7 +305,7 @@ public class BasicHostConfigPanel extends JPanel {
 
         // 点击按钮 点击后刷新数据 含未访问数据
         gbc_buttons.gridx = 7; // 设置按钮的横坐标位置
-        FilterPanel.add(proxyListenButton, gbc_buttons);
+        FilterPanel.add(proxyListenButtonOnHost, gbc_buttons);
 
         // 自动记录有效的PATH到path表中 功能开关
         gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
@@ -318,7 +337,7 @@ public class BasicHostConfigPanel extends JPanel {
 
         // 点击按钮 点击后刷新数据 含未访问数据
         gbc_buttons.gridx = 15; // 设置按钮的横坐标位置
-        FilterPanel.add(clickRefreshButton, gbc_buttons);
+        FilterPanel.add(clickRefreshButtonOnHost, gbc_buttons);
 
         // 添加填充以在右侧占位
         GridBagConstraints gbc_rightFiller = new GridBagConstraints();
@@ -696,17 +715,17 @@ public class BasicHostConfigPanel extends JPanel {
                                     RecordPathTable.batchInsertOrUpdateRecordPath(urlList, 299);
                                     break;
                                 case "addRootUrlToAllowListen":
-                                    BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
+                                    BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
                                     RuleConfigPanel.saveConfigToDefaultJson();
                                     break;
                                 case "addRootUrlToBlackUrlRoot":
                                     //1、修改配置文件
-                                    BurpExtender.CONF_BLACK_URL_ROOT = CastUtils.addRootUrlToList(urlList, BurpExtender.CONF_BLACK_URL_ROOT);
+                                    BurpExtender.CONF_BLACK_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_BLACK_URL_ROOT);
                                     RuleConfigPanel.saveConfigToDefaultJson();
                                     //2、删除 Root URL 对应的 结果数据
                                     java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);
-                                    int count1 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, ReqDataTable.tableName);
-                                    int count2 = CommonSql.batchDeleteDataByLikeRootUrlList(rootUrlList, AnalyseUrlResultTable.tableName);
+                                    int count1 = CommonSql.batchDeleteDataByLikeRootUrls(rootUrlList, ReqDataTable.tableName);
+                                    int count2 = CommonSql.batchDeleteDataByLikeRootUrls(rootUrlList, AnalyseUrlResultTable.tableName);
                                     stdout_println(LOG_DEBUG, String.format("deleteReqDataCount：%s , deleteAnalyseResultCount:%s", count1, count2));
                                     //3、刷新表格
                                     BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);

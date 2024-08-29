@@ -458,8 +458,8 @@ public class IProxyScanner implements IProxyListener {
                         //获取一个未访问URL列表
                         executorService.submit(() -> {
                             //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
-                            List<UnVisitedUrlsModelBasicHost> unVisitedUrlsModels =  AnalyseHostResultTable.fetchOneUnVisitedUrls(1);
-                            for (UnVisitedUrlsModelBasicHost unVisitedUrlsModel: unVisitedUrlsModels){
+                            List<UnVisitedUrlsModel> unVisitedUrlsModels =  UnVisitedUrlsSQL.fetchAllUnVisitedUrlsWithLimit(1);
+                            for (UnVisitedUrlsModel unVisitedUrlsModel: unVisitedUrlsModels){
                                 accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                             }
                         });
@@ -479,7 +479,7 @@ public class IProxyScanner implements IProxyListener {
      * @param unVisitedUrlsModel 需要进行访问的URL数据
      * @param ignoreBlackRecurseHost 是否不递归黑名单限制的域名
      */
-    public static void accessUnVisitedUrlsModel(UnVisitedUrlsModelBasicHost unVisitedUrlsModel, boolean ignoreBlackRecurseHost) {
+    public static void accessUnVisitedUrlsModel(UnVisitedUrlsModel unVisitedUrlsModel, boolean ignoreBlackRecurseHost) {
         if (unVisitedUrlsModel != null){
             //获取URL
             String rootUrl = unVisitedUrlsModel.getRootUrl();
@@ -573,7 +573,7 @@ public class IProxyScanner implements IProxyListener {
 
             //如果没有配置忽略黑名单主机，表明是右键调用，此时需要强制清空未访问数据
             if (!ignoreBlackRecurseHost){
-                AnalyseHostResultTable.clearUnVisitedUrlsByRootUrl(rootUrl);
+                UnVisitedUrlsSQL.clearUnVisitedUrlsByRootUrls(Collections.singletonList(rootUrl));
             }
         }
     }

@@ -1,14 +1,10 @@
 package database;
 
-import model.HttpUrlInfo;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
@@ -116,7 +112,7 @@ public class CommonSql {
     /**
      * 基于 host 列表 同时删除多行
      */
-    public static synchronized int deleteDataByHosts(List<String> rootUrls, String tableName) {
+    public static synchronized int deleteDataByRootUrls(List<String> rootUrls, String tableName) {
         if (isEmptyObj(rootUrls)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
@@ -126,33 +122,33 @@ public class CommonSql {
         return runDeleteSql(deleteSQL, rootUrls, tableName);
     }
 
-    /**
-     * 基于 URL 列表 同时删除多行 复用 deleteDataByHosts
-     */
-    public static synchronized int deleteDataByUrlToRootUrls(List<String> urlList, String tableName) {
-        //获取所有URL的HOST列表
-        Set<String> set = new HashSet<>();
-        for (String url: urlList){
-            set.add(new HttpUrlInfo(url).getRootUrlUsual());
-        }
-        ArrayList<String> rootUrls = new ArrayList<>(set);
+//    /**
+//     * 基于 URL 列表 同时删除多行 复用 deleteDataByHosts
+//     */
+//    public static synchronized int deleteDataByUrlToRootUrls(List<String> urlList, String tableName) {
+//        //获取所有URL的HOST列表
+//        Set<String> set = new HashSet<>();
+//        for (String url: urlList){
+//            set.add(new HttpUrlInfo(url).getRootUrlUsual());
+//        }
+//        ArrayList<String> rootUrls = new ArrayList<>(set);
+//
+//        if (isEmptyObj(rootUrls)) return 0;
+//        return deleteDataByRootUrls(rootUrls, tableName);
+//    }
 
-        if (isEmptyObj(rootUrls)) return 0;
-        return deleteDataByHosts(rootUrls, tableName);
-    }
-
-    /**
-     * 基于 msgHash 列表 同时删除多个 行
-     */
-    public static synchronized int deleteDataByMsgHashList(List<String> msgHashList, String tableName) {
-        if (isEmptyObj(msgHashList)) return 0;
-
-        // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
-
-        return runDeleteSql(deleteSQL, msgHashList, tableName);
-    }
+//    /**
+//     * 基于 msgHash 列表 同时删除多个 行
+//     */
+//    public static synchronized int deleteDataByMsgHashList(List<String> msgHashList, String tableName) {
+//        if (isEmptyObj(msgHashList)) return 0;
+//
+//        // 构建SQL语句，使用占位符 ? 来代表每个ID
+//        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;"
+//                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+//
+//        return runDeleteSql(deleteSQL, msgHashList, tableName);
+//    }
 
     /**
      * 执行删除数据行的SQL语句
@@ -243,32 +239,32 @@ public class CommonSql {
         return concatenatedURLs;
     }
 
-    /**
-     * 基于 url前缀 列表 删除行
-     */
-    public static synchronized int deleteDataByLikeRootUrl(String rootUrl, String tableName) {
-        if (isEmptyObj(rootUrl)) return 0;
-
-        int totalRowsAffected = 0;
-
-        // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE req_url like ?;";
-
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
-            // 执行删除操作
-            stmt.setString(1, rootUrl+"%");
-            totalRowsAffected= stmt.executeUpdate();
-        } catch (Exception e) {
-            stderr_println(String.format("[-] Error deleting [%s] Data By Starts With rootUrl: %s", tableName, e.getMessage()));
-            e.printStackTrace();
-        }
-        return totalRowsAffected;
-    }
+//    /**
+//     * 基于 url前缀 列表 删除行
+//     */
+//    public static synchronized int deleteDataByLikeRootUrl(String rootUrl, String tableName) {
+//        if (isEmptyObj(rootUrl)) return 0;
+//
+//        int totalRowsAffected = 0;
+//
+//        // 构建SQL语句，使用占位符 ? 来代表每个ID
+//        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE req_url like ?;";
+//
+//        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+//            // 执行删除操作
+//            stmt.setString(1, rootUrl+"%");
+//            totalRowsAffected= stmt.executeUpdate();
+//        } catch (Exception e) {
+//            stderr_println(String.format("[-] Error deleting [%s] Data By Starts With rootUrl: %s", tableName, e.getMessage()));
+//            e.printStackTrace();
+//        }
+//        return totalRowsAffected;
+//    }
 
     /**
      * 基于 多个url前缀 列表 删除行
      */
-    public static synchronized int batchDeleteDataByLikeRootUrlList(List<String> rootUrlList, String tableName) {
+    public static synchronized int batchDeleteDataByLikeRootUrls(List<String> rootUrlList, String tableName) {
         if (isEmptyObj(rootUrlList)) return 0;
 
         int totalRowsAffected = 0;

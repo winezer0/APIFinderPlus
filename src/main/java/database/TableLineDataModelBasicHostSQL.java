@@ -15,32 +15,6 @@ import static utils.BurpPrintUtils.stderr_println;
  * 存储基于主机相关的SQL查询函数
  */
 public class TableLineDataModelBasicHostSQL {
-    /**
-     * 获取 指定 msgHash 对应的 所有 分析结果 数据, 用于填充 UI 表的下方 tab 数据
-     */
-    public static synchronized BasicHostTableTabDataModel fetchHostResultByRootUrl(String rootUrl){
-        BasicHostTableTabDataModel tabDataModel = null;
-        String selectSQL = "SELECT * FROM " + AnalyseHostResultTable.tableName +" WHERE root_url = ?;";
-        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setString(1, rootUrl);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    tabDataModel = new BasicHostTableTabDataModel(
-                            rs.getString("root_url"),
-                            rs.getString("find_info"),
-                            rs.getString("find_url"),
-                            rs.getString("find_path"),
-                            rs.getString("find_api"),
-                            rs.getString("path_to_url"),
-                            rs.getString("unvisited_url")
-                    );
-                }
-            }
-        } catch (Exception e) {
-            stderr_println(LOG_ERROR, String.format("[-] Error Select Host Analyse Result Data By RootUrl: %s",  e.getMessage()));
-        }
-        return tabDataModel;
-    }
 
 
     private static String genHostTableSqlByWhereCondition(String WhereCondition){
@@ -49,7 +23,6 @@ public class TableLineDataModelBasicHostSQL {
         if (WhereCondition == null) WhereCondition= "";
         return selectSQL.replace("$WHERE$", WhereCondition);
     }
-
 
     //联合 获取所有行数据
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataBySQl(String selectSQL){
@@ -80,7 +53,6 @@ public class TableLineDataModelBasicHostSQL {
         return apiDataModels;
     }
 
-
     // 获取当前所有记录
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataAll() {
         String selectSQL = genHostTableSqlByWhereCondition(null);
@@ -95,21 +67,21 @@ public class TableLineDataModelBasicHostSQL {
         return  fetchHostTableLineDataBySQl(selectSQL);
     }
 
-    public static ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataHasInfo() {
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataHasInfo() {
         // 获取当前所有记录的数据
         String WhereCondition = "where find_info_num>0";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
         return  fetchHostTableLineDataBySQl(selectSQL);
     }
 
-    public static ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataHasUnVisitedUrls() {
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataHasUnVisitedUrls() {
         // 获取当前所有记录的数据
         String WhereCondition = "where unvisited_url_num>0";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
         return  fetchHostTableLineDataBySQl(selectSQL);
     }
 
-    public static ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataIsNull() {
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineDataIsNull() {
         // 获取当前所有记录的数据
         String WhereCondition = "where (find_url_num is null and find_path_num is null and find_info_num is null) or (find_url_num <1  and find_path_num <1 and find_info_num <1) ";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);

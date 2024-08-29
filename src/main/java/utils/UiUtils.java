@@ -1,5 +1,9 @@
 package utils;
 
+import database.AnalyseHostResultTable;
+import database.AnalyseUrlResultTable;
+import model.FindPathModel;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -7,11 +11,12 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 
 import static utils.BurpPrintUtils.*;
@@ -88,7 +93,7 @@ public class UiUtils {
     /**
      * 批量获取所有行列表相关的 String 列表
      */
-    public static List<String> geStringListAtActualRows(JTable table, int[] selectedRows, int columnIndex) {
+    public static List<String> getStringListAtActualRows(JTable table, int[] selectedRows, int columnIndex) {
         List<String> urls = new ArrayList<>();
         if (selectedRows.length > 0){
             // 遍历所有选定的行
@@ -275,5 +280,117 @@ public class UiUtils {
             }
         }
 
+    }
+
+    /**
+     * 弹框 读取用户输入 弹框 输出到用户
+     * @param stringList
+     * @param itemType
+     * @param title
+     */
+    public static void showInputBoxAndHandle(List<String> stringList, String itemType, String title) {
+        //弹出框,等待用户输入
+        //创建一个对话框,便于输入url数据
+        JDialog dialog = new JDialog();
+        dialog.setTitle(title);
+        dialog.setLayout(new GridBagLayout()); // 使用GridBagLayout布局管理器
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(10, 10, 10, 10); // 设置组件之间的间距
+        // 添加第一行提示
+        JLabel urlJLabel = new JLabel("输入数据:");
+        constraints.gridx = 0; // 第1列
+        constraints.gridy = 0; // 第1行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(urlJLabel, constraints);
+
+        JTextArea customParentPathArea = new JTextArea(15, 35);
+        customParentPathArea.setText("");
+        customParentPathArea.setLineWrap(true); // 自动换行
+        customParentPathArea.setWrapStyleWord(true); //断行不断字
+        constraints.gridy = 1; // 第2行
+        constraints.gridx = 0; // 第1列
+        dialog.add(new JScrollPane(customParentPathArea), constraints); // 添加滚动条
+
+        // 添加按钮面板
+        JPanel buttonPanel = new JPanel();
+        JButton confirmButton = new JButton("确认");
+        JButton cancelButton = new JButton("取消");
+        buttonPanel.add(confirmButton);
+        buttonPanel.add(cancelButton);
+
+        constraints.gridx = 0; // 第一列
+        constraints.gridy = 2; // 第三行
+        constraints.gridwidth = 2; // 占据两列的空间
+        dialog.add(buttonPanel, constraints);
+
+        dialog.pack(); // 调整对话框大小以适应其子组件
+        dialog.setLocationRelativeTo(null); // 居中显示
+        dialog.setVisible(true); // 显示对话框
+
+        // 取消按钮事件
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose(); // 关闭对话框
+            }
+        });
+
+        // 不同的 确认按钮动作
+        confirmButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 获取用户输入
+                String inputText = customParentPathArea.getText();
+                dialog.dispose(); // 关闭对话框
+                //调用新的动作
+                List<String> urlList = CastUtils.getUniqueLines(inputText);
+                if (!urlList.isEmpty()){
+                    // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            List<FindPathModel> findPathModelList = new ArrayList<FindPathModel>();
+                            Set<String> pathSet = new HashSet<>();
+                            Set<String> urlSet;
+                            switch (itemType){
+                                case "calcSingleLayerNodeItemOnUrl":
+                                    //基于pathSet和用户输入组合URL
+                                    findPathModelList = AnalyseUrlResultTable.fetchPathDataByMsgHashList(stringList);
+                                    pathSet = FindPathModel.getSingleLayerPathSet(findPathModelList);
+
+                                    urlSet = new LinkedHashSet<>();
+                                    for (String prefix : urlList) {
+                                        List<String> urls = AnalyseInfoUtils.concatUrlAddPath(prefix, new ArrayList<>(pathSet));
+                                        if (urls.size() > 0) urlSet.addAll(urls);
+                                    }
+                                    //直接复制到用户的粘贴板
+                                    copyToSystemClipboard(String.join("\n", urlSet));
+                                    //弹框让用户查看
+                                    showOneMsgBoxToCopy(String.join("\n", urlSet), "单层路径生成URL");
+                                    break;
+                                case "calcSingleLayerNodeItemOnHost":
+                                    //基于pathSet和用户输入组合URL
+                                    findPathModelList = AnalyseHostResultTable.fetchPathDataByRootUrl(stringList);
+                                    pathSet = FindPathModel.getSingleLayerPathSet(findPathModelList);
+
+                                    urlSet = new LinkedHashSet<>();
+                                    for (String prefix : urlList) {
+                                        List<String> urls = AnalyseInfoUtils.concatUrlAddPath(prefix, new ArrayList<>(pathSet));
+                                        if (urls.size() > 0) urlSet.addAll(urls);
+                                    }
+                                    //直接复制到用户的粘贴板
+                                    copyToSystemClipboard(String.join("\n", urlSet));
+                                    //弹框让用户查看
+                                    showOneMsgBoxToCopy(String.join("\n", urlSet), "单层路径生成URL");
+                                    break;
+                            }
+                            return null;
+                        }
+                    }.execute();
+                }
+            }
+        });
     }
 }
