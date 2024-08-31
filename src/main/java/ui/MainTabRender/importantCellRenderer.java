@@ -6,12 +6,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
-public class importantCellRenderer extends DefaultTableCellRenderer {
+public class ImportantCellRenderer extends DefaultTableCellRenderer {
 
     // 预加载并缓存图标
     private final Icon importantIcon = UiUtils.getImageIcon("/icon/importantButtonIcon.png", 15, 15);
-    private final Icon notImportantIcon = UiUtils.getImageIcon("/icon/normalIcon.png", 15, 15);
-    public importantCellRenderer() {
+    //private final Icon notImportantIcon = UiUtils.getImageIcon("/icon/normalIcon.png", 15, 15);
+    public ImportantCellRenderer() {
         setHorizontalAlignment(CENTER); // 设置居中
     }
 
@@ -21,7 +21,7 @@ public class importantCellRenderer extends DefaultTableCellRenderer {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         // 设置文本为空，因为我们只显示图标
-        setText("");
+        // setText("");
 
         // 根据单元格值设置相应图标
         if (value instanceof Boolean) {

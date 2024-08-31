@@ -6,8 +6,9 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter;
 import database.*;
 import model.*;
+import ui.MainTabRender.RunStatusCellRenderer;
 import ui.MainTabRender.TableHeaderWithTips;
-import ui.MainTabRender.importantCellRenderer;
+import ui.MainTabRender.ImportantCellRenderer;
 import utils.CastUtils;
 import utils.PathTreeUtils;
 import utils.UiUtils;
@@ -187,8 +188,14 @@ public class BasicHostInfoPanel extends JPanel {
         UiUtils.tableSetColumnsAlignRender(basicHostMsgTableUI, leftColumns);
 
         //为重要信息列添加额外的渲染
-        importantCellRenderer havingImportantRenderer = new importantCellRenderer();
-        basicHostMsgTableUI.getColumnModel().getColumn(2).setCellRenderer(havingImportantRenderer);
+        ImportantCellRenderer havingImportantRenderer = new ImportantCellRenderer();
+        int ImportantColumnIndex = 2; //重要信息列所在的列号减1
+        basicHostMsgTableUI.getColumnModel().getColumn(ImportantColumnIndex).setCellRenderer(havingImportantRenderer);
+
+        //为状态信息列添加额外的渲染 在最后一列,可以设置为动态值
+        RunStatusCellRenderer runStatusCellRenderer = new RunStatusCellRenderer();
+        int runStatusColumnIndex = basicHostMsgTableUI.getColumnCount() - 1;
+        basicHostMsgTableUI.getColumnModel().getColumn(runStatusColumnIndex).setCellRenderer(runStatusCellRenderer);
 
         //为表格添加点击显示下方的消息动作
         basicHostTableAddActionSetMsgTabData();

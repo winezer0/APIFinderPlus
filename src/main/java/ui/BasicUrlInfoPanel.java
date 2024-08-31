@@ -3,8 +3,9 @@ package ui;
 import burp.*;
 import database.*;
 import model.*;
+import ui.MainTabRender.RunStatusCellRenderer;
 import ui.MainTabRender.TableHeaderWithTips;
-import ui.MainTabRender.importantCellRenderer;
+import ui.MainTabRender.ImportantCellRenderer;
 import utils.*;
 
 import javax.swing.*;
@@ -201,8 +202,14 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         UiUtils.tableSetColumnsAlignRender(basicUrlMsgTableUI, leftColumns);
 
         //为重要信息列添加额外的渲染
-        importantCellRenderer havingImportantRenderer = new importantCellRenderer();
-        basicUrlMsgTableUI.getColumnModel().getColumn(7).setCellRenderer(havingImportantRenderer);
+        ImportantCellRenderer havingImportantRenderer = new ImportantCellRenderer();
+        int ImportantColumnIndex = 7; //重要信息列所在的列号减1
+        basicUrlMsgTableUI.getColumnModel().getColumn(ImportantColumnIndex).setCellRenderer(havingImportantRenderer);
+
+        //为状态信息列添加额外的渲染 在最后一列,可以设置为动态值
+        RunStatusCellRenderer runStatusCellRenderer = new RunStatusCellRenderer();
+        int runStatusColumnIndex = basicUrlMsgTableUI.getColumnCount() - 1;
+        basicUrlMsgTableUI.getColumnModel().getColumn(runStatusColumnIndex).setCellRenderer(runStatusCellRenderer);
 
         //为表格添加点击显示下方的消息动作
         basicUrlTableAddActionSetMsgTabData();
