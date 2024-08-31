@@ -2,6 +2,24 @@
 	"fingerprint": [
 		{
 			"accuracy": "high",
+			"describe": "性能相关配置",
+			"isImportant": false,
+			"isOpen": true,
+			"keyword": [
+				"monitorExecutorServiceNumberOfIntervals=4",
+				"dynamicPathFilterIsOpenDefault=false",
+				"autoRecordPathIsOpenDefault=true",
+				"autoPathsToUrlsIsOpenDefault=false",
+				"autoRecursiveIsOpenDefault=false",
+				"proxyListenIsOpenDefault=false",
+				"autoRefreshUnvisitedIsOpenDefault=false"
+			],
+			"location": "config",
+			"match": "keyword",
+			"type": "CONF_PERFORMANCE"
+		},
+		{
+			"accuracy": "high",
 			"describe": "允许扫描的目标RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
