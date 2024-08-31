@@ -690,8 +690,14 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                     case "显示有效内容":
                         apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineHasInfoOrUri();
                         break;
+                    case "待处理有效内容":
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineHasInfoOrUriNotHandle();
+                        break;
                     case "显示敏感内容":
                         apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineHasInfo();
+                        break;
+                    case "待处理敏感内容":
+                        apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineHasInfoNotHandle();
                         break;
                     case "显示无效内容":
                         apiDataModels = TableLineDataModelBasicUrlSQL.fetchUrlTableLineAnyIsNull();

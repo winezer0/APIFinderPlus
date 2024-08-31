@@ -17,7 +17,9 @@ public class TableLineDataModelBasicHostSQL {
 
 
     private static String genHostTableSqlByWhereCondition(String WhereCondition){
-        String selectSQL = ("SELECT id,root_url,find_info_num,has_important,find_url_num,find_path_num,find_api_num,path_to_url_num,unvisited_url_num,basic_path_num,run_status FROM $tableName$;")
+        String selectSQL = ("SELECT id,root_url,find_info_num,has_important,find_url_num," +
+                "find_path_num,find_api_num,path_to_url_num,unvisited_url_num,basic_path_num,run_status " +
+                "FROM $tableName$ $WHERE$;")
                 .replace("$tableName$", AnalyseHostResultTable.tableName);
         if (WhereCondition == null) WhereCondition= "";
         return selectSQL.replace("$WHERE$", WhereCondition);
@@ -55,7 +57,7 @@ public class TableLineDataModelBasicHostSQL {
     // 获取当前所有记录
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineAll() {
         String selectSQL = genHostTableSqlByWhereCondition(null);
-        return  fetchHostTableLineBySQl(selectSQL);
+        return fetchHostTableLineBySQl(selectSQL);
     }
 
     //获取有效数据的行
@@ -63,27 +65,46 @@ public class TableLineDataModelBasicHostSQL {
         // 获取当前所有记录的数据
         String WhereCondition = "Where find_url_num>0 or find_path_num>0 or find_info_num>0";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
-        return  fetchHostTableLineBySQl(selectSQL);
+        return fetchHostTableLineBySQl(selectSQL);
     }
 
+    //获取有效数据的行 并且忽略已经处理的项
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineHasInfoOrUriNotHandle() {
+        // 获取当前所有记录的数据
+        String WhereCondition = "Where (find_url_num>0 or find_path_num>0 or find_info_num>0) and run_status != 'RUN_STATUS'"
+                .replace("RUN_STATUS", Constants.HANDLE_END);
+        String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
+        return fetchHostTableLineBySQl(selectSQL);
+    }
+
+    //获取敏感数据的行
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineHasInfo() {
         // 获取当前所有记录的数据
         String WhereCondition = "where find_info_num>0";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
-        return  fetchHostTableLineBySQl(selectSQL);
+        return fetchHostTableLineBySQl(selectSQL);
+    }
+
+    //获取敏感数据的行 并且忽略已经处理的项
+    public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineHasInfoNotHandle() {
+        // 获取当前所有记录的数据
+        String WhereCondition = "where find_info_num>0 and run_status != 'RUN_STATUS'"
+                .replace("RUN_STATUS", Constants.HANDLE_END);
+        String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
+        return fetchHostTableLineBySQl(selectSQL);
     }
 
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineHasUnVisitedUrls() {
         // 获取当前所有记录的数据
         String WhereCondition = "where unvisited_url_num>0";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
-        return  fetchHostTableLineBySQl(selectSQL);
+        return fetchHostTableLineBySQl(selectSQL);
     }
 
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineAnyIsNull() {
         // 获取当前所有记录的数据
         String WhereCondition = "where (find_url_num is null and find_path_num is null and find_info_num is null) or (find_url_num <1  and find_path_num <1 and find_info_num <1) ";
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
-        return  fetchHostTableLineBySQl(selectSQL);
+        return fetchHostTableLineBySQl(selectSQL);
     }
 }

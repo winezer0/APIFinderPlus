@@ -20,13 +20,13 @@ public class ImportantCellRenderer extends DefaultTableCellRenderer {
         // 调用父类以保留默认行为
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        // 设置文本为空，因为我们只显示图标
-        // setText("");
 
         // 根据单元格值设置相应图标
         if (value instanceof Boolean) {
             if ((Boolean) value){
                 setIcon(importantIcon);
+                // 设置文本为空，因为我们只显示图标
+                setText("");
             }else{
                 setIcon(null);
                 setText("NO");

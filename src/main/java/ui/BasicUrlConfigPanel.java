@@ -368,7 +368,9 @@ public class BasicUrlConfigPanel extends JPanel {
         // 全部按钮
         choicesComboBoxOnUrl = new JComboBox<>(new String[]{
                 "显示有效内容",
+                "待处理有效内容",
                 "显示敏感内容",
+                "待处理敏感内容",
                 "显示全部内容",
                 "显示无效内容",
         });

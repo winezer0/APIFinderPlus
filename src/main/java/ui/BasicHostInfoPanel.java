@@ -485,8 +485,14 @@ public class BasicHostInfoPanel extends JPanel {
                     case "显示有效内容":
                         apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasInfoOrUri();
                         break;
+                    case "待处理有效内容":
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasInfoOrUriNotHandle();
+                        break;
                     case "显示敏感内容":
                         apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasInfo();
+                        break;
+                    case "待处理敏感内容":
+                        apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasInfoNotHandle();
                         break;
                     case "显示未访问路径":
                         apiDataModels = TableLineDataModelBasicHostSQL.fetchHostTableLineHasUnVisitedUrls();
