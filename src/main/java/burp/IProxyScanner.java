@@ -369,7 +369,7 @@ public class IProxyScanner implements IProxyListener {
                                         || isNotEmptyObj(analyseResult.getPathList())
                                         || isNotEmptyObj(analyseResult.getUrlList())){
                                     //将初次分析结果写入数据库
-                                    int analyseDataIndex = AnalyseUrlResultTable.insertBasicAnalyseResult(msgInfo, analyseResult);
+                                    int analyseDataIndex = AnalyseUrlResultTable.insertOrUpdateBasicAnalyseResult(msgInfo, analyseResult);
                                     if (analyseDataIndex > 0){
                                         stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                     }

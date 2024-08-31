@@ -52,7 +52,7 @@ public class AnalyseUrlResultTable {
      * @param analyseInfo
      * @return
      */
-    public static synchronized int insertBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseUrlResultModel analyseInfo){
+    public static synchronized int insertOrUpdateBasicAnalyseResult(HttpMsgInfo msgInfo, AnalyseUrlResultModel analyseInfo){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
         String selectSql = "SELECT id FROM "+ tableName +" WHERE msg_hash = ?;";
 
@@ -61,9 +61,41 @@ public class AnalyseUrlResultTable {
             stmt1.setString(1, msgInfo.getMsgHash());
             ResultSet rs = stmt1.executeQuery();
             if (rs.next()) {
-                // 记录存在，忽略操作
-                stdout_println(LOG_INFO, String.format("[*] Ignore Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
-                return 0;
+                // 记录存在，执行更新
+                stdout_println(LOG_INFO, String.format("[*] Update [%s] %s -> %s", tableName, msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
+
+                String updateSql = "UPDATE " + tableName + " SET "
+                        + "req_url = ?, root_url = ?, find_url = ?, find_url_num = ?, "
+                        + "find_path = ?, find_path_num = ?, find_info = ?, find_info_num = ?, "
+                        + "find_api = ?, find_api_num = ?, run_status = ?, has_important = ? "
+                        + "WHERE msg_hash = ?;"; // 注意最后的where子句
+
+                try (PreparedStatement stmtUpdate = conn.prepareStatement(updateSql)) {
+                    stmtUpdate.setString(1, msgInfo.getUrlInfo().getRawUrlUsual());
+                    stmtUpdate.setString(2, msgInfo.getUrlInfo().getRootUrlUsual());
+
+                    stmtUpdate.setString(3, CastUtils.toJsonString(analyseInfo.getUrlList()));
+                    stmtUpdate.setInt(4, analyseInfo.getUrlList().size());
+
+                    stmtUpdate.setString(5, CastUtils.toJsonString(analyseInfo.getPathList()));
+                    stmtUpdate.setInt(6, analyseInfo.getPathList().size());
+
+                    stmtUpdate.setString(7, CastUtils.toJsonString(analyseInfo.getInfoArray()));
+                    stmtUpdate.setInt(8, analyseInfo.getInfoArray().size());
+
+                    stmtUpdate.setString(9, CastUtils.toJsonString(analyseInfo.getApiList()));
+                    stmtUpdate.setInt(10, analyseInfo.getApiList().size());
+
+                    stmtUpdate.setString(11, Constants.ANALYSE_WAIT);
+                    stmtUpdate.setBoolean(12, analyseInfo.getHasImportant());
+
+                    stmtUpdate.setString(13, msgInfo.getMsgHash()); // 设置where子句中的msg_hash
+
+                    stmtUpdate.executeUpdate();
+
+                    generatedId = rs.getInt("id"); // 使用已存在的ID
+                }
+
             } else {
                 // 记录不存在，插入新记录
                 String insertSql = "INSERT INTO "+ tableName +"" +

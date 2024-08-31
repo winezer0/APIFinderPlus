@@ -1029,33 +1029,6 @@ public class BasicHostInfoPanel extends JPanel {
             }
         });
 
-//        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
-//        //removeFindApiIListItem
-//        removeFindApiIListItem.setToolTipText("[多行]移除选定行对应的PATH拼接URL内容 前后端分离时使用");
-//        removeFindApiIListItem.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                //多行选定模式
-//                if (selectModel >= 0) {
-//                    int[] selectedRows = tableUI.getSelectedRows();
-//                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
-//                    if (!rootUrls.isEmpty()){
-//                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
-//                        new SwingWorker<Void, Void>() {
-//                            @Override
-//                            protected Void doInBackground() throws Exception {
-//                                //删除所有findApi
-//                                AnalyseHostResultTable.clearFindApiUrlsByRootUrls(rootUrls);
-//                                //刷新表单
-//                                refreshBasicHostTableModel(false);
-//                                return null;
-//                            }
-//                        }.execute();
-//                    }
-//                }
-//            }
-//        });
-
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
@@ -1063,6 +1036,9 @@ public class BasicHostInfoPanel extends JPanel {
         popupMenu.add(updateUnVisitedItem);
         popupMenu.add(ClearUnVisitedItem);
         popupMenu.add(IgnoreUnVisitedItem);
+
+        popupMenu.add(setRunStatusHandleWaitItem);
+        popupMenu.add(setRunStatusHandleEndItem);
 
         popupMenu.add(removeHostFromPathTreeItem);
 
