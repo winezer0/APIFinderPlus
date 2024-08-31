@@ -151,6 +151,12 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
             //初始化数据配置
             dbService = DBService.getInstance();
+            if(!BurpFileUtils.fileIsExistOnPluginDir(callbacks, dbService.DBFileName)){
+                dbService.initDBConnection();
+                dbService.initCreateTables();
+            }else {
+                dbService.initDBConnection();
+            }
 
             //注册监听操作
             iProxyScanner = new IProxyScanner();
@@ -158,8 +164,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
             // 注册插件状态监听操作
             callbacks.registerExtensionStateListener(BurpExtender.this);
-
             callbacks.registerContextMenuFactory(BurpExtender.this); //注册右键菜单Factory
+
 
             //设置插件已加载完成
             EXTENSION_IS_LOADED = true;

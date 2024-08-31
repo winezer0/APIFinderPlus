@@ -187,4 +187,10 @@ public class BurpFileUtils {
         }
         return new HashMap<>();
     }
+
+    //检查插件路径是否存在文件
+    public static boolean fileIsExistOnPluginDir(IBurpExtenderCallbacks callbacks, String fileName) {
+        return isFileExists(concatPath(getPluginPath(callbacks), fileName));
+    }
+
 }

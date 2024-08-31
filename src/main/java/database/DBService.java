@@ -3,7 +3,6 @@ package database;
 import burp.BurpExtender;
 import org.sqlite.SQLiteConfig;
 import utils.BurpFileUtils;
-
 import java.sql.*;
 
 import static utils.BurpPrintUtils.*;
@@ -11,16 +10,13 @@ import static utils.BurpPrintUtils.*;
 public class DBService {
     private static DBService instance;
     private Connection connection;
+    private String CONNECTION_STRING; //数据库链接字符串
 
     //指定sqlite数据库配置文件路径
-    private static final String CONNECTION_STRING = String.format(
-            "jdbc:sqlite:%s?journal_mode=WAL", BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), "APIFinderPlus.db")
-    );
-
+    public String DBFileName = "APIFinderPlus.db";
 
     private DBService() {
-        initDBConnection();
-        initCreateTables();
+        CONNECTION_STRING = String.format("jdbc:sqlite:%s?journal_mode=WAL", BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), DBFileName));
     }
 
     public static synchronized DBService getInstance() {
@@ -32,7 +28,7 @@ public class DBService {
     }
 
     //创建数据库链接
-    private void initDBConnection() {
+    public synchronized void initDBConnection() {
         try {
             // 自动注册 SQLite 驱动程序
             Class.forName("org.sqlite.JDBC");
@@ -59,7 +55,7 @@ public class DBService {
     }
 
     //创建数据表结构
-    private synchronized void initCreateTables() {
+    public synchronized void initCreateTables() {
         // RecordUrlTable URL 访问记录表 用于后续排除已访问过的UR了
         execCreatTableSql(RecordUrlTable.creatTableSQL, RecordUrlTable.tableName);
 
