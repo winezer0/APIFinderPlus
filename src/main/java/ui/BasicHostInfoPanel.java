@@ -979,10 +979,55 @@ public class BasicHostInfoPanel extends JPanel {
             }
         });
 
-        //TODO 标记选中消息 状态为等待自动处理 Constants.ANALYSE_WAIT
-        //TODO 标记选中消息 状态为自动分析完成 Constants.ANALYSE_END
-        //TODO 标记选中消息 状态为手动分析完成  Constants.HANDLE_END
+        //标记选中消息 状态为自动分析完成 Constants.HANDLE_WAIT
+        JMenuItem setRunStatusHandleWaitItem = new JMenuItem("修改状态为等待手动处理", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 setRunStatusHandleWaitItem 事件监听器
+        setRunStatusHandleWaitItem.setToolTipText("[多行]修改所选消息状态为自动处理完成|等待手动处理");
+        setRunStatusHandleWaitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<Integer> ids = getIdsAtActualRows(tableUI, selectedRows);
+                    if (!ids.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                CommonUpdateStatus.updateStatusByIds(AnalyseHostResultTable.tableName, ids, Constants.HANDLE_WAIT);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
 
+        //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
+        JMenuItem setRunStatusHandleEndItem = new JMenuItem("修改状态为手动处理完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 setRunStatusHandleEndItem 事件监听器
+        setRunStatusHandleEndItem.setToolTipText("[多行]修改所选消息状态为手动处理完成");
+        setRunStatusHandleEndItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<Integer> ids = getIdsAtActualRows(tableUI, selectedRows);
+                    if (!ids.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                CommonUpdateStatus.updateStatusByIds(AnalyseHostResultTable.tableName, ids, Constants.HANDLE_END);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
 
 //        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 //        //removeFindApiIListItem

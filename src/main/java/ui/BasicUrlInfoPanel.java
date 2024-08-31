@@ -429,9 +429,81 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-        //TODO 标记选中消息 状态为等待自动处理 Constants.ANALYSE_WAIT
-        //TODO 标记选中消息 状态为自动分析完成 Constants.ANALYSE_END
-        //TODO 标记选中消息 状态为手动分析完成  Constants.HANDLE_END
+        //标记选中消息 状态为等待自动处理 Constants.ANALYSE_WAIT
+        JMenuItem setRunStatusAnalyseWaitItem = new JMenuItem("修改状态为等待自动处理", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 setRunStatusAnalyseWaitItem 事件监听器
+        setRunStatusAnalyseWaitItem.setToolTipText("[多行]修改所选消息状态为等待自动处理");
+        setRunStatusAnalyseWaitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                CommonUpdateStatus.updateStatusByMsgHashList(ReqDataTable.tableName, msgHashList, Constants.ANALYSE_WAIT);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
+        //标记选中消息 状态为自动分析完成 Constants.ANALYSE_END
+        JMenuItem setRunStatusAnalyseEndItem = new JMenuItem("修改状态为自动处理完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 setRunStatusAnalyseEndItem 事件监听器
+        setRunStatusAnalyseEndItem.setToolTipText("[多行]修改所选消息状态为自动处理完成|等待手动处理");
+        setRunStatusAnalyseEndItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                CommonUpdateStatus.updateStatusByMsgHashList(ReqDataTable.tableName, msgHashList, Constants.ANALYSE_END);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+        //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
+        JMenuItem setRunStatusHandleEndItem = new JMenuItem("修改状态为手动处理完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 setRunStatusHandleEndItem 事件监听器
+        setRunStatusHandleEndItem.setToolTipText("[多行]修改所选消息状态为手动处理完成");
+        setRunStatusHandleEndItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> msgHashList = getMsgHashListAtActualRows(tableUI, selectedRows);
+                    if (!msgHashList.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                CommonUpdateStatus.updateStatusByMsgHashList(ReqDataTable.tableName, msgHashList, Constants.HANDLE_END);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
 
 
         //复制URL
@@ -440,6 +512,10 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         popupMenu.add(deleteItem);
         //添加到有效PATHTree
         popupMenu.add(addUrlPathToRecordPathItem);
+        //更新数据处理状态
+        popupMenu.add(setRunStatusAnalyseWaitItem);
+        popupMenu.add(setRunStatusAnalyseEndItem);
+        popupMenu.add(setRunStatusHandleEndItem);
         //添加Url对应的RootUrl到黑名单
         popupMenu.add(addRootUrlToBlackUrlRootItem);
         //生成动态过滤条件
