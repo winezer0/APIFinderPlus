@@ -21,13 +21,28 @@ import static utils.ElementUtils.isEqualsOneKey;
 
 public class IProxyScanner implements IProxyListener {
     public static int totalRequestCount = 0;  //记录所有经过插件的请求数量
-    public static final int MaxRespBodyLen = 1000000; //最大支持存储的响应 比特长度
 
     public static RecordHashMap urlScanRecordMap = new RecordHashMap(); //记录已加入扫描列表的URL 防止重复扫描
 
     public static ThreadPoolExecutor executorService = null;
     public static ScheduledExecutorService monitorExecutor;
-    private static int monitorExecutorServiceNumberOfIntervals = 4; //自动处理任务的时间频率,性能越低,频率越应该慢
+
+    //最大支持存储的响应 比特长度
+    public static int maxStoreRespBodyLen;
+    //自动处理任务的时间频率,性能越低,频率越应该慢
+    public static int monitorExecutorIntervals;
+    //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
+    public static boolean dynamicPathFilterIsOpen;
+    //是否启用自动记录每个请求的PATH //自动记录功能应该开启,不然没有pathTree生成
+    public static boolean autoRecordPathIsOpen;
+    //是否进行自动PathTree生成URL
+    public static boolean autoPathsToUrlsIsOpen;
+    //是否进行递归URL扫描
+    public static boolean autoRecursiveIsOpen;
+    //开关插件的监听功能
+    public static boolean proxyListenIsOpen;
+    //自动刷新未访问URL的功能
+    public static boolean autoRefreshUnvisitedIsOpen;
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -37,46 +52,27 @@ public class IProxyScanner implements IProxyListener {
     private String urlCompareMapCacheFile = String.format("%s.urlCompareMap.json", configName);
     private String urlCompareMapHistoryHash = null;
 
-    //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
-    public static boolean dynamicPathFilterIsOpenDefault = false;
-    public static boolean dynamicPathFilterIsOpen = dynamicPathFilterIsOpenDefault;
-
-    //是否启用自动记录每个请求的PATH //自动记录功能应该开启,不然没有pathTree生成
-    public static boolean autoRecordPathIsOpenDefault = true;
-    public static boolean autoRecordPathIsOpen  = autoRecordPathIsOpenDefault;
-
-    //是否进行自动PathTree生成URL
-    public static boolean autoPathsToUrlsIsOpenDefault = false;
-    public static boolean autoPathsToUrlsIsOpen = autoPathsToUrlsIsOpenDefault;
-
-    //是否进行递归URL扫描
-    public static boolean autoRecursiveIsOpenDefault = false;
-    public static boolean autoRecursiveIsOpen = autoRecursiveIsOpenDefault;
-
-    //开关插件的监听功能
-    public static boolean proxyListenIsOpenDefault = false;
-    public static boolean proxyListenIsOpen = proxyListenIsOpenDefault;
-
-    //自动刷新未访问URL的功能
-    public static boolean autoRefreshUnvisitedIsOpenDefault = false;
-    public static boolean autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault;
 
     //设置最大进程数量
     private int maxPoolSize;
 
     public IProxyScanner() {
+        //开关的 默认值配置
+        maxStoreRespBodyLen = maxStoreRespBodyLenDefault;
+        monitorExecutorIntervals = monitorExecutorIntervalsDefault;
+        dynamicPathFilterIsOpen = dynamicPathFilterIsOpenDefault;
+        autoRecordPathIsOpen  = autoRecordPathIsOpenDefault;
+        autoPathsToUrlsIsOpen = autoPathsToUrlsIsOpenDefault;
+        autoRecursiveIsOpen = autoRecursiveIsOpenDefault;
+        proxyListenIsOpen = proxyListenIsOpenDefault;
+        autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault;
+
         //加载缓存过滤器
         urlCompareMap = BurpFileUtils.LoadJsonFromFile(urlCompareMapCacheFile);
-
         // 获取操作系统内核数量
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-
-        // 高性能模式  //控制ScheduledExecutorService中任务的执行频率或周期。 //大于等于 4个 线程时 处理频率为2s,否则为4s
-        monitorExecutorServiceNumberOfIntervals = availableProcessors >= 4 ? 2 : 4;
-
         int coreCount = Math.min(availableProcessors, 16);
         maxPoolSize = coreCount * 2;
-
         long keepAliveTime = 60L;
 
         // 创建一个足够大的队列来处理您的任务
@@ -93,7 +89,7 @@ public class IProxyScanner implements IProxyListener {
                 // 当workQueue满了且线程数达到maxPoolSize时，线程池会使用AbortPolicy来处理额外的任务 即抛出RejectedExecutionException。
                 // 可以根据需要替换为其他的策略，如CallerRunsPolicy（调用者运行），DiscardPolicy（丢弃任务），或DiscardOldestPolicy（丢弃队列中最老的任务）。
         );
-        stdout_println(LOG_INFO,"[+] run executorService maxPoolSize: " + coreCount + " ~ " + maxPoolSize + ", monitorExecutorServiceNumberOfIntervals: " + monitorExecutorServiceNumberOfIntervals);
+        stdout_println(LOG_INFO,"[+] run executor maxPoolSize: " + coreCount + " ~ " + maxPoolSize + ", monitorExecutorIntervals: " + monitorExecutorIntervals);
 
         //使用单一的后台线程来执行所有周期性或定时任务。这通常用于那些不需要并行处理的定时任务，例如监控、定期日志记录等。
         monitorExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -305,8 +301,8 @@ public class IProxyScanner implements IProxyListener {
      */
     private static void insertOrUpdateReqDataAndReqMsgData(HttpMsgInfo msgInfo, String reqSource) {
         //防止响应体过大
-        if (msgInfo.getRespBytes().length > MaxRespBodyLen){
-            byte[] respBytes = Arrays.copyOf(msgInfo.getRespBytes(), MaxRespBodyLen);
+        if (msgInfo.getRespBytes().length > maxStoreRespBodyLen){
+            byte[] respBytes = Arrays.copyOf(msgInfo.getRespBytes(), maxStoreRespBodyLen);
             msgInfo.setRespBytes(respBytes);
         }
 
@@ -479,7 +475,7 @@ public class IProxyScanner implements IProxyListener {
                     e.printStackTrace();
                 }
             });
-        }, 0, monitorExecutorServiceNumberOfIntervals, TimeUnit.SECONDS);
+        }, 0, monitorExecutorIntervals, TimeUnit.SECONDS);
     }
 
     /**

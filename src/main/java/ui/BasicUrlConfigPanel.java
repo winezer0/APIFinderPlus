@@ -1,5 +1,6 @@
 package ui;
 
+import burp.BurpExtender;
 import burp.IProxyScanner;
 import utils.UiUtils;
 
@@ -148,7 +149,7 @@ public class BasicUrlConfigPanel extends JPanel {
         FilterPanel.add(horizontalBlank, gbc_leftFiller);
 
         // 开关 是否开启代理流量监听 //自动保存响应状态码合适的URL 目前过滤功能不完善,只能手动开启\
-        proxyListenButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.proxyListenIsOpenDefault);
+        proxyListenButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(BurpExtender.proxyListenIsOpenDefault);
         proxyListenButtonOnUrl.setToolTipText("Proxy模块流量监听开关");
 
         proxyListenButtonOnUrl.addActionListener(new ActionListener() {
@@ -156,7 +157,7 @@ public class BasicUrlConfigPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = proxyListenButtonOnUrl.isSelected();
-                IProxyScanner.proxyListenIsOpen = IProxyScanner.proxyListenIsOpenDefault ? !selected : selected;
+                IProxyScanner.proxyListenIsOpen = BurpExtender.proxyListenIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("proxyListenIsOpen: %s", IProxyScanner.proxyListenIsOpen));
 
                 BasicHostConfigPanel.proxyListenButtonOnHost.setSelected(selected);  //联动更新Host面板的情况
@@ -211,14 +212,14 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动记录PATH
-        autoRecordPathButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecordPathIsOpenDefault);
+        autoRecordPathButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(BurpExtender.autoRecordPathIsOpenDefault);
         autoRecordPathButtonOnUrl.setToolTipText("自动保存有效请求PATH");
         autoRecordPathButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = autoRecordPathButtonOnUrl.isSelected();
-                IProxyScanner.autoRecordPathIsOpen = IProxyScanner.autoRecordPathIsOpenDefault ? !selected : selected;
+                IProxyScanner.autoRecordPathIsOpen = BurpExtender.autoRecordPathIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("autoRecordPathIsOpen: %s", IProxyScanner.autoRecordPathIsOpen));
 
                 BasicHostConfigPanel.autoRecordPathButtonOnHost.setSelected(selected); //联动更新URL面板的情况
@@ -226,14 +227,14 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启复杂的动态PATH过滤
-        dynamicPathFilterButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(IProxyScanner.dynamicPathFilterIsOpenDefault);
+        dynamicPathFilterButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(BurpExtender.dynamicPathFilterIsOpenDefault);
         dynamicPathFilterButtonOnUrl.setToolTipText("开启智能响应过滤(访问随机URL获取目标的404页面的条件)");
         dynamicPathFilterButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = dynamicPathFilterButtonOnUrl.isSelected();
-                IProxyScanner.dynamicPathFilterIsOpen = IProxyScanner.dynamicPathFilterIsOpenDefault ? !selected : selected;
+                IProxyScanner.dynamicPathFilterIsOpen = BurpExtender.dynamicPathFilterIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("dynamicPathFilterIsOpen: %s", IProxyScanner.dynamicPathFilterIsOpen));
 
                 BasicHostConfigPanel.dynamicPathFilterButtonOnHost.setSelected(selected); //联动更新URL面板的情况
@@ -241,14 +242,14 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
 
-        autoPathsToUrlsButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoPathsToUrlsIsOpenDefault);
+        autoPathsToUrlsButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(BurpExtender.autoPathsToUrlsIsOpenDefault);
         autoPathsToUrlsButtonOnUrl.setToolTipText("自动基于PathTree结合FindPath生成URL");
         autoPathsToUrlsButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = autoPathsToUrlsButtonOnUrl.isSelected();
-                IProxyScanner.autoPathsToUrlsIsOpen = IProxyScanner.autoPathsToUrlsIsOpenDefault ? !selected : selected;
+                IProxyScanner.autoPathsToUrlsIsOpen = BurpExtender.autoPathsToUrlsIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("autoPathsToUrlsIsOpen: %s", IProxyScanner.autoPathsToUrlsIsOpen));
 
                 BasicHostConfigPanel.autoPathsToUrlsButtonOnHost.setSelected(selected); //联动更新URL面板的情况
@@ -256,14 +257,14 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启自动刷新未访问URL
-        autoRefreshUnvisitedButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRefreshUnvisitedIsOpenDefault);
+        autoRefreshUnvisitedButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(BurpExtender.autoRefreshUnvisitedIsOpenDefault);
         autoRefreshUnvisitedButtonOnUrl.setToolTipText("自动刷新未访问URL");
         autoRefreshUnvisitedButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = autoRefreshUnvisitedButtonOnUrl.isSelected();
-                IProxyScanner.autoRefreshUnvisitedIsOpen = IProxyScanner.autoRefreshUnvisitedIsOpenDefault ? !selected : selected;
+                IProxyScanner.autoRefreshUnvisitedIsOpen = BurpExtender.autoRefreshUnvisitedIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("autoRefreshUnvisitedIsOpen: %s", IProxyScanner.autoRefreshUnvisitedIsOpen));
 
                 BasicHostConfigPanel.autoRefreshUnvisitedButtonOnHost.setSelected(selected); //联动更新URL面板的情况
@@ -271,14 +272,14 @@ public class BasicUrlConfigPanel extends JPanel {
         });
 
         // 开关 是否开启对提取URL进行发起请求
-        autoRecursiveButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(IProxyScanner.autoRecursiveIsOpenDefault);
+        autoRecursiveButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(BurpExtender.autoRecursiveIsOpenDefault);
         autoRecursiveButtonOnUrl.setToolTipText("自动测试未访问URL");
         autoRecursiveButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
                 boolean selected = autoRecursiveButtonOnUrl.isSelected();
-                IProxyScanner.autoRecursiveIsOpen = IProxyScanner.autoRecursiveIsOpenDefault ? !selected : selected;
+                IProxyScanner.autoRecursiveIsOpen = BurpExtender.autoRecursiveIsOpenDefault ? !selected : selected;
                 stdout_println(LOG_DEBUG, String.format("autoRecursiveIsOpen: %s", IProxyScanner.autoRecursiveIsOpen));
 
                 BasicHostConfigPanel.autoRecursiveButtonOnHost.setSelected(selected); //联动更新URL面板的情况

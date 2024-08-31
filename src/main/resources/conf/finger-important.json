@@ -6,7 +6,8 @@
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
-				"monitorExecutorServiceNumberOfIntervals=4",
+				"maxStoreRespBodyLenDefault=1000000",
+				"monitorExecutorIntervalsDefault=4",
 				"dynamicPathFilterIsOpenDefault=false",
 				"autoRecordPathIsOpenDefault=true",
 				"autoPathsToUrlsIsOpenDefault=false",
@@ -16,7 +17,7 @@
 			],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_PERFORMANCE"
+			"type": "CONF_DEFAULT_PERFORMANCE"
 		},
 		{
 			"accuracy": "high",

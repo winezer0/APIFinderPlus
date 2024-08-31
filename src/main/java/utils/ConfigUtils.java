@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static utils.BurpPrintUtils.LOG_DEBUG;
+import static utils.BurpPrintUtils.stdout_println;
 import static utils.CastUtils.isNotEmptyObj;
 
 public class ConfigUtils {
@@ -15,6 +17,9 @@ public class ConfigUtils {
      */
     public static void loadConfigArrayListByRule(FingerPrintRule rule) {
         switch (rule.getType()) {
+            case "CONF_DEFAULT_PERFORMANCE":
+                BurpExtender.CONF_DEFAULT_PERFORMANCE.addAll(rule.getKeyword());
+                break;
             case "CONF_WHITE_URL_ROOT":
                 BurpExtender.CONF_WHITE_URL_ROOT.addAll(rule.getKeyword());
                 break;
@@ -77,6 +82,7 @@ public class ConfigUtils {
      * 清空所有的配置列表
      */
     public static void autoClearAllConfArrayList() {
+        BurpExtender.CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置
         BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
         BurpExtender.CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
         BurpExtender.CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不自动记录PATH的URL域名
@@ -120,5 +126,57 @@ public class ConfigUtils {
         //设置默认请求参数
         if (BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.isEmpty()){BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS =  Collections.singletonList("");}
 
+        //配置基于性能的选项
+        parse_conf_default_performance(BurpExtender.CONF_DEFAULT_PERFORMANCE);
+        
+    }
+
+    private static void parse_conf_default_performance(List<String> configList) {
+        for (String configItem : configList) {
+            String[] keyValue = configItem.split("=");
+            if (keyValue.length == 2) {
+                String key = keyValue[0];
+                String value = keyValue[1];
+
+                switch (key) {
+                    case "maxStoreRespBodyLenDefault":
+                        BurpExtender.maxStoreRespBodyLenDefault = Integer.parseInt(value);
+                        stdout_println(LOG_DEBUG, String.format("[+] maxStoreRespBodyLenDefault: [%s]", Integer.parseInt(value)));
+                        break;
+                    case "monitorExecutorIntervalsDefault":
+                        BurpExtender.monitorExecutorIntervalsDefault = Integer.parseInt(value);
+                        stdout_println(LOG_DEBUG, String.format("[+] monitorExecutorIntervalsDefault: [%s]", Integer.parseInt(value)));
+                        break;
+                    case "dynamicPathFilterIsOpenDefault":
+                        BurpExtender.dynamicPathFilterIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] dynamicPathFilterIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
+                    case "autoRecordPathIsOpenDefault":
+                        BurpExtender.autoRecordPathIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] autoRecordPathIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
+                    case "autoPathsToUrlsIsOpenDefault":
+                        BurpExtender.autoPathsToUrlsIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] autoPathsToUrlsIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
+                    case "autoRecursiveIsOpenDefault":
+                        BurpExtender.autoRecursiveIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] autoRecursiveIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
+                    case "proxyListenIsOpenDefault":
+                        BurpExtender.proxyListenIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] proxyListenIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
+                    case "autoRefreshUnvisitedIsOpenDefault":
+                        BurpExtender.autoRefreshUnvisitedIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] autoRefreshUnvisitedIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
+                    default:
+                        System.out.println("Unknown configuration key: " + key);
+                }
+            } else {
+                System.out.println("Invalid configuration format: " + configItem);
+            }
+        }
     }
 }

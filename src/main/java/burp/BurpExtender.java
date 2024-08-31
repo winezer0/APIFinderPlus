@@ -61,7 +61,25 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     public static List<FingerPrintRule> fingerprintRules;
 
+    //最大支持存储的响应 比特长度
+    public static int maxStoreRespBodyLenDefault;
+    //自动处理任务的时间频率,性能越低,频率越应该慢
+    public static int monitorExecutorIntervalsDefault;
+    //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
+    public static boolean dynamicPathFilterIsOpenDefault;
+    //是否启用自动记录每个请求的PATH //自动记录功能应该开启,不然没有pathTree生成
+    public static boolean autoRecordPathIsOpenDefault;
+    //是否进行自动PathTree生成URL
+    public static boolean autoPathsToUrlsIsOpenDefault;
+    //是否进行递归URL扫描
+    public static boolean autoRecursiveIsOpenDefault;
+    //开关插件的监听功能
+    public static boolean proxyListenIsOpenDefault;
+    //自动刷新未访问URL的功能
+    public static boolean autoRefreshUnvisitedIsOpenDefault;
+
     //一些需要被排除|允许的情况
+    public static List<String> CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置选项
     public static List<String> CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅保留的白名单主机,为空时忽略
 
     public static List<String> CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码

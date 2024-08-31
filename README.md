@@ -85,6 +85,10 @@ webpack页面的自动自动拼接
 ```
     注意：对于CONF_开头和location为config的规则，属于内部规则，不用于信息匹配。
 
+    CONF_DEFAULT_PERFORMANCE: 默认的性能配置
+        "maxStoreRespBodyLenDefault=1000000",  修改保存后立即生效
+        "monitorExecutorIntervalsDefault=4",   修改保存后立即生效
+        其他默认UI按钮相关的参数,修改保存后,重启插件生效
     CONF_WHITE_URL_ROOT: 允许扫描的目标RootUrl关键字
     CONF_BLACK_URL_ROOT: 禁止扫描的目标RootUrl关键字
     CONF_BLACK_URL_PATH: 禁止进行扫描的目标URL路径关键字
