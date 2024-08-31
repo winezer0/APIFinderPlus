@@ -979,6 +979,10 @@ public class BasicHostInfoPanel extends JPanel {
             }
         });
 
+        //TODO 标记选中消息 状态为等待自动处理 Constants.ANALYSE_WAIT
+        //TODO 标记选中消息 状态为自动分析完成 Constants.ANALYSE_END
+        //TODO 标记选中消息 状态为手动分析完成  Constants.HANDLE_END
+
 
 //        JMenuItem removeFindApiIListItem = new JMenuItem("清空当前PATH拼接URL的结果内容", UiUtils.getImageIcon("/icon/deleteButton.png", 15, 15));
 //        //removeFindApiIListItem

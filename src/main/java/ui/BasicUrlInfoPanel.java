@@ -266,7 +266,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
             }
         });
 
-        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加ATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem addUrlPathToRecordPathItem = new JMenuItem("添加PATH为有效路径", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 addUrlPathToRecordPathItem 事件监听器
         addUrlPathToRecordPathItem.setToolTipText("[多行]添加选定行对应的请求PATH到RecordPath表 用于计算PathTree");
         addUrlPathToRecordPathItem.addActionListener(new ActionListener() {
@@ -428,6 +428,10 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 }
             }
         });
+
+        //TODO 标记选中消息 状态为等待自动处理 Constants.ANALYSE_WAIT
+        //TODO 标记选中消息 状态为自动分析完成 Constants.ANALYSE_END
+        //TODO 标记选中消息 状态为手动分析完成  Constants.HANDLE_END
 
 
         //复制URL
