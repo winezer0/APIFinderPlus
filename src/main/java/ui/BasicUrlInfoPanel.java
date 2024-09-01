@@ -5,7 +5,7 @@ import database.*;
 import model.*;
 import ui.MainTabRender.RunStatusCellRenderer;
 import ui.MainTabRender.TableHeaderWithTips;
-import ui.MainTabRender.ImportantCellRenderer;
+import ui.MainTabRender.HasImportantCellRenderer;
 import utils.*;
 
 import javax.swing.*;
@@ -202,7 +202,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         UiUtils.tableSetColumnsAlignRender(basicUrlMsgTableUI, leftColumns);
 
         //为重要信息列添加额外的渲染
-        ImportantCellRenderer havingImportantRenderer = new ImportantCellRenderer();
+        HasImportantCellRenderer havingImportantRenderer = new HasImportantCellRenderer();
         int ImportantColumnIndex = 7; //重要信息列所在的列号减1
         basicUrlMsgTableUI.getColumnModel().getColumn(ImportantColumnIndex).setCellRenderer(havingImportantRenderer);
 

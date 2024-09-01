@@ -8,7 +8,7 @@ import database.*;
 import model.*;
 import ui.MainTabRender.RunStatusCellRenderer;
 import ui.MainTabRender.TableHeaderWithTips;
-import ui.MainTabRender.ImportantCellRenderer;
+import ui.MainTabRender.HasImportantCellRenderer;
 import utils.CastUtils;
 import utils.PathTreeUtils;
 import utils.UiUtils;
@@ -188,7 +188,7 @@ public class BasicHostInfoPanel extends JPanel {
         UiUtils.tableSetColumnsAlignRender(basicHostMsgTableUI, leftColumns);
 
         //为重要信息列添加额外的渲染
-        ImportantCellRenderer havingImportantRenderer = new ImportantCellRenderer();
+        HasImportantCellRenderer havingImportantRenderer = new HasImportantCellRenderer();
         int ImportantColumnIndex = 2; //重要信息列所在的列号减1
         basicHostMsgTableUI.getColumnModel().getColumn(ImportantColumnIndex).setCellRenderer(havingImportantRenderer);
 
