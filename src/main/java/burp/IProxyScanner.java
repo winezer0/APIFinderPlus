@@ -372,6 +372,8 @@ public class IProxyScanner implements IProxyListener {
                                     int analyseDataIndex = AnalyseUrlResultTable.insertOrUpdateBasicAnalyseResult(msgInfo, analyseResult);
                                     if (analyseDataIndex > 0){
                                         stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
+                                    } else {
+                                        stderr_println(LOG_ERROR, String.format("[!] Analysis Result Write Error: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                     }
                                 } else {
                                     //提示没有提取出任何信息的情况 考虑将没有提取成功的情况也写入数据库,实际上可能没啥意义,理论上会更加完整
