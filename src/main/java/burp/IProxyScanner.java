@@ -367,14 +367,15 @@ public class IProxyScanner implements IProxyListener {
                                 //进行数据分析
                                 AnalyseUrlResultModel analyseResult = AnalyseInfo.analyseMsgInfo(msgInfo);
                                 //存入分析结果
-                                if(isNotEmptyObj(analyseResult.getInfoArray())
-                                        || isNotEmptyObj(analyseResult.getPathList())
-                                        || isNotEmptyObj(analyseResult.getUrlList())){
+                                if(isNotEmptyObj(analyseResult.getInfoArray()) || isNotEmptyObj(analyseResult.getPathList()) || isNotEmptyObj(analyseResult.getUrlList())){
                                     //将初次分析结果写入数据库
                                     int analyseDataIndex = AnalyseUrlResultTable.insertOrUpdateBasicAnalyseResult(msgInfo, analyseResult);
                                     if (analyseDataIndex > 0){
                                         stdout_println(LOG_INFO, String.format("[+] Analysis Result Write Success: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                     }
+                                } else {
+                                    //提示没有提取出任何信息的情况 考虑将没有提取成功的情况也写入数据库,实际上可能没啥意义,理论上会更加完整
+                                    stdout_println(LOG_DEBUG, String.format("[-] Analysis Result Is NULL: %s -> %s", msgInfo.getUrlInfo().getRawUrlUsual(), msgInfo.getMsgHash()));
                                 }
                             }
                         }
