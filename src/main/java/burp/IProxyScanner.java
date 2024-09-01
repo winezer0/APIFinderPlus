@@ -27,6 +27,8 @@ public class IProxyScanner implements IProxyListener {
     public static ThreadPoolExecutor executorService = null;
     public static ScheduledExecutorService monitorExecutor;
 
+    //响应体进行正则分割时的默认大小
+    public static int maxPatterChunkSize;
     //最大支持存储的响应 比特长度
     public static int maxStoreRespBodyLen;
     //自动处理任务的时间频率,性能越低,频率越应该慢
@@ -52,12 +54,12 @@ public class IProxyScanner implements IProxyListener {
     private String urlCompareMapCacheFile = String.format("%s.urlCompareMap.json", configName);
     private String urlCompareMapHistoryHash = null;
 
-
     //设置最大进程数量
     private int maxPoolSize;
 
     public IProxyScanner() {
         //开关的 默认值配置
+        maxPatterChunkSize = maxPatterChunkSizeDefault;
         maxStoreRespBodyLen = maxStoreRespBodyLenDefault;
         monitorExecutorIntervals = monitorExecutorIntervalsDefault;
         dynamicPathFilterIsOpen = dynamicPathFilterIsOpenDefault;

@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static utils.BurpPrintUtils.LOG_DEBUG;
-import static utils.BurpPrintUtils.stdout_println;
+import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isNotEmptyObj;
 
 public class ConfigUtils {
@@ -127,11 +126,11 @@ public class ConfigUtils {
         if (BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.isEmpty()){BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS =  Collections.singletonList("");}
 
         //配置基于性能的选项
-        parse_conf_default_performance(BurpExtender.CONF_DEFAULT_PERFORMANCE);
+        parseDefaultProptites(BurpExtender.CONF_DEFAULT_PERFORMANCE);
         
     }
 
-    private static void parse_conf_default_performance(List<String> configList) {
+    private static void parseDefaultProptites(List<String> configList) {
         for (String configItem : configList) {
             String[] keyValue = configItem.split("=");
             if (keyValue.length == 2) {
@@ -139,6 +138,10 @@ public class ConfigUtils {
                 String value = keyValue[1];
 
                 switch (key) {
+                    case "maxPatterChunkSizeDefault":
+                        BurpExtender.maxPatterChunkSizeDefault = Integer.parseInt(value);
+                        stdout_println(LOG_DEBUG, String.format("[+] maxPatterChunkSizeDefault: [%s]", Integer.parseInt(value)));
+                        break;
                     case "maxStoreRespBodyLenDefault":
                         BurpExtender.maxStoreRespBodyLenDefault = Integer.parseInt(value);
                         stdout_println(LOG_DEBUG, String.format("[+] maxStoreRespBodyLenDefault: [%s]", Integer.parseInt(value)));
@@ -172,7 +175,7 @@ public class ConfigUtils {
                         //stdout_println(LOG_DEBUG, String.format("[+] autoRefreshUnvisitedIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
                         break;
                     default:
-                        System.out.println("Unknown configuration key: " + key);
+                        stderr_println(LOG_ERROR,  "[!] Unknown configuration key: " + key);
                 }
             } else {
                 System.out.println("Invalid configuration format: " + configItem);

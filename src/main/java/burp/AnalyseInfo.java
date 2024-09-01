@@ -10,6 +10,7 @@ import model.HttpUrlInfo;
 import utils.AnalyseInfoUtils;
 import utils.AnalyseUriFilter;
 import utils.CastUtils;
+import utils.WebpackJsParser;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -31,8 +32,6 @@ public class AnalyseInfo {
 
     public static final String URL_KEY = "URL_KEY";
     public static final String PATH_KEY = "PATH_KEY";
-
-    static final int CHUNK_SIZE = 20000; // 分割大小
 
     public static AnalyseUrlResultModel analyseMsgInfo(HttpMsgInfo msgInfo) {
         //1、实现响应敏感信息提取
@@ -243,7 +242,7 @@ public class AnalyseInfo {
                 //多个正则匹配
                 if (rule.getMatch().equals("regular")){
                     for (String patter : rule.getKeyword()){
-                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, patter, CHUNK_SIZE);
+                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, patter, IProxyScanner.maxPatterChunkSize);
                         if (isNotEmptyObj(groups)){
                             JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(new ArrayList<>(groups)));
                             //stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
@@ -280,7 +279,7 @@ public class AnalyseInfo {
      */
     public static Set<String> findUriInfoByRegular(HttpMsgInfo msgInfo) {
         //存储所有提取的URL/URI
-        Set<String> allUriSet = new HashSet<>();
+        Set<String> allExtractUriSet = new HashSet<>();
 
         //转换响应体,后续可能需要解决编码问题
         String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
@@ -289,12 +288,19 @@ public class AnalyseInfo {
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
             // 针对通用的页面提取
             for (Pattern pattern:BurpExtender.URI_MATCH_REGULAR_COMPILE){
-                Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, pattern, CHUNK_SIZE);
-                stdout_println(LOG_DEBUG, String.format("[*] 提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
-                allUriSet.addAll(extractUri);
+                Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, pattern, IProxyScanner.maxPatterChunkSize);
+                allExtractUriSet.addAll(extractUri);
+                stdout_println(LOG_DEBUG, String.format("[*] 常规模式提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
+            }
+
+            // 针对webpack js页面的提取 判断文件名是否是JS后缀
+            if ("js".equals(msgInfo.getUrlInfo().getSuffix())){
+                Set<String> extractUri = respBody.length() > 30000 ? WebpackJsParser.parseWebpackSimpleChunk(respBody, IProxyScanner.maxPatterChunkSize) : WebpackJsParser.parseWebpackSimple(respBody);
+                allExtractUriSet.addAll(extractUri);
+                stdout_println(LOG_DEBUG, String.format("[*] Webpack提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
             }
         }
-        return allUriSet;
+        return allExtractUriSet;
     }
 
     /**

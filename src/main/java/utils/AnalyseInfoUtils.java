@@ -142,11 +142,6 @@ public class AnalyseInfoUtils {
         return matches;
     }
 
-    public static Set<String> extractUriMode1(String text, String regex, int chunkSize) {
-        Pattern pattern = Pattern.compile(regex);
-        return  extractUriMode1(text , pattern, chunkSize);
-    }
-
     /**
      * 对提取的信息进行简单的格式处理
      * @param extractUri

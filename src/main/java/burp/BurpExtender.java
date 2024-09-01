@@ -61,22 +61,25 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     public static List<FingerPrintRule> fingerprintRules;
 
+
+    //响应体分割的大小 字符串长度
+    public static int maxPatterChunkSizeDefault=20000;
     //最大支持存储的响应 比特长度
-    public static int maxStoreRespBodyLenDefault;
+    public static int maxStoreRespBodyLenDefault=500000;
     //自动处理任务的时间频率,性能越低,频率越应该慢
-    public static int monitorExecutorIntervalsDefault;
+    public static int monitorExecutorIntervalsDefault=4;
     //是否启用增强的path过滤模式 //需要设置默认关闭,暂时功能没有完善、对于URL无法访问的情况没有正常处理、导致卡顿
-    public static boolean dynamicPathFilterIsOpenDefault;
+    public static boolean dynamicPathFilterIsOpenDefault=false;
     //是否启用自动记录每个请求的PATH //自动记录功能应该开启,不然没有pathTree生成
-    public static boolean autoRecordPathIsOpenDefault;
+    public static boolean autoRecordPathIsOpenDefault=true;
     //是否进行自动PathTree生成URL
-    public static boolean autoPathsToUrlsIsOpenDefault;
+    public static boolean autoPathsToUrlsIsOpenDefault=true;
     //是否进行递归URL扫描
-    public static boolean autoRecursiveIsOpenDefault;
+    public static boolean autoRecursiveIsOpenDefault=false;
     //开关插件的监听功能
-    public static boolean proxyListenIsOpenDefault;
+    public static boolean proxyListenIsOpenDefault=false;
     //自动刷新未访问URL的功能
-    public static boolean autoRefreshUnvisitedIsOpenDefault;
+    public static boolean autoRefreshUnvisitedIsOpenDefault=false;
 
     //一些需要被排除|允许的情况
     public static List<String> CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置选项

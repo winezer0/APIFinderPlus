@@ -92,8 +92,9 @@
     注意：对于CONF_开头和location为config的规则，属于内部规则，不用于信息匹配。
 
     CONF_DEFAULT_PERFORMANCE: 默认的性能配置
-        "maxStoreRespBodyLenDefault=1000000",  修改保存后立即生效
-        "monitorExecutorIntervalsDefault=4",   修改保存后立即生效
+        "maxPatterChunkSizeDefault=1000000",  正则匹配一次性处理的响应长度 修改保存后立即生效
+        "maxStoreRespBodyLenDefault=1000000", 数据库保存响应体的最大大小 修改保存后立即生效
+        "monitorExecutorIntervalsDefault=4",  几秒钟执行一次检查提取操作 修改保存后立即生效
         其他默认UI按钮相关的参数,修改保存后,重启插件生效
     CONF_WHITE_URL_ROOT: 允许扫描的目标RootUrl关键字
     CONF_BLACK_URL_ROOT: 禁止扫描的目标RootUrl关键字
