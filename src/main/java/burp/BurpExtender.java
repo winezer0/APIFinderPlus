@@ -154,12 +154,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
             //初始化数据配置
             dbService = DBService.getInstance();
-            if(!BurpFileUtils.fileIsExistOnPluginDir(callbacks, dbService.DBFileName)){
-                dbService.initDBConnection();
-                dbService.initCreateTables();
-            }else {
-                dbService.initDBConnection();
-            }
+            dbService.initDBConnection();
+            dbService.initCreateTables();
 
             //注册监听操作
             iProxyScanner = new IProxyScanner();
