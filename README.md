@@ -5,9 +5,9 @@
 ### TODO
 
 ```
-【暂时忽略】 对非200响应但存在敏感信息的请求进行行处理【暂时未发现可以稳定复现的场景】
+【暂时忽略】 对非200响应但存在敏感信息的请求进行处理【暂时未发现可以稳定复现的场景】
 
-【暂时忽略】 复杂的还没找到规律，暂未=无法实现自动化的 webpack 封装JS内容分析希望大家踊跃提供。
+【暂时忽略】 复杂的还没找到规律，暂未实现自动化的 webpack 封装JS内容分析
 ```
 
 
@@ -25,7 +25,11 @@
 
 4、支持 对webpack的js的简单格式的拼接提取 （限制格式，但准确度高）
 
-![对webpack的js的简单格式的拼接提取](./doc/webpack简单格式提取1.png)
+组合形式 abcd.xxxx.js
+![webpack简单格式.字符型](./doc/webpack简单格式.字符型.png)
+
+组合形式 1234.xxxx.js
+![webpack简单格式.数字型](./doc/webpack简单格式.数字型.png)
 
 ### 注意事项
 
@@ -35,12 +39,12 @@
 
 3、因为功能过多，使用请将鼠标悬浮到文本或按钮上，查看操作描述
 
-### 运行流程
+### 基本流程 【旧版】
 
 ![APIFinder运行流程](./doc/APIFinder运行流程.png)
 
 
-### 主要任务
+### 主要任务 【更新】
 
 ```
 定时任务线程：
@@ -48,20 +52,22 @@
   - 是否存在未分析的 消息
     - 根据规则配置 匹配 提取 请求|响应中的敏感信息和URL、PATH
       - 分析结果存入数据库 AnalyseUrlResultTable 表
+- 查询数据库AnalyseUrlResultTable 表
+    - 将 AnalyseUrlResultTable 表中的新结果按照RootUrl分类插入到 AnalyseHostResultTable 表
+
 - autoPathsToUrlsIsOpen 开启自动基于路径计算URL功能 (默认关闭、支持手动)
   - 查询数据库  RecordPathTable
     - 检查是否存在没有加入到 网站路径树 的有效请求PATH
       - 根据已记录的URL路径计算/更新Pathree
         - 分析结果存入 PathTree 表
-  - 查询数据库 AnalyseUrlResultTable
-    - 检查是否存在没有根据PathTree计算PATH实际URL的数据
-      - 根据已记录的Pathree计算PATH可能的前缀
-        - 分析结果存入  AnalyseUrlResultTable 的 PATH计算URL
-  - 查询数据库 联合分析 PathTreeTable 和 AnalyseUrlResultTable 表
+        
+  - 查询数据库 联合分析 PathTreeTable 和 AnalyseHostResultTable 表
     - 检查是否存在已经更新的PathTree 但是还没有重新计算过PATH URL的数据
       - 根据已更新的Pathree计算新的PATH可能的前缀
+        - 分析结果存入  AnalyseHostResultTable 的 PATH计算URL 
+
 - autoRecursiveIsOpen 开启自动访问未访问的URL
-  - 查询数据库 AnalyseUrlResultTable 表
+  - 查询数据库 AnalyseHostResultTable 表
     - 判断是否URL是否都已经被访问
       - 对未访问URL构造HTTP请求
 ```
