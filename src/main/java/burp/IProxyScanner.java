@@ -655,7 +655,7 @@ public class IProxyScanner implements IProxyListener {
                         //4、更新动态的URL数据
                         int apiDataIndex = AnalyseHostResultTable.updateDynamicUrlsDataByModel(dynamicUrlsModel);
                         if (apiDataIndex > 0){
-                            notHasNewFindUrl = false; //标记已找到新的UR了
+                            notHasNewFindUrl = false; //标记已找到新的URL了
                             stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]", newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
                         }
                     }
