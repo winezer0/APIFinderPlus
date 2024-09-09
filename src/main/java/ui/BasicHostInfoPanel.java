@@ -585,7 +585,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                             }
                         });
-                
+
                 return null;
             }
         }.execute();
