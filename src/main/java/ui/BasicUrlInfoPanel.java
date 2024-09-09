@@ -14,7 +14,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -44,9 +43,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     private static IHttpService iHttpService; //请求服务信息,设置为全局变量,便于IMessageEditorController函数调用
 
     public static Timer basicUrlTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
-    public static LocalDateTime basicUrlOperationStartTime = LocalDateTime.now(); //操作开始时间
-
-    public static boolean basicUrlAutoRefreshIsOpen = false;
 
     public static BasicUrlInfoPanel getInstance() {
         if (instance == null) {
@@ -91,7 +87,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         initBasicUrlDataTableUIData(basicUrlMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimerBasicUrl(BasicUrlConfigPanel.timerDelayOnUrl * 1000);
+        initTimerBasicUrl();
+        // 启动定时器
+        basicUrlTimer.start();
     }
 
     /**
@@ -528,34 +526,38 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         tableUI.setComponentPopupMenu(popupMenu);
     }
 
-
     /**
      * 初始化任务定时器
-     * @param delay
      */
-    private void initTimerBasicUrl(int delay) {
-        // 创建一个每10秒触发一次的定时器
-        //int delay = 10000; // 延迟时间，单位为毫秒
+    public static void initTimerBasicUrl() {
+        stopTimerBasicUrl();
+
+        // 创建一个每 delay 秒触发一次的定时器
+        int delay = BasicUrlConfigPanel.timerDelayOnUrl * 1000;
         basicUrlTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (BasicUrlInfoPanel.basicUrlAutoRefreshIsOpen) {
+                if (IProxyScanner.autoRefreshUiIsOpen && basicUrlTimer.isRunning()) {
                     try{
+                        stdout_println(LOG_DEBUG, String.format("[*] Timer Refresh UI Basic Url On [%s]", delay));
                         // 调用刷新表格的方法
                         BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
                         //建议JVM清理内存
                         System.gc();
-                        //提示自动刷新表格完成
-                        stdout_println(LOG_DEBUG, String.format("[*] 定时刷新表格完成：Timer Basic Url On [%s]", delay));
-                    } catch (Exception ep){
-                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                    } catch (Exception exception){
+                        stderr_println(LOG_ERROR, String.format("[!] Timer Refresh UI Basic Url Error: %s", exception.getMessage()) );
                     }
                 }
             }
         });
+    }
 
-        // 启动定时器
-        basicUrlTimer.start();
+    // 定义一个方法来停止定时器
+    public static void stopTimerBasicUrl() {
+        if (basicUrlTimer != null && basicUrlTimer.isRunning()) {
+            basicUrlTimer.stop();
+            stdout_println(LOG_DEBUG, "[*] Stop Timer Basic Url");
+        }
     }
 
     /**

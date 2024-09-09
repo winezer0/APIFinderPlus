@@ -19,7 +19,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -45,9 +44,6 @@ public class BasicHostInfoPanel extends JPanel {
     private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
     public static Timer basicHostTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
-    public static LocalDateTime basicHostOperationStartTime = LocalDateTime.now(); //操作开始时间
-
-    public static boolean basicHostAutoRefreshIsOpen = false;
 
     public static BasicHostInfoPanel getInstance() {
         if (instance == null) {
@@ -91,7 +87,10 @@ public class BasicHostInfoPanel extends JPanel {
         initBasicHostDataTableUIData(basicHostMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimerBasicHost(BasicHostConfigPanel.timerDelayOnHost * 1000);
+        initTimerBasicHost();
+
+        // 启动定时器
+        basicHostTimer.start();
     }
 
 
@@ -204,39 +203,46 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostTableAddRightClickMenu(basicHostMsgTableUI, listSelectionModel);
     }
 
-
     /**
      * 初始化任务定时器 定时刷新UI内容
-     * @param delay
+     * @return
      */
-    private void initTimerBasicHost(int delay) {
-        // 创建一个每10秒触发一次的定时器
-        //int delay = 10000; // 延迟时间，单位为毫秒
+    public static void initTimerBasicHost() {
+        // 确保在重新初始化之前停止旧的定时器
+        stopTimerBasicHost();
+
+        int delay = BasicHostConfigPanel.timerDelayOnHost * 1000;
         basicHostTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //当定时自动刷新URL功能是开启时进行操作
-                if (BasicHostInfoPanel.basicHostAutoRefreshIsOpen) {
+                if (IProxyScanner.autoRefreshUiIsOpen && basicHostTimer.isRunning()) {
                     // 调用刷新表格的方法
                     try{
+                        stdout_println(LOG_DEBUG, String.format("[*] Timer Refresh UI Basic Host On [%s]", delay));
                         //仅当开启了 自动刷新未访问URL 时调用 更新未访问URL列的数据
-                        if (IProxyScanner.autoRefreshUnvisitedIsOpen)
+                        if (IProxyScanner.autoRefreshUnvisitedIsOpen){
                             BasicHostInfoPanel.getInstance().updateUnVisitedUrlsByRootUrls(null);
+                        }
                         // 调用刷新表格的方法
                         BasicHostInfoPanel.getInstance().refreshBasicHostTableModel();
                         //建议JVM清理内存
                         System.gc();
                         //提示自动刷新表格完成
-                        stdout_println(LOG_DEBUG, String.format("[*] 定时刷新表格完成：Timer Basic Host On [%s]", delay));
                     } catch (Exception exception){
-                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", exception.getMessage()) );
+                        stderr_println(LOG_ERROR, String.format("[!] Timer Refresh UI Basic Host Error: %s", exception.getMessage()) );
                     }
                 }
             }
         });
+    }
 
-        // 启动定时器
-        basicHostTimer.start();
+    // 定义一个方法来停止定时器
+    public static void stopTimerBasicHost() {
+        if (basicHostTimer != null && basicHostTimer.isRunning()) {
+            basicHostTimer.stop();
+            stdout_println(LOG_DEBUG, "[*] Stop Timer Basic Host");
+        }
     }
 
     /**

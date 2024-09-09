@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.time.LocalDateTime;
 
 import static utils.BurpPrintUtils.*;
 
@@ -18,13 +17,12 @@ public class BasicUrlConfigPanel extends JPanel {
     public static JLabel lbRequestCountOnUrl;   //记录所有加入到URL的请求
     public static JLabel lbTaskerCountOnUrl;    //记录所有加入数据库的请求
     public static JLabel lbAnalysisEndCountOnUrl;   //记录所有已经分析完成的结果数量
+    public static int timerDelayOnUrl=15;
 
     private static JComboBox<String> choicesComboBoxOnUrl;   //数据表显示快速选择框
     private static JTextField urlSearchBoxOnUrl;                 //URl搜索框
 
-    private static JToggleButton autoRefreshButtonOnUrl; //自动刷新开关按钮状态
-    private static JLabel autoRefreshTextOnUrl; //自动刷新按钮显示的文本
-    public static int timerDelayOnUrl = 15;  //定时器刷新间隔,单位秒
+    public static JToggleButton autoRefreshUiButtonOnUrl; //自动刷新开关按钮状态
 
     //用于两端联动使用
     public static JToggleButton proxyListenButtonOnUrl;
@@ -284,34 +282,22 @@ public class BasicUrlConfigPanel extends JPanel {
             }
         });
 
-
-        // 刷新按钮按钮
-        autoRefreshButtonOnUrl = new JToggleButton(UiUtils.getImageIcon("/icon/refreshButton.png", 24, 24));
-        autoRefreshButtonOnUrl.setSelectedIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24));
-        autoRefreshButtonOnUrl.setPreferredSize(new Dimension(30, 30));
-        autoRefreshButtonOnUrl.setBorder(null);  // 设置无边框
-        autoRefreshButtonOnUrl.setFocusPainted(false);  // 移除焦点边框
-        autoRefreshButtonOnUrl.setContentAreaFilled(false);  // 移除选中状态下的背景填充
-        autoRefreshButtonOnUrl.setToolTipText("用于控制表格是否自动化刷新，还是手工点击刷新");
-
-        // 刷新文本
-        autoRefreshTextOnUrl = new JLabel(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
-
+        //刷新按钮
+        autoRefreshUiButtonOnUrl= UiUtils.getToggleButtonByDefaultValue(BurpExtender.autoRefreshUiIsOpenDefault);
+        autoRefreshUiButtonOnUrl.setToolTipText(String.format("每[%s]秒刷新表格", timerDelayOnUrl));
         // 自动刷新按钮监听事件
-        autoRefreshButtonOnUrl.addActionListener(new ActionListener() {
+        autoRefreshUiButtonOnUrl.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 检查按钮的选中状态
-                if (autoRefreshButtonOnUrl.isSelected()) {
-                    BasicUrlInfoPanel.basicUrlAutoRefreshIsOpen = autoRefreshButtonOnUrl.isSelected();
-                    autoRefreshTextOnUrl.setText(String.format("自动每%s秒刷新表格", timerDelayOnUrl));
-                } else {
-                    BasicUrlInfoPanel.basicUrlAutoRefreshIsOpen = !autoRefreshButtonOnUrl.isSelected();
-                    autoRefreshTextOnUrl.setText(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
-                }
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = autoRefreshUiButtonOnUrl.isSelected();
+                IProxyScanner.autoRefreshUiIsOpen = BurpExtender.autoRefreshUiIsOpenDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("autoRefreshUiIsOpen: %s", IProxyScanner.autoRefreshUiIsOpen));
+
+                BasicHostConfigPanel.autoRefreshUiButtonOnHost.setSelected(selected); //联动更新URL面板的情况
+
             }
         });
-
 
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
@@ -346,19 +332,16 @@ public class BasicUrlConfigPanel extends JPanel {
 
         // 定时刷新按钮
         gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(autoRefreshButtonOnUrl, gbc_buttons);
-        // 定时刷新按钮旁边的描述
-        gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
-        FilterPanel.add(autoRefreshTextOnUrl, gbc_buttons);
+        FilterPanel.add(autoRefreshUiButtonOnUrl, gbc_buttons);
 
         // 点击按钮 点击后刷新数据 含未访问数据
-        gbc_buttons.gridx = 15; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 14; // 设置按钮的横坐标位置
         FilterPanel.add(clickRefreshButtonOnUrl, gbc_buttons);
 
         // 添加填充以在右侧占位
         GridBagConstraints gbc_rightFiller = new GridBagConstraints();
         gbc_rightFiller.weightx = 1; // 使得这个组件吸收额外的水平空间
-        gbc_rightFiller.gridx = 16; // 位置设置为最后一个单元格
+        gbc_rightFiller.gridx = 15; // 位置设置为最后一个单元格
         gbc_rightFiller.gridy = 0; // 第一行
         gbc_rightFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_rightFiller);
@@ -375,7 +358,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnall = new GridBagConstraints();
         gbc_btnall.insets = new Insets(0, 0, 0, 5);
         gbc_btnall.fill = 0;
-        gbc_btnall.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnall.gridx = 16;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnall.gridy = 0;
         FilterPanel.add(choicesComboBoxOnUrl, gbc_btnall);
         // 检索框
@@ -383,7 +366,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
-        gbc_btnSearchField.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnSearchField.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
         urlSearchBoxOnUrl.setToolTipText("搜索URL关键字");
         FilterPanel.add(urlSearchBoxOnUrl, gbc_btnSearchField);
@@ -394,7 +377,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnSearch = new GridBagConstraints();
         gbc_btnSearch.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearch.fill = 0;
-        gbc_btnSearch.gridx = 19;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnSearch.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearch.gridy = 0;
         FilterPanel.add(searchButton, gbc_btnSearch);
 
@@ -405,7 +388,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnMore = new GridBagConstraints();
         gbc_btnMore.insets = new Insets(0, 0, 0, 5);
         gbc_btnMore.fill = 0;
-        gbc_btnMore.gridx = 20;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnMore.gridx = 19;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnMore.gridy = 0;
         FilterPanel.add(moreButton, gbc_btnMore);
 
@@ -437,7 +420,6 @@ public class BasicUrlConfigPanel extends JPanel {
                 String searchText = urlSearchBoxOnUrl.getText();
                 String selectedOption = (String) BasicUrlConfigPanel.choicesComboBoxOnUrl.getSelectedItem();
                 BasicUrlInfoPanel.showDataUrlTableByFilter(selectedOption, searchText);
-                setAutoRefreshCloseOnUrl();
             }
         });
 
@@ -448,7 +430,6 @@ public class BasicUrlConfigPanel extends JPanel {
                 String searchText = urlSearchBoxOnUrl.getText();
                 String selectedOption = (String) BasicUrlConfigPanel.choicesComboBoxOnUrl.getSelectedItem();
                 BasicUrlInfoPanel.showDataUrlTableByFilter(selectedOption, searchText);
-                setAutoRefreshCloseOnUrl();
             }
         });
 
@@ -459,19 +440,6 @@ public class BasicUrlConfigPanel extends JPanel {
             }
         });
  }
-
-    //设置打开自动刷新
-    public static void setAutoRefreshOpenOnUrl(){
-        autoRefreshButtonOnUrl.setSelected(true);
-        autoRefreshTextOnUrl.setText(String.format("自动每%s秒刷新表格", timerDelayOnUrl));
-    }
-
-    //设置关闭自动刷新
-    public static void setAutoRefreshCloseOnUrl(){
-        autoRefreshButtonOnUrl.setSelected(false);
-        autoRefreshTextOnUrl.setText(String.format("暂停每%s秒刷新表格", timerDelayOnUrl));
-        BasicUrlInfoPanel.basicUrlOperationStartTime = LocalDateTime.now();
-    }
 
     public static String getUrlSearchBoxTextOnUrl() {
         return urlSearchBoxOnUrl.getText();

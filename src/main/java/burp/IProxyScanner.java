@@ -45,6 +45,8 @@ public class IProxyScanner implements IProxyListener {
     public static boolean proxyListenIsOpen;
     //自动刷新未访问URL的功能
     public static boolean autoRefreshUnvisitedIsOpen;
+    //自动刷新UI的功能
+    public static boolean autoRefreshUiIsOpen;
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -68,6 +70,7 @@ public class IProxyScanner implements IProxyListener {
         autoRecursiveIsOpen = autoRecursiveIsOpenDefault;
         proxyListenIsOpen = proxyListenIsOpenDefault;
         autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault;
+        autoRefreshUiIsOpen = autoRefreshUiIsOpenDefault;
 
         //加载缓存过滤器
         urlCompareMap = BurpFileUtils.LoadJsonFromFile(urlCompareMapCacheFile);

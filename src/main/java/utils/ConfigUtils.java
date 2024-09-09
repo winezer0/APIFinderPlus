@@ -174,6 +174,10 @@ public class ConfigUtils {
                         BurpExtender.autoRefreshUnvisitedIsOpenDefault = Boolean.parseBoolean(value);
                         //stdout_println(LOG_DEBUG, String.format("[+] autoRefreshUnvisitedIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
                         break;
+                    case "autoRefreshUiIsOpenDefault":
+                        BurpExtender.autoRefreshUiIsOpenDefault = Boolean.parseBoolean(value);
+                        //stdout_println(LOG_DEBUG, String.format("[+] autoRefreshTableUiIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
                     default:
                         stderr_println(LOG_ERROR,  "[!] Unknown configuration key: " + key);
                 }

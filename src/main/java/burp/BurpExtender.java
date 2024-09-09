@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import database.DBService;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
+import ui.BasicHostInfoPanel;
 import ui.BasicUrlInfoPanel;
 import ui.Tabs;
 import utils.BurpFileUtils;
@@ -34,8 +35,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     private static IProxyScanner iProxyScanner;
     private static Tabs tags;
-
-    public static boolean EXTENSION_IS_LOADED = false; //记录插件是否处于加载状态
 
     public static PrintWriter getStdout() {
         return stdout;
@@ -80,6 +79,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     public static boolean proxyListenIsOpenDefault=false;
     //自动刷新未访问URL的功能
     public static boolean autoRefreshUnvisitedIsOpenDefault=false;
+    //自动刷新表格
+    public static boolean autoRefreshUiIsOpenDefault =false;
 
     //一些需要被排除|允许的情况
     public static List<String> CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置选项
@@ -167,7 +168,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
 
             //设置插件已加载完成
-            EXTENSION_IS_LOADED = true;
             stdout_println(LOG_INFO, String.format("[+] Extension [%s] Loaded Successfully ...", extensionName));
         }});
     }
@@ -177,7 +177,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
         // 扩展卸载时，立刻关闭线程池
         stdout_println(LOG_DEBUG, "[+] Extension Will Unloaded, Cleaning Resources ing ...");
 
-
         // 立刻关闭线程池
         if (iProxyScanner.executorService != null) {
             // 尝试立即关闭所有正在执行的任务
@@ -185,11 +184,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
             stdout_println(LOG_DEBUG, "[+] Try to Stop All Tasks, The Number of Not Executed Tasks：" + notExecutedTasks.size());
         }
 
-        //更新插件状态
-        EXTENSION_IS_LOADED = false;
-
-        // 停止面板更新器
-        BasicUrlInfoPanel.basicUrlTimer.stop();
+        //停止UI的定时任务    // 停止面板更新器
+        BasicUrlInfoPanel.stopTimerBasicUrl();
+        BasicHostInfoPanel.stopTimerBasicHost();
 
         // 关闭计划任务
         IProxyScanner.shutdownMonitorExecutor();

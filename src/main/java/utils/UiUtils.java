@@ -560,8 +560,8 @@ public class UiUtils {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的无效数据
                 TableLineDataModelBasicUrlSQL.clearUrlTableLineAnyIsNull();
-                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
-                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
+//  TODO              BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
+//                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }
         });
 
@@ -571,8 +571,8 @@ public class UiUtils {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
                 UiUtils.clearModelData(false);
-                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
-                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
+//  TODO              BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
+//                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }
         });
 
@@ -582,8 +582,8 @@ public class UiUtils {
             public void actionPerformed(ActionEvent e) {
                 // 清空表格模型中的所有行数据
                 UiUtils.clearModelData(true);
-                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
-                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
+//    TODO            BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
+//                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }
         });
 
@@ -592,7 +592,7 @@ public class UiUtils {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DBService.clearRecordTables();
-                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
+//    TODO            BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
             }
         });
 
@@ -601,8 +601,8 @@ public class UiUtils {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DBService.clearRecordUrlTable();
-                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
-                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
+//   TODO             BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
+//                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }
         });
 

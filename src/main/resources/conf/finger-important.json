@@ -14,7 +14,8 @@
 				"autoPathsToUrlsIsOpenDefault=false",
 				"autoRecursiveIsOpenDefault=false",
 				"proxyListenIsOpenDefault=false",
-				"autoRefreshUnvisitedIsOpenDefault=false"
+				"autoRefreshUnvisitedIsOpenDefault=false",
+				"autoRefreshUiIsOpenDefault=false"
 			],
 			"location": "config",
 			"match": "keyword",
