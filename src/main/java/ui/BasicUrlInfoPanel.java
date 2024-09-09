@@ -14,7 +14,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
@@ -92,7 +91,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         initBasicUrlDataTableUIData(basicUrlMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initBasicUrlTimer(BasicUrlConfigPanel.timerDelayOnUrl * 1000);
+        initTimerBasicUrl(BasicUrlConfigPanel.timerDelayOnUrl * 1000);
     }
 
     /**
@@ -534,22 +533,23 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      * 初始化任务定时器
      * @param delay
      */
-    private void initBasicUrlTimer(int delay) {
+    private void initTimerBasicUrl(int delay) {
         // 创建一个每10秒触发一次的定时器
         //int delay = 10000; // 延迟时间，单位为毫秒
         basicUrlTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
-                    // 调用刷新表格的方法
+                if (BasicUrlInfoPanel.basicUrlAutoRefreshIsOpen) {
                     try{
+                        // 调用刷新表格的方法
                         BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
+                        //建议JVM清理内存
+                        System.gc();
+                        //提示自动刷新表格完成
+                        stdout_println(LOG_DEBUG, String.format("[*] 定时刷新表格完成：Timer Basic Url On [%s]", delay));
                     } catch (Exception ep){
                         stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
                     }
-
-                    //建议JVM清理内存
-                    System.gc();
                 }
             }
         });
@@ -817,22 +817,10 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      * 定时刷新表数据
      */
     public void refreshBasicUrlTableModel(boolean checkAutoRefreshButtonStatus) {
-        //当已经卸载插件时,不要再进行刷新UI
-        if (!BurpExtender.EXTENSION_IS_LOADED)
-            return;
-
         //设置已加入数据库的数量
         BasicUrlConfigPanel.lbTaskerCountOnUrl.setText(String.valueOf(CommonFetchData.fetchTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
         BasicUrlConfigPanel.lbAnalysisEndCountOnUrl.setText(String.valueOf(CommonFetchData.fetchTableCountsByStatus(Constants.ANALYSE_END)));
-
-        // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (checkAutoRefreshButtonStatus && basicUrlAutoRefreshIsOpen) {
-            if (Duration.between(basicUrlOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
-            }
-            return;
-        }
 
         // 获取搜索框和搜索选项
         final String searchText = BasicUrlConfigPanel.getUrlSearchBoxTextOnUrl();

@@ -19,7 +19,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
@@ -91,7 +90,7 @@ public class BasicHostInfoPanel extends JPanel {
         initBasicHostDataTableUIData(basicHostMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initBasicHostTimer(BasicHostConfigPanel.timerDelayOnHost * 1000);
+        initTimerBasicHost(BasicHostConfigPanel.timerDelayOnHost * 1000);
     }
 
 
@@ -209,31 +208,28 @@ public class BasicHostInfoPanel extends JPanel {
      * 初始化任务定时器 定时刷新UI内容
      * @param delay
      */
-    private void initBasicHostTimer(int delay) {
+    private void initTimerBasicHost(int delay) {
         // 创建一个每10秒触发一次的定时器
         //int delay = 10000; // 延迟时间，单位为毫秒
         basicHostTimer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (IProxyScanner.executorService == null || IProxyScanner.executorService.getActiveCount() < 3) {
-                    //stdout_println(LOG_DEBUG, String.format(String.format("[*] 当前进程数量[%s]", IProxyScanner.executorService.getActiveCount())) );
-                    // 调用更新未访问URL列的数据
-                    try{
-                        //当添加进程还比较多的时候,暂时不进行响应数据处理
-                        updateUnVisitedUrlsByRootUrls(null);
-                    } catch (Exception ep){
-                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
-                    }
-
+                //当定时自动刷新URL功能是开启时进行操作
+                if (BasicHostInfoPanel.basicHostAutoRefreshIsOpen) {
                     // 调用刷新表格的方法
                     try{
-                        BasicHostInfoPanel.getInstance().refreshBasicHostTableModel(false);
-                    } catch (Exception ep){
-                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
+                        //仅当开启了 自动刷新未访问URL 时调用 更新未访问URL列的数据
+                        if (IProxyScanner.autoRefreshUnvisitedIsOpen)
+                            BasicHostInfoPanel.getInstance().updateUnVisitedUrlsByRootUrls(null);
+                        // 调用刷新表格的方法
+                        BasicHostInfoPanel.getInstance().refreshBasicHostTableModel();
+                        //建议JVM清理内存
+                        System.gc();
+                        //提示自动刷新表格完成
+                        stdout_println(LOG_DEBUG, String.format("[*] 定时刷新表格完成：Timer Basic Host On [%s]", delay));
+                    } catch (Exception exception){
+                        stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", exception.getMessage()) );
                     }
-
-                    //建议JVM清理内存
-                    System.gc();
                 }
             }
         });
@@ -404,23 +400,11 @@ public class BasicHostInfoPanel extends JPanel {
     /**
      * 定时刷新表数据
      */
-    public void refreshBasicHostTableModel(boolean checkAutoRefreshButtonStatus) {
-        //当已经卸载插件时,不要再进行刷新UI
-        if (!BurpExtender.EXTENSION_IS_LOADED)
-            return;
-
+    public void refreshBasicHostTableModel() {
         //设置已加入数据库的数量
         BasicHostConfigPanel.lbTaskerCountOnHost.setText(String.valueOf(CommonFetchData.fetchTableCounts(ReqDataTable.tableName)));
         //设置成功分析的数量
         BasicHostConfigPanel.lbAnalysisEndCountOnHost.setText(String.valueOf(CommonFetchData.fetchTableCountsByStatus(Constants.ANALYSE_END)));
-
-        // 刷新页面, 如果自动更新关闭，则不刷新页面内容
-        if (checkAutoRefreshButtonStatus && basicHostAutoRefreshIsOpen) {
-            if (Duration.between(basicHostOperationStartTime, LocalDateTime.now()).getSeconds() > 600) {
-                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
-            }
-            return;
-        }
 
         // 获取搜索框和搜索选项
         final String searchText = BasicHostConfigPanel.getUrlSearchBoxTextOnHost();
@@ -633,7 +617,7 @@ public class BasicHostInfoPanel extends JPanel {
                         @Override
                         protected Void doInBackground() throws Exception {
                             CommonDeleteLine.deleteLineByIds(AnalyseHostResultTable.tableName, ids);
-                            refreshBasicHostTableModel(false);
+                            refreshBasicHostTableModel();
                             return null;
                         }
                     }.execute();
@@ -657,7 +641,7 @@ public class BasicHostInfoPanel extends JPanel {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 AnalyseHostUnVisitedUrls.clearUnVisitedUrlsByRootUrls(rootUrls);
-                                refreshBasicHostTableModel(false);
+                                refreshBasicHostTableModel();
                                 return null;
                             }
                         }.execute();
@@ -695,7 +679,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 RecordUrlTable.insertOrUpdateAccessedUrlsBatch(new ArrayList<>(unvisitedUrlsSet), 299);
                                 //批量删除所有msgHashList
                                 AnalyseHostUnVisitedUrls.clearUnVisitedUrlsByRootUrls(rootUrls);
-                                refreshBasicHostTableModel(false);
+                                refreshBasicHostTableModel();
                                 return null;
                             }
                         }.execute();
@@ -721,7 +705,7 @@ public class BasicHostInfoPanel extends JPanel {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 updateUnVisitedUrlsByRootUrls(rootUrls);
-                                refreshBasicHostTableModel(false);
+                                refreshBasicHostTableModel();
                                 return null;
                             }
                         }.execute();
@@ -755,7 +739,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 }
                                 //更新 检查 rootUrls 对应的 未访问URl情况
                                 updateUnVisitedUrlsByRootUrls(rootUrls);
-                                refreshBasicHostTableModel(false);
+                                refreshBasicHostTableModel();
                                 return null;
                             }
                         }.execute();
@@ -782,7 +766,7 @@ public class BasicHostInfoPanel extends JPanel {
                             protected Void doInBackground() throws Exception {
                                 CommonDeleteLine.deleteLineByRootUrls(PathTreeTable.tableName, rootUrls);
                                 CommonDeleteLine.deleteLineByRootUrls(RecordPathTable.tableName, rootUrls);
-                                refreshBasicHostTableModel(false);
+                                refreshBasicHostTableModel();
                                 return null;
                             }
                         }.execute();
@@ -820,7 +804,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 stdout_println(LOG_DEBUG, String.format("delete ReqData Count：%s , delete Analyse Host Result Count:%s, delete Analyse Url Result Count:%s", countReq, countHost, countUrl));
 
                                 //3、刷新表格
-                                refreshBasicHostTableModel(false);
+                                refreshBasicHostTableModel();
                                 return null;
                             }
                         }.execute();

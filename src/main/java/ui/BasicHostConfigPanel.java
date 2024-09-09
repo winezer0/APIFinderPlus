@@ -182,25 +182,17 @@ public class BasicHostConfigPanel extends JPanel {
 
                     // 更换为新图标
                     clickRefreshButtonOnHost.setIcon(UiUtils.getImageIcon("/icon/runningButton.png", 24, 24)); // 立即显示新图标
-
-                    //关键的代码
-                    // 调用更新未访问URL列的数据
                     try{
-                        //当添加进程还比较多的时候,暂时不进行响应数据处理
+                        // 调用更新未访问URL列的数据
                         BasicHostInfoPanel.getInstance().updateUnVisitedUrlsByRootUrls(null);
-                    } catch (Exception ep){
-                        stderr_println(LOG_ERROR, String.format("[!] 更新未访问URL发生错误：%s", ep.getMessage()) );
-                    }
-
-                    // 调用刷新表格的方法
-                    try{
-                        BasicHostInfoPanel.getInstance().refreshBasicHostTableModel(false);
+                        // 调用刷新表格的方法
+                        BasicHostInfoPanel.getInstance().refreshBasicHostTableModel();
+                        //建议JVM清理内存
+                        System.gc();
                     } catch (Exception ep){
                         stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
                     }
 
-                    //建议JVM清理内存
-                    System.gc();
                     // 设置定时器，5秒后允许再次点击并恢复图标
                     Timer timer = new Timer(3000, new ActionListener() {
                         @Override

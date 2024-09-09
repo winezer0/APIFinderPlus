@@ -189,13 +189,11 @@ public class BasicUrlConfigPanel extends JPanel {
                     // 调用刷新表格的方法
                     try{
                         BasicUrlInfoPanel.getInstance().refreshBasicUrlTableModel(false);
+                        //建议JVM清理内存
+                        System.gc();
                     } catch (Exception ep){
                         stderr_println(LOG_ERROR, String.format("[!] 刷新表格发生错误：%s", ep.getMessage()) );
                     }
-
-                    //建议JVM清理内存
-                    System.gc();
-
                     // 设置定时器，5秒后允许再次点击并恢复图标
                     Timer timer = new Timer(3000, new ActionListener() {
                         @Override
