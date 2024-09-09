@@ -43,18 +43,6 @@ public class UiUtils {
         return new ImageIcon(newImg);
     }
 
-    public static String encodeForHTML(String input) {
-        if(input == null) {
-            return "";
-        }
-        return input.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#x27;")
-                .replace("/", "&#x2F;");
-    }
-
     /**
      * 获取当前显示行的 number
      */

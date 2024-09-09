@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static utils.BurpPrintUtils.LOG_ERROR;
@@ -56,7 +57,7 @@ public class AnalyseHostResultTable {
      */
     public static synchronized int insertOrUpdateAnalyseHostResult(AnalyseHostResultModel analyseHostResultModel){
         String rootUrl = analyseHostResultModel.getRootUrl();
-        JSONArray infoArray = analyseHostResultModel.getInfoArray();
+        HashMap<String, JSONArray> urlInfoArrayMap = analyseHostResultModel.getUrlInfoArrayMap();
         List<String> urlList = analyseHostResultModel.getUrlList();
         List<String> pathList = analyseHostResultModel.getPathList();
         List<String> apiList = analyseHostResultModel.getApiList();
@@ -82,8 +83,8 @@ public class AnalyseHostResultTable {
                 try (PreparedStatement stmt2 = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt2.setString(1, rootUrl);
 
-                    stmt2.setString(2, CastUtils.toJsonString(infoArray));
-                    stmt2.setInt(3, infoArray.size());
+                    stmt2.setString(2, CastUtils.toJsonString(urlInfoArrayMap));
+                    stmt2.setInt(3, urlInfoArrayMap.size());
                     stmt2.setBoolean(4, hasImportant);
 
                     stmt2.setString(5, CastUtils.toJsonString(urlList));
@@ -113,7 +114,7 @@ public class AnalyseHostResultTable {
                 return 0;
             } else {
                 int id = rs.getInt("id");
-                JSONArray oldInfoArray = CastUtils.toJsonArray(rs.getString("find_info"));
+                HashMap<String, JSONArray> oldUrlInfoArrayMap = CastUtils.toUrlInfoArrayMap(rs.getString("find_info"));
                 Boolean oldHasImportant = rs.getBoolean("has_important");
                 List<String> oldUrlList = CastUtils.toStringList(rs.getString("find_url"));
                 List<String> oldPathList = CastUtils.toStringList(rs.getString("find_path"));
@@ -128,9 +129,9 @@ public class AnalyseHostResultTable {
 
                 try (PreparedStatement stmt2 = conn.prepareStatement(updateSql)) {
                     //find_info
-                    JSONArray newInfoArray = CastUtils.listAddList(infoArray, oldInfoArray);
-                    stmt2.setString(1, CastUtils.toJsonString(newInfoArray));
-                    stmt2.setInt(2, newInfoArray.size());
+                    HashMap<String, JSONArray> newUrlInfoArrayMap = CastUtils.mapAddMap(oldUrlInfoArrayMap, urlInfoArrayMap);
+                    stmt2.setString(1, CastUtils.toJsonString(newUrlInfoArrayMap));
+                    stmt2.setInt(2, newUrlInfoArrayMap.size());
 
                     //has_important
                     stmt2.setBoolean(3, hasImportant||oldHasImportant);

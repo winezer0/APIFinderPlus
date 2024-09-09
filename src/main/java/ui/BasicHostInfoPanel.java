@@ -385,7 +385,7 @@ public class BasicHostInfoPanel extends JPanel {
         BasicHostTableTabDataModel tabDataModel = AnalyseHostResultTable.fetchHostResultByRootUrl(currentRootUrl);
         if (tabDataModel != null) {
             //格式化为可输出的类型
-            String findInfo = CastUtils.infoJsonArrayFormatHtml(tabDataModel.getFindInfo());
+            String findInfo = CastUtils.urlInfoJsonArrayMapFormatHtml(tabDataModel.getFindInfo());
             String findUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getFindUrl());
             String findPath = CastUtils.stringJsonArrayFormat(tabDataModel.getFindPath());
             String findApi = CastUtils.stringJsonArrayFormat(tabDataModel.getFindApi());

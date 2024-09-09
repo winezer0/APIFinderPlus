@@ -3,7 +3,9 @@ package model;
 import com.alibaba.fastjson2.JSONArray;
 import utils.CastUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AnalyseUrlResultModel {
     private String reqUrl;
@@ -54,5 +56,13 @@ public class AnalyseUrlResultModel {
 
     public Boolean getHasImportant() {
         return hasImportant;
+    }
+
+    public HashMap<String, JSONArray> getUrlInfoArrayMap() {
+        HashMap<String,JSONArray> urlInfoArrayMap= new HashMap<>();
+        if (!infoArray.isEmpty()){
+            urlInfoArrayMap.put(reqUrl,infoArray);
+        }
+        return urlInfoArrayMap;
     }
 }

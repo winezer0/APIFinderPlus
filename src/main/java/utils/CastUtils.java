@@ -1,9 +1,9 @@
 package utils;
 
 import burp.AnalyseInfo;
-import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.TypeReference;
 import model.HttpUrlInfo;
 import utilbox.HelperPlus;
 
@@ -88,7 +88,8 @@ public class CastUtils {
         if (isEmptyObj(listA) || isEmptyObj(listB)) return listA;
 
         Set<String> result = new HashSet<>(listA);
-        result.removeAll(listB);
+        //result.removeAll(listB);
+        listB.forEach(result::remove);
         return new ArrayList<>(result);
     }
 
@@ -100,7 +101,6 @@ public class CastUtils {
             return new JSONArray();
 
         return JSONArray.parseArray(jsonString);
-
     }
 
     /**
@@ -172,85 +172,6 @@ public class CastUtils {
         combinedArray.addAll(arrayB);
         combinedArray = CastUtils.deduplicateJsonArray(combinedArray);
         return combinedArray;
-    }
-
-
-    /**
-     * 格式化Json数据为可输出的状态
-     */
-    public static String infoJsonArrayFormatHtml(String jsonArrayString) {
-        if (jsonArrayString == null || jsonArrayString.length()<=2 )
-            return "";
-
-        JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
-        StringBuilder formattedResult = new StringBuilder();
-
-        for (Object obj : jsonArray) {
-            if (obj instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject) obj;
-
-                // 使用String.format进行格式化
-                String formattedItem = String.format(
-                        "############# type: %s #############<br>" +
-                                "describe: <span style='color: $color$};'>%s</span><br>" +
-                                "value: <span style='color: $color$};'>%s</span><br>" +
-                                "match: %s<br>" +
-                                "accuracy: %s<br>" +
-                                "important: %s<br>"
-                        ,
-                        jsonObject.getString(AnalyseInfo.type),
-                        jsonObject.getString(AnalyseInfo.describe),
-                        jsonObject.getString(AnalyseInfo.value),
-                        jsonObject.getString(AnalyseInfo.match),
-                        jsonObject.getString(AnalyseInfo.accuracy),
-                        jsonObject.getString(AnalyseInfo.important)
-                );
-
-                //进行颜色标记
-                String color = jsonObject.getBoolean("important") ? "red" : "blue";
-                formattedItem = formattedItem.replace("$color$",color);
-                formattedResult.append(formattedItem);
-            }
-        }
-
-        return formattedResult.toString();
-    }
-
-    /**
-     * 格式化Json数据为可输出的状态
-     */
-    public static String infoJsonStringSetFormatText(Set<String> infoJsonSet) {
-        if (infoJsonSet.isEmpty())
-            return "";
-
-        StringBuilder formattedResult = new StringBuilder();
-
-        for (String infoJsonString : infoJsonSet) {
-            JSONObject jsonObject = JSONObject.parse(infoJsonString);
-            if (!jsonObject.isEmpty()) {
-                // 使用String.format进行格式化
-                String formattedItem = String.format(
-                        "############# type: %s #############\n" +
-                                "describe: %s\n" +
-                                "value: %s\n" +
-                                "match: %s\n" +
-                                "accuracy: %s\n" +
-                                "important: %s\n"
-                        ,
-                        jsonObject.getString(AnalyseInfo.type),
-                        jsonObject.getString(AnalyseInfo.describe),
-                        jsonObject.getString(AnalyseInfo.value),
-                        jsonObject.getString(AnalyseInfo.match),
-                        jsonObject.getString(AnalyseInfo.accuracy),
-                        jsonObject.getString(AnalyseInfo.important)
-                );
-
-                //进行颜色标记
-                formattedResult.append(formattedItem);
-            }
-        }
-
-        return formattedResult.toString();
     }
 
 
@@ -383,5 +304,119 @@ public class CastUtils {
      */
     public static boolean isNotEmptyObj(Object obj) {
         return !isEmptyObj(obj);
+    }
+
+    //还原 Map<String,Array> 格式
+    public static HashMap<String, JSONArray> toUrlInfoArrayMap(String jsonString) {
+        // 使用 FastJSON2 的 parseObject 方法，传入 HashMap 的具体类型
+        HashMap<String, JSONArray> urlInfoArrayMap = JSONObject.parseObject(jsonString, new TypeReference<HashMap<String, JSONArray>>(){});
+        return urlInfoArrayMap;
+    }
+
+    public static HashMap<String, JSONArray> mapAddMap(HashMap<String, JSONArray> map1, HashMap<String, JSONArray> map2) {
+        HashMap<String, JSONArray> map = new HashMap<>();
+        if (map1.size()>0) map.putAll(map1);
+        if (map2.size()>0) map.putAll(map2);
+        return map;
+    }
+
+    public static String escapeHtml(String input) {
+        if(input == null) {
+            return "";
+        }
+        return input.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#x27;")
+                .replace("/", "&#x2F;");
+    }
+
+    /**
+     * 格式化Json数据为可输出的状态
+     */
+    public static String infoJsonArrayFormatHtml(String jsonArrayString) {
+        if (jsonArrayString == null || jsonArrayString.length()<=2 )
+            return "";
+
+        JSONArray jsonArray = JSONArray.parseArray(jsonArrayString);
+        StringBuilder formattedResult = new StringBuilder();
+
+        for (Object obj : jsonArray) {
+            if (obj instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject) obj;
+
+                // 使用String.format进行格式化
+                String formattedItem = String.format(
+                        "# ############# type: %s #############<br>" +
+                                "# describe: <span style='color: $color$};'>%s</span><br>" +
+                                "# value: <span style='color: $color$};'>%s</span><br>" +
+                                "# match: %s<br>" +
+                                "# accuracy: %s<br>" +
+                                "# important: %s<br>"
+                        ,
+                        jsonObject.getString(AnalyseInfo.type),
+                        jsonObject.getString(AnalyseInfo.describe),
+                        escapeHtml(jsonObject.getString(AnalyseInfo.value)),
+                        escapeHtml(jsonObject.getString(AnalyseInfo.match)),
+                        jsonObject.getString(AnalyseInfo.accuracy),
+                        jsonObject.getString(AnalyseInfo.important)
+                );
+
+                //进行颜色标记
+                String color = jsonObject.getBoolean("important") ? "red" : "blue";
+                formattedItem = formattedItem.replace("$color$",color);
+                formattedResult.append(formattedItem);
+            }
+        }
+
+        return formattedResult.toString();
+    }
+
+    /**
+     * 格式化Json数据为可输出的状态
+     */
+    public static String urlInfoJsonArrayMapFormatHtml(String urlInfoJsonArrayMapString) {
+        if (urlInfoJsonArrayMapString == null || urlInfoJsonArrayMapString.length()<=2 )
+            return "";
+
+        HashMap<String, JSONArray> urlInfoJsonArrayMap = toUrlInfoArrayMap(urlInfoJsonArrayMapString);
+        StringBuilder formattedResult = new StringBuilder();
+
+        // 遍历 HashMap
+        for (Map.Entry<String, JSONArray> entry : urlInfoJsonArrayMap.entrySet()) {
+            String infoUrl = entry.getKey();
+            JSONArray jsonArray = entry.getValue();
+            for (Object obj : jsonArray) {
+                if (obj instanceof JSONObject) {
+                    JSONObject jsonObject = (JSONObject) obj;
+
+                    // 使用String.format进行格式化
+                    String formattedItem = String.format(
+                            "# ############# type: %s #############<br>" +
+                                    "# Describe: <span style='color: $color$};'>%s</span><br>" +
+                                    "# Value: <span style='color: $color$};'>%s</span><br>" +
+                                    "# Match: %s<br>" +
+                                    "# Accuracy: %s<br>" +
+                                    "# Important: %s<br>" +
+                                    "# FromUrl: %s<br>"
+                            ,
+                            jsonObject.getString(AnalyseInfo.type),
+                            jsonObject.getString(AnalyseInfo.describe),
+                            escapeHtml(jsonObject.getString(AnalyseInfo.value)),
+                            escapeHtml(jsonObject.getString(AnalyseInfo.match)),
+                            jsonObject.getString(AnalyseInfo.accuracy),
+                            jsonObject.getString(AnalyseInfo.important),
+                            infoUrl
+                    );
+
+                    //进行颜色标记
+                    String color = jsonObject.getBoolean("important") ? "red" : "blue";
+                    formattedItem = formattedItem.replace("$color$",color);
+                    formattedResult.append(formattedItem);
+                }
+            }
+        }
+        return formattedResult.toString();
     }
 }

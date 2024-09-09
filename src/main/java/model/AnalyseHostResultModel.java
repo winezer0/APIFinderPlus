@@ -3,6 +3,7 @@ package model;
 import com.alibaba.fastjson2.JSONArray;
 import utils.CastUtils;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public class AnalyseHostResultModel {
     private String rootUrl;
-    private JSONArray infoArray;
+    private HashMap<String, JSONArray> urlInfoArrayMap;
     private List<String> urlList;
     private List<String> pathList;
     private List<String> apiList;
@@ -20,7 +21,7 @@ public class AnalyseHostResultModel {
     // 中转构造函数
     public AnalyseHostResultModel(AnalyseUrlResultModel analyseUrlResultModel) {
         this.rootUrl = new HttpUrlInfo(analyseUrlResultModel.getReqUrl()).getRootUrlUsual();
-        this.infoArray = analyseUrlResultModel.getInfoArray();
+        this.urlInfoArrayMap = analyseUrlResultModel.getUrlInfoArrayMap();
         this.urlList = analyseUrlResultModel.getUrlList();
         this.pathList = analyseUrlResultModel.getPathList();
         this.apiList = analyseUrlResultModel.getApiList();
@@ -32,8 +33,8 @@ public class AnalyseHostResultModel {
         return rootUrl;
     }
 
-    public JSONArray getInfoArray() {
-        return infoArray;
+    public HashMap<String, JSONArray> getUrlInfoArrayMap() {
+        return urlInfoArrayMap;
     }
 
     public List<String> getUrlList() {
