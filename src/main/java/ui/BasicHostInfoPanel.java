@@ -538,6 +538,8 @@ public class BasicHostInfoPanel extends JPanel {
                     // 获取所有 已经被访问过得URL列表
                     //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
                     //获取所有由reqHash组成的字符串
+                    //TODO 优化 对于已清理过的RecordURL应该不用再查出来,未访问URl只会有新的，不会有旧的。
+                    //TODO 1 查询已访问URL 但是没有经过过滤的
                     String accessedUrlHashes = CommonFetchData.fetchColumnGroupConcatString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
                     // 遍历 unVisitedUrlsModels 进行更新
                     for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
@@ -560,6 +562,7 @@ public class BasicHostInfoPanel extends JPanel {
                         // 执行更新插入数据操作
                         try {
                             AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
+                            //TODO 2 更新已访问URL 的状态为已使用
                         } catch (Exception ex) {
                             stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                         }
