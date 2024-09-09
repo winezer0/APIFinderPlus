@@ -52,14 +52,14 @@ public class AnalyseInfoUtils {
                     }
 
                     //格式化响应
-                    group = formatSensitiveInfo(group);
+                    //group = formatSensitiveInfo(group);
 
                     //响应超过长度时 截断
                     if (group.length() > RESULT_SIZE)
                         group = group.substring(0, RESULT_SIZE);
 
                     //判断group是否存在价值
-                    if (isUsefulValue(group))
+                    if (isUsefulValue(formatSensitiveInfo(group)))
                         groups.add(group);
                 }
             }
