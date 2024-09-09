@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
@@ -515,6 +516,7 @@ public class BasicHostInfoPanel extends JPanel {
         }.execute();
     }
 
+
     /**
      * 查询所有 UnVisitedUrls 并逐个进行过滤
      * @param rootUrls  rootUrls目标列表, 为空 为Null时更新全部
@@ -534,40 +536,56 @@ public class BasicHostInfoPanel extends JPanel {
                     unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchUnVisitedUrlsByRootUrls(rootUrls);
                 }
 
+                //忽略没有内容的情况
                 if (unVisitedUrlsModels.size() > 0) {
-                    // 获取所有 已经被访问过得URL列表
-                    //List<String> accessedUrls = RecordUrlTable.fetchAllAccessedUrls();
-                    //获取所有由reqHash组成的字符串
-                    //TODO 优化 对于已清理过的RecordURL应该不用再查出来,未访问URl只会有新的，不会有旧的。
-                    //TODO 1 查询已访问URL 但是没有经过过滤的
-                    String accessedUrlHashes = CommonFetchData.fetchColumnGroupConcatString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
-                    // 遍历 unVisitedUrlsModels 进行更新
-                    for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
-                        //更新 unVisitedUrls 对象
-                        List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
-                        //List<String> newUnVisitedUrls = CastUtils.listReduceList(rawUnVisitedUrls, accessedUrls);
-
-                        List<String> newUnVisitedUrls = new ArrayList<>();
-                        for (String url : rawUnVisitedUrls) {
-                            String urlHash = CastUtils.calcCRC32(url);
-                            if (!accessedUrlHashes.contains(urlHash)) {
-                                newUnVisitedUrls.add(url);
-                            }
-                        }
-
-                        //过滤黑名单中的URL 因为黑名单是不定时更新的
-                        newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getRootUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
-                        urlsModel.setUnvisitedUrls(newUnVisitedUrls);
-
-                        // 执行更新插入数据操作
-                        try {
-                            AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
-                            //TODO 2 更新已访问URL 的状态为已使用
-                        } catch (Exception ex) {
-                            stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
-                        }
-                    }
+                    return null;
                 }
+
+                // 获取所有 已经被访问过得URL列表【URL HASH】
+                String accessedUrlHashes = CommonFetchData.fetchColumnGroupConcatString(RecordUrlTable.tableName, RecordUrlTable.urlHashName);
+
+//                //遍历 unVisitedUrlsModels 进行更新
+//                for (UnVisitedUrlsModel urlsModel : unVisitedUrlsModels) {
+//                    //更新 unVisitedUrls 对象
+//                    List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
+//                    List<String> newUnVisitedUrls = new ArrayList<>();
+//                    for (String url : rawUnVisitedUrls) {
+//                        String urlHash = CastUtils.calcCRC32(url);
+//                        if (!accessedUrlHashes.contains(urlHash)) {
+//                            newUnVisitedUrls.add(url);
+//                        }
+//                    }
+//
+//                    //过滤黑名单中的URL 因为黑名单是不定时更新的
+//                    newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getRootUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
+//                    urlsModel.setUnvisitedUrls(newUnVisitedUrls);
+//
+//                    // 执行更新插入数据操作
+//                    try {
+//                        AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
+//                    } catch (Exception ex) {
+//                        stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+//                    }
+//                }
+
+                //遍历 unVisitedUrlsModels 进行更新
+                unVisitedUrlsModels.parallelStream()
+                        .forEach( urlsModel -> {
+                            List<String> rawUnVisitedUrls = urlsModel.getUnvisitedUrls();
+                            List<String> newUnVisitedUrls = rawUnVisitedUrls.stream()
+                                    .filter(url -> !accessedUrlHashes.contains(CastUtils.calcCRC32(url)))
+                                    .collect(Collectors.toList());
+
+                            newUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getRootUrl(), newUnVisitedUrls, BurpExtender.onlyScopeDomain);
+                            urlsModel.setUnvisitedUrls(newUnVisitedUrls);
+
+                            try {
+                                AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
+                            } catch (Exception ex) {
+                                stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
+                            }
+                        });
+                
                 return null;
             }
         }.execute();
