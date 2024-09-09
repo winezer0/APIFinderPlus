@@ -39,13 +39,12 @@ public class AnalyseInfoUtils {
                     String group;
                     // 检查是否有至少一个捕获组
                     if (groupCount > 0) {
-                        // 如果有多个捕获组，处理多个捕获组
-                        List<String> groupList = new ArrayList<>();
-                        for (int i = 1; i <= groupCount; i++) {
-                            groupList.add(matcher.group(i));
-                        }
-                        group = String.join("|", groupList);
-                        // 处理 group
+//                        // 如果有多个捕获组，处理多个捕获组
+//                        List<String> groupList = new ArrayList<>();
+//                        for (int i = 1; i <= groupCount; i++) { groupList.add(matcher.group(i)); }
+//                        group = String.join("|", groupList);
+                        //如果有多个捕获组，仅保留第一个捕获组
+                        group = matcher.group(1);
                     } else {
                         // 如果没有捕获组，处理整个匹配
                         group = matcher.group();
