@@ -634,7 +634,8 @@ public class IProxyScanner implements IProxyListener {
 
                 // 去重、格式化、过滤 不符合规则的URL
                 findUrlsList = AnalyseInfo.filterFindUrls(rootUrl, findUrlsList, BurpExtender.onlyScopeDomain);
-                if (findUrlsList.size()>0){
+                boolean notHasNewFindUrl = true;
+                if (findUrlsList.size() > 0){
                     //判断查找到的URL是全新的
                     //1、获取所有 id 对应的原始 findUrlsList
                     PathToUrlsModel dynamicUrlsModel = AnalyseHostResultTable.fetchDynamicUrlsDataById(findPathId);
@@ -642,25 +643,29 @@ public class IProxyScanner implements IProxyListener {
 
                     //2、计算新找到的URl的数量
                     List<String> newAddUrls = CastUtils.listReduceList(findUrlsList, rawPathToUrls);
-                    if (newAddUrls.size()>0){
+                    if (newAddUrls.size() > 0){
+                        //TODO 排除已找到URL中的已访问URL
+
                         //3、将当前新找到的URL合并更新
                         dynamicUrlsModel.setPathToUrls(CastUtils.listAddList(findUrlsList, rawPathToUrls));
                         List<String> rawUnvisitedUrls = dynamicUrlsModel.getUnvisitedUrls();
                         dynamicUrlsModel.setUnvisitedUrls(CastUtils.listAddList(rawUnvisitedUrls, newAddUrls));
                         dynamicUrlsModel.setBasicPathNum(currBasicPathNum);
 
-                        //更新动态的URL数据
+                        //4、更新动态的URL数据
                         int apiDataIndex = AnalyseHostResultTable.updateDynamicUrlsDataByModel(dynamicUrlsModel);
-                        if (apiDataIndex > 0)
+                        if (apiDataIndex > 0){
+                            notHasNewFindUrl = false; //标记已找到新的UR了
                             stdout_println(LOG_DEBUG, String.format("[+] New UnvisitedUrls: addUrls:[%s] + rawUrls:[%s] -> newUrls:[%s]", newAddUrls.size(),rawUnvisitedUrls.size(),dynamicUrlsModel.getUnvisitedUrls().size()));
-                    } else {
-                        // 没有找到新路径时,仅需要更新基础计数即可
-                        AnalyseHostResultTable.updateDynamicUrlsBasicNumById(findPathId, currBasicPathNum);
+                        }
                     }
-                } else {
-                    // 没有找到新路径时,仅需要更新基础计数即可
+                }
+
+                // 5、没有找到新路径时,仅需要更新基础计数即可
+                if (notHasNewFindUrl) {
                     AnalyseHostResultTable.updateDynamicUrlsBasicNumById(findPathId, currBasicPathNum);
                 }
+
             }
         }
     }
