@@ -7,7 +7,7 @@
 			"isOpen": true,
 			"keyword": [
 				"maxPatterChunkSizeDefault=20000",
-				"maxStoreRespBodyLenDefault=1000000",
+				"maxStoreRespBodyLenDefault=1200000",
 				"monitorExecutorIntervalsDefault=4",
 				"dynamicPathFilterIsOpenDefault=false",
 				"autoRecordPathIsOpenDefault=true",
@@ -180,7 +180,8 @@
 				"text/css",
 				"text/javascript",
 				":/usr/",
-				"  "
+				"  ",
+				".vue"
 			],
 			"location": "config",
 			"match": "keyword",
