@@ -125,7 +125,7 @@ public class CommonFetchData {
     public static synchronized String fetchColumnGroupConcatString(String tableName, String columnName) {
         String concatenatedURLs = null;
 
-        String concatSQL = "SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +";"
+        String concatSQL = ("SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +";")
                 .replace("$columnName$",columnName);
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
@@ -135,6 +135,60 @@ public class CommonFetchData {
             }
         } catch (Exception e) {
             stderr_println(LOG_ERROR, String.format("[-] Error fetching [%s] concatenating [%s]: %s",tableName, columnName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return concatenatedURLs;
+    }
+
+    /**
+     * 获取任意表的任意列的字符串拼接 InRootUrls
+     */
+    public static synchronized String fetchColumnGroupConcatStringInRootUrls(String tableName, String columnName, List<String> rootUrls) {
+        String concatenatedURLs = null;
+
+        String concatSQL = ("SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +
+                " WHERE root_url IN $buildInParameterList$;")
+                        .replace("$columnName$",columnName)
+                        .replace("$buildInParameterList$", DBService.buildInParamList(rootUrls.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
+            for (int i = 0; i < rootUrls.size(); i++) {
+                stmt.setString(i + 1, rootUrls.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                concatenatedURLs = rs.getString("concatenated_urls");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] [%s] Column Group Concat String In RootUrls concatenating: %s",tableName, columnName, e.getMessage()));
+            e.printStackTrace();
+        }
+        return concatenatedURLs;
+    }
+
+    /**
+     * 获取任意表的任意列的字符串拼接 NotInRootUrls
+     */
+    public static synchronized String fetchColumnGroupConcatStringNotInRootUrls(String tableName, String columnName, List<String> rootUrls) {
+        String concatenatedURLs = null;
+
+        String concatSQL = ("SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +
+                " WHERE root_url NOT IN $buildInParameterList$;")
+                .replace("$columnName$",columnName)
+                .replace("$buildInParameterList$", DBService.buildInParamList(rootUrls.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
+            for (int i = 0; i < rootUrls.size(); i++) {
+                stmt.setString(i + 1, rootUrls.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                concatenatedURLs = rs.getString("concatenated_urls");
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error fetch [%s] [%s] Column Group Concat String Not In RootUrls concatenating: %s",tableName, columnName, e.getMessage()));
             e.printStackTrace();
         }
         return concatenatedURLs;

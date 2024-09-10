@@ -56,7 +56,7 @@ public class RecordUrlTable {
     public static synchronized int insertOrUpdateAccessedUrl(HttpMsgInfo msgInfo) {
         return insertOrUpdateAccessedUrl(
                 msgInfo.getUrlInfo().getRawUrlUsual(),
-                msgInfo.getUrlInfo().getHostPort(),
+                msgInfo.getUrlInfo().getRootUrlUsual(),
                 msgInfo.getRespStatusCode(),
                 CastUtils.calcCRC32(msgInfo.getUrlInfo().getRawUrlUsual())
         );
@@ -64,7 +64,12 @@ public class RecordUrlTable {
 
     //插入访问的URl 复用
     public static synchronized int insertOrUpdateAccessedUrl(String reqUrl, int respStatusCode) {
-        return insertOrUpdateAccessedUrl(reqUrl, new HttpUrlInfo(reqUrl).getHostPort(), respStatusCode, CastUtils.calcCRC32(reqUrl));
+        return insertOrUpdateAccessedUrl(
+                reqUrl,
+                new HttpUrlInfo(reqUrl).getRootUrlUsual(),
+                respStatusCode,
+                CastUtils.calcCRC32(reqUrl)
+        );
     }
 
     //实现批量插入访问信息
