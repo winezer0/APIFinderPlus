@@ -10,7 +10,7 @@ import model.HttpUrlInfo;
 import utils.AnalyseInfoUtils;
 import utils.AnalyseUriFilter;
 import utils.CastUtils;
-import utils.WebpackJsParser;
+import utils.RespWebpackJsParser;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -295,7 +295,7 @@ public class AnalyseInfo {
 
             // 针对webpack js页面的提取 判断文件名是否是JS后缀
             if ("js".equals(msgInfo.getUrlInfo().getSuffix())){
-                Set<String> extractUri = respBody.length() > 30000 ? WebpackJsParser.parseWebpackSimpleChunk(respBody, IProxyScanner.maxPatterChunkSize) : WebpackJsParser.parseWebpackSimple(respBody);
+                Set<String> extractUri = respBody.length() > 30000 ? RespWebpackJsParser.parseWebpackSimpleChunk(respBody, IProxyScanner.maxPatterChunkSize) : RespWebpackJsParser.parseWebpackSimple(respBody);
                 allExtractUriSet.addAll(extractUri);
                 stdout_println(LOG_DEBUG, String.format("[*] Webpack提取URI: %s -> %s", rawUrlUsual, extractUri.size()));
             }

@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WebpackJsParser {
+public class RespWebpackJsParser {
 
 
     //aaaaaaa.aaaa.js //0.690fe1e4ceaf45313632.js
@@ -59,24 +59,11 @@ public class WebpackJsParser {
 
     public static void main(String[] args) {
         String jsFile = "C:\\Users\\WINDOWS\\Desktop\\testdata\\数字型.js";
-        try (BufferedReader reader = new BufferedReader(new FileReader(jsFile))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            String data = sb.toString();
-
-            System.out.println(data.length());
-            Set<String> results = parseWebpackSimple(data);
-            for (String result : results) {
-                System.out.println(result);
-            }
-
-        } catch (IOException e) {
-            System.err.println("错误：文件 '" + jsFile + "' 未找到。请检查文件名是否正确以及文件是否存在。");
-        } catch (Exception e) {
-            System.err.println("发生了一个错误：" + e.getMessage());
+        String data = BurpFileUtils.readFileToString(jsFile);
+        System.out.println(data.length());
+        Set<String> results = parseWebpackSimple(data);
+        for (String result : results) {
+            System.out.println(result);
         }
     }
 }
