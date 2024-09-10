@@ -7,6 +7,7 @@ import model.AnalyseUrlResultModel;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
+import utilbox.TextUtils;
 import utils.AnalyseInfoUtils;
 import utils.AnalyseUriFilter;
 import utils.CastUtils;
@@ -201,6 +202,18 @@ public class AnalyseInfo {
         // 使用HashSet进行去重，基于equals和hashCode方法判断对象是否相同
         JSONArray findInfoJsonList = new JSONArray();
 
+        //预获取匹配位置
+        String reqPath = msgInfo.getUrlInfo().getPathToFile();
+        String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
+        String respHeaders = new String(msgInfo.getRespInfo().getHeaderBytes(), StandardCharsets.UTF_8);
+        String respContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+
+        //进行JSON解码
+        if( msgInfo.getRespInfo().getInferredMimeType().contains("JSON")){
+            respBody = TextUtils.decodeAll(respBody);
+            respContent = TextUtils.decodeAll(respContent);
+        }
+
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
             //忽略关闭的选项 // 过滤掉配置选项
@@ -212,17 +225,17 @@ public class AnalyseInfo {
             String locationText;
             switch (rule.getLocation()) {
                 case "path":
-                    locationText = msgInfo.getUrlInfo().getPathToFile();
+                    locationText = reqPath;
                     break;
                 case "body":
-                    locationText = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
+                    locationText = respBody;
                     break;
                 case "header":
-                    locationText = new String(msgInfo.getRespInfo().getHeaderBytes(), StandardCharsets.UTF_8);
+                    locationText = respHeaders;
                     break;
                 case "response":
                 default:
-                    locationText = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+                    locationText = respContent;
                     break;
             }
 
@@ -286,6 +299,11 @@ public class AnalyseInfo {
         String rawUrlUsual = msgInfo.getUrlInfo().getRawUrlUsual();
 
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
+            //进行Json解码
+            if(msgInfo.getRespInfo().getInferredMimeType().contains("JSON")){
+                respBody = TextUtils.decodeAll(respBody);
+            }
+
             // 针对通用的页面提取
             for (Pattern pattern:BurpExtender.URI_MATCH_REGULAR_COMPILE){
                 Set<String> extractUri = AnalyseInfoUtils.extractUriMode1(respBody, pattern, IProxyScanner.maxPatterChunkSize);
