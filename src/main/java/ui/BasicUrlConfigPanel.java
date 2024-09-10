@@ -296,6 +296,8 @@ public class BasicUrlConfigPanel extends JPanel {
 
                 BasicHostConfigPanel.autoRefreshUiButtonOnHost.setSelected(selected); //联动更新URL面板的情况
 
+                //根据当前刷新开关状态配置定时器暂停或者重启
+                UiUtils.setAutoRefreshUiByButton(IProxyScanner.autoRefreshUiIsOpen);
             }
         });
 

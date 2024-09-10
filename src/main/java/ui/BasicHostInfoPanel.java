@@ -43,7 +43,7 @@ public class BasicHostInfoPanel extends JPanel {
 
     private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
-    public static Timer basicHostTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
+    private static Timer basicHostTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
 
     public static BasicHostInfoPanel getInstance() {
         if (instance == null) {
@@ -87,10 +87,8 @@ public class BasicHostInfoPanel extends JPanel {
         initBasicHostDataTableUIData(basicHostMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimerBasicHost();
-
-        // 启动定时器
-        basicHostTimer.start();
+        stopTimerBasicHost();
+        startTimerBasicHost();
     }
 
 
@@ -209,8 +207,6 @@ public class BasicHostInfoPanel extends JPanel {
      */
     public static void initTimerBasicHost() {
         // 确保在重新初始化之前停止旧的定时器
-        stopTimerBasicHost();
-
         int delay = BasicHostConfigPanel.timerDelayOnHost * 1000;
         basicHostTimer = new Timer(delay, new ActionListener() {
             @Override
@@ -235,6 +231,19 @@ public class BasicHostInfoPanel extends JPanel {
                 }
             }
         });
+        stdout_println(LOG_DEBUG, "[*] Init Timer Basic Host");
+    }
+
+    // 启动定时器
+    public static void startTimerBasicHost() {
+        if (basicHostTimer != null) {
+            if (!basicHostTimer.isRunning()){
+                basicHostTimer.start();
+                stdout_println(LOG_DEBUG, "[*] Start Timer Basic Host");
+            }
+        } else {
+            initTimerBasicHost();
+        }
     }
 
     // 定义一个方法来停止定时器
@@ -537,7 +546,7 @@ public class BasicHostInfoPanel extends JPanel {
                 if (rootUrls == null || rootUrls.isEmpty()) {
                     //更新所有的结果
                     unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchAllUnVisitedUrlsWithLimit(99);
-                }else {
+                } else {
                     //仅更新指定 msgHash 对应的未访问URL
                     unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchUnVisitedUrlsByRootUrls(rootUrls);
                 }

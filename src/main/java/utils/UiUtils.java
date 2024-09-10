@@ -714,5 +714,16 @@ public class UiUtils {
         BasicHostInfoPanel.clearBasicHostMsgTabsData();
     }
 
-
+    /**
+     * 根据当前刷新开关状态配置定时器暂停或者重启
+     */
+    public static void setAutoRefreshUiByButton(boolean autoRefreshUiIsOpen) {
+        if(autoRefreshUiIsOpen){
+            BasicHostInfoPanel.startTimerBasicHost();
+            BasicUrlInfoPanel.startTimerBasicUrl();
+        } else {
+            BasicHostInfoPanel.stopTimerBasicHost();
+            BasicUrlInfoPanel.stopTimerBasicUrl();
+        }
+    }
 }

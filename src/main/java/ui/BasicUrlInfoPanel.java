@@ -42,7 +42,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
     private static byte[] responseData; //响应数据,设置为全局变量,便于IMessageEditorController函数调用
     private static IHttpService iHttpService; //请求服务信息,设置为全局变量,便于IMessageEditorController函数调用
 
-    public static Timer basicUrlTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
+    private static Timer basicUrlTimer;  //定时器 为线程调度提供了一个简单的时间触发机制，广泛应用于需要定时执行某些操作的场景，
 
     public static BasicUrlInfoPanel getInstance() {
         if (instance == null) {
@@ -87,9 +87,8 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         initBasicUrlDataTableUIData(basicUrlMsgTableModel);
 
         // 初始化定时刷新页面函数 单位是毫秒
-        initTimerBasicUrl();
-        // 启动定时器
-        basicUrlTimer.start();
+        stopTimerBasicUrl();
+        startTimerBasicUrl();
     }
 
     /**
@@ -530,8 +529,6 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
      * 初始化任务定时器
      */
     public static void initTimerBasicUrl() {
-        stopTimerBasicUrl();
-
         // 创建一个每 delay 秒触发一次的定时器
         int delay = BasicUrlConfigPanel.timerDelayOnUrl * 1000;
         basicUrlTimer = new Timer(delay, new ActionListener() {
@@ -550,6 +547,19 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                 }
             }
         });
+        stdout_println(LOG_DEBUG, "[*] Init Timer Basic Url");
+    }
+
+    // 启动定时器
+    public static void startTimerBasicUrl() {
+        if (basicUrlTimer != null) {
+            if (!basicUrlTimer.isRunning()){
+                basicUrlTimer.start();
+                stdout_println(LOG_DEBUG, "[*] Start Timer Basic Url");
+            }
+        } else {
+            initTimerBasicUrl();
+        }
     }
 
     // 定义一个方法来停止定时器

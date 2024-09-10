@@ -295,6 +295,9 @@ public class BasicHostConfigPanel extends JPanel {
                 stdout_println(LOG_DEBUG, String.format("autoRefreshUiIsOpen: %s", IProxyScanner.autoRefreshUiIsOpen));
 
                 BasicUrlConfigPanel.autoRefreshUiButtonOnUrl.setSelected(selected); //联动更新URL面板的情况
+
+                //根据当前刷新开关状态配置定时器暂停或者重启
+                UiUtils.setAutoRefreshUiByButton(IProxyScanner.autoRefreshUiIsOpen);
             }
         });
 
@@ -405,6 +408,7 @@ public class BasicHostConfigPanel extends JPanel {
                     }
                     String selectedOption = (String) choicesComboBoxOnHost.getSelectedItem();
                     BasicHostInfoPanel.showDataHostTableByFilter(selectedOption, searchText);
+
                 } catch (Exception ex) {
                     stderr_println(String.format("[!] choicesComboBoxOnHost: %s", ex.getMessage()));
                 }
@@ -452,4 +456,5 @@ public class BasicHostConfigPanel extends JPanel {
     public static String getComboBoxSelectedOptionOnHost() {
         return (String) BasicHostConfigPanel.choicesComboBoxOnHost.getSelectedItem();
     }
+
 }
