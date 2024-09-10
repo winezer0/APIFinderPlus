@@ -24,26 +24,6 @@ public class TextUtils {
     public static String decodeAll(String line) {
         line = line.trim();
 
-		/*
-		if (false) {// &#x URF-8编码的特征，对于域名的提取不需要对它进行处理
-			while (true) {
-				try {
-					int oldlen = line.length();
-					line = StringEscapeUtils.unescapeHtml4(line);
-					int currentlen = line.length();
-					if (oldlen > currentlen) {
-						continue;
-					}else {
-						break;
-					}
-				}catch(Exception e) {
-					//e.printStackTrace(BurpExtender.getStderr());
-					break;//即使出错，也要进行后续的查找
-				}
-			}
-		}
-		 */
-
         if (needUnicodeConvert(line)) {
             while (true) {//unicode解码
                 try {
