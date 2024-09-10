@@ -50,7 +50,10 @@
 				".w3.org",
 				"github.com",
 				".github",
-				".githubusercontent.com"
+				".githubusercontent.com",
+				".vuejs.org",
+				"npms.io",
+				"lodash.com"
 			],
 			"location": "config",
 			"match": "keyword",

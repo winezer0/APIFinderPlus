@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>APIFinderPlus</artifactId>
-    <version>0.97</version>
+    <version>0.98</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
