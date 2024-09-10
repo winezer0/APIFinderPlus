@@ -41,8 +41,7 @@ public class AnalyseUrlResultTable {
 
             + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
-            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'"
-            .replace("RUN_STATUS", Constants.ANALYSE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.ANALYSE_WAIT)
 
             + ");";
 
@@ -152,7 +151,7 @@ public class AnalyseUrlResultTable {
 
         if (msgHashList.isEmpty()) return AnalyseUrlResultModels;
 
-        String selectSQL = "SELECT * FROM " + tableName + " WHERE msg_hash IN $buildInParamList$;"
+        String selectSQL = ("SELECT * FROM " + tableName + " WHERE msg_hash IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {

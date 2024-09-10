@@ -45,8 +45,7 @@ public class AnalyseHostResultTable {
 
             + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
 
-            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'"  //预留 不需要的话后面可以删除
-            .replace("RUN_STATUS", Constants.HANDLE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.HANDLE_WAIT)
 
             + ");";
 

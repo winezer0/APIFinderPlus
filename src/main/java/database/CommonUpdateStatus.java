@@ -13,7 +13,7 @@ public class CommonUpdateStatus {
     public static synchronized int updateStatusByIds(String tableName, List<Integer> ids, String updateStatus) {
         int updatedCount = -1;
 
-        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;"
+        String updateSQL = ("UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
@@ -40,7 +40,7 @@ public class CommonUpdateStatus {
     public static synchronized int updateStatusByMsgHashList(String tableName, List<String> msgHashList, String updateStatus) {
         int updatedCount = -1;
 
-        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_hash IN $buildInParamList$;"
+        String updateSQL = ("UPDATE " + tableName + " SET run_status = ? WHERE msg_hash IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
@@ -67,7 +67,7 @@ public class CommonUpdateStatus {
     public static synchronized int updateStatusByMsgDataIndexList(String tableName, List<Integer> msgDataIndexList, String updateStatus) {
         int updatedCount = -1;
 
-        String updateSQL = "UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;"
+        String updateSQL = ("UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(msgDataIndexList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {

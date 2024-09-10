@@ -71,7 +71,7 @@ public class TableLineDataModelBasicHostSQL {
     //获取有效数据的行 并且忽略已经处理的项
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineHasInfoOrUriNotHandle() {
         // 获取当前所有记录的数据
-        String WhereCondition = "Where (find_url_num>0 or find_path_num>0 or find_info_num>0) and run_status != 'RUN_STATUS'"
+        String WhereCondition = ("Where (find_url_num>0 or find_path_num>0 or find_info_num>0) and run_status != 'RUN_STATUS'")
                 .replace("RUN_STATUS", Constants.HANDLE_END);
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
         return fetchHostTableLineBySQl(selectSQL);
@@ -88,7 +88,7 @@ public class TableLineDataModelBasicHostSQL {
     //获取敏感数据的行 并且忽略已经处理的项
     public static synchronized ArrayList<BasicHostTableLineDataModel> fetchHostTableLineHasInfoNotHandle() {
         // 获取当前所有记录的数据
-        String WhereCondition = "where find_info_num>0 and run_status != 'RUN_STATUS'"
+        String WhereCondition = ("where find_info_num>0 and run_status != 'RUN_STATUS'")
                 .replace("RUN_STATUS", Constants.HANDLE_END);
         String selectSQL = genHostTableSqlByWhereCondition(WhereCondition);
         return fetchHostTableLineBySQl(selectSQL);

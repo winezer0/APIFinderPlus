@@ -71,7 +71,7 @@ public class TableLineDataModelBasicUrlSQL {
     //获取有效数据的行 并且忽略已处理的项
     public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineHasInfoOrUriNotHandle() {
         // 获取当前所有记录的数据
-        String WhereCondition = "Where (find_url_num>0 or find_path_num>0 or find_info_num>0) and A.run_status != 'RUN_STATUS'"
+        String WhereCondition = ("Where (find_url_num>0 or find_path_num>0 or find_info_num>0) and A.run_status != 'RUN_STATUS'")
                 .replace("RUN_STATUS", Constants.HANDLE_END);
         String selectSQL = genUrlTableSqlByWhereCondition(WhereCondition);
         return fetchUrlTableLineBySQl(selectSQL);
@@ -88,7 +88,7 @@ public class TableLineDataModelBasicUrlSQL {
     //获取存在敏感信息的行 并且忽略已处理的项
     public static synchronized ArrayList<BasicUrlTableLineDataModel> fetchUrlTableLineHasInfoNotHandle() {
         // 获取当前所有记录的数据
-        String WhereCondition = "where find_info_num>0 and A.run_status != 'RUN_STATUS'"
+        String WhereCondition = ("where find_info_num>0 and A.run_status != 'RUN_STATUS'")
                 .replace("RUN_STATUS", Constants.HANDLE_END);
         String selectSQL = genUrlTableSqlByWhereCondition(WhereCondition);
         return fetchUrlTableLineBySQl(selectSQL);

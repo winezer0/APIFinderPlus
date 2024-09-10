@@ -101,7 +101,7 @@ public class CommonFetchData {
         if (msgHashList.isEmpty())
             return stringList;
 
-        String selectSQL = "SELECT " + columnName + " FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;"
+        String selectSQL = ("SELECT " + columnName + " FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;")
                 .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
@@ -148,8 +148,8 @@ public class CommonFetchData {
 
         String concatSQL = ("SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +
                 " WHERE root_url IN $buildInParameterList$;")
-                        .replace("$columnName$",columnName)
-                        .replace("$buildInParameterList$", DBService.buildInParamList(rootUrls.size()));
+                .replace("$columnName$",columnName)
+                .replace("$buildInParameterList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
             for (int i = 0; i < rootUrls.size(); i++) {

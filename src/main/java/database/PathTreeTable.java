@@ -101,7 +101,8 @@ public class PathTreeTable {
         if (rootUrls.isEmpty()) return pathTreeModels;
 
         //查询
-        String selectSql = "SELECT root_url, path_tree, basic_path_num FROM "+ tableName +" WHERE root_url IN $buildInParamList$;"
+        String selectSql = ("SELECT root_url, path_tree, basic_path_num FROM "+ tableName +
+                " WHERE root_url IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {

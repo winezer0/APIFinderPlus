@@ -22,8 +22,7 @@ public class RecordPathTable {
             + "root_url TEXT NOT NULL,\n"
             + "req_path_dir TEXT NOT NULL,\n"
             + "resp_status_code TEXT NOT NULL, \n"
-            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'"
-            .replace("RUN_STATUS", Constants.ANALYSE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.ANALYSE_WAIT)
             + ");";
 
 

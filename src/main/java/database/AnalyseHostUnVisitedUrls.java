@@ -23,8 +23,8 @@ public class AnalyseHostUnVisitedUrls {
         if (rootUrls.isEmpty()) return totalRowsAffected;
 
         // 构建SQL语句
-        String updateSQL = "UPDATE "+ AnalyseHostResultTable.tableName + (" SET unvisited_url = ?, unvisited_url_num = 0 " +
-                "WHERE root_url IN $buildInParamList$;")
+        String updateSQL = ("UPDATE "+ AnalyseHostResultTable.tableName + " SET unvisited_url = ?, unvisited_url_num = 0" +
+                " WHERE root_url IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
@@ -78,7 +78,8 @@ public class AnalyseHostUnVisitedUrls {
 
         if (rootUrls.isEmpty()) return arrayList;
 
-        String selectSQL = "SELECT id,root_url,unvisited_url FROM " + AnalyseHostResultTable.tableName + " WHERE root_url IN $buildInParamList$;"
+        String selectSQL = ("SELECT id,root_url,unvisited_url FROM " + AnalyseHostResultTable.tableName +
+                " WHERE root_url IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {

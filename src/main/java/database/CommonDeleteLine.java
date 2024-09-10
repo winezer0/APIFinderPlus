@@ -32,7 +32,7 @@ public class CommonDeleteLine {
         if (isEmptyObj(rootUrls)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName +"  WHERE root_url IN $buildInParamList$;"
+        String deleteSQL = ("DELETE FROM "+ tableName +"  WHERE root_url IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         return runDeleteByStringsSQL(tableName, rootUrls, deleteSQL);
@@ -43,7 +43,7 @@ public class CommonDeleteLine {
         if (isEmptyObj(msgHashList)) return 0;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;"
+        String deleteSQL = ("DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
 
         return runDeleteByStringsSQL(tableName, msgHashList, deleteSQL);
@@ -58,7 +58,7 @@ public class CommonDeleteLine {
         if (ids.isEmpty()) return totalRowsAffected;
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
-        String deleteSQL = "DELETE FROM "+ tableName + " WHERE id IN $buildInParamList$;"
+        String deleteSQL = ("DELETE FROM "+ tableName + " WHERE id IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {

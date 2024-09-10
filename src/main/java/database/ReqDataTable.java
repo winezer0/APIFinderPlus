@@ -29,8 +29,7 @@ public class ReqDataTable {
 
             + "msg_data_index INTEGER NOT NULL,"
             + "req_source TEXT NOT NULL,"   //请求来源
-            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'"
-            .replace("RUN_STATUS", Constants.ANALYSE_WAIT)
+            + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.ANALYSE_WAIT)
 
             + ");";
 
