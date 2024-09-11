@@ -180,7 +180,7 @@ public class ConfigUtils {
                         break;
                     case "forceDecodeUnicodeDefault":
                         BurpExtender.forceDecodeUnicodeDefault = Boolean.parseBoolean(value);
-                        stdout_println(LOG_DEBUG, String.format("[+] forceDecodeUnicodeDefault: [%s]", Boolean.parseBoolean(value)));
+                        //stdout_println(LOG_DEBUG, String.format("[+] forceDecodeUnicodeDefault: [%s]", Boolean.parseBoolean(value)));
                         break;
                     default:
                         stderr_println(LOG_ERROR,  "[!] Unknown configuration key: " + key);
