@@ -23,6 +23,7 @@ public class BasicUrlConfigPanel extends JPanel {
     private static JTextField urlSearchBoxOnUrl;                 //URl搜索框
 
     public static JToggleButton autoRefreshUiButtonOnUrl; //自动刷新开关按钮状态
+    public static JToggleButton forceDecodeUnicodeButtonOnUrl; //强制解码响应Unicode
 
     //用于两端联动使用
     public static JToggleButton proxyListenButtonOnUrl;
@@ -301,6 +302,21 @@ public class BasicUrlConfigPanel extends JPanel {
             }
         });
 
+        // 开关 是否开启对提取URL进行发起请求
+        forceDecodeUnicodeButtonOnUrl = UiUtils.getToggleButtonByDefaultValue(BurpExtender.forceDecodeUnicodeDefault);
+        forceDecodeUnicodeButtonOnUrl.setToolTipText("强制解码响应Unicode 默认只对Json响应解码");
+        forceDecodeUnicodeButtonOnUrl.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //默认开启本功能, 点击后应该关闭配置 //默认关闭本功能, 点击后应该开启配置
+                boolean selected = forceDecodeUnicodeButtonOnUrl.isSelected();
+                IProxyScanner.forceDecodeUnicode = BurpExtender.forceDecodeUnicodeDefault ? !selected : selected;
+                stdout_println(LOG_DEBUG, String.format("forceDecodeUnicode: %s", IProxyScanner.forceDecodeUnicode));
+
+                BasicHostConfigPanel.forceDecodeUnicodeButtonOnHost.setSelected(selected); //联动更新URL面板的情况
+            }
+        });
+
         // 设置按钮的 GridBagConstraints
         GridBagConstraints gbc_buttons = new GridBagConstraints();
         gbc_buttons.insets = new Insets(0, 5, 0, 5);
@@ -311,39 +327,41 @@ public class BasicUrlConfigPanel extends JPanel {
         gbc_buttons.gridx = 7; // 设置按钮的横坐标位置
         FilterPanel.add(proxyListenButtonOnUrl, gbc_buttons);
 
-        // 自动记录有效的PATH到path表中 功能开关
         gbc_buttons.gridx = 8; // 设置按钮的横坐标位置
+        FilterPanel.add(forceDecodeUnicodeButtonOnUrl, gbc_buttons);
+
+        // 自动记录有效的PATH到path表中 功能开关
+        gbc_buttons.gridx = 9; // 设置按钮的横坐标位置
         FilterPanel.add(autoRecordPathButtonOnUrl, gbc_buttons);
 
         // 高级动态有效路径过滤 功能开关
-        gbc_buttons.gridx = 9;
+        gbc_buttons.gridx = 10;
         FilterPanel.add(dynamicPathFilterButtonOnUrl, gbc_buttons);
 
         // 高级动态有效路径过滤 功能开关
-        gbc_buttons.gridx = 10;
+        gbc_buttons.gridx = 11;
         FilterPanel.add(autoPathsToUrlsButtonOnUrl, gbc_buttons);
 
-
         // 自动刷新 未访问URL列表
-        gbc_buttons.gridx = 11; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 12; // 设置按钮的横坐标位置
         FilterPanel.add(autoRefreshUnvisitedButtonOnUrl, gbc_buttons);
 
         // 自动递归 开关
-        gbc_buttons.gridx = 12; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 13; // 设置按钮的横坐标位置
         FilterPanel.add(autoRecursiveButtonOnUrl, gbc_buttons);
 
         // 定时刷新按钮
-        gbc_buttons.gridx = 13; // 将横坐标位置移动到下一个单元格
+        gbc_buttons.gridx = 14; // 将横坐标位置移动到下一个单元格
         FilterPanel.add(autoRefreshUiButtonOnUrl, gbc_buttons);
 
         // 点击按钮 点击后刷新数据 含未访问数据
-        gbc_buttons.gridx = 14; // 设置按钮的横坐标位置
+        gbc_buttons.gridx = 15; // 设置按钮的横坐标位置
         FilterPanel.add(clickRefreshButtonOnUrl, gbc_buttons);
 
         // 添加填充以在右侧占位
         GridBagConstraints gbc_rightFiller = new GridBagConstraints();
         gbc_rightFiller.weightx = 1; // 使得这个组件吸收额外的水平空间
-        gbc_rightFiller.gridx = 15; // 位置设置为最后一个单元格
+        gbc_rightFiller.gridx = 16; // 位置设置为最后一个单元格
         gbc_rightFiller.gridy = 0; // 第一行
         gbc_rightFiller.fill = GridBagConstraints.HORIZONTAL; // 水平填充
         FilterPanel.add(horizontalBlank, gbc_rightFiller);
@@ -360,7 +378,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnall = new GridBagConstraints();
         gbc_btnall.insets = new Insets(0, 0, 0, 5);
         gbc_btnall.fill = 0;
-        gbc_btnall.gridx = 16;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnall.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnall.gridy = 0;
         FilterPanel.add(choicesComboBoxOnUrl, gbc_btnall);
         // 检索框
@@ -368,7 +386,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnSearchField = new GridBagConstraints();
         gbc_btnSearchField.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearchField.fill = 0;
-        gbc_btnSearchField.gridx = 17;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnSearchField.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearchField.gridy = 0;
         urlSearchBoxOnUrl.setToolTipText("搜索URL关键字");
         FilterPanel.add(urlSearchBoxOnUrl, gbc_btnSearchField);
@@ -379,7 +397,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnSearch = new GridBagConstraints();
         gbc_btnSearch.insets = new Insets(0, 0, 0, 5);
         gbc_btnSearch.fill = 0;
-        gbc_btnSearch.gridx = 18;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnSearch.gridx = 19;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnSearch.gridy = 0;
         FilterPanel.add(searchButton, gbc_btnSearch);
 
@@ -390,7 +408,7 @@ public class BasicUrlConfigPanel extends JPanel {
         GridBagConstraints gbc_btnMore = new GridBagConstraints();
         gbc_btnMore.insets = new Insets(0, 0, 0, 5);
         gbc_btnMore.fill = 0;
-        gbc_btnMore.gridx = 19;  // 根据该值来确定是确定从左到右的顺序
+        gbc_btnMore.gridx = 20;  // 根据该值来确定是确定从左到右的顺序
         gbc_btnMore.gridy = 0;
         FilterPanel.add(moreButton, gbc_btnMore);
 
