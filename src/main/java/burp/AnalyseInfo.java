@@ -192,7 +192,6 @@ public class AnalyseInfo {
         return urlList;
     }
 
-
     /**
      * 根据规则提取敏感信息
      * @param msgInfo
@@ -209,7 +208,7 @@ public class AnalyseInfo {
         String respContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
 
         //进行JSON解码
-        if( msgInfo.getRespInfo().getInferredMimeType().contains("JSON")){
+        if( msgInfo.getRespInfo().getInferredMimeType().contains("JSON")|| IProxyScanner.forceDecodeUnicode){
             respBody = TextUtils.decodeAll(respBody);
             respContent = TextUtils.decodeAll(respContent);
         }
@@ -300,7 +299,7 @@ public class AnalyseInfo {
 
         if (isNotEmptyObj(respBody) && respBody.trim().length() > 5 ){
             //进行Json解码
-            if(msgInfo.getRespInfo().getInferredMimeType().contains("JSON")){
+            if(msgInfo.getRespInfo().getInferredMimeType().contains("JSON")||IProxyScanner.forceDecodeUnicode){
                 respBody = TextUtils.decodeAll(respBody);
             }
 

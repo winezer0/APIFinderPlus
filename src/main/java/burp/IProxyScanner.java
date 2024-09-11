@@ -47,6 +47,8 @@ public class IProxyScanner implements IProxyListener {
     public static boolean autoRefreshUnvisitedIsOpen;
     //自动刷新UI的功能
     public static boolean autoRefreshUiIsOpen;
+    //自动解码Json和Unicode的功能
+    public static boolean forceDecodeUnicode;
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -71,6 +73,8 @@ public class IProxyScanner implements IProxyListener {
         proxyListenIsOpen = proxyListenIsOpenDefault;
         autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault;
         autoRefreshUiIsOpen = autoRefreshUiIsOpenDefault;
+        forceDecodeUnicode = forceDecodeUnicodeDefault;
+
 
         //加载缓存过滤器
         urlCompareMap = BurpFileUtils.LoadJsonFromFile(urlCompareMapCacheFile);

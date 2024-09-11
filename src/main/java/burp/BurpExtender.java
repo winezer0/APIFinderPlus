@@ -80,7 +80,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     //自动刷新未访问URL的功能
     public static boolean autoRefreshUnvisitedIsOpenDefault=false;
     //自动刷新表格
-    public static boolean autoRefreshUiIsOpenDefault =false;
+    public static boolean autoRefreshUiIsOpenDefault=false;
+    //自动解码响应Unicode字符
+    public static boolean forceDecodeUnicodeDefault=false;
 
     //一些需要被排除|允许的情况
     public static List<String> CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置选项

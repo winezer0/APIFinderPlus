@@ -178,6 +178,10 @@ public class ConfigUtils {
                         BurpExtender.autoRefreshUiIsOpenDefault = Boolean.parseBoolean(value);
                         //stdout_println(LOG_DEBUG, String.format("[+] autoRefreshTableUiIsOpenDefault: [%s]", Boolean.parseBoolean(value)));
                         break;
+                    case "forceDecodeUnicodeDefault":
+                        BurpExtender.forceDecodeUnicodeDefault = Boolean.parseBoolean(value);
+                        stdout_println(LOG_DEBUG, String.format("[+] forceDecodeUnicodeDefault: [%s]", Boolean.parseBoolean(value)));
+                        break;
                     default:
                         stderr_println(LOG_ERROR,  "[!] Unknown configuration key: " + key);
                 }

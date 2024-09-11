@@ -15,7 +15,8 @@
 				"autoRecursiveIsOpenDefault=false",
 				"proxyListenIsOpenDefault=false",
 				"autoRefreshUnvisitedIsOpenDefault=false",
-				"autoRefreshUiIsOpenDefault=false"
+				"autoRefreshUiIsOpenDefault=false",
+				"forceDecodeUnicodeDefault=true"
 			],
 			"location": "config",
 			"match": "keyword",
