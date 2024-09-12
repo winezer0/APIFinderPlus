@@ -959,7 +959,7 @@ public class BasicHostInfoPanel extends JPanel {
 
         JMenuItem addRootUrlToAllowListenItem = new JMenuItem("添加到允许监听白名单", UiUtils.getImageIcon("/icon/findUrlFromJS.png", 15, 15));
         // 添加 addRootUrlToAllowListenItem 事件监听器
-        addRootUrlToAllowListenItem.setToolTipText("[多行]添加选定行对应的RootUrl到仅监听的白名单 CONF_WHITE_URL_ROOT");
+        addRootUrlToAllowListenItem.setToolTipText("[多行]添加选定行对应的RootUrl到仅监听的白名单 CONF_WHITE_ROOT_URL");
         addRootUrlToAllowListenItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -972,7 +972,7 @@ public class BasicHostInfoPanel extends JPanel {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.listAddList(rootUrls, BurpExtender.CONF_WHITE_URL_ROOT);
+                                BurpExtender.CONF_WHITE_ROOT_URL = CastUtils.listAddList(rootUrls, BurpExtender.CONF_WHITE_ROOT_URL);
                                 //保存Json
                                 RuleConfigPanel.saveConfigToDefaultJson();
                                 return null;

@@ -86,7 +86,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     //一些需要被排除|允许的情况
     public static List<String> CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置选项
-    public static List<String> CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅保留的白名单主机,为空时忽略
+    public static List<String> CONF_WHITE_ROOT_URL = new ArrayList<>(); //仅保留的白名单主机,为空时忽略
 
     public static List<String> CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
 

@@ -480,7 +480,7 @@ public class UiUtils {
                                     RecordPathTable.insertOrUpdateRecordPathsBatch(urlList, 299);
                                     break;
                                 case "addRootUrlToAllowListen":
-                                    BurpExtender.CONF_WHITE_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_WHITE_URL_ROOT);
+                                    BurpExtender.CONF_WHITE_ROOT_URL = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_WHITE_ROOT_URL);
                                     RuleConfigPanel.saveConfigToDefaultJson();
                                     break;
                                 case "addRootUrlToBlackUrlRoot":

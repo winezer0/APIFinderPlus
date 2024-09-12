@@ -30,7 +30,7 @@
 			"keyword": [],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_WHITE_URL_ROOT"
+			"type": "CONF_WHITE_ROOT_URL"
 		},
 		{
 			"accuracy": "high",

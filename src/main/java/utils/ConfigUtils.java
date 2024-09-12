@@ -19,8 +19,8 @@ public class ConfigUtils {
             case "CONF_DEFAULT_PERFORMANCE":
                 BurpExtender.CONF_DEFAULT_PERFORMANCE.addAll(rule.getKeyword());
                 break;
-            case "CONF_WHITE_URL_ROOT":
-                BurpExtender.CONF_WHITE_URL_ROOT.addAll(rule.getKeyword());
+            case "CONF_WHITE_ROOT_URL":
+                BurpExtender.CONF_WHITE_ROOT_URL.addAll(rule.getKeyword());
                 break;
             case "CONF_WHITE_RECORD_PATH_STATUS":
                 BurpExtender.CONF_WHITE_RECORD_PATH_STATUS.addAll(rule.getKeyword());
@@ -79,7 +79,7 @@ public class ConfigUtils {
      */
     public static void autoClearAllConfArrayList() {
         BurpExtender.CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置
-        BurpExtender.CONF_WHITE_URL_ROOT = new ArrayList<>(); //仅扫描的URL
+        BurpExtender.CONF_WHITE_ROOT_URL = new ArrayList<>(); //仅扫描的URL
         BurpExtender.CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
         BurpExtender.CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不自动记录PATH的URL域名
         BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = new ArrayList<>(); //不自动进行递归扫描的URL域名

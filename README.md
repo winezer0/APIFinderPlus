@@ -97,7 +97,7 @@
        注意：当前请求的请求头是基于当前URL请求体中动态获取的,后续根据用户需求添加自定义请求头功能。
   
   
-    CONF_WHITE_URL_ROOT: 允许扫描的目标RootUrl关键字
+    CONF_WHITE_ROOT_URL: 允许扫描的目标RootUrl关键字
     CONF_BLACK_URL_ROOT: 禁止进行[监听扫描|URL提取|PATH提取]的 RootUrl关键字
     CONF_BLACK_URL_PATH: 禁止进行[监听扫描|URL提取|PATH提取]的 URI 路径关键字
     CONF_BLACK_URL_EXT:  禁止进行[监听扫描|URL提取|PATH提取]的 URI 文件扩展名
