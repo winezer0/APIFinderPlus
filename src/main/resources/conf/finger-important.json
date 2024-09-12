@@ -120,7 +120,7 @@
 			],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_BLACK_URL_PATH"
+			"type": "CONF_BLACK_URI_PATH_KEYS"
 		},
 		{
 			"accuracy": "high",

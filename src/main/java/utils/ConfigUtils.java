@@ -37,8 +37,8 @@ public class ConfigUtils {
             case "CONF_BLACK_ROOT_URL":
                 BurpExtender.CONF_BLACK_ROOT_URL.addAll(rule.getKeyword());
                 break;
-            case "CONF_BLACK_URL_PATH":
-                BurpExtender.CONF_BLACK_URL_PATH.addAll(rule.getKeyword());
+            case "CONF_BLACK_URI_PATH":
+                BurpExtender.CONF_BLACK_URI_PATH_KEYS.addAll(rule.getKeyword());
                 break;
             case "CONF_BLACK_URL_EXT":
                 BurpExtender.CONF_BLACK_URL_EXT.addAll(rule.getKeyword());
@@ -85,7 +85,7 @@ public class ConfigUtils {
         BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN = new ArrayList<>(); //不自动进行递归扫描的URL域名
 
         BurpExtender.CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
-        BurpExtender.CONF_BLACK_URL_PATH = new ArrayList<>(); //不检查的URL路径
+        BurpExtender.CONF_BLACK_URI_PATH_KEYS = new ArrayList<>(); //不检查的URL路径
         BurpExtender.CONF_BLACK_ROOT_URL = new ArrayList<>(); //不检查的URL域名
         BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
         BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS = new ArrayList<>(); //需要忽略的响应提取信息

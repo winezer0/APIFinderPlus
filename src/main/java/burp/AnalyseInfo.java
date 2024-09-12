@@ -124,7 +124,7 @@ public class AnalyseInfo {
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤自身包含的PATH:%s", findUriList.size()));
 
         //过滤包含禁止关键字的PATH
-        findUriList = AnalyseUriFilter.filterPathByContainUselessKey(findUriList, BurpExtender.CONF_BLACK_URL_PATH);
+        findUriList = AnalyseUriFilter.filterPathByContainUselessKey(findUriList, BurpExtender.CONF_BLACK_URI_PATH_KEYS);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤包含禁止关键字的PATH:%s", findUriList.size()));
 
         //过滤等于禁止PATH的PATH
@@ -167,7 +167,7 @@ public class AnalyseInfo {
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单主机:%s", urlList.size()));
 
         //过滤黑名单Path
-        urlList = AnalyseUriFilter.filterBlackPaths(urlList, BurpExtender.CONF_BLACK_URL_PATH);
+        urlList = AnalyseUriFilter.filterBlackPaths(urlList, BurpExtender.CONF_BLACK_URI_PATH_KEYS);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单路径:%s", urlList.size()));
 
         //过滤黑名单suffix
