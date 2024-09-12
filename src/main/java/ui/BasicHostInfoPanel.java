@@ -389,6 +389,9 @@ public class BasicHostInfoPanel extends JPanel {
             return;
         }
 
+        //点击时就调用更新数据
+        updateAllUrlStatus(Collections.singletonList(currentRootUrl));
+
         //查询路径树信息 并美化输出
         PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(currentRootUrl);
         if (pathTreeModel!=null){
