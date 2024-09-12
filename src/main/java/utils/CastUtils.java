@@ -5,7 +5,6 @@ import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
-import database.Constants;
 import model.HttpUrlInfo;
 import utilbox.HelperPlus;
 
@@ -431,8 +430,8 @@ public class CastUtils {
         HashMap<String, JSONObject> urlStatusArrayMap = new HashMap<>();
         for (String url:urlList){
             for (String method:BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS){
-                String concatUrlMethod = String.format("%s <-> %s", url, method);
-                urlStatusArrayMap.put(concatUrlMethod,defaultJson);
+                String urlWithMethod = String.format("%s <-> %s", url, method.toUpperCase());
+                urlStatusArrayMap.put(urlWithMethod,defaultJson);
             }
         }
         return urlStatusArrayMap;
@@ -459,12 +458,12 @@ public class CastUtils {
         HashMap<String, JSONObject> map = new HashMap<>(map1);
         // 遍历 HashMap 的条目集合
         for (Map.Entry<String, JSONObject> entry : map2.entrySet()) {
-            String concatUrlMethod = entry.getKey();
+            String urlWithMethod = entry.getKey();
             JSONObject urlStatusJson = entry.getValue();
             Integer status = urlStatusJson.getInteger("status");
             Integer length = urlStatusJson.getInteger("length");
             if (status > -1 || length > -1){
-                map.put(concatUrlMethod, urlStatusJson);
+                map.put(urlWithMethod, urlStatusJson);
             }
         }
         return map;
@@ -481,13 +480,27 @@ public class CastUtils {
         StringBuilder formattedString = new StringBuilder();
 
         for (Map.Entry<String, JSONObject> entry : urlStatusJsonMap.entrySet()){
-            String concatUrlMethod = entry.getKey();
+            String urlWithMethod = entry.getKey();
             JSONObject urlStatusJson = entry.getValue();
             Integer status = urlStatusJson.getInteger("status");
             Integer length = urlStatusJson.getInteger("length");
-            String line = String.format("%s <-> %s <-> %s", concatUrlMethod,status,length);
+            String line = String.format("%s <-> %s <-> %s", urlWithMethod,status,length);
             formattedString.append(line).append("\n");
         }
         return formattedString.toString();
     }
+
+    /**
+     * 将列表中的所有字符串元素转换为大写。
+     * @param list 要转换的字符串列表
+     * @return 包含大写字符串的新列表
+     */
+    public static List<String> toUpper(List<String> list) {
+        List<String> upperCaseList = new ArrayList<>();
+        for (String item : list) {
+            upperCaseList.add(item.toUpperCase());
+        }
+        return upperCaseList;
+    }
+
 }

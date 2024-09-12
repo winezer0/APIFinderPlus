@@ -288,8 +288,8 @@
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
-				"get",
-				"post"
+				"GET",
+				"POST"
 			],
 			"location": "config",
 			"match": "keyword",

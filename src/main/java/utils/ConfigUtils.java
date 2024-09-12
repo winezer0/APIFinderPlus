@@ -116,10 +116,18 @@ public class ConfigUtils {
         BurpExtender.URI_MATCH_REGULAR_COMPILE = RegularUtils.compileUriMatchRegular(BurpExtender.CONF_REGULAR_EXTRACT_URIS);
 
         //处理必须有内容的列
+
         //设置默认请求方法
-        if (BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS.isEmpty()){BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS =  Collections.singletonList("GET");}
+        if (BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS.isEmpty()){
+            BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS = Collections.singletonList("GET");
+        } else {
+            BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS = CastUtils.toUpper(BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS);
+        }
+
         //设置默认请求参数
-        if (BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.isEmpty()){BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS =  Collections.singletonList("");}
+        if (BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.isEmpty()){
+            BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS = Collections.singletonList("");
+        }
 
         //配置基于性能的选项
         parseDefaultProptites(BurpExtender.CONF_DEFAULT_PERFORMANCE);

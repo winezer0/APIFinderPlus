@@ -390,7 +390,7 @@ public class BasicHostInfoPanel extends JPanel {
         }
 
         //点击时就调用更新数据
-        updateAllUrlStatus(Collections.singletonList(currentRootUrl));
+        updateAllUrlStatus(Collections.singletonList(currentRootUrl), false);
 
         //查询路径树信息 并美化输出
         PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(currentRootUrl);
@@ -1141,9 +1141,9 @@ public class BasicHostInfoPanel extends JPanel {
         });
 
         //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
-        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("查询提取URL响应状态", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
+        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("重新查询提取URL响应状态", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
         // 添加 initOrUpdateUrlStatusItem 事件监听器
-        initOrUpdateUrlStatusItem.setToolTipText("[多行]查询提取URL的响应状态");
+        initOrUpdateUrlStatusItem.setToolTipText("[多行]重新查询提取URL响应状态");
         initOrUpdateUrlStatusItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1156,7 +1156,7 @@ public class BasicHostInfoPanel extends JPanel {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                updateAllUrlStatus(rootUrls);
+                                updateAllUrlStatus(rootUrls, true);
                                 return null;
                             }
                         }.execute();
@@ -1217,8 +1217,12 @@ public class BasicHostInfoPanel extends JPanel {
     }
 
 
-    //更新当前选定的RootURL的所有提取URL的状态
-    private void updateAllUrlStatus(List<String> rootUrls) {
+    /**
+     * 更新当前选定的RootURL的所有提取URL的状态
+     * @param rootUrls 选定的RootUrls
+     * @param resetOldUrlStatus 是否需要充值历史状态记录
+     */
+    private void updateAllUrlStatus(List<String> rootUrls, boolean resetOldUrlStatus) {
         //查询 RootUrl 对应的 所有提取URL 信息
         List<BasicHostTableTabDataModel> tabDataModels = AnalyseHostResultTable.fetchHostResultByRootUrls(rootUrls);
         if (!tabDataModels.isEmpty()) {
@@ -1227,38 +1231,35 @@ public class BasicHostInfoPanel extends JPanel {
                 List<String> findApiList = CastUtils.toStringList(tabDataModel.getFindApi());
                 List<String> pathToUrlList = CastUtils.toStringList(tabDataModel.getPathToUrl());
                 List<String> unvisitedUrl = CastUtils.toStringList(tabDataModel.getUnvisitedUrl());
-
+                //获取历史URL状态码记录、减少查询数量
                 HashMap<String, JSONObject> oldAllUrlStatus = CastUtils.toUrlStatusJsonMap(tabDataModel.getAllUrlStatus());
 
                 //计算出当前所有提取URL
                 List<String> newQueryAllUrl = CastUtils.listAddList(CastUtils.listAddList(findUrlList, findApiList), pathToUrlList);
 
-                //为所有URL补充状态
+                //为所有URL补充状态 基本状态 后续需要覆盖
                 HashMap<String, JSONObject> allUrlStatusMap = CastUtils.toUrlStatusJsonMap(newQueryAllUrl); //当没查到任何结果时候,显示这个
-
-                //合并旧查询数据
-                if (oldAllUrlStatus.size() > 0){
-                    allUrlStatusMap = CastUtils.updateUrlStatusMap(allUrlStatusMap, oldAllUrlStatus);
-                }
 
                 if (newQueryAllUrl.size()>0){
                     //忽略查询未访问的URL
                     newQueryAllUrl = CastUtils.listReduceList(newQueryAllUrl, unvisitedUrl);
 
                     //计算出所有需要更新的提取URL
-                    if (oldAllUrlStatus.size() > 0){
+                    if (oldAllUrlStatus.size() > 0 && !resetOldUrlStatus){
+                        //合并旧查询数据
+                        allUrlStatusMap = CastUtils.updateUrlStatusMap(allUrlStatusMap, oldAllUrlStatus);
+
                         List<String> oldValidAllUrl = new ArrayList<>();
                         for (Map.Entry<String, JSONObject> entry : oldAllUrlStatus.entrySet()){
-                            String concatUrlMethod = entry.getKey();
+                            String urlWithMethod = entry.getKey();
                             JSONObject urlStatusJson = entry.getValue();
-                            Integer status = urlStatusJson.getInteger("status");
-                            Integer length = urlStatusJson.getInteger("length");
                             //当 status == -1 || length == -1 时 也需要查询更新
-                            if (status > -1 || length > -1){
-                                String url = concatUrlMethod.split(" <-> ", 2)[0];
+                            if (urlStatusJson.getInteger("status") > -1 || urlStatusJson.getInteger("length") > -1){
+                                String url = urlWithMethod.split(" <-> ", 2)[0];
                                 oldValidAllUrl.add(url);
                             }
                         }
+
                         newQueryAllUrl = CastUtils.listReduceList(newQueryAllUrl, oldValidAllUrl);
                     }
 
@@ -1270,9 +1271,9 @@ public class BasicHostInfoPanel extends JPanel {
                             put("length", requestStatusModel.getRespLength());
                         }};
 
-                        String concatUrlMethod = String.format("%s <-> %s", requestStatusModel.getReqUrl(), requestStatusModel.getReqMethod());
+                        String urlWithMethod = String.format("%s <-> %s", requestStatusModel.getReqUrl(), requestStatusModel.getReqMethod());
 
-                        allUrlStatusMap.put(concatUrlMethod, statusJson);
+                        allUrlStatusMap.put(urlWithMethod, statusJson);
                     }
                 }
 
