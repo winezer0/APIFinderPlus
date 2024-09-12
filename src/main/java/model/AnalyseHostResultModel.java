@@ -16,7 +16,6 @@ public class AnalyseHostResultModel {
     private List<String> pathList;
     private List<String> apiList;
     private Boolean hasImportant;
-    private List<String> unvisitedUrlList;
 
     // 中转构造函数
     public AnalyseHostResultModel(AnalyseUrlResultModel analyseUrlResultModel) {
@@ -26,7 +25,6 @@ public class AnalyseHostResultModel {
         this.pathList = analyseUrlResultModel.getPathList();
         this.apiList = analyseUrlResultModel.getApiList();
         this.hasImportant = analyseUrlResultModel.getHasImportant();
-        this.unvisitedUrlList = CastUtils.listAddList(this.urlList, this.apiList);
     }
 
     public String getRootUrl() {
@@ -54,6 +52,6 @@ public class AnalyseHostResultModel {
     }
 
     public List<String> getUnvisitedUrlList() {
-        return unvisitedUrlList;
+        return CastUtils.listAddList(this.urlList, this.apiList);
     }
 }
