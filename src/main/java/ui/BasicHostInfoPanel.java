@@ -1131,6 +1131,35 @@ public class BasicHostInfoPanel extends JPanel {
             }
         });
 
+        //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
+        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("查询对应提取URL的响应状态", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        // 添加 initOrUpdateUrlStatusItem 事件监听器
+        initOrUpdateUrlStatusItem.setToolTipText("[多行]查询对应提取URL的响应状态");
+        initOrUpdateUrlStatusItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //多行选定模式
+                if (selectModel >= 0) {
+                    int[] selectedRows = tableUI.getSelectedRows();
+                    List<String> rootUrls = getRootUrlsAtActualRows(tableUI, selectedRows);
+                    if (!rootUrls.isEmpty()){
+                        // 使用SwingWorker来处理数据更新，避免阻塞EDT
+                        new SwingWorker<Void, Void>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                //TODO 查询 RootUrl 对应的 所有提取URL
+                                //TODO 查询所有对应 URL 的状态
+                                //TODO 更新ALL URL状态数据到数据库中
+                                //TODO 在表格下方提供查询窗口
+                                return null;
+                            }
+                        }.execute();
+                    }
+                }
+            }
+        });
+
+
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
