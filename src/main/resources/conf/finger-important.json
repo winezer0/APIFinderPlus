@@ -24,7 +24,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "允许扫描的目标RootUrl关键字",
+			"describe": "允许[监听扫描]的RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [],
@@ -34,7 +34,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止扫描的目标RootUrl关键字",
+			"describe": "禁止[监听扫描|URL提取]的RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -63,13 +63,12 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止进行扫描的目标URL路径关键字",
+			"describe": "禁止[监听扫描|URL提取]的URL路径关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
 				"/jquery",
 				"/echarts",
-				"/ueditor.",
 				"/amazeui.",
 				"/animation.",
 				"/zh-cn.js"
@@ -80,7 +79,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止进行扫描的目标URL文件扩展名",
+			"describe": "禁止[监听扫描|URL提取|PATH提取]的URI扩展名",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -123,7 +122,8 @@
 				"sass",
 				"less",
 				"eot",
-				"swf"
+				"swf",
+				"vue"
 			],
 			"location": "config",
 			"match": "keyword",
@@ -131,7 +131,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止自动进行有效PATH记录的目标RootUrl关键字",
+			"describe": "禁止自动进行[有效PATH记录]的RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -142,7 +142,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止自动进行未访问URL扫描的目标RootUrl关键字",
+			"describe": "禁止自动进行[未访问URL扫描]的RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -154,7 +154,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "允许自动进行有效PATH记录的响应状态码",
+			"describe": "允许自动进行[有效PATH记录]的响应状态码",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -167,7 +167,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止自动进行有效PATH记录的响应标题",
+			"describe": "禁止自动进行[有效PATH记录]的响应标题",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -179,15 +179,14 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止提取的URI路径[包含]此项任一元素",
+			"describe": "过滤[提取的PATH]不包含此项",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
+				"  ",
 				"text/css",
 				"text/javascript",
-				":/usr/",
-				"  ",
-				".vue"
+				":/usr/"
 			],
 			"location": "config",
 			"match": "keyword",
@@ -195,7 +194,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止提取的URI路径[等于]此项任一元素",
+			"describe": "过滤[提取的PATH]不等于此项",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -214,7 +213,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止提取的敏感信息[包含]此项任一元素",
+			"describe": "过滤[提取的敏感信息]不包含此项",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -239,7 +238,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止递归访问的URL路径[包含]此项任一元素",
+			"describe": "禁止递归访问的URL路径关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
