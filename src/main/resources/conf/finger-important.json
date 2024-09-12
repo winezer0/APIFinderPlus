@@ -34,7 +34,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止[监听扫描|URL提取]的RootUrl关键字",
+			"describe": "禁止[监听扫描|提取URL]的RootUrl关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -104,7 +104,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止[监听扫描|URL提取]的URL路径关键字",
+			"describe": "禁止[监听扫描|提取URL]的URL路径关键字",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -120,7 +120,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "禁止[监听扫描|URL提取|PATH提取]的URI扩展名",
+			"describe": "禁止[监听扫描|提取URL|提取PATH]的URI扩展名",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -220,7 +220,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "过滤[提取的PATH]不包含此项",
+			"describe": "禁止[提取PATH]包含此项",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -235,7 +235,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "过滤[提取的PATH]不等于此项",
+			"describe": "禁止[提取PATH]等于此项",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
@@ -254,7 +254,7 @@
 		},
 		{
 			"accuracy": "high",
-			"describe": "过滤[提取的敏感信息]不包含此项",
+			"describe": "禁止[提取敏感信息]包含此项",
 			"isImportant": false,
 			"isOpen": true,
 			"keyword": [
