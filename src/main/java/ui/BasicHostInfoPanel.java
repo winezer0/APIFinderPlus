@@ -390,7 +390,7 @@ public class BasicHostInfoPanel extends JPanel {
         }
 
         //点击时就调用更新数据
-        updateAllUrlStatus(Collections.singletonList(currentRootUrl), false);
+        updateAllExtractUrRespStatus(Collections.singletonList(currentRootUrl), false);
 
         //查询路径树信息 并美化输出
         PathTreeModel pathTreeModel = PathTreeTable.fetchPathTreeByRootUrl(currentRootUrl);
@@ -1157,7 +1157,7 @@ public class BasicHostInfoPanel extends JPanel {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                updateAllUrlStatus(rootUrls, true);
+                                updateAllExtractUrRespStatus(rootUrls, true);
                                 return null;
                             }
                         }.execute();
@@ -1223,7 +1223,7 @@ public class BasicHostInfoPanel extends JPanel {
      * @param rootUrls 选定的RootUrls
      * @param resetOldUrlStatus 是否需要充值历史状态记录
      */
-    private void updateAllUrlStatus(List<String> rootUrls, boolean resetOldUrlStatus) {
+    private void updateAllExtractUrRespStatus(List<String> rootUrls, boolean resetOldUrlStatus) {
         //查询 RootUrl 对应的 所有提取URL 信息
         List<BasicHostTableTabDataModel> tabDataModels = AnalyseHostResultTable.fetchHostResultByRootUrls(rootUrls);
         if (!tabDataModels.isEmpty()) {
