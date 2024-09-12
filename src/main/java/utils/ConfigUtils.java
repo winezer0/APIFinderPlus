@@ -121,7 +121,7 @@ public class ConfigUtils {
         if (BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS.isEmpty()){
             BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS = Collections.singletonList("GET");
         } else {
-            BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS = CastUtils.toUpper(BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS);
+            BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS = CastUtils.methodToUpper(BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS);
         }
 
         //设置默认请求参数

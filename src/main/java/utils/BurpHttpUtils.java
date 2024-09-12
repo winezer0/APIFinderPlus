@@ -149,18 +149,18 @@ public class BurpHttpUtils {
                 "\r\n";
 
         //补充PUT POST型的数据
-        if (isEqualsOneKey(reqMethod.trim(),"GET|HEAD",false)){
+        if (isEqualsOneKey(reqMethod,"GET|HEAD",false)){
             //如果请求参数不为空的话，就将参数信息添加到请求路径后面
             if (isNotEmptyObj(reqParam)) {
                 String delimiter = reqPath.contains("?") || reqPath.endsWith("&") ? "&" : "?";
                 reqPath += delimiter + reqParam;
             }
             //补充基础数据
-            baseRequestString = String.format(baseRequestString, reqMethod.toUpperCase().trim(), reqPath, reqHost);
+            baseRequestString = String.format(baseRequestString, reqMethod, reqPath, reqHost);
             requestBytes = baseRequestString.getBytes();
         } else {
             //补充POST|PUT的基础数据
-            baseRequestString = String.format(baseRequestString, reqMethod.toUpperCase().trim(), reqPath, reqHost);
+            baseRequestString = String.format(baseRequestString, reqMethod, reqPath, reqHost);
             requestBytes = baseRequestString.getBytes();
 
             //补充请求体数据

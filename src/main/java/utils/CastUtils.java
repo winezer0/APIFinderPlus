@@ -430,7 +430,7 @@ public class CastUtils {
         HashMap<String, JSONObject> urlStatusArrayMap = new HashMap<>();
         for (String url:urlList){
             for (String method:BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS){
-                String urlWithMethod = String.format("%s <-> %s", url, method.toUpperCase());
+                String urlWithMethod = String.format("%s <-> %s", url, method);
                 urlStatusArrayMap.put(urlWithMethod,defaultJson);
             }
         }
@@ -495,10 +495,10 @@ public class CastUtils {
      * @param list 要转换的字符串列表
      * @return 包含大写字符串的新列表
      */
-    public static List<String> toUpper(List<String> list) {
+    public static List<String> methodToUpper(List<String> list) {
         List<String> upperCaseList = new ArrayList<>();
         for (String item : list) {
-            upperCaseList.add(item.toUpperCase());
+            upperCaseList.add(item.toUpperCase().trim());
         }
         return upperCaseList;
     }
