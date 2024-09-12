@@ -98,7 +98,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     public static List<String> CONF_BLACK_RECORD_PATH_TITLE = new ArrayList<>(); // 不记录到PATH 的 TITLE 关键字
 
-    public static List<String> CONF_BLACK_EXTRACT_PATH_KEYS = new ArrayList<>();  //需要忽略的响应提取路径 关键字
     public static List<String> CONF_BLACK_EXTRACT_PATH_EQUAL = new ArrayList<>();  //需要忽略的响应提取路径 完整路径
 
     public static List<String> CONF_BLACK_EXTRACT_INFO_KEYS = new ArrayList<>();  //需要忽略的响应提取信息
