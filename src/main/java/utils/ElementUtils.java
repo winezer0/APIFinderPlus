@@ -11,12 +11,12 @@ public class ElementUtils {
      *
      * @param string 单个字符串。
      * @param elementsString 允许的字符串，用'|'分隔。
-     * @param bool 当 elementsString 为空时应该返回的响应码
+     * @param defaultBool 当 elementsString 为空时应该返回的响应码
      * @return 如果 string 在 elementsString 范围内则返回 true，否则返回false。
      */
-    public static boolean isEqualsOneKey(String string, String elementsString, boolean bool) {
+    public static boolean isEqualsOneKey(String string, String elementsString, boolean defaultBool) {
         //当元素为空时,返回默认值
-        if (isEmptyObj(string) || isEmptyObj(elementsString)) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return defaultBool;
 
         String[] elements = elementsString.split("\\|");
         for (String element : elements) {
@@ -32,12 +32,12 @@ public class ElementUtils {
      *
      * @param string 单个字符串。
      * @param elementsString 允许的字符串，用'|'分隔。
-     * @param bool 当 elementsString 为空时应该返回的响应码
+     * @param defaultBool 当 elementsString 为空时应该返回的响应码
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
-    public static boolean isContainOneKey(String string, String elementsString, boolean bool) {
+    public static boolean isContainOneKey(String string, String elementsString, boolean defaultBool) {
         //当元素为空时,返回默认值
-        if (isEmptyObj(string) || isEmptyObj(elementsString)) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return defaultBool;
 
         String[] elements = elementsString.split("\\|");
         for (String element : elements) {
@@ -53,13 +53,13 @@ public class ElementUtils {
      *
      * @param stringA 单个字符串。
      * @param elements 允许的字符串列表
-     * @param bool 当 elements 为空时应该返回的响应码
+     * @param defaultBool 当 elements 为空时应该返回的响应码
      * @return 如果 string 在 elements 范围内则返回 true，否则返回false。
      */
-    public static boolean isEqualsOneKey(Object stringA, List<String> elements, boolean bool) {
+    public static boolean isEqualsOneKey(Object stringA, List<String> elements, boolean defaultBool) {
         String string = String.valueOf(stringA);
         //当元素为空时,返回默认值
-        if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elements)) return defaultBool;
 
         for (String element : elements) {
             if (format(string).equals(format(element))) {
@@ -74,12 +74,12 @@ public class ElementUtils {
      *
      * @param string 单个字符串。
      * @param elements 允许的字符串，用'|'分隔。
-     * @param bool 当 elementsString 为空时应该返回的响应码
+     * @param defaultBool 当 elementsString 为空时应该返回的响应码
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
-    public static boolean isContainOneKey(String string, List<String> elements, boolean bool) {
+    public static boolean isContainOneKey(String string, List<String> elements, boolean defaultBool) {
         //当元素为空时,返回默认值
-        if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elements)) return defaultBool;
 
         for (String element : elements) {
             if (format(string).contains(format(element))){
@@ -94,12 +94,12 @@ public class ElementUtils {
      *
      * @param string 单个字符串。
      * @param elements 允许的字符串，用'|'分隔。
-     * @param bool 当 elementsString 为空时应该返回的响应码
+     * @param defaultBool 当 elementsString 为空时应该返回的响应码
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
-    public static boolean isContainAllKey(String string, List<String> elements, boolean bool) {
+    public static boolean isContainAllKey(String string, List<String> elements, boolean defaultBool) {
         //当元素为空时,返回默认值
-        if (isEmptyObj(string) || isEmptyObj(elements)) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elements)) return defaultBool;
 
         for (String element : elements) {
             if (!format(string).contains(format(element))){
@@ -109,9 +109,9 @@ public class ElementUtils {
         return true;
     }
 
-    public static boolean isContainAllKey(String string, String elementsString, boolean bool) {
+    public static boolean isContainAllKey(String string, String elementsString, boolean defaultBool) {
         //当元素为空时,返回默认值
-        if (isEmptyObj(string) || isEmptyObj(elementsString)) return bool;
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return defaultBool;
 
         String[] elements = elementsString.split("\\|");
 
