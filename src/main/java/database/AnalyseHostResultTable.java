@@ -43,10 +43,9 @@ public class AnalyseHostResultTable {
             + "unvisited_url TEXT DEFAULT '',\n"      //合并所有URL 并去除已经访问过的URL (Json格式)
             + "unvisited_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 并去除已经访问过的URL的数量
 
-//TODO 实现所有URL的简单状态码显示
-//            + "all_url TEXT DEFAULT '',\n"      //合并所有URL  (Json格式)
-//            + "all_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 的数量
-//            + "all_url_status TEXT DEFAULT '',\n"      //合并所有URL MAP<url,status json> 格式
+            //TODO 实现所有URL的简单状态码显示
+            + "all_url TEXT DEFAULT '',\n"      //合并所有URL MAP<url,status json> 格式
+            + "all_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 的数量
 
             + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
             + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.HANDLE_WAIT)
