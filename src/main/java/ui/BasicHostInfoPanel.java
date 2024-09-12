@@ -159,18 +159,18 @@ public class BasicHostInfoPanel extends JPanel {
 
         //自己实现TableHeader 支持请求头提示
         String[] basicHostColHeaderTooltips = new String[]{
-                "请求ID",
-                "请求目标",
-                "是否存在匹配重要规则",
-                "【敏感信息】数量 == 当前网站响应中的敏感信息",
-                "【直接URL】数量 == 当前网站响应中提取的URL",
-                "【网站PATH】数量 == 当前网站响应中提取的PATH",
-                "【拼接URL】数量 == 当前请求目录 直接组合 已提取PATH（已过滤）",
-                "【动态URL】数量 == 网站有效目录 智能组合 已提取PATH（已过滤|只能计算带目录的PATH|跟随网站有效目录新增而变动）",
-                "【未访问URL】数量 == 当前直接URL数量+拼接URL数量+动态URL数量-全局已访问URL",
-                "【所有提取URL】数量 == 当前直接URL+PATH直接组合URL+PATH动态组合URL",
-                "【动态URL数量计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
-                "【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
+                "【请求ID】",
+                "【请求目标】",
+                "【是否重要信息】",
+                "【敏感信息数量】 == 当前网站响应中的敏感信息",
+                "【直接URL数量】 == 当前网站响应中提取的URL",
+                "【网站PATH数量】 == 当前网站响应中提取的PATH",
+                "【拼接URL数量】 == 当前请求目录 直接组合 已提取PATH（已过滤）",
+                "【动态URL数量】 == 网站有效目录 智能组合 已提取PATH（已过滤|只能计算带目录的PATH|跟随网站有效目录新增而变动）",
+                "【未访问URL数量】 == 当前直接URL数量+拼接URL数量+动态URL数量-全局已访问URL",
+                "【所有提取URL数量】 == 当前直接URL+PATH直接组合URL+PATH动态组合URL",
+                "【动态URL计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
+                "【请求上下文分析状态】（不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
 
         TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(basicHostMsgTableUI.getColumnModel(), basicHostColHeaderTooltips);

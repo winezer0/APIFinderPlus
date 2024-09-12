@@ -39,8 +39,6 @@ public class AnalyseUrlResultTable {
             + "find_api TEXT DEFAULT '',\n"        //基于分析的不完整URI信息 直接拼接 出来的URL (Json格式)
             + "find_api_num INTEGER DEFAULT -1,\n"     //发现API的数量
 
-            + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
-
             + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.ANALYSE_WAIT)
 
             + ");";

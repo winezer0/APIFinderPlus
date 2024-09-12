@@ -13,13 +13,12 @@ public class BasicUrlTableLineDataModel {
     private Integer findInfoNum;
     private Integer findApiNum;
     private String runStatus;
-    private Integer basicPathNum;
     private Integer respLength;
     private Boolean hasImportant;
     // 构造函数
     public BasicUrlTableLineDataModel(int id, String msgHash, String reqUrl, String reqMethod, int respStatusCode,
                                       String reqSource, int findUrlNum, int findPathNum, int findInfoNum,
-                                      boolean hasImportant, int findApiNum, String runStatus, int basicPathNum, int respLength) {
+                                      boolean hasImportant, int findApiNum, String runStatus, int respLength) {
         this.id = id;
         this.msgHash = msgHash;
         this.reqUrl = reqUrl;
@@ -31,7 +30,6 @@ public class BasicUrlTableLineDataModel {
         this.findInfoNum = findInfoNum;
         this.findApiNum = findApiNum;
         this.runStatus = runStatus;
-        this.basicPathNum = basicPathNum;
         this.respLength = respLength;
         this.hasImportant = hasImportant;
     }
@@ -50,7 +48,6 @@ public class BasicUrlTableLineDataModel {
                 this.getFindUrlNum(),
                 this.getFindPathNum(),
                 this.getFindApiNum(),
-                this.getBasicPathNum(),
                 this.getRunStatus()
         };
     }
@@ -97,10 +94,6 @@ public class BasicUrlTableLineDataModel {
 
     public String getRunStatus() {
         return runStatus;
-    }
-
-    public Integer getBasicPathNum() {
-        return basicPathNum;
     }
 
     public Integer getRespLength() {
