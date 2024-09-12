@@ -1,12 +1,14 @@
 # BurpAPIFinder-Refactor
 
-本插件参考 APIFinder [https://github.com/shuanx/BurpAPIFinder] 进行深度重构开发
+本插件参考 APIFinder UI 进行重构开发 [https://github.com/shuanx/BurpAPIFinder] 
 
 ### TODO
 
 ```
-【暂时忽略】 对非200响应但存在敏感信息的请求进行处理【暂时未发现可以稳定复现的场景】
-【暂时忽略】 复杂的还没找到规律，暂未实现自动化的 webpack 封装JS内容分析
+【暂时忽略】 对非200响应但存在敏感信息的请求进行处理
+    对于本来就是404、405等非正常的响应、在Proxy窗口能看到的，建议使用 HAE 补充
+    对于自动探测出来的URL、通过插件访问后，任何状态码都会显示对应的敏感信息
+【暂时忽略】 实现自动化的 复杂的 webpack 封装JS内容分析
 
 【已完成】1、显示每个敏感信息的提取来源（会影响去重功能、需要好好设计下）
 【已完成】2、分析vue接口是否能够正常提取(正常的,是由于响应体过大截断导致的问题)、参考 https://github.com/momosecurity/FindSomething
