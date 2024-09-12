@@ -1,6 +1,7 @@
 package database;
 
 import model.HttpMsgInfo;
+import model.RequestStatusModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -100,4 +101,34 @@ public class ReqDataTable {
         return msgDataIndexList;
     }
 
+    /**
+     * 根据运行状态取获取对应请求的实际消息ID
+     */
+    public static synchronized List<RequestStatusModel> fetchRequestStatusByUrls(List<String> urls) {
+        List<RequestStatusModel> requestStatusModels = new ArrayList<>();
+
+        String selectSQL = ("SELECT * FROM " + tableName + " WHERE req_url IN $buildInParamList$;")
+                .replace("$buildInParamList$", DBService.buildInParamList(urls.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            for (int i = 0; i < urls.size(); i++) {
+                stmt.setString(i + 1, urls.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                RequestStatusModel requestStatusModel =  new RequestStatusModel(
+                        rs.getInt("id"),
+                        rs.getString("req_url"),
+                        rs.getString("req_method"),
+                        rs.getInt("resp_status_code"),
+                        rs.getInt("resp_length")
+                );
+                requestStatusModels.add(requestStatusModel);
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_DEBUG, String.format("[-] Error fetching [%s] Request Status By Urls: %s",tableName, e.getMessage()));
+        }
+        return requestStatusModels;
+    }
 }

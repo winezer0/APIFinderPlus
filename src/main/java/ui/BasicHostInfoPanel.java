@@ -40,6 +40,7 @@ public class BasicHostInfoPanel extends JPanel {
     private static ITextEditor basicHostDirectPath2UrlTEditor; //基于PATH计算出的URL
     private static ITextEditor basicHostSmartPath2UrlTEditor; //基于树算法计算出的URL
     private static ITextEditor basicHostUnvisitedUrlTEditor; //未访问过的URL
+    private static ITextEditor basicHostAllUrlStatusTEditor; //未访问过的URL
 
     private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
@@ -275,6 +276,7 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostSmartPath2UrlTEditor = callbacks.createTextEditor();
         basicHostUnvisitedUrlTEditor = callbacks.createTextEditor();
         basicHostPathTreeTEditor = callbacks.createTextEditor();
+        basicHostAllUrlStatusTEditor = callbacks.createTextEditor();
 
         tabs.addTab("RespFindInfo",null, basicHostFindInfoTextScrollPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
         tabs.addTab("RespFindUrl",null, basicHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
@@ -283,6 +285,7 @@ public class BasicHostInfoPanel extends JPanel {
         tabs.addTab("SmartPath2Url",null, basicHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
         tabs.addTab("UnvisitedUrl",null, basicHostUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
         tabs.addTab("PathTreeInfo",null, basicHostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
+        tabs.addTab("AllUrlStatus",null, basicHostAllUrlStatusTEditor.getComponent(), "当前URL所有响应状态聚合");
         return tabs;
     }
 
@@ -297,6 +300,7 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostSmartPath2UrlTEditor.setText(new byte[0]);
         basicHostUnvisitedUrlTEditor.setText(new byte[0]);
         basicHostPathTreeTEditor.setText(new byte[0]);
+        basicHostAllUrlStatusTEditor.setText(new byte[0]);
     }
 
     /**
@@ -403,6 +407,7 @@ public class BasicHostInfoPanel extends JPanel {
             String findApi = CastUtils.stringJsonArrayFormat(tabDataModel.getFindApi());
             String pathToUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getPathToUrl());
             String unvisitedUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getUnvisitedUrl());
+            String allUrlStatus = CastUtils.stringUrlStatusMapFormat(tabDataModel.getAllUrlStatus());
 
             basicHostFindInfoTextPane.setText(findInfo);
             basicHostRespFindUrlTEditor.setText(findUrl.getBytes());
@@ -410,6 +415,7 @@ public class BasicHostInfoPanel extends JPanel {
             basicHostDirectPath2UrlTEditor.setText(findApi.getBytes());
             basicHostSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
             basicHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
+            basicHostAllUrlStatusTEditor.setText(allUrlStatus.getBytes());
         }
     }
 
@@ -1132,9 +1138,9 @@ public class BasicHostInfoPanel extends JPanel {
         });
 
         //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
-        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("查询对应提取URL的响应状态", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("查询提取URL响应状态", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
         // 添加 initOrUpdateUrlStatusItem 事件监听器
-        initOrUpdateUrlStatusItem.setToolTipText("[多行]查询对应提取URL的响应状态");
+        initOrUpdateUrlStatusItem.setToolTipText("[多行]查询提取URL的响应状态");
         initOrUpdateUrlStatusItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1147,10 +1153,7 @@ public class BasicHostInfoPanel extends JPanel {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                //TODO 查询 RootUrl 对应的 所有提取URL
-                                //TODO 查询所有对应 URL 的状态
-                                //TODO 更新ALL URL状态数据到数据库中
-                                //TODO 在表格下方提供查询窗口
+                                updateAllUrlStatus(rootUrls);
                                 return null;
                             }
                         }.execute();
@@ -1159,7 +1162,6 @@ public class BasicHostInfoPanel extends JPanel {
             }
         });
 
-
         popupMenu.add(copyUrlItem);
         popupMenu.add(deleteItem);
 
@@ -1167,6 +1169,8 @@ public class BasicHostInfoPanel extends JPanel {
         popupMenu.add(updateUnVisitedItem);
         popupMenu.add(ClearUnVisitedItem);
         popupMenu.add(IgnoreUnVisitedItem);
+
+        popupMenu.add(initOrUpdateUrlStatusItem);
 
         popupMenu.add(setRunStatusHandleWaitItem);
         popupMenu.add(setRunStatusHandleEndItem);
@@ -1201,12 +1205,78 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostDirectPath2UrlTEditor.setText(new byte[0]);
         basicHostSmartPath2UrlTEditor.setText(new byte[0]);
         basicHostUnvisitedUrlTEditor.setText(new byte[0]);
+        basicHostAllUrlStatusTEditor.setText(new byte[0]);
         basicHostPathTreeTEditor.setText(new byte[0]);
     }
 
     public static void clearBasicHostMsgTableModel(){
         basicHostMsgTableModel.setRowCount(0);
     }
+
+
+    //更新当前选定的RootURL的所有提取URL的状态
+    private void updateAllUrlStatus(List<String> rootUrls) {
+        //查询 RootUrl 对应的 所有提取URL 信息
+        List<BasicHostTableTabDataModel> tabDataModels = AnalyseHostResultTable.fetchHostResultByRootUrls(rootUrls);
+        if (!tabDataModels.isEmpty()) {
+            for (BasicHostTableTabDataModel tabDataModel : tabDataModels){
+                List<String> findUrlList = CastUtils.toStringList(tabDataModel.getFindUrl());
+                List<String> findApiList = CastUtils.toStringList(tabDataModel.getFindApi());
+                List<String> pathToUrlList = CastUtils.toStringList(tabDataModel.getPathToUrl());
+                List<String> unvisitedUrl = CastUtils.toStringList(tabDataModel.getUnvisitedUrl());
+
+                HashMap<String, JSONObject> oldAllUrlStatus = CastUtils.toUrlStatusJsonMap(tabDataModel.getAllUrlStatus());
+
+                //计算出当前所有提取URL
+                List<String> newQueryAllUrl = CastUtils.listAddList(CastUtils.listAddList(findUrlList, findApiList), pathToUrlList);
+
+                //为所有URL补充状态
+                HashMap<String, JSONObject> allUrlStatusMap = CastUtils.toUrlStatusJsonMap(newQueryAllUrl); //当没查到任何结果时候,显示这个
+
+                //合并旧查询数据
+                if (oldAllUrlStatus.size() > 0){
+                    allUrlStatusMap = CastUtils.updateUrlStatusMap(allUrlStatusMap, oldAllUrlStatus);
+                }
+
+                if (newQueryAllUrl.size()>0){
+                    //忽略查询未访问的URL
+                    newQueryAllUrl = CastUtils.listReduceList(newQueryAllUrl, unvisitedUrl);
+
+                    //计算出所有需要更新的提取URL
+                    if (oldAllUrlStatus.size() > 0){
+                        List<String> oldValidAllUrl = new ArrayList<>();
+                        for (Map.Entry<String, JSONObject> entry : oldAllUrlStatus.entrySet()){
+                            String url = entry.getKey();
+                            JSONObject urlStatusJson = entry.getValue();
+                            Integer status = urlStatusJson.getInteger("status");
+                            Integer length = urlStatusJson.getInteger("length");
+                            String method = urlStatusJson.getString("method");
+                            //当 status == -1 || length == -1 时 也需要查询更新
+                            if (status > -1 || length > -1 || method.length() > 0){
+                                oldValidAllUrl.add(url);
+                            }
+                        }
+                        newQueryAllUrl = CastUtils.listReduceList(newQueryAllUrl, oldValidAllUrl);
+                    }
+
+                    //查询所有对应 URL 的状态 并更新到Map中
+                    List<RequestStatusModel> requestStatusByUrls = ReqDataTable.fetchRequestStatusByUrls(newQueryAllUrl);
+                    for (RequestStatusModel requestStatusModel:requestStatusByUrls){
+                        JSONObject statusJson = new JSONObject() {{
+                            put("status", requestStatusModel.getRespStatusCode());
+                            put("length", requestStatusModel.getRespLength());
+                            put("method", requestStatusModel.getReqMethod());
+                        }};
+                        allUrlStatusMap.put(requestStatusModel.getReqUrl(), statusJson);
+                    }
+                }
+
+                //更新ALL URL状态数据到数据库中
+                AnalyseHostResultTable.updateUrlsStatusByRootUrl(tabDataModel.getRootUrl(), allUrlStatusMap);
+            }
+        }
+    }
+
 }
 
 

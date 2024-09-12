@@ -149,7 +149,6 @@ public class CastUtils {
         return formattedString.toString();
     }
 
-
     /**
      * 合并两个 List<String> 并去重
      */
@@ -420,10 +419,11 @@ public class CastUtils {
     }
 
     //Url 列 转 URL 状态码Json
-    public static HashMap<String, JSONObject> toUrlStatusArrayMap(List<String> urlList) {
+    public static HashMap<String, JSONObject> toUrlStatusJsonMap(List<String> urlList) {
         JSONObject defaultJson = new JSONObject() {{
             put("status", -1);
             put("length", -1);
+            put("method", "");
         }};
 
         // 使用 FastJSON2 的 parseObject 方法，传入 HashMap 的具体类型
@@ -434,13 +434,21 @@ public class CastUtils {
         return urlStatusArrayMap;
     }
 
-    public static HashMap<String, JSONObject> toUrlStatusArrayMap(String jsonString) {
+    /**
+     * json对象还原到Url Map对象
+     */
+    public static HashMap<String, JSONObject> toUrlStatusJsonMap(String jsonString) {
+        if (isEmptyObj(jsonString) || jsonString.length() < 2){
+            return new HashMap<>();
+        }
         // 使用 FastJSON2 的 parseObject 方法，传入 HashMap 的具体类型
         HashMap<String, JSONObject> urlInfoArrayMap = JSONObject.parseObject(jsonString, new TypeReference<HashMap<String, JSONObject>>(){});
         return urlInfoArrayMap;
     }
 
-    public static HashMap<String, JSONObject> statusMapAddStatusMap(HashMap<String, JSONObject> map1, HashMap<String, JSONObject> map2) {
+
+    //更新两个 UrlStatus Map
+    public static HashMap<String, JSONObject> updateUrlStatusMap(HashMap<String, JSONObject> map1, HashMap<String, JSONObject> map2) {
         if (map1.isEmpty()) return map2;
         if (map2.isEmpty()) return map1;
 
@@ -451,10 +459,33 @@ public class CastUtils {
             JSONObject urlStatusJson = entry.getValue();
             Integer status = urlStatusJson.getInteger("status");
             Integer length = urlStatusJson.getInteger("length");
-            if (status > -1 || length > -1){
+            String method = urlStatusJson.getString("method");
+            if (status > -1 || length > -1 || method.length() > 0){
                 map.put(url, urlStatusJson);
             }
         }
         return map;
+    }
+
+
+    //转换Json字符串为可以输出的格式
+    public static String stringUrlStatusMapFormat(String jsonArrayString) {
+        if (jsonArrayString == null || jsonArrayString.length()<=2 )
+            return "";
+
+        // 解析JSON数组
+        HashMap<String, JSONObject> urlStatusJsonMap = toUrlStatusJsonMap(jsonArrayString);
+        StringBuilder formattedString = new StringBuilder();
+
+        for (Map.Entry<String, JSONObject> entry : urlStatusJsonMap.entrySet()){
+            String url = entry.getKey();
+            JSONObject urlStatusJson = entry.getValue();
+            Integer status = urlStatusJson.getInteger("status");
+            Integer length = urlStatusJson.getInteger("length");
+            String  method = urlStatusJson.getString("method");
+            String line = String.format("%s <-> %s <-> %s <-> %s", url,status,length,method);
+            formattedString.append(line).append("\n");
+        }
+        return formattedString.toString();
     }
 }

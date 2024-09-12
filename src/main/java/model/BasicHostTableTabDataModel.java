@@ -11,9 +11,11 @@ public class BasicHostTableTabDataModel {
     private String pathToUrl;
     private String unvisitedUrl;
 
+    private String allUrlStatus;
+
 
     public BasicHostTableTabDataModel(String rootUrl, String findInfo, String findUrl, String findPath,
-                                      String findApi, String pathToUrl, String unvisitedUrl) {
+                                      String findApi, String pathToUrl, String unvisitedUrl, String allUrlStatus) {
         this.rootUrl = rootUrl;
         this.findUrl = findUrl;
         this.findPath = findPath;
@@ -21,6 +23,7 @@ public class BasicHostTableTabDataModel {
         this.findApi = findApi;
         this.pathToUrl = pathToUrl;
         this.unvisitedUrl = unvisitedUrl;
+        this.allUrlStatus = allUrlStatus;
     }
 
     public String getRootUrl() {
@@ -49,5 +52,9 @@ public class BasicHostTableTabDataModel {
 
     public String getUnvisitedUrl() {
         return unvisitedUrl;
+    }
+
+    public String getAllUrlStatus() {
+        return allUrlStatus;
     }
 }

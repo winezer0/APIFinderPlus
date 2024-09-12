@@ -1,6 +1,7 @@
 package database;
 
 import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import model.*;
 import utils.CastUtils;
 
@@ -44,8 +45,9 @@ public class AnalyseHostResultTable {
             + "unvisited_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 并去除已经访问过的URL的数量
 
             //TODO 实现所有URL的简单状态码显示
-            + "all_url TEXT DEFAULT '',\n"      //合并所有URL MAP<url,status json> 格式
-            + "all_url_num INTEGER DEFAULT -1,\n"   //合并所有URL 的数量
+
+            + "all_url_status TEXT DEFAULT '',\n"      //合并所有URL MAP<url,status json> 格式
+            + "all_url_num INTEGER DEFAULT -1,\n"
 
             + "basic_path_num INTEGER DEFAULT -1,\n"     //是基于多少个路径算出来的结果?
             + "run_status TEXT NOT NULL DEFAULT 'RUN_STATUS'".replace("RUN_STATUS", Constants.HANDLE_WAIT)
@@ -261,17 +263,17 @@ public class AnalyseHostResultTable {
     /**
      * 获取多条 存在 Path 并且没有 动态计算过的 path数据
      */
-    public static synchronized List<FindPathModel> fetchPathDataByRootUrl(List<String> RootUrls){
+    public static synchronized List<FindPathModel> fetchPathDataByRootUrl(List<String> rootUrls){
         List<FindPathModel> findPathModelList = new ArrayList<>();
 
-        if (RootUrls.isEmpty()) return findPathModelList;
+        if (rootUrls.isEmpty()) return findPathModelList;
 
-        String selectSQL = "SELECT * FROM " + tableName + " WHERE root_url IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(RootUrls.size()));
+        String selectSQL = ("SELECT * FROM " + tableName + " WHERE root_url IN $buildInParamList$;")
+                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            for (int i = 0; i < RootUrls.size(); i++) {
-                stmt.setString(i + 1, RootUrls.get(i));
+            for (int i = 0; i < rootUrls.size(); i++) {
+                stmt.setString(i + 1, rootUrls.get(i));
             }
             ResultSet rs = stmt.executeQuery();
 
@@ -295,7 +297,7 @@ public class AnalyseHostResultTable {
      */
     public static synchronized BasicHostTableTabDataModel fetchHostResultByRootUrl(String rootUrl){
         BasicHostTableTabDataModel tabDataModel = null;
-        String selectSQL = "SELECT * FROM " + AnalyseHostResultTable.tableName +" WHERE root_url = ?;";
+        String selectSQL = "SELECT * FROM " + tableName +" WHERE root_url = ?;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             stmt.setString(1, rootUrl);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -307,7 +309,8 @@ public class AnalyseHostResultTable {
                             rs.getString("find_path"),
                             rs.getString("find_api"),
                             rs.getString("path_to_url"),
-                            rs.getString("unvisited_url")
+                            rs.getString("unvisited_url"),
+                            rs.getString("all_url_status")
                     );
                 }
             }
@@ -317,4 +320,61 @@ public class AnalyseHostResultTable {
         return tabDataModel;
     }
 
+    /**
+     * 获取 指定 rootUrls 对应的 所有 分析结果 数据
+     */
+    public static synchronized List<BasicHostTableTabDataModel> fetchHostResultByRootUrls(List<String> rootUrls){
+        List<BasicHostTableTabDataModel> tabDataModels = new ArrayList<>();
+        String selectSQL = ("SELECT * FROM " + tableName +" WHERE root_url IN $buildInParamList$;")
+                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+
+            for (int i = 0; i < rootUrls.size(); i++) {
+                stmt.setString(i + 1, rootUrls.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    BasicHostTableTabDataModel tabDataModel = new BasicHostTableTabDataModel(
+                            rs.getString("root_url"),
+                            rs.getString("find_info"),
+                            rs.getString("find_url"),
+                            rs.getString("find_path"),
+                            rs.getString("find_api"),
+                            rs.getString("path_to_url"),
+                            rs.getString("unvisited_url"),
+                            rs.getString("all_url_status")
+                    );
+                    tabDataModels.add(tabDataModel);
+                }
+            }
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error Select Host Analyse Result Data By RootUrl: %s",  e.getMessage()));
+        }
+        return tabDataModels;
+    }
+
+    /**
+     * 基于ID更新动态URl数据
+     */
+    public static synchronized int updateUrlsStatusByRootUrl(String rootUrl, HashMap<String, JSONObject> allUrlStatus ){
+        int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
+
+        String updateSQL = "UPDATE "+ tableName + " SET all_url_status = ?, all_url_num = ? WHERE root_url = ?;";
+
+        try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+
+            stmt.setString(1, CastUtils.toJsonString(allUrlStatus));
+            stmt.setInt(2, allUrlStatus.keySet().size());
+            stmt.setString(3, rootUrl);
+
+            int affectedRows = stmt.executeUpdate();
+            generatedId = affectedRows;
+        } catch (Exception e) {
+            stderr_println(LOG_ERROR, String.format("[-] Error update [%] Urls Status By RootUrl: %s", tableName, e.getMessage()));
+        }
+
+        return generatedId; // 返回ID值，无论是更新还是插入
+    }
 }
