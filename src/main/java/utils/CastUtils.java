@@ -45,7 +45,6 @@ public class CastUtils {
         return new ArrayList<>(new HashSet<>(list));
     }
 
-
     /**
      * 去除JSONArray中的重复项。
      *
@@ -418,5 +417,44 @@ public class CastUtils {
             }
         }
         return formattedResult.toString();
+    }
+
+    //Url 列 转 URL 状态码Json
+    public static HashMap<String, JSONObject> toUrlStatusArrayMap(List<String> urlList) {
+        JSONObject defaultJson = new JSONObject() {{
+            put("status", -1);
+            put("length", -1);
+        }};
+
+        // 使用 FastJSON2 的 parseObject 方法，传入 HashMap 的具体类型
+        HashMap<String, JSONObject> urlStatusArrayMap = new HashMap<>();
+        for (String url:urlList){
+            urlStatusArrayMap.put(url,defaultJson);
+        }
+        return urlStatusArrayMap;
+    }
+
+    public static HashMap<String, JSONObject> toUrlStatusArrayMap(String jsonString) {
+        // 使用 FastJSON2 的 parseObject 方法，传入 HashMap 的具体类型
+        HashMap<String, JSONObject> urlInfoArrayMap = JSONObject.parseObject(jsonString, new TypeReference<HashMap<String, JSONObject>>(){});
+        return urlInfoArrayMap;
+    }
+
+    public static HashMap<String, JSONObject> statusMapAddStatusMap(HashMap<String, JSONObject> map1, HashMap<String, JSONObject> map2) {
+        if (map1.isEmpty()) return map2;
+        if (map2.isEmpty()) return map1;
+
+        HashMap<String, JSONObject> map = new HashMap<>(map1);
+        // 遍历 HashMap 的条目集合
+        for (Map.Entry<String, JSONObject> entry : map2.entrySet()) {
+            String url = entry.getKey();
+            JSONObject urlStatusJson = entry.getValue();
+            Integer status = urlStatusJson.getInteger("status");
+            Integer length = urlStatusJson.getInteger("length");
+            if (status > -1 || length > -1){
+                map.put(url, urlStatusJson);
+            }
+        }
+        return map;
     }
 }
