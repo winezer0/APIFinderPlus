@@ -1,9 +1,11 @@
 package utils;
 
 import burp.AnalyseInfo;
+import burp.BurpExtender;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
+import database.Constants;
 import model.HttpUrlInfo;
 import utilbox.HelperPlus;
 
@@ -423,13 +425,15 @@ public class CastUtils {
         JSONObject defaultJson = new JSONObject() {{
             put("status", -1);
             put("length", -1);
-            put("method", "");
         }};
 
         // 使用 FastJSON2 的 parseObject 方法，传入 HashMap 的具体类型
         HashMap<String, JSONObject> urlStatusArrayMap = new HashMap<>();
         for (String url:urlList){
-            urlStatusArrayMap.put(url,defaultJson);
+            for (String method:BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS){
+                String concatUrlMethod = String.format("%s <-> %s", url, method);
+                urlStatusArrayMap.put(concatUrlMethod,defaultJson);
+            }
         }
         return urlStatusArrayMap;
     }
@@ -455,13 +459,12 @@ public class CastUtils {
         HashMap<String, JSONObject> map = new HashMap<>(map1);
         // 遍历 HashMap 的条目集合
         for (Map.Entry<String, JSONObject> entry : map2.entrySet()) {
-            String url = entry.getKey();
+            String concatUrlMethod = entry.getKey();
             JSONObject urlStatusJson = entry.getValue();
             Integer status = urlStatusJson.getInteger("status");
             Integer length = urlStatusJson.getInteger("length");
-            String method = urlStatusJson.getString("method");
-            if (status > -1 || length > -1 || method.length() > 0){
-                map.put(url, urlStatusJson);
+            if (status > -1 || length > -1){
+                map.put(concatUrlMethod, urlStatusJson);
             }
         }
         return map;
@@ -478,12 +481,11 @@ public class CastUtils {
         StringBuilder formattedString = new StringBuilder();
 
         for (Map.Entry<String, JSONObject> entry : urlStatusJsonMap.entrySet()){
-            String url = entry.getKey();
+            String concatUrlMethod = entry.getKey();
             JSONObject urlStatusJson = entry.getValue();
             Integer status = urlStatusJson.getInteger("status");
             Integer length = urlStatusJson.getInteger("length");
-            String  method = urlStatusJson.getString("method");
-            String line = String.format("%s <-> %s <-> %s <-> %s", url,status,length,method);
+            String line = String.format("%s <-> %s <-> %s", concatUrlMethod,status,length);
             formattedString.append(line).append("\n");
         }
         return formattedString.toString();

@@ -1249,13 +1249,13 @@ public class BasicHostInfoPanel extends JPanel {
                     if (oldAllUrlStatus.size() > 0){
                         List<String> oldValidAllUrl = new ArrayList<>();
                         for (Map.Entry<String, JSONObject> entry : oldAllUrlStatus.entrySet()){
-                            String url = entry.getKey();
+                            String concatUrlMethod = entry.getKey();
                             JSONObject urlStatusJson = entry.getValue();
                             Integer status = urlStatusJson.getInteger("status");
                             Integer length = urlStatusJson.getInteger("length");
-                            String method = urlStatusJson.getString("method");
                             //当 status == -1 || length == -1 时 也需要查询更新
-                            if (status > -1 || length > -1 || method.length() > 0){
+                            if (status > -1 || length > -1){
+                                String url = concatUrlMethod.split(" <-> ", 2)[0];
                                 oldValidAllUrl.add(url);
                             }
                         }
@@ -1268,9 +1268,11 @@ public class BasicHostInfoPanel extends JPanel {
                         JSONObject statusJson = new JSONObject() {{
                             put("status", requestStatusModel.getRespStatusCode());
                             put("length", requestStatusModel.getRespLength());
-                            put("method", requestStatusModel.getReqMethod());
                         }};
-                        allUrlStatusMap.put(requestStatusModel.getReqUrl(), statusJson);
+
+                        String concatUrlMethod = String.format("%s <-> %s", requestStatusModel.getReqUrl(), requestStatusModel.getReqMethod());
+
+                        allUrlStatusMap.put(concatUrlMethod, statusJson);
                     }
                 }
 
