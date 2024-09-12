@@ -503,4 +503,28 @@ public class CastUtils {
         return upperCaseList;
     }
 
+    /**
+     * 删除字符串中的所有空白行（只包含一个或多个空格的行）。
+     *
+     * @param prettyJson 包含多行的字符串
+     * @return 删除空白行后的字符串
+     */
+    public static String removeJsonForMat(String prettyJson) {
+        prettyJson = prettyJson.replace("{","").replace("}","");
+
+        // 使用换行符分割字符串
+        List<String> lines = new ArrayList<>(Arrays.asList(prettyJson.split("\\r?\\n")));
+
+        // 过滤掉空白行
+        List<String> filteredLines = new ArrayList<>();
+        for (String line : lines) {
+            if (!line.trim().isEmpty()) {
+                filteredLines.add(line);
+            }
+        }
+
+        // 将过滤后的行重新组合成一个字符串
+        return String.join(System.lineSeparator(), filteredLines);
+    }
+
 }

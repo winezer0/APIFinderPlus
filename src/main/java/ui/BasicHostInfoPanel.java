@@ -397,6 +397,7 @@ public class BasicHostInfoPanel extends JPanel {
         if (pathTreeModel!=null){
             JSONObject pathTree = pathTreeModel.getPathTree();
             String prettyJson = JSON.toJSONString(pathTree, JSONWriter.Feature.PrettyFormat);
+            prettyJson = CastUtils.removeJsonForMat(prettyJson);
             basicHostPathTreeTEditor.setText(prettyJson.getBytes());
         }
 
