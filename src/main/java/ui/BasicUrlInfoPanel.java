@@ -385,7 +385,7 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
 
         JMenuItem addRootUrlToBlackUrlRootItem = new JMenuItem("添加到RootUrl黑名单", UiUtils.getImageIcon("/icon/noFindUrlFromJS.png", 15, 15));
         // 添加 addRootUrlToBlackUrlRootItem 事件监听器
-        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单 CONF_BLACK_URL_ROOT");
+        addRootUrlToBlackUrlRootItem.setToolTipText("[多行]添加选定行对应的RootUrl到禁止扫描黑名单 CONF_BLACK_ROOT_URL");
         addRootUrlToBlackUrlRootItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -403,8 +403,8 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
                                 for (String url: urlList){set.add(new HttpUrlInfo(url).getRootUrlUsual());}
                                 ArrayList<String> rootUrls = new ArrayList<>(set);
 
-                                // 合并 rootUrls 到 BurpExtender.CONF_BLACK_URL_ROOT 保持唯一性
-                                BurpExtender.CONF_BLACK_URL_ROOT =CastUtils.listAddList(rootUrls, BurpExtender.CONF_BLACK_URL_ROOT);
+                                // 合并 rootUrls 到 BurpExtender.CONF_BLACK_ROOT_URL 保持唯一性
+                                BurpExtender.CONF_BLACK_ROOT_URL =CastUtils.listAddList(rootUrls, BurpExtender.CONF_BLACK_ROOT_URL);
 
                                 //保存Json
                                 RuleConfigPanel.saveConfigToDefaultJson();

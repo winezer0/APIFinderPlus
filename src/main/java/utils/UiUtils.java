@@ -485,7 +485,7 @@ public class UiUtils {
                                     break;
                                 case "addRootUrlToBlackUrlRoot":
                                     //1、修改配置文件
-                                    BurpExtender.CONF_BLACK_URL_ROOT = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_BLACK_URL_ROOT);
+                                    BurpExtender.CONF_BLACK_ROOT_URL = CastUtils.addUrlsRootUrlToList(urlList, BurpExtender.CONF_BLACK_ROOT_URL);
                                     RuleConfigPanel.saveConfigToDefaultJson();
                                     //2、删除 Root URL 对应的 结果数据
                                     java.util.List<String> rootUrlList = CastUtils.getRootUrlList(urlList);

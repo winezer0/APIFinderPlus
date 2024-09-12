@@ -29,7 +29,7 @@ public class BurpSitemapUtils {
             boolean flagIsNotInsert = RecordUrlTable.insertOrUpdateAccessedUrl(insertedFlag, 999) > 0;
 
             //忽略导入禁止导入的主机的信息
-            if (isContainOneKey(urlPrefix, CONF_BLACK_AUTO_RECORD_PATH, false) || isContainOneKey(urlPrefix, CONF_BLACK_URL_ROOT, false )){
+            if (isContainOneKey(urlPrefix, CONF_BLACK_AUTO_RECORD_PATH, false) || isContainOneKey(urlPrefix, CONF_BLACK_ROOT_URL, false )){
                 continue;
             }
 

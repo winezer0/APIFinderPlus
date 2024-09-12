@@ -98,7 +98,7 @@
   
   
     CONF_WHITE_ROOT_URL: 允许扫描的目标RootUrl关键字
-    CONF_BLACK_URL_ROOT: 禁止进行[监听扫描|URL提取|PATH提取]的 RootUrl关键字
+    CONF_BLACK_ROOT_URL: 禁止进行[监听扫描|URL提取|PATH提取]的 RootUrl关键字
     CONF_BLACK_URL_PATH: 禁止进行[监听扫描|URL提取|PATH提取]的 URI 路径关键字
     CONF_BLACK_URL_EXT:  禁止进行[监听扫描|URL提取|PATH提取]的 URI 文件扩展名
     CONF_BLACK_AUTO_RECORD_PATH: 禁止自动进行有效PATH记录的目标RootUrl关键字

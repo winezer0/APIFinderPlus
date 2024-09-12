@@ -100,7 +100,7 @@
 			],
 			"location": "config",
 			"match": "keyword",
-			"type": "CONF_BLACK_URL_ROOT"
+			"type": "CONF_BLACK_ROOT_URL"
 		},
 		{
 			"accuracy": "high",
