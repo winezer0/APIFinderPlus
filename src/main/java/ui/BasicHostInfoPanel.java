@@ -140,6 +140,7 @@ public class BasicHostInfoPanel extends JPanel {
                 "find_api",
                 "path_url",
                 "unvisited",
+                "all_url",
                 "basic_num",
                 "run_status"
         }, 0) {
@@ -161,14 +162,15 @@ public class BasicHostInfoPanel extends JPanel {
                 "请求ID",
                 "请求目标",
                 "是否存在匹配重要规则",
-                "当前响应中匹配的【敏感信息】数量",
-                "当前响应中提取的【直接URL】数量",
-                "当前响应中提取的【网站PATH】数量",
-                "当前请求目录 直接组合 已提取PATH =【拼接URL】数量（已过滤）",
-                "网站有效目录 智能组合 已提取PATH =【动态URL】数量（已过滤|只能计算带目录的PATH|跟随网站有效目录新增而变动）",
-                "当前直接URL数量+拼接URL数量+动态URL数量-全局已访问URL=【当前未访问URL】数量 ",
-                "当前【动态URL数量计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
-                "当前【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
+                "【敏感信息】数量 == 当前网站响应中的敏感信息",
+                "【直接URL】数量 == 当前网站响应中提取的URL",
+                "【网站PATH】数量 == 当前网站响应中提取的PATH",
+                "【拼接URL】数量 == 当前请求目录 直接组合 已提取PATH（已过滤）",
+                "【动态URL】数量 == 网站有效目录 智能组合 已提取PATH（已过滤|只能计算带目录的PATH|跟随网站有效目录新增而变动）",
+                "【未访问URL】数量 == 当前直接URL数量+拼接URL数量+动态URL数量-全局已访问URL",
+                "【所有提取URL】数量 == 当前直接URL+PATH直接组合URL+PATH动态组合URL",
+                "【动态URL数量计算基准】（表明动态URL基于多少个网站路径计算|跟随网站有效目录新增而变动）",
+                "【请求上下文分析状态】(不为 Waiting 表示已提取[敏感信息|URL信息|PATH信息])"
         };
 
         TableHeaderWithTips basicHostTableHeader = new TableHeaderWithTips(basicHostMsgTableUI.getColumnModel(), basicHostColHeaderTooltips);
@@ -283,9 +285,9 @@ public class BasicHostInfoPanel extends JPanel {
         tabs.addTab("RespFindPath",null, basicHostRespFindPathTEditor.getComponent(), "基于当前响应体提取的PATH"); //显示在这个URL中找到的PATH
         tabs.addTab("DirectPath2Url",null, basicHostDirectPath2UrlTEditor.getComponent(), "基于当前请求URL目录 拼接 提取的PATH"); //显示在这个URL中找到的PATH
         tabs.addTab("SmartPath2Url",null, basicHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
-        tabs.addTab("UnvisitedUrl",null, basicHostUnvisitedUrlTEditor.getComponent(), "当前URL所有提取URL 减去 已经访问过的URL"); //显示在这个URL中找到的Path 且还没有访问过的URL
-        tabs.addTab("PathTreeInfo",null, basicHostPathTreeTEditor.getComponent(), "当前目前的路径树信息");
-        tabs.addTab("AllUrlStatus",null, basicHostAllUrlStatusTEditor.getComponent(), "当前URL所有响应状态聚合");
+        tabs.addTab("UnvisitedUrl",null, basicHostUnvisitedUrlTEditor.getComponent(), "当前所有提取URL中的未访问过的URl"); //显示在这个URL中找到的Path 且还没有访问过的URL
+        tabs.addTab("PathTreeInfo",null, basicHostPathTreeTEditor.getComponent(), "当前网站的路径树信息");
+        tabs.addTab("AllUrlStatus",null, basicHostAllUrlStatusTEditor.getComponent(), "当前网站所有提取URL的响应状态聚合");
         return tabs;
     }
 

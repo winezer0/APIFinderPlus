@@ -18,7 +18,7 @@ public class TableLineDataModelBasicHostSQL {
 
     private static String genHostTableSqlByWhereCondition(String WhereCondition){
         String selectSQL = ("SELECT id,root_url,find_info_num,has_important,find_url_num," +
-                "find_path_num,find_api_num,path_to_url_num,unvisited_url_num,basic_path_num,run_status " +
+                "find_path_num,find_api_num,path_to_url_num,unvisited_url_num,basic_path_num,all_url_num,run_status " +
                 "FROM $tableName$ $WHERE$;")
                 .replace("$tableName$", AnalyseHostResultTable.tableName);
         if (WhereCondition == null) WhereCondition= "";
@@ -42,6 +42,7 @@ public class TableLineDataModelBasicHostSQL {
                             rs.getInt("find_api_num"),
                             rs.getInt("path_to_url_num"),
                             rs.getInt("unvisited_url_num"),
+                            rs.getInt("all_url_num"),
                             rs.getInt("basic_path_num"),
                             rs.getString("run_status")
                     );

@@ -14,7 +14,9 @@ public class BasicHostTableLineDataModel {
 
     private Integer pathToUrlNum;
     private Integer unvisitedUrlNum;
+    private Integer allUrlNum;
     private Integer basicPathNum;
+
     private String runStatus;
 
     // 构造函数
@@ -22,7 +24,7 @@ public class BasicHostTableLineDataModel {
                                        int findInfoNum, boolean hasImportant,
                                        int findUrlNum, int findPathNum, int findApiNum,
                                        int pathToUrlNum, int unvisitedUrlNum,
-                                       int basicPathNum, String runStatus) {
+                                       int allUrlNum, int basicPathNum, String runStatus) {
         this.id = id;
         this.rootUrl = rootUrl;
 
@@ -37,7 +39,9 @@ public class BasicHostTableLineDataModel {
         this.pathToUrlNum = pathToUrlNum;
         this.unvisitedUrlNum = unvisitedUrlNum;
 
+        this.allUrlNum = allUrlNum;
         this.basicPathNum = basicPathNum;
+
         this.runStatus = runStatus;
     }
 
@@ -52,8 +56,8 @@ public class BasicHostTableLineDataModel {
                 this.getFindApiNum(),
                 this.getPathToUrlNum(),
                 this.getUnvisitedUrlNum(),
+                this.getAllUrlNum(),
                 this.getBasicPathNum(),
-
                 this.getRunStatus()
         };
     }
@@ -100,5 +104,9 @@ public class BasicHostTableLineDataModel {
 
     public String getRunStatus() {
         return runStatus;
+    }
+
+    public Integer getAllUrlNum() {
+        return allUrlNum;
     }
 }
