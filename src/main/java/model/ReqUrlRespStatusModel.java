@@ -1,6 +1,6 @@
 package model;
 
-public class RequestStatusModel {
+public class ReqUrlRespStatusModel {
     private Integer id;
     private String reqUrl;
     private String reqMethod;
@@ -8,7 +8,7 @@ public class RequestStatusModel {
     private Integer respLength;
 
     // 有参构造函数
-    public RequestStatusModel(Integer id, String reqUrl, String reqMethod, Integer respStatusCode, Integer respLength) {
+    public ReqUrlRespStatusModel(Integer id, String reqUrl, String reqMethod, Integer respStatusCode, Integer respLength) {
         this.id = id;
         this.reqUrl = reqUrl;
         this.reqMethod = reqMethod;

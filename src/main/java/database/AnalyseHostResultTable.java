@@ -358,7 +358,7 @@ public class AnalyseHostResultTable {
     /**
      * 基于ID更新动态URl数据
      */
-    public static synchronized int updateUrlsStatusByRootUrl(String rootUrl, HashMap<String, JSONObject> allUrlStatus ){
+    public static synchronized int updateUrlsStatusByRootUrl(String rootUrl, HashMap<String, JSONObject> allUrlStatus, Integer allUrlNum){
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
         String updateSQL = "UPDATE "+ tableName + " SET all_url_status = ?, all_url_num = ? WHERE root_url = ?;";
@@ -366,7 +366,8 @@ public class AnalyseHostResultTable {
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
 
             stmt.setString(1, CastUtils.toJsonString(allUrlStatus));
-            stmt.setInt(2, allUrlStatus.keySet().size());
+            //stmt.setInt(2, allUrlStatus.keySet().size());
+            stmt.setInt(2, allUrlNum);
             stmt.setString(3, rootUrl);
 
             int affectedRows = stmt.executeUpdate();

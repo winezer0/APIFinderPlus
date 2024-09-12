@@ -1,7 +1,7 @@
 package database;
 
 import model.HttpMsgInfo;
-import model.RequestStatusModel;
+import model.ReqUrlRespStatusModel;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -104,8 +104,8 @@ public class ReqDataTable {
     /**
      * 根据运行状态取获取对应请求的实际消息ID
      */
-    public static synchronized List<RequestStatusModel> fetchRequestStatusByUrls(List<String> urls) {
-        List<RequestStatusModel> requestStatusModels = new ArrayList<>();
+    public static synchronized List<ReqUrlRespStatusModel> fetchReqUrlRespStatusByUrls(List<String> urls) {
+        List<ReqUrlRespStatusModel> requestStatusModels = new ArrayList<>();
 
         String selectSQL = ("SELECT * FROM " + tableName + " WHERE req_url IN $buildInParamList$;")
                 .replace("$buildInParamList$", DBService.buildInParamList(urls.size()));
@@ -117,7 +117,7 @@ public class ReqDataTable {
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                RequestStatusModel requestStatusModel =  new RequestStatusModel(
+                ReqUrlRespStatusModel requestStatusModel =  new ReqUrlRespStatusModel(
                         rs.getInt("id"),
                         rs.getString("req_url"),
                         rs.getString("req_method"),

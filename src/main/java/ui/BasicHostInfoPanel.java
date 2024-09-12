@@ -1232,26 +1232,29 @@ public class BasicHostInfoPanel extends JPanel {
                 List<String> findApiList = CastUtils.toStringList(tabDataModel.getFindApi());
                 List<String> pathToUrlList = CastUtils.toStringList(tabDataModel.getPathToUrl());
                 List<String> unvisitedUrl = CastUtils.toStringList(tabDataModel.getUnvisitedUrl());
+
                 //获取历史URL状态码记录、减少查询数量
-                HashMap<String, JSONObject> oldAllUrlStatus = CastUtils.toUrlStatusJsonMap(tabDataModel.getAllUrlStatus());
+                HashMap<String, JSONObject> oldAllExtractUrlStatus = CastUtils.toUrlStatusJsonMap(tabDataModel.getAllUrlStatus());
 
                 //计算出当前所有提取URL
-                List<String> newQueryAllUrl = CastUtils.listAddList(CastUtils.listAddList(findUrlList, findApiList), pathToUrlList);
+                List<String> newAllExtractUrls = CastUtils.listAddList(CastUtils.listAddList(findUrlList, findApiList), pathToUrlList);
 
-                //为所有URL补充状态 基本状态 后续需要覆盖
-                HashMap<String, JSONObject> allUrlStatusMap = CastUtils.toUrlStatusJsonMap(newQueryAllUrl); //当没查到任何结果时候,显示这个
+                //当存在提取URL时进行操作
+                if (!newAllExtractUrls.isEmpty()){
+                    //为所有URL补充状态 基本状态 后续需要覆盖
+                    HashMap<String, JSONObject> newAllExtractUrlStatusMap = CastUtils.toUrlStatusJsonMap(newAllExtractUrls); //当没查到任何结果时候,显示这个
 
-                if (newQueryAllUrl.size()>0){
-                    //忽略查询未访问的URL
-                    newQueryAllUrl = CastUtils.listReduceList(newQueryAllUrl, unvisitedUrl);
+                    //忽略查询未访问URL的响应状态码,都没有访问,那应该是没有的
+                    List<String> needQueryExtractUrls = CastUtils.listReduceList(newAllExtractUrls, unvisitedUrl);
 
                     //计算出所有需要更新的提取URL
-                    if (oldAllUrlStatus.size() > 0 && !resetOldUrlStatus){
+                    if (oldAllExtractUrlStatus.size() > 0 && !resetOldUrlStatus){
                         //合并旧查询数据
-                        allUrlStatusMap = CastUtils.updateUrlStatusMap(allUrlStatusMap, oldAllUrlStatus);
+                        newAllExtractUrlStatusMap = CastUtils.updateUrlStatusMap(newAllExtractUrlStatusMap, oldAllExtractUrlStatus);
 
+                        //分析旧状态中实际有响应信息的URL,这些不用再次查询
                         List<String> oldValidAllUrl = new ArrayList<>();
-                        for (Map.Entry<String, JSONObject> entry : oldAllUrlStatus.entrySet()){
+                        for (Map.Entry<String, JSONObject> entry : oldAllExtractUrlStatus.entrySet()){
                             String urlWithMethod = entry.getKey();
                             JSONObject urlStatusJson = entry.getValue();
                             //当 status == -1 || length == -1 时 也需要查询更新
@@ -1260,26 +1263,27 @@ public class BasicHostInfoPanel extends JPanel {
                                 oldValidAllUrl.add(url);
                             }
                         }
-
-                        newQueryAllUrl = CastUtils.listReduceList(newQueryAllUrl, oldValidAllUrl);
+                        //排除历史上已经查询过的有效URL
+                        needQueryExtractUrls = CastUtils.listReduceList(needQueryExtractUrls, oldValidAllUrl);
                     }
 
-                    //查询所有对应 URL 的状态 并更新到Map中
-                    List<RequestStatusModel> requestStatusByUrls = ReqDataTable.fetchRequestStatusByUrls(newQueryAllUrl);
-                    for (RequestStatusModel requestStatusModel:requestStatusByUrls){
-                        JSONObject statusJson = new JSONObject() {{
-                            put("status", requestStatusModel.getRespStatusCode());
-                            put("length", requestStatusModel.getRespLength());
-                        }};
-
-                        String urlWithMethod = String.format("%s <-> %s", requestStatusModel.getReqUrl(), requestStatusModel.getReqMethod());
-
-                        allUrlStatusMap.put(urlWithMethod, statusJson);
+                    if (!needQueryExtractUrls.isEmpty()){
+                        //查询所有对应 URL 的状态 并更新到Map中
+                        List<ReqUrlRespStatusModel> reqUrlRespStatusModels = ReqDataTable.fetchReqUrlRespStatusByUrls(needQueryExtractUrls);
+                        for (ReqUrlRespStatusModel reqUrlRespStatusModel:reqUrlRespStatusModels){
+                            JSONObject statusJson = new JSONObject() {{
+                                put("status", reqUrlRespStatusModel.getRespStatusCode());
+                                put("length", reqUrlRespStatusModel.getRespLength());
+                            }};
+                            //将 URL + Method 作为键 用于兼容多种请求方式下的不同值
+                            String urlWithMethod = String.format("%s <-> %s", reqUrlRespStatusModel.getReqUrl(), reqUrlRespStatusModel.getReqMethod());
+                            newAllExtractUrlStatusMap.put(urlWithMethod, statusJson);
+                        }
                     }
+
+                    //更新ALL URL状态数据到数据库中 实际上只要新URL数量有增长,就应该更新数据,懒得判断了,全部更新吧
+                    AnalyseHostResultTable.updateUrlsStatusByRootUrl(tabDataModel.getRootUrl(), newAllExtractUrlStatusMap, newAllExtractUrls.size());
                 }
-
-                //更新ALL URL状态数据到数据库中
-                AnalyseHostResultTable.updateUrlsStatusByRootUrl(tabDataModel.getRootUrl(), allUrlStatusMap);
             }
         }
     }
