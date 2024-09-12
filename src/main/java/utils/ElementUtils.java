@@ -18,9 +18,13 @@ public class ElementUtils {
         //当元素为空时,返回默认值
         if (isEmptyObj(string) || isEmptyObj(elementsString)) return defaultBool;
 
-        String[] elements = elementsString.split("\\|");
-        for (String element : elements) {
-            if (format(string).equals(format(element))) {
+        //预先格式化处理
+        String stringFormat = format(string);
+        String[] elementsFormat = format(elementsString).split("\\|");
+
+        //进行判断
+        for (String element : elementsFormat) {
+            if (stringFormat.equals(element)) {
                 return true;
             }
         }
@@ -39,9 +43,12 @@ public class ElementUtils {
         //当元素为空时,返回默认值
         if (isEmptyObj(string) || isEmptyObj(elementsString)) return defaultBool;
 
-        String[] elements = elementsString.split("\\|");
-        for (String element : elements) {
-            if (format(string).contains(format(element))){
+        //预先格式化处理
+        String stringFormat = format(string);
+        String[] elementsFormat = format(elementsString).split("\\|");
+
+        for (String element : elementsFormat) {
+            if (stringFormat.contains(element)){
                 return true;
             }
         }
