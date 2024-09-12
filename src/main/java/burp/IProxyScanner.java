@@ -209,7 +209,7 @@ public class IProxyScanner implements IProxyListener {
             }
 
             // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
-            if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
+            if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URI_EXT_EQUAL, false)
                     || isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URI_PATH_KEYS, false))
             {
                 //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + rawUrlUsual);
@@ -245,7 +245,7 @@ public class IProxyScanner implements IProxyListener {
             if (msgInfo.getUrlInfo().getUrlToFileUsual() == null
                     ||!isContainOneKey(reqRootUrl, CONF_WHITE_ROOT_URL, true)
                     ||isContainOneKey(reqRootUrl, CONF_BLACK_ROOT_URL, false)
-                    ||isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)
+                    ||isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URI_EXT_EQUAL, false)
                     ||isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URI_PATH_KEYS, false)
             ){
                 return;

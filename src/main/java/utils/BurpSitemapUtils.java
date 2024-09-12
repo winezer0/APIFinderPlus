@@ -44,7 +44,7 @@ public class BurpSitemapUtils {
                         try {
                             if (isRecordUrl){
                                 //插入 reqBaseUrl 排除黑名单后缀、 忽略参数
-                                if(!isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URL_EXT, false)){
+                                if(!isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URI_EXT_EQUAL, false)){
                                     RecordUrlTable.insertOrUpdateAccessedUrl(msgInfo);
                                 }
                             } else {

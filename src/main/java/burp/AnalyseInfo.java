@@ -132,7 +132,7 @@ public class AnalyseInfo {
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤等于被禁止的PATH:%s", findUriList.size()));
 
         //过滤黑名单suffix
-        findUriList = AnalyseUriFilter.filterBlackSuffixes(findUriList, BurpExtender.CONF_BLACK_URL_EXT);
+        findUriList = AnalyseUriFilter.filterBlackSuffixes(findUriList, BurpExtender.CONF_BLACK_URI_EXT_EQUAL);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单后缀:%s", findUriList.size()));
 
         //过滤包含中文的PATH
@@ -171,7 +171,7 @@ public class AnalyseInfo {
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单路径:%s", urlList.size()));
 
         //过滤黑名单suffix
-        urlList = AnalyseUriFilter.filterBlackSuffixes(urlList, BurpExtender.CONF_BLACK_URL_EXT);
+        urlList = AnalyseUriFilter.filterBlackSuffixes(urlList, BurpExtender.CONF_BLACK_URI_EXT_EQUAL);
         //stdout_println(LOG_DEBUG, String.format("[*] 过滤黑名单后缀:%s", urlList.size()));
 
         if (isNotEmptyObj(reqUrl)){

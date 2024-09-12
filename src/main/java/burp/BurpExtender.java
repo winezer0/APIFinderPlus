@@ -90,7 +90,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
 
     public static List<String> CONF_WHITE_RECORD_PATH_STATUS = new ArrayList<>(); //作为正常访问结果的状态码
 
-    public static List<String> CONF_BLACK_URL_EXT = new ArrayList<>(); //不检查的URL后缀
+    public static List<String> CONF_BLACK_URI_EXT_EQUAL = new ArrayList<>(); //不检查的URL后缀
     public static List<String> CONF_BLACK_URI_PATH_KEYS = new ArrayList<>(); //不检查的URL路径
     public static List<String> CONF_BLACK_ROOT_URL = new ArrayList<>(); //不检查的ROOT URL 关键字
     public static List<String> CONF_BLACK_AUTO_RECORD_PATH = new ArrayList<>(); //不检查的ROOT URL 关键字
