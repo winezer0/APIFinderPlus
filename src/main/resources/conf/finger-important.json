@@ -11,7 +11,7 @@
 				"monitorExecutorIntervalsDefault=4",
 				"dynamicPathFilterIsOpenDefault=false",
 				"autoRecordPathIsOpenDefault=true",
-				"autoPathsToUrlsIsOpenDefault=false",
+				"autoPathsToUrlsIsOpenDefault=true",
 				"autoRecursiveIsOpenDefault=false",
 				"proxyListenIsOpenDefault=false",
 				"autoRefreshUnvisitedIsOpenDefault=false",
