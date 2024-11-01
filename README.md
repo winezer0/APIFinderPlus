@@ -2,6 +2,10 @@
 
 本插件参考 APIFinder UI 进行重构开发 [https://github.com/shuanx/BurpAPIFinder] 
 
+### 提示：
+
+所有按钮对应描述 请将鼠标悬浮在按钮上，会进行提示，目前没有文档描述
+
 ### 下载地址
 
 访问  https://github.com/winezer0/APIFinderPlus/actions 
