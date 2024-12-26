@@ -9,6 +9,7 @@ import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.*;
 import ui.MainTabRender.TableHeaderWithTips;
 import utils.BurpFileUtils;
+import utils.CastUtils;
 import utils.ConfigUtils;
 import utils.UiUtils;
 
@@ -912,6 +913,8 @@ public class RuleConfigPanel extends JPanel {
                 String describe = describeField.getText();
                 List<String> keyword;
                 keyword = Arrays.asList(keywordField.getText().split("\n"));
+                //添加Keyword去重功能
+                keyword = CastUtils.deduplicateStringList(keyword);
                 if (type.trim().isEmpty() || method.trim().isEmpty() || location.trim().isEmpty()) {
                     JOptionPane.showMessageDialog(editRulePanel, "主要输入框都必须填写。", "输入错误", JOptionPane.ERROR_MESSAGE);
                     return;
