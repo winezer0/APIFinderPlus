@@ -3,6 +3,9 @@ package database;
 import burp.BurpExtender;
 import org.sqlite.SQLiteConfig;
 import utils.BurpFileUtils;
+
+import java.io.File;
+import java.nio.file.Path;
 import java.sql.*;
 
 import static utils.BurpPrintUtils.*;
@@ -13,10 +16,11 @@ public class DBService {
     private String CONNECTION_STRING; //数据库链接字符串
 
     //指定sqlite数据库配置文件路径
-    public String DBFileName = "APIFinderPlus.db";
+    private String DBFileName = "APIFinderPlus.db";
 
     private DBService() {
-        CONNECTION_STRING = String.format("jdbc:sqlite:%s?journal_mode=WAL", BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), DBFileName));
+        Path DBFilePath = BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), DBFileName);
+        CONNECTION_STRING = String.format("jdbc:sqlite:%s?journal_mode=WAL", DBFilePath);
     }
 
     public static synchronized DBService getInstance() {
@@ -177,4 +181,21 @@ public class DBService {
         inParameterList.append(") ");
         return inParameterList.toString();
     }
+
+
+    //判断大小是否超过 x G 超过就清空数据库文件
+    public boolean clearBigDB(int limit) {
+        try {
+            Path sqliteDBFilePath = BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), DBFileName);
+            File dbFile = new File(sqliteDBFilePath.toString());
+            if (dbFile.length() > 1024 * 1024 * 1024 * limit){
+                DBService.clearAllTables();
+                return true;
+            }
+        } catch (Exception e){
+            System.err.println(String.format("clear Big DB File Occur Error: [%s]", e.getMessage()));
+        }
+        return false;
+    }
+
 }

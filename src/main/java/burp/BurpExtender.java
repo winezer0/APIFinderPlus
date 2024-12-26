@@ -158,6 +158,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
             dbService = DBService.getInstance();
             dbService.initDBConnection();
             dbService.initCreateTables();
+            //当数据库文件大于5G时自动清空数据库文件
+            dbService.clearBigDB(5);
 
             //注册监听操作
             iProxyScanner = new IProxyScanner();
