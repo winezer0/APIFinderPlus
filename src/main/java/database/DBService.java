@@ -189,12 +189,12 @@ public class DBService {
             Path sqliteDBFilePath = BurpFileUtils.getPluginDirFilePath(BurpExtender.getCallbacks(), DBFileName);
             File dbFile = new File(sqliteDBFilePath.toString());
             if (dbFile.length() > 1024 * 1024 * 1024 * limit){
-                DBService.clearAllTables();
-                stdout_println(String.format("clear Big DB File Success ..."));
+                DBService.clearModelTables();
+                stdout_println(String.format("DB File Is Big, Clear Model Tables Success ..."));
                 return true;
             }
         } catch (Exception e){
-            stderr_println(String.format("clear Big DB File Occur Error: [%s]", e.getMessage()));
+            stderr_println(String.format("DB File Is Big, Clear Model Tables Occur Error: [%s]", e.getMessage()));
         }
         return false;
     }
