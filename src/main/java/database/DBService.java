@@ -193,7 +193,7 @@ public class DBService {
                 return true;
             }
         } catch (Exception e){
-            System.err.println(String.format("clear Big DB File Occur Error: [%s]", e.getMessage()));
+            stderr_println(String.format("clear Big DB File Occur Error: [%s]", e.getMessage()));
         }
         return false;
     }
