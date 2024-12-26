@@ -190,6 +190,7 @@ public class DBService {
             File dbFile = new File(sqliteDBFilePath.toString());
             if (dbFile.length() > 1024 * 1024 * 1024 * limit){
                 DBService.clearAllTables();
+                stdout_println(String.format("clear Big DB File Success ..."));
                 return true;
             }
         } catch (Exception e){
