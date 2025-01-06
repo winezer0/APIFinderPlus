@@ -16,7 +16,8 @@
 				"proxyListenIsOpenDefault=false",
 				"autoRefreshUnvisitedIsOpenDefault=false",
 				"autoRefreshUiIsOpenDefault=false",
-				"forceDecodeUnicodeDefault=true"
+				"forceDecodeUnicodeDefault=true",
+				"addApiToUnvisitedUrlsDefault=true"
 			],
 			"location": "config",
 			"match": "keyword",

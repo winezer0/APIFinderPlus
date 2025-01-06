@@ -42,6 +42,7 @@ public class AnalyseInfo {
 
         //2、实现响应中的 URL 和 PATH 提取
         Set<String> findUriSet = findUriInfoByRegular(msgInfo);
+        findUriSet = AnalyseInfoUtils.decodeHtml(findUriSet);
         Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
 
         String reqUrl = msgInfo.getUrlInfo().getRawUrlUsual();

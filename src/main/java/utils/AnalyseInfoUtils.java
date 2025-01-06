@@ -186,6 +186,20 @@ public class AnalyseInfoUtils {
     }
 
     /**
+     * 解码HTML字符串。
+     *
+     * @param urlSet 要解码的HTML编码字符串Set
+     * @return 解码后的字符串
+     */
+    public static Set<String> decodeHtml(Set<String> urlSet) {
+        Set<String> set= new HashSet<>();
+        for (String url: urlSet){
+            set.add(decodeHtml(url));
+        }
+        return set;
+    }
+
+    /**
      * 计算URl和路径拼接
      * @param reqUrl
      * @param path

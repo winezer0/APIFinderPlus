@@ -49,6 +49,8 @@ public class IProxyScanner implements IProxyListener {
     public static boolean autoRefreshUiIsOpen;
     //自动解码Json和Unicode的功能
     public static boolean forceDecodeUnicode;
+    //将path直接拼接出来的URL发送到未访问的URL列表中
+    public static boolean addApiToUnvisitedUrls;;
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -74,6 +76,7 @@ public class IProxyScanner implements IProxyListener {
         autoRefreshUnvisitedIsOpen = autoRefreshUnvisitedIsOpenDefault;
         autoRefreshUiIsOpen = autoRefreshUiIsOpenDefault;
         forceDecodeUnicode = forceDecodeUnicodeDefault;
+        addApiToUnvisitedUrls = addApiToUnvisitedUrlsDefault;
 
 
         //加载缓存过滤器
@@ -404,7 +407,7 @@ public class IProxyScanner implements IProxyListener {
                         //循环插入数据 到HOST结果表
                         for (AnalyseUrlResultModel analyseUrlResultModel : AnalyseUrlResultModels){
                             AnalyseHostResultModel analyseHostResultModel = new AnalyseHostResultModel(analyseUrlResultModel);
-                            AnalyseHostResultTable.insertOrUpdateAnalyseHostResult(analyseHostResultModel);
+                            AnalyseHostResultTable.insertOrUpdateAnalyseHostResult(analyseHostResultModel, addApiToUnvisitedUrls);
                         }
                         //更新对应的ids为分析完成,实际上没啥用
                         CommonUpdateStatus.updateStatusByMsgHashList(AnalyseUrlResultTable.tableName, urlResultMsgHashList, Constants.ANALYSE_END);

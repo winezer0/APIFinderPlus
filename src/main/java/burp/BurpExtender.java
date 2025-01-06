@@ -84,6 +84,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, ICo
     //自动解码响应Unicode字符
     public static boolean forceDecodeUnicodeDefault=false;
 
+    //自动添加由path直接拼接出来的url到未访问URL列表中
+    public static boolean addApiToUnvisitedUrlsDefault=true;
+
     //一些需要被排除|允许的情况
     public static List<String> CONF_DEFAULT_PERFORMANCE = new ArrayList<>(); //默认的性能配置选项
     public static List<String> CONF_WHITE_ROOT_URL = new ArrayList<>(); //仅保留的白名单主机,为空时忽略

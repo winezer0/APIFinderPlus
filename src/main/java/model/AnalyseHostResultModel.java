@@ -54,4 +54,11 @@ public class AnalyseHostResultModel {
     public List<String> getUnvisitedUrlList() {
         return CastUtils.listAddList(this.urlList, this.apiList);
     }
+
+    public List<String> getUnvisitedUrlList(boolean addApiList) {
+        if (addApiList)
+            return CastUtils.listAddList(this.urlList, this.apiList);
+        else
+            return this.urlList;
+    }
 }

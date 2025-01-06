@@ -58,15 +58,18 @@ public class AnalyseHostResultTable {
 
     /**
      * 为每个HOST插入分析结果, 此时不包含动态生成的URL
+     * @param analyseHostResultModel 基于host的结果模型
+     * @param addApiList 是否将直接拼接的 apiList 加入到未访问URL列表中
+     * @return
      */
-    public static synchronized int insertOrUpdateAnalyseHostResult(AnalyseHostResultModel analyseHostResultModel){
+    public static synchronized int insertOrUpdateAnalyseHostResult(AnalyseHostResultModel analyseHostResultModel, boolean addApiList){
         String rootUrl = analyseHostResultModel.getRootUrl();
         HashMap<String, JSONArray> urlInfoArrayMap = analyseHostResultModel.getUrlInfoArrayMap();
         List<String> urlList = analyseHostResultModel.getUrlList();
         List<String> pathList = analyseHostResultModel.getPathList();
         List<String> apiList = analyseHostResultModel.getApiList();
         Boolean hasImportant = analyseHostResultModel.getHasImportant();
-        List<String> unvisitedUrlList = analyseHostResultModel.getUnvisitedUrlList();
+        List<String> unvisitedUrlList = analyseHostResultModel.getUnvisitedUrlList(addApiList);
 
         int generatedId = -1; // 默认ID值，如果没有生成ID，则保持此值
 
