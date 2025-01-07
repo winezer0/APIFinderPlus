@@ -40,7 +40,7 @@ public class BasicHostInfoPanel extends JPanel {
     private static ITextEditor basicHostDirectPath2UrlTEditor; //显示 基于PATH直接拼接计算出的URL
     private static ITextEditor basicHostSmartPath2UrlTEditor; //显示 基于树算法+PATH提取结果计算出的URL
     private static ITextEditor basicHostUnvisitedUrlTEditor; //显示 目前提取URL结果中未访问过的URL
-    private static ITextEditor basicHostAllUrlStatusTEditor; //显示 所有当前RootUrls的URL访问记录
+    private static JEditorPane basicHostAllUrlStatusTEditor; //显示 所有当前RootUrls的URL访问记录
 
     private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
@@ -278,7 +278,11 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostSmartPath2UrlTEditor = callbacks.createTextEditor();
         basicHostUnvisitedUrlTEditor = callbacks.createTextEditor();
         basicHostPathTreeTEditor = callbacks.createTextEditor();
-        basicHostAllUrlStatusTEditor = callbacks.createTextEditor();
+
+        //响应状态结果面板 使用 "text/html" 可用于 html 渲染
+        basicHostAllUrlStatusTEditor = new JEditorPane("text/html", "");
+        JScrollPane basicHostAllUrlStatusScrollPane = new JScrollPane(basicHostAllUrlStatusTEditor);
+        basicHostAllUrlStatusScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         tabs.addTab("RespFindInfo",null, basicHostFindInfoTextScrollPane, "基于当前响应体提取的敏感信息"); //显示提取的信息
         tabs.addTab("RespFindUrl",null, basicHostRespFindUrlTEditor.getComponent(), "基于当前响应体提取的URL"); //显示在这个URL中找到的PATH
@@ -287,7 +291,7 @@ public class BasicHostInfoPanel extends JPanel {
         tabs.addTab("SmartPath2Url",null, basicHostSmartPath2UrlTEditor.getComponent(), "基于当前网站有效目录 和 提取的PATH 动态计算出的URL"); //显示在这个URL中找到的PATH
         tabs.addTab("UnvisitedUrl",null, basicHostUnvisitedUrlTEditor.getComponent(), "当前所有提取URL中的未访问过的URl"); //显示在这个URL中找到的Path 且还没有访问过的URL
         tabs.addTab("PathTreeInfo",null, basicHostPathTreeTEditor.getComponent(), "当前网站的路径树信息");
-        tabs.addTab("AllUrlStatus",null, basicHostAllUrlStatusTEditor.getComponent(), "当前网站所有提取URL的响应状态聚合");
+        tabs.addTab("AllUrlStatus",null, basicHostAllUrlStatusScrollPane, "当前网站所有提取URL的响应状态聚合");
         return tabs;
     }
 
@@ -302,7 +306,7 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostSmartPath2UrlTEditor.setText(new byte[0]);
         basicHostUnvisitedUrlTEditor.setText(new byte[0]);
         basicHostPathTreeTEditor.setText(new byte[0]);
-        basicHostAllUrlStatusTEditor.setText(new byte[0]);
+        basicHostAllUrlStatusTEditor.setText("");
     }
 
     /**
@@ -413,7 +417,7 @@ public class BasicHostInfoPanel extends JPanel {
             String findApi = CastUtils.stringJsonArrayFormat(tabDataModel.getFindApi());
             String pathToUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getPathToUrl());
             String unvisitedUrl = CastUtils.stringJsonArrayFormat(tabDataModel.getUnvisitedUrl());
-            String allUrlStatus = CastUtils.stringUrlStatusMapFormat(tabDataModel.getAllUrlStatus());
+            String allUrlStatus = CastUtils.stringUrlStatusMapFormatHtml(tabDataModel.getAllUrlStatus());
 
             basicHostFindInfoTextPane.setText(findInfo);
             basicHostRespFindUrlTEditor.setText(findUrl.getBytes());
@@ -421,7 +425,7 @@ public class BasicHostInfoPanel extends JPanel {
             basicHostDirectPath2UrlTEditor.setText(findApi.getBytes());
             basicHostSmartPath2UrlTEditor.setText(pathToUrl.getBytes());
             basicHostUnvisitedUrlTEditor.setText(unvisitedUrl.getBytes());
-            basicHostAllUrlStatusTEditor.setText(allUrlStatus.getBytes());
+            basicHostAllUrlStatusTEditor.setText(allUrlStatus);
         }
     }
 
@@ -1211,8 +1215,8 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostDirectPath2UrlTEditor.setText(new byte[0]);
         basicHostSmartPath2UrlTEditor.setText(new byte[0]);
         basicHostUnvisitedUrlTEditor.setText(new byte[0]);
-        basicHostAllUrlStatusTEditor.setText(new byte[0]);
         basicHostPathTreeTEditor.setText(new byte[0]);
+        basicHostAllUrlStatusTEditor.setText("");
     }
 
     public static void clearBasicHostMsgTableModel(){
@@ -1261,7 +1265,7 @@ public class BasicHostInfoPanel extends JPanel {
                             JSONObject urlStatusJson = entry.getValue();
                             //当 status == -1 || length == -1 时 也需要查询更新
                             if (urlStatusJson.getInteger("status") > -1 || urlStatusJson.getInteger("length") > -1){
-                                String url = urlWithMethod.split(" <-> ", 2)[0];
+                                String url = urlWithMethod.split(Constants.SPLIT_SYMBOL, 2)[0].trim();
                                 oldValidAllUrl.add(url);
                             }
                         }
@@ -1278,7 +1282,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 put("length", reqUrlRespStatusModel.getRespLength());
                             }};
                             //将 URL + Method 作为键 用于兼容多种请求方式下的不同值
-                            String urlWithMethod = String.format("%s <-> %s", reqUrlRespStatusModel.getReqUrl(), reqUrlRespStatusModel.getReqMethod());
+                            String urlWithMethod = String.format("%s %s %s", reqUrlRespStatusModel.getReqUrl(), Constants.SPLIT_SYMBOL, reqUrlRespStatusModel.getReqMethod());
                             newAllExtractUrlStatusMap.put(urlWithMethod, statusJson);
                         }
                     }

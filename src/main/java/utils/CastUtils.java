@@ -2,9 +2,8 @@ package utils;
 
 import burp.AnalyseInfo;
 import burp.BurpExtender;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.TypeReference;
+import com.alibaba.fastjson2.*;
+import database.Constants;
 import model.HttpUrlInfo;
 import utilbox.HelperPlus;
 
@@ -430,7 +429,7 @@ public class CastUtils {
         HashMap<String, JSONObject> urlStatusArrayMap = new HashMap<>();
         for (String url:urlList){
             for (String method:BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS){
-                String urlWithMethod = String.format("%s <-> %s", url, method);
+                String urlWithMethod = String.format("%s %s %s", url, Constants.SPLIT_SYMBOL, method);
                 urlStatusArrayMap.put(urlWithMethod,defaultJson);
             }
         }
@@ -469,26 +468,75 @@ public class CastUtils {
         return map;
     }
 
+    /**
+     * 将HashMap<String, JSONObject>按照String键排序，并返回一个新的SortedMap。
+     *
+     * @param urlStatusJsonMap 原始未排序的HashMap
+     * @return 按照String键排序后的SortedMap
+     */
+    public static SortedMap<String, JSONObject> sortUrlStatusJsonMap(HashMap<String, JSONObject> urlStatusJsonMap) {
+        // 创建一个TreeMap用于存放已排序的数据，默认会按照键的自然顺序排序
+        TreeMap<String, JSONObject> sortedMap = new TreeMap<>(urlStatusJsonMap);
+        return sortedMap;
+    }
 
-    //转换Json字符串为可以输出的格式
-    public static String stringUrlStatusMapFormat(String jsonArrayString) {
+
+    /**
+     * 序列化已排序的Map到JSON字符串，并保持键值对的顺序。
+     *
+     * @param sortedMap 已排序的Map
+     * @return JSON格式的字符串
+     */
+    public static String toJsonStringWithOrder(SortedMap<String, JSONObject> sortedMap) {
+        // 使用JSONWriter.Feature.MapSortField特性来保持输出顺序
+        return JSON.toJSONString(sortedMap, JSONWriter.Feature.MapSortField);
+    }
+
+
+    //转换Json字符串为可以输出的HTML格式
+    public static String stringUrlStatusMapFormatHtml(String jsonArrayString) {
         if (jsonArrayString == null || jsonArrayString.length()<=2 )
             return "";
 
         // 解析JSON数组
-        HashMap<String, JSONObject> urlStatusJsonMap = toUrlStatusJsonMap(jsonArrayString);
-        StringBuilder formattedString = new StringBuilder();
+        // HashMap<String, JSONObject> urlStatusJsonMap = toUrlStatusJsonMap(jsonArrayString);
+        //解析JSON并自动排序
+        SortedMap<String, JSONObject> urlStatusJsonMap = sortUrlStatusJsonMap(toUrlStatusJsonMap(jsonArrayString));
 
-        for (Map.Entry<String, JSONObject> entry : urlStatusJsonMap.entrySet()){
+        // 开始构建HTML表格
+        StringBuilder htmlTableBuilder = new StringBuilder();
+        htmlTableBuilder.append("<table border='1' cellpadding='5' cellspacing='0'>");
+        htmlTableBuilder.append("<thead><tr><th>URL</th><th>Method</th><th>Status</th><th>Length</th></tr></thead>");
+        htmlTableBuilder.append("<tbody>");
+
+        // 遍历JSON对象并添加行到表格中
+        for (Map.Entry<String, JSONObject> entry : urlStatusJsonMap.entrySet()) {
             String urlWithMethod = entry.getKey();
             JSONObject urlStatusJson = entry.getValue();
             Integer status = urlStatusJson.getInteger("status");
             Integer length = urlStatusJson.getInteger("length");
-            String line = String.format("%s <-> %s <-> %s", urlWithMethod,status,length);
-            formattedString.append(line).append("\n");
+
+            // 分离URL和请求方法
+            String[] parts = urlWithMethod.split(Constants.SPLIT_SYMBOL);
+            String url = parts[0].trim();
+            String method = parts.length > 1 ? parts[1].trim() : "NULL";
+
+            // 添加一行到HTML表格，直接应用内联样式
+            String format = String.format(
+                    "<tr style='%s'><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>\n",
+                    status != -1 ? "font-weight: bold; background-color: #f2f2f2;" : "", // 如果需要加粗，则添加内联样式
+                    escapeHtml(url), method, status, length
+            );
+
+            htmlTableBuilder.append(format);
         }
-        return formattedString.toString();
+
+        htmlTableBuilder.append("</tbody>");
+        htmlTableBuilder.append("</table>");
+
+        return htmlTableBuilder.toString();
     }
+
 
     /**
      * 将列表中的所有字符串元素转换为大写。
