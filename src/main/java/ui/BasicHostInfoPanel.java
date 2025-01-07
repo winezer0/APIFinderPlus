@@ -1094,9 +1094,9 @@ public class BasicHostInfoPanel extends JPanel {
         });
 
         //标记选中消息 状态为自动分析完成 Constants.HANDLE_WAIT
-        JMenuItem setRunStatusHandleWaitItem = new JMenuItem("修改状态为等待手动处理", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem setRunStatusHandleWaitItem = new JMenuItem("修改状态为等待手动验证", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 setRunStatusHandleWaitItem 事件监听器
-        setRunStatusHandleWaitItem.setToolTipText("[多行]修改所选消息状态为自动处理完成|等待手动处理");
+        setRunStatusHandleWaitItem.setToolTipText("[多行]修改所选消息状态为等待手动验证");
         setRunStatusHandleWaitItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1119,9 +1119,9 @@ public class BasicHostInfoPanel extends JPanel {
         });
 
         //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
-        JMenuItem setRunStatusHandleEndItem = new JMenuItem("修改状态为手动处理完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem setRunStatusHandleEndItem = new JMenuItem("修改状态为手动验证完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 setRunStatusHandleEndItem 事件监听器
-        setRunStatusHandleEndItem.setToolTipText("[多行]修改所选消息状态为手动处理完成");
+        setRunStatusHandleEndItem.setToolTipText("[多行]修改所选消息状态为手动验证完成");
         setRunStatusHandleEndItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1143,10 +1143,10 @@ public class BasicHostInfoPanel extends JPanel {
             }
         });
 
-        //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
-        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("重新查询提取URL响应状态", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
+        //重新查询已提取URL的访问状态
+        JMenuItem initOrUpdateUrlStatusItem = new JMenuItem("重新查询URL访问状态", UiUtils.getImageIcon("/icon/refreshButton2.png", 15, 15));
         // 添加 initOrUpdateUrlStatusItem 事件监听器
-        initOrUpdateUrlStatusItem.setToolTipText("[多行]重新查询提取URL响应状态");
+        initOrUpdateUrlStatusItem.setToolTipText("[多行]重新查询已提取URL的访问状态");
         initOrUpdateUrlStatusItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

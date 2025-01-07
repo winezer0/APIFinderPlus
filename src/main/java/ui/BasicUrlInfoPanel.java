@@ -422,9 +422,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         });
 
         //标记选中消息 状态为等待自动处理 Constants.ANALYSE_WAIT
-        JMenuItem setRunStatusAnalyseWaitItem = new JMenuItem("修改状态为等待自动处理", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem setRunStatusAnalyseWaitItem = new JMenuItem("修改状态为等待自动分析", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 setRunStatusAnalyseWaitItem 事件监听器
-        setRunStatusAnalyseWaitItem.setToolTipText("[多行]修改所选消息状态为等待自动处理");
+        setRunStatusAnalyseWaitItem.setToolTipText("[多行]修改所选消息状态为等待自动分析");
         setRunStatusAnalyseWaitItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -448,9 +448,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
 
 
         //标记选中消息 状态为自动分析完成 Constants.ANALYSE_END
-        JMenuItem setRunStatusAnalyseEndItem = new JMenuItem("修改状态为自动处理完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem setRunStatusAnalyseEndItem = new JMenuItem("修改状态为等待手动验证", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 setRunStatusAnalyseEndItem 事件监听器
-        setRunStatusAnalyseEndItem.setToolTipText("[多行]修改所选消息状态为自动处理完成|等待手动处理");
+        setRunStatusAnalyseEndItem.setToolTipText("[多行]修改所选消息状态为等待手动验证");
         setRunStatusAnalyseEndItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -473,9 +473,9 @@ public class BasicUrlInfoPanel extends JPanel implements IMessageEditorControlle
         });
 
         //标记选中消息 状态为手动分析完成  Constants.HANDLE_END
-        JMenuItem setRunStatusHandleEndItem = new JMenuItem("修改状态为手动处理完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
+        JMenuItem setRunStatusHandleEndItem = new JMenuItem("修改状态为手动验证完成", UiUtils.getImageIcon("/icon/customizeIcon.png", 15, 15));
         // 添加 setRunStatusHandleEndItem 事件监听器
-        setRunStatusHandleEndItem.setToolTipText("[多行]修改所选消息状态为手动处理完成");
+        setRunStatusHandleEndItem.setToolTipText("[多行]修改所选消息状态为手动验证完成");
         setRunStatusHandleEndItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
