@@ -50,7 +50,7 @@ public class IProxyScanner implements IProxyListener {
     //自动解码Json和Unicode的功能
     public static boolean forceDecodeUnicode;
     //将path直接拼接出来的URL发送到未访问的URL列表中
-    public static boolean addApiToUnvisitedUrls;;
+    public static boolean addApiToUnvisitedUrls;
 
     //存储每个host的动态响应对比关系
     public static Map<String, Map<String,Object>> urlCompareMap = new HashMap<>();
@@ -150,9 +150,10 @@ public class IProxyScanner implements IProxyListener {
             });
 
             //判断URL是否已经扫描过
-            if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
+            String msgHash = msgInfo.getMsgHash();
+            if (urlScanRecordMap.get(msgHash) < 1) {
                 //应该放到后面,确保已经记录数据,不然会被过滤掉
-                urlScanRecordMap.add(rawUrlUsual);
+                urlScanRecordMap.add(msgHash);
                 executorService.submit(() -> {
                     //加入请求列表
                     insertOrUpdateReqDataAndReqMsgData(msgInfo,"Right");
@@ -231,9 +232,10 @@ public class IProxyScanner implements IProxyListener {
             }
 
             //判断URL是否已经扫描过
-            if (urlScanRecordMap.get(rawUrlUsual) <= 0) {
+            String msgHash = msgInfo.getMsgHash();
+            if (urlScanRecordMap.get(msgHash) < 1) {
                 //应该放到后面,确保已经记录数据,不然会被过滤掉
-                urlScanRecordMap.add(rawUrlUsual);
+                urlScanRecordMap.add(msgHash);
                 executorService.submit(() -> {
                     //加入请求列表
                     insertOrUpdateReqDataAndReqMsgData(msgInfo,"Proxy");
@@ -518,7 +520,7 @@ public class IProxyScanner implements IProxyListener {
             //记录准备加入的请求
             List<String> finalReferHeaders = referHeaders;
             for (String reqUrl:unvisitedUrls){
-                if (urlScanRecordMap.get(reqUrl) <= 0){
+                if (urlScanRecordMap.get(reqUrl) < 1){
                     //记录已访问的URL
                     urlScanRecordMap.add(reqUrl); //防止循环扫描
 
