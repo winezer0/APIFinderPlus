@@ -37,10 +37,10 @@ public class BasicHostInfoPanel extends JPanel {
     private static JEditorPane basicHostFindInfoTextPane;  //敏感信息文本面板
     private static ITextEditor basicHostRespFindUrlTEditor; //显示找到的URL
     private static ITextEditor basicHostRespFindPathTEditor; //显示找到的PATH
-    private static ITextEditor basicHostDirectPath2UrlTEditor; //基于PATH计算出的URL
+    private static ITextEditor basicHostDirectPath2UrlTEditor; //基于PATH直接拼接计算出的URL
     private static ITextEditor basicHostSmartPath2UrlTEditor; //基于树算法计算出的URL
     private static ITextEditor basicHostUnvisitedUrlTEditor; //未访问过的URL
-    private static ITextEditor basicHostAllUrlStatusTEditor; //未访问过的URL
+    private static ITextEditor basicHostAllUrlStatusTEditor; //所有访问过的URL的记录
 
     private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
