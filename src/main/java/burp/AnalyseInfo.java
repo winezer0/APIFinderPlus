@@ -42,7 +42,10 @@ public class AnalyseInfo {
 
         //2、实现响应中的 URL 和 PATH 提取
         Set<String> findUriSet = findUriInfoByRegular(msgInfo);
+        //进行HTML解码
         findUriSet = AnalyseInfoUtils.decodeHtml(findUriSet);
+        //去除不可打印内容
+        findUriSet = AnalyseInfoUtils.keepAsciiPrintableChars(findUriSet);
         Map<String, List> urlOrPathMap = SeparateUrlOrPath(findUriSet);
 
         String reqUrl = msgInfo.getUrlInfo().getRawUrlUsual();

@@ -186,6 +186,23 @@ public class AnalyseInfoUtils {
     }
 
     /**
+     * 去除不可以显示的乱码字符
+     * @param str
+     * @return
+     */
+    public static String keepAsciiPrintableChars(String str) {
+        return str.replaceAll("[^\\x20-\\x7E]", "");
+    }
+
+    public static Set<String> keepAsciiPrintableChars(Set<String> urlSet) {
+        Set<String> set= new HashSet<>();
+        for (String url: urlSet){
+            set.add(keepAsciiPrintableChars(url));
+        }
+        return set;
+    }
+
+    /**
      * 解码HTML字符串。
      *
      * @param urlSet 要解码的HTML编码字符串Set
