@@ -34,13 +34,13 @@ public class BasicHostInfoPanel extends JPanel {
     private static JTable basicHostMsgTableUI; //表格UI
     private static DefaultTableModel basicHostMsgTableModel; // 存储表格数据
 
-    private static JEditorPane basicHostFindInfoTextPane;  //敏感信息文本面板
-    private static ITextEditor basicHostRespFindUrlTEditor; //显示找到的URL
-    private static ITextEditor basicHostRespFindPathTEditor; //显示找到的PATH
-    private static ITextEditor basicHostDirectPath2UrlTEditor; //基于PATH直接拼接计算出的URL
-    private static ITextEditor basicHostSmartPath2UrlTEditor; //基于树算法计算出的URL
-    private static ITextEditor basicHostUnvisitedUrlTEditor; //未访问过的URL
-    private static ITextEditor basicHostAllUrlStatusTEditor; //所有访问过的URL的记录
+    private static JEditorPane basicHostFindInfoTextPane;  //显示 响应中直接提取的敏感信息【支持颜色】
+    private static ITextEditor basicHostRespFindUrlTEditor; //显示 响应中直接提取的URL
+    private static ITextEditor basicHostRespFindPathTEditor; //显示 响应中直接提取的PATH
+    private static ITextEditor basicHostDirectPath2UrlTEditor; //显示 基于PATH直接拼接计算出的URL
+    private static ITextEditor basicHostSmartPath2UrlTEditor; //显示 基于树算法+PATH提取结果计算出的URL
+    private static ITextEditor basicHostUnvisitedUrlTEditor; //显示 目前提取URL结果中未访问过的URL
+    private static ITextEditor basicHostAllUrlStatusTEditor; //显示 所有当前RootUrls的URL访问记录
 
     private static ITextEditor basicHostPathTreeTEditor; //当前目标的路径树信息
 
