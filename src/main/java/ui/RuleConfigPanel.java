@@ -1,5 +1,6 @@
 package ui;
 
+import EnumType.LocationType;
 import burp.BurpExtender;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
@@ -1002,7 +1003,7 @@ public class RuleConfigPanel extends JPanel {
     // 添加一个新的方法来更新 locationField 的选项
     private static void updateLocationField() {
         locationField.removeAllItems(); // 清除之前的选项
-        String[] locations = {"path", "body", "header", "response", "config"};
+        List<String> locations = LocationType.getLocationList();
         for (String location : locations) {
             locationField.addItem(location);
         }

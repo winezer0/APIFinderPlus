@@ -124,7 +124,7 @@
         每行是一个正则提取匹配规则
 
 匹配位置("location" 字段)：
-    locations = {"path", "body", "header", "response", "config"};
+    locations = {"path", "body", "title", "header", "response", "config"};
     path 请求路径
     body 响应正文
     header 响应头

@@ -1,5 +1,6 @@
 package burp;
 
+import EnumType.LocationType;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
@@ -224,20 +225,30 @@ public class AnalyseInfo {
 
             // 根据不同的规则 配置 查找范围
             String locationText;
-            switch (rule.getLocation()) {
-                case "path":
+
+            LocationType locationType;
+            try {
+                locationType = LocationType.fromValue(rule.getLocation());
+            } catch (IllegalArgumentException e) {
+                // 处理未知位置类型，默认为 RESPONSE
+                stderr_println(String.format("Error locationType was found!!! %s", e.getMessage()));
+                locationType = LocationType.RESPONSE;
+            }
+
+            switch (locationType) {
+                case PATH:
                     locationText = reqPath;
                     break;
-                case "title":
+                case TITLE:
                     locationText = respTitle;
                     break;
-                case "body":
+                case BODY:
                     locationText = respBody;
                     break;
-                case "header":
+                case HEADER:
                     locationText = respHeaders;
                     break;
-                case "response":
+                case RESPONSE:
                 default:
                     locationText = respContent;
                     break;
