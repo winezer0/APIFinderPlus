@@ -8,10 +8,7 @@ import model.FingerPrintRule;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
 import utilbox.TextUtils;
-import utils.AnalyseInfoUtils;
-import utils.AnalyseUriFilter;
-import utils.CastUtils;
-import utils.RespWebpackJsParser;
+import utils.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -210,6 +207,7 @@ public class AnalyseInfo {
         String respBody = new String(msgInfo.getRespInfo().getBodyBytes(), StandardCharsets.UTF_8);
         String respHeaders = new String(msgInfo.getRespInfo().getHeaderBytes(), StandardCharsets.UTF_8);
         String respContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
+        String respTitle = msgInfo.getRespTitle(); //提前获取Title数据, 防止匹配次数过多
 
         //进行JSON解码
         if( msgInfo.getRespInfo().getInferredMimeType().contains("JSON")|| IProxyScanner.forceDecodeUnicode){
@@ -230,6 +228,9 @@ public class AnalyseInfo {
                 case "path":
                     locationText = reqPath;
                     break;
+                case "title":
+                    locationText = respTitle;
+                    break;
                 case "body":
                     locationText = respBody;
                     break;
@@ -245,7 +246,7 @@ public class AnalyseInfo {
             //当存在字符串不为空时进行匹配
             if (locationText.length() > 0) {
                 //多个关键字匹配
-                if (rule.getMatch().equals("keyword"))
+                if (rule.getMatch().equals("keyword") || rule.getMatch().equals("title"))
                     for (String keywords : rule.getKeyword()){
                         if(isContainAllKey(locationText, keywords, false)){
                             //匹配关键字模式成功,应该标记敏感信息 关键字匹配的有效信息就是关键字

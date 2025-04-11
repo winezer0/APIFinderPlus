@@ -16,6 +16,7 @@ public class HttpMsgInfo {
     private HttpUrlInfo urlInfo;
     private HttpRespInfo respInfo;
     private int respStatusCode;
+    private String respTitle;
     private String msgHash;
 
     // 构造函数
@@ -36,7 +37,8 @@ public class HttpMsgInfo {
         respInfo = new HttpRespInfo(respBytes);
 
         //响应码是常用的
-        respStatusCode =  respInfo.getStatusCode();
+        respStatusCode = respInfo.getStatusCode();
+        respTitle = respInfo.getRespTitle();
 
         //请求响应信息的简单hash值
         msgHash = calcMsgHash(urlInfo.getUrlToFileUsual(),reqMethod,respStatusCode,respInfo.getBodyLenVague());
@@ -61,7 +63,9 @@ public class HttpMsgInfo {
         respInfo = new HttpRespInfo(respBytes);
 
         //响应码是常用的
-        respStatusCode =  respInfo.getStatusCode();
+        respStatusCode = respInfo.getStatusCode();
+        respTitle = respInfo.getRespTitle();
+
         //请求响应信息的简单hash值
         msgHash = calcMsgHash(urlInfo.getUrlToFileUsual(),reqMethod,respStatusCode,respInfo.getBodyLenVague());
     }
@@ -85,7 +89,8 @@ public class HttpMsgInfo {
         respInfo = new HttpRespInfo(respBytes);
 
         //响应码是常用的
-        respStatusCode =  respInfo.getStatusCode();
+        respStatusCode = respInfo.getStatusCode();
+        respTitle = respInfo.getRespTitle();
 
         //请求响应信息的简单hash值 因为中间可能截断了超大的响应体 , 因此最好手动传入 msgHash
         msgHash = msgInfoHash;
@@ -146,5 +151,7 @@ public class HttpMsgInfo {
         return respStatusCode;
     }
 
-
+    public String getRespTitle() {
+        return respTitle;
+    }
 }
