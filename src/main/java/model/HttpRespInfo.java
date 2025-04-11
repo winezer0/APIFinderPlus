@@ -3,6 +3,7 @@ package model;
 import burp.BurpExtender;
 import burp.IExtensionHelpers;
 import burp.IResponseInfo;
+import utils.RespHashUtils;
 import utils.RespTitleUtils;
 
 import java.util.Arrays;
@@ -19,6 +20,11 @@ public class HttpRespInfo {
     private int bodyOffset = -1;
     private String respTitle = "";
 
+    private String iconHash = "";  //记录响应体的hash值
+
+    public String getIconHash() {
+        return iconHash;
+    }
 
     HttpRespInfo(byte[] responseBytes) {
         if (responseBytes == null || responseBytes.length <= 0){
@@ -34,8 +40,8 @@ public class HttpRespInfo {
         //响应状态码
         statusCode = responseInfo.getStatusCode();
         //获取响应类型
-        inferredMimeType = responseInfo.getInferredMimeType();
-        statedMimeType = responseInfo.getStatedMimeType();
+        inferredMimeType = responseInfo.getInferredMimeType(); //根据响应的内容自动推断出的 MIME 类型
+        statedMimeType = responseInfo.getStatedMimeType(); //由服务器明确声明的内容类型
         //响应体分割标记
         bodyOffset = responseInfo.getBodyOffset();
         bodyLength = getBodyBytes().length;
@@ -43,6 +49,10 @@ public class HttpRespInfo {
         bodyLenVague = bodyLength / 200;
         //响应文本标题
         respTitle = RespTitleUtils.parseTextTitle(respBytes);
+        //当响应类型是 ico 类型时计算一下hash值
+        if (getStatedMimeType() != null && getStatedMimeType().contains("ico")){
+            iconHash = RespHashUtils.getFaviconHash(getBodyBytes());
+        }
     }
 
 

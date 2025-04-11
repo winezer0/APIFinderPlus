@@ -209,6 +209,7 @@ public class AnalyseInfo {
         String respHeaders = new String(msgInfo.getRespInfo().getHeaderBytes(), StandardCharsets.UTF_8);
         String respContent = new String(msgInfo.getRespBytes(), StandardCharsets.UTF_8);
         String respTitle = msgInfo.getRespTitle(); //提前获取Title数据, 防止匹配次数过多
+        String respIconHash = msgInfo.getRespInfo().getIconHash(); //获取IconHash数据
 
         //进行JSON解码
         if( msgInfo.getRespInfo().getInferredMimeType().contains("JSON")|| IProxyScanner.forceDecodeUnicode){
@@ -241,6 +242,9 @@ public class AnalyseInfo {
                     break;
                 case TITLE:
                     locationText = respTitle;
+                    break;
+                case ICON_HASH:
+                    locationText = respIconHash;
                     break;
                 case BODY:
                     locationText = respBody;

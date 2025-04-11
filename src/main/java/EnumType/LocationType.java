@@ -8,7 +8,8 @@ public enum LocationType {
     TITLE("title"),
     BODY("body"),
     HEADER("header"),
-    RESPONSE("response");
+    RESPONSE("response"),
+    ICON_HASH("icon_hash");
 
     private final String value;
 

@@ -7,13 +7,11 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 public class RespHashUtils {
-    public static String getFaviconHash(byte[] faviconBytes) {
 
-        String base64Favicon = Base64.getEncoder().encodeToString(faviconBytes);
-
+    public static String getFaviconHash(byte[] body) {
+        String base64Favicon = Base64.getEncoder().encodeToString(body);
         // 格式化base64字符串
         String formattedBase64Favicon = formatBase64(base64Favicon);
-
         // 计算格式化后base64字符串的murmurHash3值
         return String.valueOf(murmurHash3_x86_32(formattedBase64Favicon.getBytes(), 0, formattedBase64Favicon.length(), 0));
     }
