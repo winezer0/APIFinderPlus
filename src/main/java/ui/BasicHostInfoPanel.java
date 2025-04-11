@@ -11,6 +11,7 @@ import ui.MainTabRender.TableHeaderWithTips;
 import ui.MainTabRender.HasImportantCellRenderer;
 import utils.CastUtils;
 import utils.PathTreeUtils;
+import utils.RespHashUtils;
 import utils.UiUtils;
 
 import javax.swing.Timer;
@@ -609,7 +610,7 @@ public class BasicHostInfoPanel extends JPanel {
                         if (newUnVisitedUrls.size() > 0 && isNotEmptyObj(accessedUrlHashesNotInRootUrls)){
                             List<String> tmpUnVisitedUrls = new ArrayList<>();
                             for (String url : newUnVisitedUrls) {
-                                String urlHash = RecordHashMap.calcCRC32(url);
+                                String urlHash = RespHashUtils.calcCRC32(url);
                                 if (!accessedUrlHashesNotInRootUrls.contains(urlHash)) {
                                     tmpUnVisitedUrls.add(url);
                                 }
@@ -629,7 +630,7 @@ public class BasicHostInfoPanel extends JPanel {
                             if (isNotEmptyObj(accessedUrlHashesInRootUrl)){
                                 List<String> tmpUnVisitedUrls = new ArrayList<>();
                                 for (String url : newUnVisitedUrls) {
-                                    String urlHash = RecordHashMap.calcCRC32(url);
+                                    String urlHash = RespHashUtils.calcCRC32(url);
                                     if (!accessedUrlHashesInRootUrl.contains(urlHash)) {
                                         tmpUnVisitedUrls.add(url);
                                     }
@@ -687,7 +688,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 rawUnVisitedUrls = AnalyseInfo.filterFindUrls(urlsModel.getRootUrl(), rawUnVisitedUrls, BurpExtender.onlyScopeDomain);
                                 //过滤访问记录
                                 List<String> newUnVisitedUrls = rawUnVisitedUrls.stream()
-                                        .filter(url -> !accessedUrlHashes.contains(RecordHashMap.calcCRC32(url)))
+                                        .filter(url -> !accessedUrlHashes.contains(RespHashUtils.calcCRC32(url)))
                                         .collect(Collectors.toList());
                                 //更新记录并保存
                                 urlsModel.setUnvisitedUrls(newUnVisitedUrls);
