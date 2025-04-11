@@ -3,7 +3,7 @@ package database;
 import model.AccessedUrlInfo;
 import model.HttpMsgInfo;
 import model.HttpUrlInfo;
-import utils.CastUtils;
+import model.RecordHashMap;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class RecordUrlTable {
                 msgInfo.getUrlInfo().getRawUrlUsual(),
                 msgInfo.getUrlInfo().getRootUrlUsual(),
                 msgInfo.getRespStatusCode(),
-                CastUtils.calcCRC32(msgInfo.getUrlInfo().getRawUrlUsual())
+                RecordHashMap.calcCRC32(msgInfo.getUrlInfo().getRawUrlUsual())
         );
     }
 
@@ -68,7 +68,7 @@ public class RecordUrlTable {
                 reqUrl,
                 new HttpUrlInfo(reqUrl).getRootUrlUsual(),
                 respStatusCode,
-                CastUtils.calcCRC32(reqUrl)
+                RecordHashMap.calcCRC32(reqUrl)
         );
     }
 

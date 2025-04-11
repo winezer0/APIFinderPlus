@@ -1,7 +1,6 @@
 package model;
 
 import com.alibaba.fastjson2.JSON;
-import model.HttpRespInfo;
 import utils.CastUtils;
 
 import java.util.*;
@@ -23,7 +22,7 @@ public class RespFieldsModel {
         this.respBodyLength = respInfo.getBodyLength();
         this.respTextTitle = respInfo.getRespTitle();
         this.respRedirectUrl = CastUtils.parseRespRedirectUrl(respInfo.getHeaderBytes());
-        this.respHashContent = CastUtils.calcCRC32(respInfo.getBodyBytes());
+        this.respHashContent = RecordHashMap.calcCRC32(respInfo.getBodyBytes());
     }
 
     public String toJSONString(){

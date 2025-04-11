@@ -1008,7 +1008,7 @@ public class RuleConfigPanel extends JPanel {
             locationField.addItem(location);
         }
 
-        locationField.setSelectedItem("body"); // 默认选中 "body"
+        locationField.setSelectedItem(LocationType.BODY.getValue()); // 默认选中 "body"
     }
 
     /**

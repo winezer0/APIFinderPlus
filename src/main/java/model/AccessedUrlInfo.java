@@ -1,6 +1,6 @@
 package model;
 
-import static utils.CastUtils.calcCRC32;
+import static model.RecordHashMap.calcCRC32;
 
 public  class AccessedUrlInfo {
     public String rootUrl;

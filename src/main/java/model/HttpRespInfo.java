@@ -3,7 +3,7 @@ package model;
 import burp.BurpExtender;
 import burp.IExtensionHelpers;
 import burp.IResponseInfo;
-import utils.CastUtils;
+import utils.RespTitleUtils;
 
 import java.util.Arrays;
 
@@ -42,7 +42,7 @@ public class HttpRespInfo {
         //大致的响应长度
         bodyLenVague = bodyLength / 200;
         //响应文本标题
-        respTitle = CastUtils.parseTextTitle(respBytes);
+        respTitle = RespTitleUtils.parseTextTitle(respBytes);
     }
 
 

@@ -349,7 +349,7 @@ public class IProxyScanner implements IProxyListener {
                     }
 
                     //存储一下当前的动态过滤器 如果当前实际的过滤map内容和历史存储的内容不一样时,就写入到文件中
-                    String currentJsonHash = calcCRC32(CastUtils.toJsonString(urlCompareMap));
+                    String currentJsonHash = RecordHashMap.calcCRC32(CastUtils.toJsonString(urlCompareMap));
                     if (!currentJsonHash.equals(urlCompareMapHistoryHash)){
                         urlCompareMapHistoryHash = currentJsonHash;
                         BurpFileUtils.writeToPluginPathFileNotEx(urlCompareMapCacheFile, CastUtils.toJsonString(urlCompareMap));

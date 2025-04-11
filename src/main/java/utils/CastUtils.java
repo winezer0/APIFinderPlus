@@ -7,11 +7,7 @@ import database.Constants;
 import model.HttpUrlInfo;
 import utilbox.HelperPlus;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.CRC32;
 
 public class CastUtils {
     /**
@@ -174,28 +170,6 @@ public class CastUtils {
 
 
     /**
-     * 字符串转 CRC32
-     */
-    public static String calcCRC32(String string) {
-        // 使用 UTF-8 编码将字符串转换为字节数组
-        byte[] inputBytes = string.getBytes(StandardCharsets.UTF_8);
-        return calcCRC32(inputBytes);
-    }
-
-    /**
-     * 字符Byte[]转 CRC32
-     */
-    public static String calcCRC32(byte[] inputBytes) {
-        // 初始化CRC32对象
-        CRC32 crc32 = new CRC32();
-        // 更新CRC值
-        crc32.update(inputBytes, 0, inputBytes.length);
-        // 将计算后的CRC32值转换为十六进制字符串并返回
-        return Long.toHexString(crc32.getValue()).toLowerCase();
-    }
-
-
-    /**
      * 字符串转列表
      */
     public static List<String> getUniqueLines(String text) {
@@ -253,32 +227,6 @@ public class CastUtils {
             redirectUrl = helperPlus.getHeaderValueOf(true, headerBytes, "Location");
         }
         return redirectUrl;
-    }
-
-    /**
-     * 从HTML文档中提取<title>标签的内容。
-     */
-    public static String parseTextTitle(byte[] bodyBytes) {
-        String title = null;
-        if (bodyBytes.length>0){
-            byte[] bytesToParse = bodyBytes;
-            // 如果bodyBytes长度大于10000，仅取前10000字节
-            if (bodyBytes.length > 10000) {
-                bytesToParse = Arrays.copyOfRange(bodyBytes, 0, 10000);
-            }
-            // 将字节数组转换为字符串
-            String htmlContent = new String(bytesToParse, StandardCharsets.UTF_8);
-            // 定义一个正则表达式来匹配<title>标签内的内容
-            Pattern pattern = Pattern.compile("<title>(.*?)</title>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-            // 创建一个Matcher对象
-            Matcher matcher = pattern.matcher(htmlContent);
-            // 检查是否找到了匹配项
-            if (matcher.find()) {
-                title = matcher.group(1).trim();
-            }
-        }
-
-        return title;
     }
 
     /**
@@ -543,7 +491,7 @@ public class CastUtils {
      * @param list 要转换的字符串列表
      * @return 包含大写字符串的新列表
      */
-    public static List<String> methodToUpper(List<String> list) {
+    public static List<String> elementsToUpper(List<String> list) {
         List<String> upperCaseList = new ArrayList<>();
         for (String item : list) {
             upperCaseList.add(item.toUpperCase().trim());
