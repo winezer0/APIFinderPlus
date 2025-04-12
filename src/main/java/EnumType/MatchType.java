@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum MatchType {
-    ANY_KEYWORD("any_keyword"), //要求匹配任意关键字 少见
-    ALL_KEYWORD("all_keyword"), //要求匹配所有关键字 常见
+    CONFIG("config"),
+    ANY_FULL_KEYWORDS("any_full_keywords"),  //要求全匹配任意关键字规则 常见
+    ALL_HALF_KEYWORDS("all_half_keywords"),  //要求半匹配所有关键字规则 少见
     ANY_REGULAR("any_regular"), //要求匹配任意正则 常见
     ALL_REGULAR("all_regular"); //要求匹配所有正则 少见
 

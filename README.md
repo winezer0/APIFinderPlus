@@ -120,8 +120,8 @@
 
 匹配方法("matchType"字段)： 
     1、关键字匹配 
-        ANY_KEYWORD("any_keyword"), //匹配任意关键字  少见 建议每行是多个关键字的|拼接格式 如 key1|key2|key3
-        ALL_KEYWORD("all_keyword"), //匹配所有关键字  常见 已支持每行是多个关键字的|拼接格式, 但没有必要
+        ANY_KEYWORD("any_full_keywords"), //匹配任意关键字  少见 建议每行是多个关键字的|拼接格式 如 key1|key2|key3
+        ALL_KEYWORD("all_half_keywords"), //匹配所有关键字  常见 已支持每行是多个关键字的|拼接格式, 但没有必要
     2、正则匹配
         ANY_REGULAR("any_regular"), //匹配每个正则并提取敏感信息 常见
         ALL_REGULAR("all_regular"); //匹配所有正则都有内容时才提取敏感信息 少见
@@ -131,18 +131,24 @@
         每行是一个关键字提取匹配规则、
         每行的内容支持由多个关键字拼接组成，拼接符号是 【|】 
 		举例：
-		     "matchKeys": ["fzhm|total|rows"],
-			 表示要求 同时含有 fzhm、total、rows 关键字
+		    "matchType": "any_full_key" + "matchKeys": ["fzhm1|total1|rows1", "fzhm2|total2|rows2"],
+			 表示要求 同时含有fzhm1、total1、rows1 关键字 或 同时完全含有fzhm2、total2、rows2
+			 
+            "matchType": "all_half_key" + "matchKeys": ["fzhm1|fzhm2","total1|total2|total3"],
+			 表示要求 同时含有 fzhm*、total* 关键字
         注意：
             1、本规则和原版的有差异，
             2、由于使用了拼接符号 【|】 ，因此不能让匹配关键字中包含【|】, 后续如果遇到特殊的|关键字 将修改拼接符号
      2、正则匹配规则编写 
         每行是一个正则提取匹配规则
 
+
+                
 其他关键字：
     "accuracy": 规则准确度
     "describe": 规则描述
     "isImportant": 匹配结果是否重要信
     "isOpen": 是否启用规则
     "type": 规则分类
+    
 ```

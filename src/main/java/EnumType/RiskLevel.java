@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum RiskLevel {
+    CONFIG("config"),               //要求全匹配任意关键字规则 少见
     HIGH("high"),
     MEDIUM("medium"),
     LOWER("lower");

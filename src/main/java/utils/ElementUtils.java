@@ -169,4 +169,22 @@ public class ElementUtils {
 
         return isContainAllKey(stringFormat, Arrays.asList(elementsFormat));
     }
+
+
+    public static Set<String> findContainKeys(String string, String elementsString) {
+        HashSet findElements = new HashSet();
+        //当元素为空时,返回默认值
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return findElements;
+
+        //预先格式化处理
+        String stringFormat = format(string);
+        String[] elementsFormat = format(elementsString).split("\\|");
+
+        for (String element : elementsFormat) {
+            if(stringFormat.contains(element)){
+                findElements.add(element);
+            }
+        }
+        return findElements;
+    }
 }

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import static utils.BurpPrintUtils.*;
 import static utils.CastUtils.isEmptyObj;
 import static utils.CastUtils.isNotEmptyObj;
-import static utils.ElementUtils.isContainAllKey;
+import static utils.ElementUtils.*;
 
 public class AnalyseInfo {
 
@@ -221,9 +221,7 @@ public class AnalyseInfo {
         //遍历规则进行提取
         for (FingerPrintRule rule : BurpExtender.fingerprintRules){
             //忽略关闭的选项 // 过滤掉配置选项
-            if (!rule.getIsOpen()
-                    || rule.getType().contains(Constants.RULE_CONF_PREFIX)
-                    || rule.getLocation().equals(LocationType.CONFIG.getValue())){
+            if (!rule.getIsOpen()|| rule.getType().startsWith(Constants.RULE_CONF_PREFIX)){
                 continue;
             }
 
@@ -266,59 +264,57 @@ public class AnalyseInfo {
                 String currMatchType = rule.getMatchType();
                 List<String> currMatchKeys = rule.getMatchKeys();
 
-                //多个关键字任意匹配 当把多个关键字用|分割时可以使用
-                if (currMatchType.equals(MatchType.ANY_KEYWORD.getValue()))
+                //全匹配任意关键字规则
+                if (currMatchType.equals(MatchType.ANY_FULL_KEYWORDS.getValue())){
                     for (String matchKey : currMatchKeys){
                         if(isContainAllKey(locationText, matchKey, false)){
                             JSONObject findInfo = formatMatchInfoToJson(rule, matchKey);
                             findInfoJsonList.add(findInfo);
                         }
                     }
-
-                //多个关键字全部需要匹配
-                else if (currMatchType.equals(MatchType.ALL_KEYWORD.getValue())) {
-                    boolean allMatched = true; // 标志位，用于判断是否所有正则都匹配成功
-                    for (String matchKey : currMatchKeys){
-                        if(!isContainAllKey(locationText, matchKey, false)){
-                            allMatched = false;
-                            break;
-                        }
-                    }
-                    if (allMatched) {
-                        JSONObject findInfo = formatMatchInfoToJson(rule, CastUtils.listToString(currMatchKeys));
-                        findInfoJsonList.add(findInfo);
-                    }
                 }
 
-                //多个正则匹配任意一个
+                //半匹配全部关键字规则
+                else if (currMatchType.equals(MatchType.ALL_HALF_KEYWORDS.getValue())) {
+                    boolean allMatched = true; // 标志位，用于判断是否所有正则都匹配成功
+                    Set<String> allGroups = new HashSet<>(); //存储所有匹配结果
+                    for (String matchKey : currMatchKeys){
+                        Set<String> findContainKeys = findContainKeys(locationText, matchKey);
+                        if(findContainKeys.isEmpty()){
+                            allMatched = false;
+                            break;
+                        } else {
+                            allGroups.addAll(findContainKeys);
+                        }
+                    }
+                    // 如果所有关键字都匹配成功 就保存所有匹配的关键字
+                    if (allMatched)  findInfoJsonList.add(formatMatchInfoToJson(rule, CastUtils.setToString(allGroups)));
+                }
+
+
+                //匹配任意正则规则
                 else if (currMatchType.equals(MatchType.ANY_REGULAR.getValue())){
                     for (String matchPatter : currMatchKeys){
                         Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, matchPatter, IProxyScanner.maxPatterChunkSize);
-                        if (isNotEmptyObj(groups)){
-                            JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(new ArrayList<>(groups)));
-                            findInfoJsonList.add(findInfo);
-                        }
+                        if (isNotEmptyObj(groups)) findInfoJsonList.add(formatMatchInfoToJson(rule, CastUtils.setToString(groups)));
                     }
                 }
 
-                // 如果匹配类型是 "ALL"，需要所有正则都匹配成功
+                //匹配所有正则规则
                 else if (currMatchType.equals(MatchType.ALL_REGULAR.getValue())) {
                     boolean allMatched = true;
                     Set<String> allGroups = new HashSet<>(); //存储所有匹配结果
                     for (String pattern : currMatchKeys) {
                         Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, pattern, IProxyScanner.maxPatterChunkSize);
-                        if (isNotEmptyObj(groups)) {
-                            allGroups.addAll(groups);
-                        } else {
+                        if (isEmptyObj(groups)) {
                             allMatched = false; // 如果有一个正则没有匹配成功，则标志位置为 false
                             break; // 提前退出循环
+                        } else {
+                            allGroups.addAll(groups);
                         }
                     }
                     // 如果所有正则都匹配成功 就保存所有匹配的信息
-                    if (allMatched) {
-                        JSONObject findInfo = formatMatchInfoToJson(rule, CastUtils.setToString(allGroups));
-                        findInfoJsonList.add(findInfo);
-                    }
+                    if (allMatched)  findInfoJsonList.add(formatMatchInfoToJson(rule, CastUtils.setToString(allGroups)));
                 }
             }
         }
