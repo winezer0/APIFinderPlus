@@ -11,10 +11,7 @@ import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.*;
 import ui.MainTabRender.TableHeaderWithTips;
-import utils.BurpFileUtils;
-import utils.CastUtils;
-import utils.ConfigUtils;
-import utils.UiUtils;
+import utils.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -342,8 +339,10 @@ public class RuleConfigPanel extends JPanel {
                     FingerPrintRule rule = BurpExtender.fingerprintRules.get(i);
                     // 保存当前规则在模型列表中的索引
                     tableToModelIndexMap.add(i);
-                    //开启high级别的规则
-                    rule.setOpen(rule.getAccuracy().equals(RiskLevel.HIGH.getValue()));
+                    //开启high级别的规则和config规则
+                    String accuracy = rule.getAccuracy();
+                    boolean flag = accuracy.equals(RiskLevel.HIGH.getValue()) ||accuracy.equals(RiskLevel.CONFIG.getValue());
+                    rule.setOpen(flag);
                     ruleTableModel.addRow(new Object[]{
                             counter,
                             rule.getType(),
