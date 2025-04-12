@@ -134,6 +134,7 @@ public class BasicHostInfoPanel extends JPanel {
         basicHostMsgTableModel = new DefaultTableModel(new Object[]{
                 "id",
                 "root_url",
+                "host",
                 "important",
                 "find_info",
                 "find_url",
@@ -162,6 +163,7 @@ public class BasicHostInfoPanel extends JPanel {
         String[] basicHostColHeaderTooltips = new String[]{
                 "【请求ID】",
                 "【请求目标】",
+                "【HOST信息】",
                 "【是否重要信息】",
                 "【敏感信息数量】 == 当前网站响应中的敏感信息",
                 "【直接URL数量】 == 当前网站响应中提取的URL",
@@ -183,6 +185,7 @@ public class BasicHostInfoPanel extends JPanel {
         //设置数据表的宽度
         UiUtils.tableSetColumnMaxWidth(basicHostMsgTableUI, 0, 50);
         UiUtils.tableSetColumnMinWidth(basicHostMsgTableUI, 1, 200);
+        UiUtils.tableSetColumnMinWidth(basicHostMsgTableUI, 2, 100);
 
         //设置表格每列的对齐设置
         List<Integer> leftColumns = Arrays.asList(1);
@@ -190,7 +193,7 @@ public class BasicHostInfoPanel extends JPanel {
 
         //为重要信息列添加额外的渲染
         HasImportantCellRenderer havingImportantRenderer = new HasImportantCellRenderer();
-        int ImportantColumnIndex = 2; //重要信息列所在的列号减1
+        int ImportantColumnIndex = 3; //重要信息列所在的列号减1
         basicHostMsgTableUI.getColumnModel().getColumn(ImportantColumnIndex).setCellRenderer(havingImportantRenderer);
 
         //为状态信息列添加额外的渲染 在最后一列,可以设置为动态值

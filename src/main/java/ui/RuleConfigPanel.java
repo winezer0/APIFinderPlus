@@ -1,6 +1,8 @@
 package ui;
 
 import EnumType.LocationType;
+import EnumType.MatchType;
+import EnumType.RiskLevel;
 import burp.BurpExtender;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
@@ -167,7 +169,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getDescribe(),  //规则描述
                             rule.getIsImportant(),  //规则重要性
                             rule.getAccuracy(),  //危险级别
-                            rule.getMatch(), // 获取method信息
+                            rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
                             String.join(",", rule.getKeyword()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 3个操作按钮
@@ -202,7 +204,7 @@ public class RuleConfigPanel extends JPanel {
                                 rule.getDescribe(),
                                 rule.getIsImportant(),
                                 rule.getAccuracy(),
-                                rule.getMatch(), // 获取method信息
+                                rule.getMatchType(), // 获取method信息
                                 rule.getLocation(), // 获取location信息
                                 String.join(",", rule.getKeyword()),
                                 new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -236,7 +238,7 @@ public class RuleConfigPanel extends JPanel {
                                 rule.getDescribe(),
                                 rule.getIsImportant(),
                                 rule.getAccuracy(),
-                                rule.getMatch(), // 获取method信息
+                                rule.getMatchType(), // 获取method信息
                                 rule.getLocation(), // 获取location信息
                                 String.join(",", rule.getKeyword()),
                                 new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -279,7 +281,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getDescribe(),
                             rule.getIsImportant(),
                             rule.getAccuracy(),
-                            rule.getMatch(), // 获取method信息
+                            rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
                             String.join(",", rule.getKeyword()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -313,7 +315,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getDescribe(),
                             rule.getIsImportant(),
                             rule.getAccuracy(),
-                            rule.getMatch(), // 获取method信息
+                            rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
                             String.join(",", rule.getKeyword()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -342,14 +344,14 @@ public class RuleConfigPanel extends JPanel {
                     // 保存当前规则在模型列表中的索引
                     tableToModelIndexMap.add(i);
                     //开启high级别的规则
-                    rule.setOpen(rule.getAccuracy().equals("high"));
+                    rule.setOpen(rule.getAccuracy().equals(RiskLevel.HIGH.getValue()));
                     ruleTableModel.addRow(new Object[]{
                             counter,
                             rule.getType(),
                             rule.getDescribe(),
                             rule.getIsImportant(),
                             rule.getAccuracy(),
-                            rule.getMatch(), // 获取method信息
+                            rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
                             String.join(",", rule.getKeyword()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -371,7 +373,7 @@ public class RuleConfigPanel extends JPanel {
                 // 清空编辑面板的文本字段
                 editRulePanel.setTitle("新增指纹");
                 isImportantField.setSelectedItem(Boolean.TRUE); // 默认设置为重要
-                searchMethodField.setSelectedItem("keyword"); // 默认方法设置为 keyword
+                searchMethodField.setSelectedItem(MatchType.ALL_KEYWORD.getValue()); // 默认方法设置为 keyword
                 updateLocationField(); // 根据默认的方法更新 locationField
                 keywordField.setText("");
 
@@ -462,7 +464,7 @@ public class RuleConfigPanel extends JPanel {
                                     rule.getDescribe(),
                                     rule.getIsImportant(),
                                     rule.getAccuracy(),
-                                    rule.getMatch(), // 获取 method 信息
+                                    rule.getMatchType(), // 获取 method 信息
                                     rule.getLocation(), // 获取 location 信息
                                     String.join(",", rule.getKeyword()),
                                     new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -509,7 +511,7 @@ public class RuleConfigPanel extends JPanel {
                                 rule.getDescribe(),
                                 rule.getIsImportant(),
                                 rule.getAccuracy(),
-                                rule.getMatch(), // 获取 method 信息
+                                rule.getMatchType(), // 获取 method 信息
                                 rule.getLocation(), // 获取 location 信息
                                 String.join(",", rule.getKeyword()),
                                 new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -703,7 +705,7 @@ public class RuleConfigPanel extends JPanel {
         typeField.getEditor().setItem(rule.getType());
         isImportantField.setSelectedItem(rule.getIsImportant());
         accuracyFiled.setSelectedItem(rule.getAccuracy());
-        searchMethodField.setSelectedItem(rule.getMatch());
+        searchMethodField.setSelectedItem(rule.getMatchType());
         locationField.setSelectedItem(rule.getLocation());
         describeField.setText(rule.getDescribe()); // 根据 rule 的 method 更新 locationField
         keywordField.setText(String.join("\n", rule.getKeyword())); // 设置 keywordField 的值
@@ -727,7 +729,7 @@ public class RuleConfigPanel extends JPanel {
                 "describe",
                 "isImportant",
                 "accuracy",
-                "match",
+                "matchType",
                 "location",
                 "keyword",
                 "Action"
@@ -759,7 +761,7 @@ public class RuleConfigPanel extends JPanel {
                     rule.getDescribe(),
                     rule.getIsImportant(),
                     rule.getAccuracy(),
-                    rule.getMatch(), // 获取method信息
+                    rule.getMatchType(), // 获取method信息
                     rule.getLocation(), // 获取location信息
                     String.join(",", rule.getKeyword()),
                     new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
@@ -782,12 +784,12 @@ public class RuleConfigPanel extends JPanel {
         typeField = new JComboBox<>();
         typeField.setEditable(true);
         isImportantField = new JComboBox<>(new Boolean[]{true, false});
-        searchMethodField = new JComboBox<>(new String[]{"keyword", "regular"});
-        accuracyFiled = new JComboBox<>(new String[]{"high", "medium", "lower"});
+        searchMethodField = new JComboBox<>(MatchType.getValues());
+        accuracyFiled = new JComboBox<>(RiskLevel.getValues());
         locationField = new JComboBox<>();
         keywordField = new JTextArea(5, 20); // 5行，20列
         describeField = new JTextField("-");
-        searchMethodField.setSelectedItem("keyword");
+        searchMethodField.setSelectedItem(MatchType.ALL_KEYWORD.getValue());
         updateLocationField();
 
         // 创建 GridBagConstraints 对象来控制每个组件的布局
@@ -928,7 +930,7 @@ public class RuleConfigPanel extends JPanel {
                     rule.setDescribe(describe);
                     rule.setIsImportant(isImportant);
                     rule.setAccuracy(accuracy);
-                    rule.setMatch(method);
+                    rule.setMatchType(method);
                     rule.setLocation(location);
                     rule.setKeyword(keyword);
 
@@ -961,7 +963,7 @@ public class RuleConfigPanel extends JPanel {
                                 newRule.getDescribe(),
                                 newRule.getIsImportant(),
                                 newRule.getAccuracy(),
-                                newRule.getMatch(),
+                                newRule.getMatchType(),
                                 newRule.getLocation(),
                                 String.join(",", newRule.getKeyword()),
                                 new String[]{"Edit", "Delete"} // 操作按钮
@@ -1003,8 +1005,7 @@ public class RuleConfigPanel extends JPanel {
     // 添加一个新的方法来更新 locationField 的选项
     private static void updateLocationField() {
         locationField.removeAllItems(); // 清除之前的选项
-        List<String> locations = LocationType.getLocationList();
-        for (String location : locations) {
+        for (String location : LocationType.getValues()) {
             locationField.addItem(location);
         }
 
@@ -1063,7 +1064,7 @@ public class RuleConfigPanel extends JPanel {
                         rule.getDescribe(),
                         rule.getIsImportant(),
                         rule.getAccuracy(),
-                        rule.getMatch(),
+                        rule.getMatchType(),
                         rule.getLocation(),
                         String.join(",", rule.getKeyword()),
                         new String[]{"Edit", "Delete"}

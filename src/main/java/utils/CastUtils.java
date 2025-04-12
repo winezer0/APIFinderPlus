@@ -297,14 +297,14 @@ public class CastUtils {
                         "# ############# type: %s #############<br>" +
                                 "# describe: <span style='color: $color$};'>%s</span><br>" +
                                 "# value: <span style='color: $color$};'>%s</span><br>" +
-                                "# match: %s<br>" +
+                                "# matchType: %s<br>" +
                                 "# accuracy: %s<br>" +
                                 "# important: %s<br>"
                         ,
                         jsonObject.getString(AnalyseInfo.type),
                         jsonObject.getString(AnalyseInfo.describe),
                         escapeHtml(jsonObject.getString(AnalyseInfo.value)),
-                        escapeHtml(jsonObject.getString(AnalyseInfo.match)),
+                        escapeHtml(jsonObject.getString(AnalyseInfo.matchType)),
                         jsonObject.getString(AnalyseInfo.accuracy),
                         jsonObject.getString(AnalyseInfo.important)
                 );
@@ -350,7 +350,7 @@ public class CastUtils {
                             jsonObject.getString(AnalyseInfo.type),
                             jsonObject.getString(AnalyseInfo.describe),
                             escapeHtml(jsonObject.getString(AnalyseInfo.value)),
-                            escapeHtml(jsonObject.getString(AnalyseInfo.match)),
+                            escapeHtml(jsonObject.getString(AnalyseInfo.matchType)),
                             jsonObject.getString(AnalyseInfo.accuracy),
                             jsonObject.getString(AnalyseInfo.important),
                             infoUrl
@@ -523,4 +523,15 @@ public class CastUtils {
         return String.join(System.lineSeparator(), filteredLines);
     }
 
+
+    /**
+     * 列表转字符串（支持常见类型）
+     * @return 转换后的字符串，格式为 "[item1, item2, item3]"
+     */
+    public static <T> String listToString(List<T> list) {
+        if (list == null || list.isEmpty()) {
+            return "[]"; // 如果列表为空或为 null，返回空数组的表示形式
+        }
+        return Arrays.toString(list.toArray());
+    }
 }

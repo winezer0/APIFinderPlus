@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 public class FingerPrintRule {
-    private String match;
+    private String matchType;
     private String location;
     private String describe;
     private List<String> keyword;
@@ -15,8 +15,8 @@ public class FingerPrintRule {
     private String accuracy;
     
     // 新添加的构造函数
-    public FingerPrintRule(String type, String describe, boolean isImportant, String match, String location, List<String> keyword, boolean isOpen, String accuracy) {
-        this.match = match;
+    public FingerPrintRule(String type, String describe, boolean isImportant, String matchType, String location, List<String> keyword, boolean isOpen, String accuracy) {
+        this.matchType = matchType;
         this.describe = describe;
         this.location = location;
         this.keyword = keyword;
@@ -56,12 +56,12 @@ public class FingerPrintRule {
 
     public void setIsImportant(boolean isImportant){this.isImportant = isImportant;}
 
-    public String getMatch() {
-        return match;
+    public String getMatchType() {
+        return matchType;
     }
 
-    public void setMatch(String match) {
-        this.match = match;
+    public void setMatchType(String matchType) {
+        this.matchType = matchType;
     }
 
     public String getLocation() {
@@ -81,6 +81,6 @@ public class FingerPrintRule {
     }
 
     public String getInfo(String color){
-        return "Time: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "<br>match: " + match + "<br>Type: " + type + "<br>accuracy: " + accuracy + "<br>describe: <span style='color: " + color + ";'>" + describe +  "</span><br>location: " + location + "<br>keyword: " + keyword.toString() + "<br>";
+        return "Time: " + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()) + "<br>match: " + matchType + "<br>Type: " + type + "<br>accuracy: " + accuracy + "<br>describe: <span style='color: " + color + ";'>" + describe +  "</span><br>location: " + location + "<br>keyword: " + keyword.toString() + "<br>";
     }
 }

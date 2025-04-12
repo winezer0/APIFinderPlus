@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum LocationType {
+    CONFIG("config"),
     PATH("path"),
     TITLE("title"),
     BODY("body"),
@@ -38,16 +39,14 @@ public enum LocationType {
      *
      * @return 包含所有 LocationType 值的列表
      */
-    public static List<String> getLocationList() {
+    public static String[] getValues() {
         // 创建一个可变的列表来存储字符串值
-        List<String> locations = new ArrayList<>();
-
+        List<String> locationTypes = new ArrayList<>();
         // 遍历枚举值并提取其对应的字符串值
-        LocationType[] locationTypes = LocationType.values();
-        for (LocationType type : locationTypes) {
-            locations.add(type.getValue());
+        for (LocationType type : LocationType.values()) {
+            locationTypes.add(type.getValue());
         }
-
-        return locations;
+        // 将 List<String> 转换为 String[]
+        return locationTypes.toArray(new String[0]);
     }
 }

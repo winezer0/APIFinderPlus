@@ -4,6 +4,7 @@ package model;
 public class BasicHostTableLineDataModel {
     private Integer id;
     private String rootUrl;
+    private String host;
 
     private Integer findInfoNum;
     private Boolean hasImportant;
@@ -27,6 +28,7 @@ public class BasicHostTableLineDataModel {
                                        int allUrlNum, int basicPathNum, String runStatus) {
         this.id = id;
         this.rootUrl = rootUrl;
+        this.host = parseHostFromUrl(rootUrl);
 
         this.findInfoNum = findInfoNum;
         this.hasImportant = hasImportant;
@@ -45,10 +47,17 @@ public class BasicHostTableLineDataModel {
         this.runStatus = runStatus;
     }
 
+    private String parseHostFromUrl(String rootUrl) {
+        //解析从URL中解析出host
+        return new HttpUrlInfo(rootUrl).getHostPort();
+    }
+
+
     public Object[] toRowDataArray() {
         return new Object[]{
                 this.getId(),
                 this.getRootUrl(),
+                this.getHost(),
                 this.getHasImportant(),
                 this.getFindInfoNum(),
                 this.getFindUrlNum(),
@@ -108,5 +117,9 @@ public class BasicHostTableLineDataModel {
 
     public Integer getAllUrlNum() {
         return allUrlNum;
+    }
+
+    public String getHost() {
+        return host;
     }
 }
