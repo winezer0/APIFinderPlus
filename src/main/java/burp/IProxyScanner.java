@@ -212,12 +212,16 @@ public class IProxyScanner implements IProxyListener {
                 executorService.submit(() -> enhanceRecordPathFilter(msgInfo, dynamicPathFilterIsOpen));
             }
 
-            // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
-            if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URI_EXT_EQUAL, false)
-                    || isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URI_PATH_KEYS, false))
-            {
-                //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + rawUrlUsual);
-                return;
+            //保留favicon.ico 但是排除其他后缀数据
+            List<String> faviconKeys = Arrays.asList("favicon", ".ico");
+            if (!isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), faviconKeys, false)){
+                // 排除黑名单后缀 ||  排除黑名单路径 "jquery.js|xxx.js" 这些JS文件是通用的、无价值的、
+                if(isEqualsOneKey(msgInfo.getUrlInfo().getSuffix(), CONF_BLACK_URI_EXT_EQUAL, false)
+                        || isContainOneKey(msgInfo.getUrlInfo().getPathToFile(), CONF_BLACK_URI_PATH_KEYS, false))
+                {
+                    //stdout_println(LOG_DEBUG, "[-] 匹配黑名单后缀|路径 跳过url识别：" + rawUrlUsual);
+                    return;
+                }
             }
 
             executorService.submit(() -> {
