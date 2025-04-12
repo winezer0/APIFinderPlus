@@ -120,11 +120,11 @@
 
 匹配方法("matchType"字段)： 
     1、关键字匹配 
-        ANY_KEYWORD("any_full_keywords"), //匹配任意关键字  少见 建议每行是多个关键字的|拼接格式 如 key1|key2|key3
-        ALL_KEYWORD("all_half_keywords"), //匹配所有关键字  常见 已支持每行是多个关键字的|拼接格式, 但没有必要
+        ("any_full_keywords"), //匹配任意关键字规则 此处如果有拼接符号| 表示要匹配多个关键字 
+        ("all_half_keywords"), //匹配所有关键字规则 此处拼接符号| 表示只需要匹配规则的任意关键字
     2、正则匹配
-        ANY_REGULAR("any_regular"), //匹配每个正则并提取敏感信息 常见
-        ALL_REGULAR("all_regular"); //匹配所有正则都有内容时才提取敏感信息 少见
+        ("any_regular"), //匹配每个正则并提取敏感信息 常见
+        ("all_regular"); //匹配所有正则都有内容时才提取敏感信息 少见
 
 实际匹配规则（"matchKeys" : [] 列表）：
      1、关键字匹配规则编写
