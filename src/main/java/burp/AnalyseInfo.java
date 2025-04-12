@@ -259,7 +259,7 @@ public class AnalyseInfo {
             }
 
             //当存在字符串不为空时进行匹配
-            if (locationText.length() > 0) {
+            if (locationText != null && locationText.length() > 0) {
                 //多个关键字匹配
                 if (rule.getMatch().equals("keyword") || rule.getMatch().equals("title"))
                     for (String keywords : rule.getKeyword()){
