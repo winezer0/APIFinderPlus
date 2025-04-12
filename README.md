@@ -120,25 +120,26 @@
 
 匹配方法("matchType"字段)： 
     1、关键字匹配 
-        ("any_full_keywords"), //匹配任意关键字规则 此处如果有拼接符号| 表示要匹配多个关键字 
-        ("all_half_keywords"), //匹配所有关键字规则 此处拼接符号| 表示只需要匹配规则的任意关键字
+        ANY_KEYWORDS("any_keywords"),  //匹配任意关键字规则 常见  支持|| &&语法
+        ALL_KEYWORDS("all_keywords"),  //匹配所有关键字规则 少见  支持|| &&语法
     2、正则匹配
-        ("any_regular"), //匹配每个正则并提取敏感信息 常见
-        ("all_regular"); //匹配所有正则都有内容时才提取敏感信息 少见
+        ANY_REGULAR("any_regular"), //要求匹配任意正则 常见
+        ALL_REGULAR("all_regular"); //要求匹配所有正则 少见
 
 实际匹配规则（"matchKeys" : [] 列表）：
      1、关键字匹配规则编写
         每行是一个关键字提取匹配规则、
         每行的内容支持由多个关键字拼接组成，拼接符号是 【|】 
 		举例：
-		    "matchType": "any_full_key" + "matchKeys": ["fzhm1|total1|rows1", "fzhm2|total2|rows2"],
+		    "matchType": "any_keywords" + "matchKeys": ["fzhm1&&total1&&rows1", "fzhm2&&total2&&rows2"],
 			 表示要求 同时含有fzhm1、total1、rows1 关键字 或 同时完全含有fzhm2、total2、rows2
 			 
-            "matchType": "all_half_key" + "matchKeys": ["fzhm1|fzhm2","total1|total2|total3"],
-			 表示要求 同时含有 fzhm*、total* 关键字
+            "matchType": "all_keywords" + "matchKeys": ["fzhm1||fzhm2","total1||total2"],
+			 表示要求 同时含有 至少一个fzhm*、 至少一个total* 关键字
         注意：
             1、本规则和原版的有差异，
-            2、由于使用了拼接符号 【|】 ，因此不能让匹配关键字中包含【|】, 后续如果遇到特殊的|关键字 将修改拼接符号
+            2、由于使用了语法符号 【|| && 】 ，因此不能让匹配关键字中包含【|| &&】
+            
      2、正则匹配规则编写 
         每行是一个正则提取匹配规则
 

@@ -5,8 +5,8 @@ import java.util.List;
 
 public enum MatchType {
     CONFIG("config"),
-    ANY_FULL_KEYWORDS("any_full_keywords"),  //要求全匹配任意关键字规则 常见
-    ALL_HALF_KEYWORDS("all_half_keywords"),  //要求半匹配所有关键字规则 少见
+    ANY_KEYWORDS("any_keywords"),  //匹配任意关键字规则 常见  支持||&&语法
+    ALL_KEYWORDS("all_keywords"),  //匹配所有关键字规则 少见  支持||&&语法
     ANY_REGULAR("any_regular"), //要求匹配任意正则 常见
     ALL_REGULAR("all_regular"); //要求匹配所有正则 少见
 

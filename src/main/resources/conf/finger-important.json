@@ -330,11 +330,11 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"AppSecret|AppID",
-				"AppSecret|AppKey"
+				"AppSecret&&AppID",
+				"AppSecret&&AppKey"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -403,11 +403,11 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"ftpUsername|ftpPassword",
-				"FTP_USER|FTP_ADDR|FTP_PASS"
+				"ftpUsername&&ftpPassword",
+				"FTP_USER&&FTP_ADDR&&FTP_PASS"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -420,7 +420,7 @@
 				"/graphiql"
 			],
 			"location": "path",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感路径"
 		},
 		{
@@ -434,7 +434,7 @@
 				"/graphiql"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -481,13 +481,13 @@
 			"matchKeys": [
 				"System.Data.SqlClient",
 				"Data.PassportContext",
-				"mysql.username|mysql.password|mysql.url",
-				"jdbc.username|jdbc.password",
-				"mssql.jdbc|mssql.user",
+				"mysql.username&&mysql.password&&mysql.url",
+				"jdbc.username&&jdbc.password",
+				"mssql.jdbc&&mssql.user",
 				"com.microsoft.sqlserver.jdbc.SQLServerDriver"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -536,7 +536,7 @@
 				"/swagger/"
 			],
 			"location": "path",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感路径"
 		},
 		{
@@ -560,7 +560,7 @@
 				"ssh://"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -573,7 +573,7 @@
 				"/actuator"
 			],
 			"location": "path",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感路径"
 		},
 		{
@@ -642,21 +642,21 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"ALI_ACCESS_ID|ALI_ACCESS_KEY",
-				"ACCESSID|ACCESSKEY",
-				"AccessKey ID|AccessKey Secret",
-				"accessKeyId|accessKeySecret",
-				"ACCESS_ID|ACCESS_KEY",
-				"SSOusername|SSOpassword",
+				"ALI_ACCESS_ID&&ALI_ACCESS_KEY",
+				"ACCESSID&&ACCESSKEY",
+				"AccessKey ID&&AccessKey Secret",
+				"accessKeyId&&accessKeySecret",
+				"ACCESS_ID&&ACCESS_KEY",
+				"SSOusername&&SSOpassword",
 				"oss://",
-				"UC_DBHOST|UC_DBUSER|UC_KEY|UC_API",
-				"access_key_id|secret_access_key",
-				"accessKeyId|accessSecret",
+				"UC_DBHOST&&UC_DBUSER&&UC_KEY&&UC_API",
+				"access_key_id&&secret_access_key",
+				"accessKeyId&&accessSecret",
 				"\"accessKeyId\"",
-				"accessKeyId|secretAccessKey"
+				"accessKeyId&&secretAccessKey"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -665,10 +665,10 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"Corpid|Corpsecret"
+				"Corpid&&Corpsecret"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -677,12 +677,12 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"username|userName",
+				"username&&userName",
 				"actionid",
-				"newPws|newpassword"
+				"newPws&&newpassword"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -703,13 +703,13 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"personName|phoneNo|deptName",
-				"tel|account|userName|mailAccount|Content-Type: application/json",
-				"email|phone|pwd|id|name|Content-Type: application/json",
-				"msg|mobile\"|Content-Type: application/json"
+				"personName&&phoneNo&&deptName",
+				"tel&&account&&userName&&mailAccount&&Content-Type: application/json",
+				"email&&phone&&pwd&&id&&name&&Content-Type: application/json",
+				"msg&&mobile\"&&Content-Type: application/json"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -718,13 +718,13 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"管理员密码|管理员账号",
-				"'admin_pwd'|'admin_user'",
-				"<pwd>|<admin_user>",
-				"\"admin_pwd\"|\"admin_user\""
+				"管理员密码&&管理员账号",
+				"'admin_pwd'&&'admin_user'",
+				"<pwd>&&<admin_user>",
+				"\"admin_pwd\"&&\"admin_user\""
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -745,12 +745,12 @@
 			"isImportant": false,
 			"isOpen": true,
 			"matchKeys": [
-				"Content-Type: application/json|is not present",
-				"Content-Type: application/json|缺少参数",
-				"Content-Type: application/json|参数缺少"
+				"Content-Type: application/json&&is not present",
+				"Content-Type: application/json&&缺少参数",
+				"Content-Type: application/json&&参数缺少"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "提示信息"
 		},
 		{
@@ -759,11 +759,11 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"description|name\"|message\"|Type\"|Content-Type: application/json",
-				"person|mobilPhone|id|status"
+				"description&&name\"&&message\"&&Type\"&&Content-Type: application/json",
+				"person&&mobilPhone&&id&&status"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -772,22 +772,22 @@
 			"isImportant": false,
 			"isOpen": true,
 			"matchKeys": [
-				"password|name|userid|Content-Type: application/json",
-				"user=='|password=='",
-				"userName =>|password =>|info",
-				"secret_key|address",
-				"secret_key|api_key",
-				"password:|HOST:|NAME:",
-				"server|pwd|database|user",
-				"Authentication failed|user|__construct",
-				"VPN服务器地址|用户名|密码",
-				"username|password|jdbc:",
-				"String username|String password|=",
-				"jdbc.url|://|username|password",
-				"pass|email|user|Content-Type: application/json"
+				"password&&name&&userid&&Content-Type: application/json",
+				"user=='&&password=='",
+				"userName =>&&password =>&&info",
+				"secret_key&&address",
+				"secret_key&&api_key",
+				"password:&&HOST:&&NAME:",
+				"server&&pwd&&database&&user",
+				"Authentication failed&&user&&__construct",
+				"VPN服务器地址&&用户名&&密码",
+				"username&&password&&jdbc:",
+				"String username&&String password&&=",
+				"jdbc.url&&://&&username&&password",
+				"pass&&email&&user&&Content-Type: application/json"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -796,16 +796,16 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"身份证号码|姓名|公司|Content-Type: application/json",
-				"gmsfhm|Content-Type: application/json",
-				"cjrsfzh|Content-Type: application/json",
-				"sfzhm|total|rows",
-				"keyHash|idCard|partment",
-				"Idcard|Name|id|status|address",
-				"name|sfzh|Content-Type: application/json"
+				"身份证号码&&姓名&&公司&&Content-Type: application/json",
+				"gmsfhm&&Content-Type: application/json",
+				"cjrsfzh&&Content-Type: application/json",
+				"sfzhm&&total&&rows",
+				"keyHash&&idCard&&partment",
+				"Idcard&&Name&&id&&status&&address",
+				"name&&sfzh&&Content-Type: application/json"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -814,10 +814,10 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"name|realName|email|phone|Content-Type: application/json"
+				"name&&realName&&email&&phone&&Content-Type: application/json"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -838,21 +838,21 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"EMAIL_HOST_USER|EMAIL_HOST_PASSWORD",
-				"mail.username|mail.password",
-				"sender.username|sender.password",
-				"mailUserPwd|mailUserName",
-				"mail_user|mail_pass",
-				"EMAIL_PSWD|EMAIL_USER",
-				"EMAIL_LOGIN_NAME|EMAIL_LOGIN_PASSWD",
-				"email_username|email_password",
-				"smtp_username|smtp_password",
-				"mailuser|mailPassword",
-				"mailServerUsername|mailServerPassword",
-				"WebMail.UserName|WebMail.Password"
+				"EMAIL_HOST_USER&&EMAIL_HOST_PASSWORD",
+				"mail.username&&mail.password",
+				"sender.username&&sender.password",
+				"mailUserPwd&&mailUserName",
+				"mail_user&&mail_pass",
+				"EMAIL_PSWD&&EMAIL_USER",
+				"EMAIL_LOGIN_NAME&&EMAIL_LOGIN_PASSWD",
+				"email_username&&email_password",
+				"smtp_username&&smtp_password",
+				"mailuser&&mailPassword",
+				"mailServerUsername&&mailServerPassword",
+				"WebMail.UserName&&WebMail.Password"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -861,10 +861,10 @@
 			"isImportant": true,
 			"isOpen": true,
 			"matchKeys": [
-				"App_Id|App_Secret"
+				"App_Id&&App_Secret"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "敏感内容"
 		},
 		{
@@ -876,7 +876,7 @@
 				"/images/tongda.ico"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -889,7 +889,7 @@
 				"网络智能办公系统"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -902,7 +902,7 @@
 				"官网"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -915,7 +915,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -927,7 +927,7 @@
 				"-187813927"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -939,7 +939,7 @@
 				"-759108386"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -951,7 +951,7 @@
 				"1578525679"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -963,7 +963,7 @@
 				"/wui/common/page/sysRemind.jsp"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -975,7 +975,7 @@
 				"ecology_JSessionid"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -988,7 +988,7 @@
 				"e-Bridge"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1000,7 +1000,7 @@
 				"移动管理平台-企业管理"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1012,7 +1012,7 @@
 				"2062026853"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1025,7 +1025,7 @@
 				"sys/ui/extend/theme/default/style/profile.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1038,7 +1038,7 @@
 				"App_Themes/Login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1050,7 +1050,7 @@
 				"login_single_horizontal"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1062,7 +1062,7 @@
 				"login_single_full_screen"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1075,7 +1075,7 @@
 				"蓝凌软件"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1087,7 +1087,7 @@
 				"/seeyon/USER-DATA/IMAGES/LOGIN/login.gif"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1099,7 +1099,7 @@
 				"/seeyon/common/"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1111,7 +1111,7 @@
 				"165601673"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1123,7 +1123,7 @@
 				"M3 Server"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1135,7 +1135,7 @@
 				"M1-Server"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1147,7 +1147,7 @@
 				"410106848"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "其他"
 		},
 		{
@@ -1161,7 +1161,7 @@
 				"domainAccount"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1173,7 +1173,7 @@
 				"/defaultroot/public/edit/logindownload/Logindownload.jsp"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1185,7 +1185,7 @@
 				"-1827521324"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1198,7 +1198,7 @@
 				"ezEip"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1211,7 +1211,7 @@
 				"/htoa/js/jquery.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1223,7 +1223,7 @@
 				"UFIDA Software CO.LTD all rights reserved"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "其他"
 		},
 		{
@@ -1236,7 +1236,7 @@
 				"用友NC"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1248,7 +1248,7 @@
 				"platform/pub/welcome.do"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1260,7 +1260,7 @@
 				"-299520369"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1273,7 +1273,7 @@
 				"用友"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "OA类"
 		},
 		{
@@ -1286,7 +1286,7 @@
 				"Web_sc/login.gn"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "其他"
 		},
 		{
@@ -1298,7 +1298,7 @@
 				"1183274548"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "其他"
 		},
 		{
@@ -1310,7 +1310,7 @@
 				"-747580443"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "其他"
 		},
 		{
@@ -1322,7 +1322,7 @@
 				"奇安信VPN"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "VPN类"
 		},
 		{
@@ -1335,7 +1335,7 @@
 				"loginCheck"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "安全设备类"
 		},
 		{
@@ -1347,7 +1347,7 @@
 				"topsecsvportalstyle"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "VPN类"
 		},
 		{
@@ -1359,7 +1359,7 @@
 				"vone/pub/image/logo1.png"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "VPN类"
 		},
 		{
@@ -1373,7 +1373,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "安全设备类"
 		},
 		{
@@ -1387,7 +1387,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "安全设备类"
 		},
 		{
@@ -1401,7 +1401,7 @@
 				"username"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "安全设备类"
 		},
 		{
@@ -1414,7 +1414,7 @@
 				"天融信"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "负载均衡"
 		},
 		{
@@ -1428,7 +1428,7 @@
 				"login_commit.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "上网行为管理类"
 		},
 		{
@@ -1440,7 +1440,7 @@
 				"-2019013898"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "安全设备类"
 		},
 		{
@@ -1452,7 +1452,7 @@
 				"TopApp-AD"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "安全设备类"
 		},
 		{
@@ -1464,7 +1464,7 @@
 				"/prx/000/http/localh/oauth_auth"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "VPN类"
 		},
 		{
@@ -1477,7 +1477,7 @@
 				"siteid"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "官网类"
 		},
 		{
@@ -1490,7 +1490,7 @@
 				"siteid"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "官网类"
 		},
 		{
@@ -1503,7 +1503,7 @@
 				"trs"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "官网类"
 		},
 		{
@@ -1515,7 +1515,7 @@
 				"qyswebapp"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "合同类"
 		},
 		{
@@ -1527,7 +1527,7 @@
 				"-626335361"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "ERP系统"
 		},
 		{
@@ -1539,7 +1539,7 @@
 				"明源云ERP"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "ERP系统"
 		},
 		{
@@ -1553,7 +1553,7 @@
 				"LoginHandler"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "ERP系统"
 		},
 		{
@@ -1566,7 +1566,7 @@
 				"明源软件"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "ERP系统"
 		},
 		{
@@ -1578,7 +1578,7 @@
 				"coremail/common"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "邮件类"
 		},
 		{
@@ -1591,7 +1591,7 @@
 				"hrlogon"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "其他"
 		},
 		{
@@ -1603,7 +1603,7 @@
 				"fileview.jeecg.com/onlinePreview"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "CMS"
 		},
 		{
@@ -1616,7 +1616,7 @@
 				"welcomebg.jpg"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "其他"
 		},
 		{
@@ -1628,7 +1628,7 @@
 				"/CDGServer3/SysConfig.jsp"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "其他"
 		},
 		{
@@ -1640,7 +1640,7 @@
 				"/cwbase/web/Login.aspx"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1652,7 +1652,7 @@
 				"iDS联网数字标牌管理系统"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1664,7 +1664,7 @@
 				"Nexus Repository Manager"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1676,7 +1676,7 @@
 				"网动统一通信平台(Active UC)"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1688,7 +1688,7 @@
 				"Welcome to use zentao"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1700,7 +1700,7 @@
 				"快云服务器助手"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1712,7 +1712,7 @@
 				"Welcome to zentao"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1724,7 +1724,7 @@
 				"用户登录_富通天下外贸ERP"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1736,7 +1736,7 @@
 				"登录海翔"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1748,7 +1748,7 @@
 				"Kibana"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1761,7 +1761,7 @@
 				"img/eio.png"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1773,7 +1773,7 @@
 				"/SouthUIContent/themes/easydropdown.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1787,7 +1787,7 @@
 				"CustStyle"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1801,7 +1801,7 @@
 				"login.jsp"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1814,7 +1814,7 @@
 				"Login_Return_XML.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1826,7 +1826,7 @@
 				"技术支持：北京中农信达信息技术有限公司"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1838,7 +1838,7 @@
 				"script/css/gwssi.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1851,7 +1851,7 @@
 				"Themes/default/login.css"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1864,7 +1864,7 @@
 				"GetLoginValidate"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1877,7 +1877,7 @@
 				"广联达"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1889,7 +1889,7 @@
 				"/Handlers/IdentifyingCode.ashx"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1902,7 +1902,7 @@
 				"JS/gxtAutoLogin.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1916,7 +1916,7 @@
 				"login.css"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1929,7 +1929,7 @@
 				"J_LoginSub"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1943,7 +1943,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1956,7 +1956,7 @@
 				"login.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1968,7 +1968,7 @@
 				"/jsoa/login.jsp"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1982,7 +1982,7 @@
 				"loginForm"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -1995,7 +1995,7 @@
 				"miniui/crypto/CodeManage.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2008,7 +2008,7 @@
 				"Authentication/Login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2021,7 +2021,7 @@
 				"login_pw"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2033,7 +2033,7 @@
 				"欢迎登录易宝OA系统"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2045,7 +2045,7 @@
 				"惠商+管理系统"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2057,7 +2057,7 @@
 				"iOffice.net"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2069,7 +2069,7 @@
 				"管家婆全渠道业务同步中心"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2081,7 +2081,7 @@
 				"servletContextInitParams"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2094,7 +2094,7 @@
 				"管理系统 MANAGEMENT SYSTEM"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2108,7 +2108,7 @@
 				"yw-login-logo"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2122,7 +2122,7 @@
 				"canvas"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2135,7 +2135,7 @@
 				"CmxGoUrl.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2147,7 +2147,7 @@
 				"logback"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2159,7 +2159,7 @@
 				"Error 404--Not Found"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2171,7 +2171,7 @@
 				"Error 403--"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2183,7 +2183,7 @@
 				"/console/framework/skins/wlsconsole/images/login_WebLogic_branding.png"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2195,7 +2195,7 @@
 				"href=\"/twcms/theme/default/css/global.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2207,7 +2207,7 @@
 				"Welcome to Weblogic Application Server"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2219,7 +2219,7 @@
 				"<i>Hypertext Transfer Protocol -- HTTP/1.1</i>"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2231,7 +2231,7 @@
 				"/por/login_psw.csp"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2243,7 +2243,7 @@
 				"loginPageSP/loginPrivacy.js"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2255,7 +2255,7 @@
 				"weaver,e-mobile"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2267,7 +2267,7 @@
 				"ecology_JSessionid"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2279,7 +2279,7 @@
 				"PbootSystem"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2292,7 +2292,7 @@
 				"SSLVPN LOGIN"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2306,7 +2306,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2318,7 +2318,7 @@
 				"TP-LINK"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2330,7 +2330,7 @@
 				"X-Influxdb"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2342,7 +2342,7 @@
 				"wh/servlet/MainServer"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2354,7 +2354,7 @@
 				"rememberMe="
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2366,7 +2366,7 @@
 				"dreamer-"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2378,7 +2378,7 @@
 				"-748565678"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2390,7 +2390,7 @@
 				"1704826498"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2402,7 +2402,7 @@
 				"-219625874"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2414,7 +2414,7 @@
 				"-1185226132"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2426,7 +2426,7 @@
 				"325583172"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2438,7 +2438,7 @@
 				"1143915194"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2450,7 +2450,7 @@
 				"1188645141"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2462,7 +2462,7 @@
 				"2049187099"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2474,7 +2474,7 @@
 				"147973611"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2486,7 +2486,7 @@
 				"910523681"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2498,7 +2498,7 @@
 				"dreamer-cms"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2510,7 +2510,7 @@
 				"=deleteMe"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2525,7 +2525,7 @@
 				"TxtUserPwd"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2537,7 +2537,7 @@
 				"PbootCMS"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2549,7 +2549,7 @@
 				"Swagger UI"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2561,7 +2561,7 @@
 				"4008 111 000"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2573,7 +2573,7 @@
 				"Script/SmcScript.js?version="
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2585,7 +2585,7 @@
 				"/wnm/ssl/web/frame/login.html"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2597,7 +2597,7 @@
 				"/+CSCOE+/logon.html"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2610,7 +2610,7 @@
 				"commonFunction.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2623,7 +2623,7 @@
 				"/LogInOut.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2636,7 +2636,7 @@
 				"/html/wz_tooltip.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2649,7 +2649,7 @@
 				"/vpn/user/common/custom/auth_home.css"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2662,7 +2662,7 @@
 				"usr/themes"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2674,7 +2674,7 @@
 				"401 Authorization"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2686,7 +2686,7 @@
 				"_IPEasy知易通"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2698,7 +2698,7 @@
 				"Airflow - Login"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2710,7 +2710,7 @@
 				"/cgi-bin/webui?op=get_product_model"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2724,7 +2724,7 @@
 				"login_logo"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2736,7 +2736,7 @@
 				"utccjfaewjb = function(str, key)"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2748,7 +2748,7 @@
 				"document.write(WRFWWCSFBXMIGKRKHXFJ"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2760,7 +2760,7 @@
 				"/reportCenter/index.php?cls_mode=cluster_mode_others"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2773,7 +2773,7 @@
 				"webman/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2785,7 +2785,7 @@
 				"HTML5/content/themes/kdcss.min.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2797,7 +2797,7 @@
 				"/ClientBin/Kingdee.BOS.XPF.App.xap"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2809,7 +2809,7 @@
 				"天清汉马USG"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2821,7 +2821,7 @@
 				"jboss.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2833,7 +2833,7 @@
 				"assets/gitlab_logo"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2845,7 +2845,7 @@
 				"入口校验失败"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2861,7 +2861,7 @@
 				"检查端口是否正确"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2875,7 +2875,7 @@
 				"系统自动生成"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2889,7 +2889,7 @@
 				"theme"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2903,7 +2903,7 @@
 				"/login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2916,7 +2916,7 @@
 				"bt.cn"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2929,7 +2929,7 @@
 				"宝塔"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2941,7 +2941,7 @@
 				"-386189083"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2954,7 +2954,7 @@
 				"Lw=="
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2966,7 +2966,7 @@
 				"/theme/default/images/main/zt-logo.png"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2978,7 +2978,7 @@
 				"zentaosid"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -2991,7 +2991,7 @@
 				"UClient"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3003,7 +3003,7 @@
 				"宝塔Linux面板"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3015,7 +3015,7 @@
 				"<title>RabbitMQ Management</title>"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3028,7 +3028,7 @@
 				"Zabbix SIA"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3042,7 +3042,7 @@
 				"redirect"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3054,7 +3054,7 @@
 				"Index of /"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3066,7 +3066,7 @@
 				" - /</title>"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3079,7 +3079,7 @@
 				"Management System"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3091,7 +3091,7 @@
 				"RegentApi_v2.0"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3104,7 +3104,7 @@
 				"/manager/html"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3116,7 +3116,7 @@
 				"99395752"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3128,7 +3128,7 @@
 				"116323821"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3140,7 +3140,7 @@
 				"81586312"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3152,7 +3152,7 @@
 				"-235701012"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3164,7 +3164,7 @@
 				"743365239"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3176,7 +3176,7 @@
 				"2128230701"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3188,7 +3188,7 @@
 				"-1277814690"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3200,7 +3200,7 @@
 				"246145559"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3212,7 +3212,7 @@
 				"628535358"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3224,7 +3224,7 @@
 				"855273746"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3236,7 +3236,7 @@
 				"1318124267"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3248,7 +3248,7 @@
 				"-305179312"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3260,7 +3260,7 @@
 				"786533217"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3272,7 +3272,7 @@
 				"432733105"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3284,7 +3284,7 @@
 				"705143395"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3296,7 +3296,7 @@
 				"-1255347784"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3308,7 +3308,7 @@
 				"-1275226814"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3320,7 +3320,7 @@
 				"-2009722838"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3332,7 +3332,7 @@
 				"981867722"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3344,7 +3344,7 @@
 				"-923088984"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3356,7 +3356,7 @@
 				"494866796"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3368,7 +3368,7 @@
 				"1249285083"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3380,7 +3380,7 @@
 				"-1379982221"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3392,7 +3392,7 @@
 				"420473080"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3404,7 +3404,7 @@
 				"-1642532491"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3416,7 +3416,7 @@
 				"163842882"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3428,7 +3428,7 @@
 				"-1378182799"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3440,7 +3440,7 @@
 				"-702384832"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3452,7 +3452,7 @@
 				"-532394952"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3464,7 +3464,7 @@
 				"-183163807"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3476,7 +3476,7 @@
 				"552727997"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3488,7 +3488,7 @@
 				"1302486561"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3500,7 +3500,7 @@
 				"-609520537"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3512,7 +3512,7 @@
 				"-1961046099"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3524,7 +3524,7 @@
 				"-1581907337"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3536,7 +3536,7 @@
 				"1913538826"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3548,7 +3548,7 @@
 				"1319699698"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3560,7 +3560,7 @@
 				"-1203021870"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3572,7 +3572,7 @@
 				"-182423204"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3584,7 +3584,7 @@
 				"988422585"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3596,7 +3596,7 @@
 				"2113497004"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3608,7 +3608,7 @@
 				"1234311970"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3620,7 +3620,7 @@
 				"430582574"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3632,7 +3632,7 @@
 				"1232596212"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3644,7 +3644,7 @@
 				"1585145626"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3656,7 +3656,7 @@
 				"-219752612"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3668,7 +3668,7 @@
 				"945408572"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3680,7 +3680,7 @@
 				"-697231354"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3692,7 +3692,7 @@
 				"945408572"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3704,7 +3704,7 @@
 				"1768726119"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3716,7 +3716,7 @@
 				"2109473187"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3728,7 +3728,7 @@
 				"552592949"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3740,7 +3740,7 @@
 				"631108382"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3752,7 +3752,7 @@
 				"708578229"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3764,7 +3764,7 @@
 				"-134375033"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3776,7 +3776,7 @@
 				"2019488876"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3788,7 +3788,7 @@
 				"-1395400951"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3800,7 +3800,7 @@
 				"1601194732"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3812,7 +3812,7 @@
 				"-325082670"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3824,7 +3824,7 @@
 				"-1050786453"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3836,7 +3836,7 @@
 				"-1346447358"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3848,7 +3848,7 @@
 				"1410610129"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3860,7 +3860,7 @@
 				"-440644339"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3872,7 +3872,7 @@
 				"363324987"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3884,7 +3884,7 @@
 				"-1446794564"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3896,7 +3896,7 @@
 				"1045696447"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3908,7 +3908,7 @@
 				"-297069493"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3920,7 +3920,7 @@
 				"396533629"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3932,7 +3932,7 @@
 				"1462981117"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3944,7 +3944,7 @@
 				"1594377337"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3956,7 +3956,7 @@
 				"165976831"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3968,7 +3968,7 @@
 				"-1677255344"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3980,7 +3980,7 @@
 				"-359621743"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -3992,7 +3992,7 @@
 				"-677167908"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4004,7 +4004,7 @@
 				"878647854"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4016,7 +4016,7 @@
 				"442749392"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4028,7 +4028,7 @@
 				"1405460984"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4040,7 +4040,7 @@
 				"-271448102"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4052,7 +4052,7 @@
 				"31972968"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4064,7 +4064,7 @@
 				"970132176"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4076,7 +4076,7 @@
 				"-1119613926"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4088,7 +4088,7 @@
 				"123821839"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4100,7 +4100,7 @@
 				"459900502"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4112,7 +4112,7 @@
 				"-2069844696"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4124,7 +4124,7 @@
 				"-1607644090"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4136,7 +4136,7 @@
 				"2141724739"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4148,7 +4148,7 @@
 				"1835479497"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4160,7 +4160,7 @@
 				"1278323681"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4172,7 +4172,7 @@
 				"-1929912510"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4184,7 +4184,7 @@
 				"-1255992602"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4196,7 +4196,7 @@
 				"1895360511"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4208,7 +4208,7 @@
 				"-991123252"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4220,7 +4220,7 @@
 				"1642701741"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4232,7 +4232,7 @@
 				"-266008933"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4244,7 +4244,7 @@
 				"-1967743928"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4256,7 +4256,7 @@
 				"1347937389"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4268,7 +4268,7 @@
 				"602431586"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4280,7 +4280,7 @@
 				"-318947884"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4292,7 +4292,7 @@
 				"1356662359"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4304,7 +4304,7 @@
 				"1453890729"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4316,7 +4316,7 @@
 				"-1814887000"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4328,7 +4328,7 @@
 				"1937209448"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4340,7 +4340,7 @@
 				"-1544605732"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4352,7 +4352,7 @@
 				"716989053"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4364,7 +4364,7 @@
 				"-1010568750"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4376,7 +4376,7 @@
 				"-1240222446"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4388,7 +4388,7 @@
 				"-986678507"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4400,7 +4400,7 @@
 				"-1616143106"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4412,7 +4412,7 @@
 				"-976235259"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4424,7 +4424,7 @@
 				"768816037"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4436,7 +4436,7 @@
 				"1015545776"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4448,7 +4448,7 @@
 				"1838417872"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4460,7 +4460,7 @@
 				"547282364"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4472,7 +4472,7 @@
 				"-1571472432"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4484,7 +4484,7 @@
 				"149371702"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4496,7 +4496,7 @@
 				"-1169314298"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4508,7 +4508,7 @@
 				"-1038557304"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4520,7 +4520,7 @@
 				"1307375944"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4532,7 +4532,7 @@
 				"1280907310"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4544,7 +4544,7 @@
 				"1954835352"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4556,7 +4556,7 @@
 				"509789953"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4568,7 +4568,7 @@
 				"-1933493443"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4580,7 +4580,7 @@
 				"1993518473"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4592,7 +4592,7 @@
 				"-1477563858"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4604,7 +4604,7 @@
 				"-895890586"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4616,7 +4616,7 @@
 				"-1354933624"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4628,7 +4628,7 @@
 				"944969688"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4640,7 +4640,7 @@
 				"479413330"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4652,7 +4652,7 @@
 				"-435817905"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4664,7 +4664,7 @@
 				"-981606721"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4676,7 +4676,7 @@
 				"833190513"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4688,7 +4688,7 @@
 				"-652508439"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4700,7 +4700,7 @@
 				"-569941107"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4712,7 +4712,7 @@
 				"1326164945"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4724,7 +4724,7 @@
 				"-1738184811"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4736,7 +4736,7 @@
 				"904434662"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4748,7 +4748,7 @@
 				"905744673"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4760,7 +4760,7 @@
 				"902521196"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4772,7 +4772,7 @@
 				"-2063036701"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4784,7 +4784,7 @@
 				"-1205024243"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4796,7 +4796,7 @@
 				"607846949"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4808,7 +4808,7 @@
 				"1281253102"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4820,7 +4820,7 @@
 				"661332347"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4832,7 +4832,7 @@
 				"-520888198"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4844,7 +4844,7 @@
 				"104189364"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4856,7 +4856,7 @@
 				"1227052603"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4868,7 +4868,7 @@
 				"252728887"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4880,7 +4880,7 @@
 				"-1922044295"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4892,7 +4892,7 @@
 				"1221759509"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4904,7 +4904,7 @@
 				"1037387972"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4916,7 +4916,7 @@
 				"-655683626"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4928,7 +4928,7 @@
 				"1611729805"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4940,7 +4940,7 @@
 				"1144925962"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4952,7 +4952,7 @@
 				"-1666561833"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4964,7 +4964,7 @@
 				"804949239"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4976,7 +4976,7 @@
 				"-459291760"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -4988,7 +4988,7 @@
 				"1734609466"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5000,7 +5000,7 @@
 				"-1507567067"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5012,7 +5012,7 @@
 				"2006716043"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5024,7 +5024,7 @@
 				"-1298108480"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5036,7 +5036,7 @@
 				"1782271534"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5048,7 +5048,7 @@
 				"1777351344"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5060,7 +5060,7 @@
 				"603314"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5072,7 +5072,7 @@
 				"-476231906"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5084,7 +5084,7 @@
 				"-646322113"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5096,7 +5096,7 @@
 				"-629047854"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5108,7 +5108,7 @@
 				"-1351901211"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5120,7 +5120,7 @@
 				"-519765377"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5132,7 +5132,7 @@
 				"-2144363468"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5144,7 +5144,7 @@
 				"-127886975"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5156,7 +5156,7 @@
 				"1139788073"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5168,7 +5168,7 @@
 				"-1235192469"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5180,7 +5180,7 @@
 				"1876585825"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5192,7 +5192,7 @@
 				"-1810847295"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5204,7 +5204,7 @@
 				"-291579889"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5216,7 +5216,7 @@
 				"1629518721"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5228,7 +5228,7 @@
 				"-986816620"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5240,7 +5240,7 @@
 				"-299287097"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5252,7 +5252,7 @@
 				"-1926484046"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5264,7 +5264,7 @@
 				"-873627015"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5276,7 +5276,7 @@
 				"2071993228"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5288,7 +5288,7 @@
 				"516963061"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5300,7 +5300,7 @@
 				"-38580010"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5312,7 +5312,7 @@
 				"1490343308"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5324,7 +5324,7 @@
 				"-632583950"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5336,7 +5336,7 @@
 				"95271369"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5348,7 +5348,7 @@
 				"1476335317"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5360,7 +5360,7 @@
 				"-842192932"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5372,7 +5372,7 @@
 				"105083909"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5384,7 +5384,7 @@
 				"240606739"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5396,7 +5396,7 @@
 				"2121539357"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5408,7 +5408,7 @@
 				"-333791179"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5420,7 +5420,7 @@
 				"-1437701105"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5432,7 +5432,7 @@
 				"-676077969"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5444,7 +5444,7 @@
 				"-2138771289"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5456,7 +5456,7 @@
 				"711742418"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5468,7 +5468,7 @@
 				"728788645"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5480,7 +5480,7 @@
 				"1436966696"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5492,7 +5492,7 @@
 				"86919334"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5504,7 +5504,7 @@
 				"1211608009"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5516,7 +5516,7 @@
 				"2059618623"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5528,7 +5528,7 @@
 				"1975413433"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5540,7 +5540,7 @@
 				"943925975"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5552,7 +5552,7 @@
 				"281559989"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5564,7 +5564,7 @@
 				"-2145085239"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5576,7 +5576,7 @@
 				"-1399433489"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5588,7 +5588,7 @@
 				"1786752597"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5600,7 +5600,7 @@
 				"90680708"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5612,7 +5612,7 @@
 				"-1441956789"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5624,7 +5624,7 @@
 				"-675839242"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5636,7 +5636,7 @@
 				"1020814938"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5648,7 +5648,7 @@
 				"-766957661"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5660,7 +5660,7 @@
 				"119741608"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5672,7 +5672,7 @@
 				"1973665246"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5684,7 +5684,7 @@
 				"74935566"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5696,7 +5696,7 @@
 				"-1723752240"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5708,7 +5708,7 @@
 				"-1807411396"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5720,7 +5720,7 @@
 				"-1612496354"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5732,7 +5732,7 @@
 				"1877797890"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5744,7 +5744,7 @@
 				"-375623619"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5756,7 +5756,7 @@
 				"1483097076"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5768,7 +5768,7 @@
 				"1169183049"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5780,7 +5780,7 @@
 				"1051648103"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5792,7 +5792,7 @@
 				"-438482901"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5804,7 +5804,7 @@
 				"-1492966240"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5816,7 +5816,7 @@
 				"1466912879"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5828,7 +5828,7 @@
 				"-167656799"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5840,7 +5840,7 @@
 				"-1593651747"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5852,7 +5852,7 @@
 				"-895963602"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5864,7 +5864,7 @@
 				"-972810761"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5876,7 +5876,7 @@
 				"1703788174"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5888,7 +5888,7 @@
 				"225632504"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5900,7 +5900,7 @@
 				"-1702393021"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5912,7 +5912,7 @@
 				"892542951"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5924,7 +5924,7 @@
 				"547474373"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5936,7 +5936,7 @@
 				"-374235895"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5948,7 +5948,7 @@
 				"1544230796"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5960,7 +5960,7 @@
 				"517158172"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5972,7 +5972,7 @@
 				"462223993"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5984,7 +5984,7 @@
 				"937999361"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -5996,7 +5996,7 @@
 				"1991562061"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6008,7 +6008,7 @@
 				"812385209"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6020,7 +6020,7 @@
 				"1142227528"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6032,7 +6032,7 @@
 				"-1153950306"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6044,7 +6044,7 @@
 				"72005642"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6056,7 +6056,7 @@
 				"-484708885"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6068,7 +6068,7 @@
 				"706602230"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6080,7 +6080,7 @@
 				"-656811182"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6092,7 +6092,7 @@
 				"-332324409"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6104,7 +6104,7 @@
 				"-594256627"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6116,7 +6116,7 @@
 				"-649378830"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6128,7 +6128,7 @@
 				"97604680"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6140,7 +6140,7 @@
 				"-1015932800"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6152,7 +6152,7 @@
 				"-194439630"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6164,7 +6164,7 @@
 				"129457226"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6176,7 +6176,7 @@
 				"-771764544"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6188,7 +6188,7 @@
 				"-617743584"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6200,7 +6200,7 @@
 				"77044418"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6212,7 +6212,7 @@
 				"980692677"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6224,7 +6224,7 @@
 				"476213314"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6236,7 +6236,7 @@
 				"794809961"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6248,7 +6248,7 @@
 				"1157789622"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6260,7 +6260,7 @@
 				"1244636413"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6272,7 +6272,7 @@
 				"1985721423"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6284,7 +6284,7 @@
 				"-1124868062"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6296,7 +6296,7 @@
 				"-335242539"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6308,7 +6308,7 @@
 				"2146763496"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6320,7 +6320,7 @@
 				"-1041180225"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6332,7 +6332,7 @@
 				"-1319025408"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6344,7 +6344,7 @@
 				"917966895"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6356,7 +6356,7 @@
 				"512590457"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6368,7 +6368,7 @@
 				"1678170702"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6380,7 +6380,7 @@
 				"-1466785234"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6392,7 +6392,7 @@
 				"-505448917"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6406,7 +6406,7 @@
 				"cache/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6418,7 +6418,7 @@
 				"255892555"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6430,7 +6430,7 @@
 				"1627330242"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6442,7 +6442,7 @@
 				"-1935525788"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6454,7 +6454,7 @@
 				"-12700016"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6466,7 +6466,7 @@
 				"1770799630"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6478,7 +6478,7 @@
 				"-137295400"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6490,7 +6490,7 @@
 				"-195508437"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6502,7 +6502,7 @@
 				"-2116540786"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6514,7 +6514,7 @@
 				"-38705358"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6526,7 +6526,7 @@
 				"-450254253"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6538,7 +6538,7 @@
 				"-1630354993"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6550,7 +6550,7 @@
 				"-1678298769"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6562,7 +6562,7 @@
 				"-35107086"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6574,7 +6574,7 @@
 				"2055322029"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6586,7 +6586,7 @@
 				"-692947551"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6598,7 +6598,7 @@
 				"-1710631084"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6610,7 +6610,7 @@
 				"89321398"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6622,7 +6622,7 @@
 				"90066852"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6634,7 +6634,7 @@
 				"768231242"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6646,7 +6646,7 @@
 				"-421986013"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6658,7 +6658,7 @@
 				"156312019"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6670,7 +6670,7 @@
 				"-560297467"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6682,7 +6682,7 @@
 				"-1950415971"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6694,7 +6694,7 @@
 				"1842351293"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6706,7 +6706,7 @@
 				"1433417005"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6718,7 +6718,7 @@
 				"-632070065"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6730,7 +6730,7 @@
 				"1103599349"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6742,7 +6742,7 @@
 				"224536051"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6754,7 +6754,7 @@
 				"1038500535"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6766,7 +6766,7 @@
 				"-355305208"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6778,7 +6778,7 @@
 				"-267431135"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6790,7 +6790,7 @@
 				"-759754862"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6802,7 +6802,7 @@
 				"-1200737715"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6814,7 +6814,7 @@
 				"75230260"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6826,7 +6826,7 @@
 				"1668183286"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6838,7 +6838,7 @@
 				"283740897"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6850,7 +6850,7 @@
 				"1424295654"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6862,7 +6862,7 @@
 				"1922032523"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6874,7 +6874,7 @@
 				"-1654229048"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6886,7 +6886,7 @@
 				"-1414475558"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6898,7 +6898,7 @@
 				"-1697334194"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6910,7 +6910,7 @@
 				"-1424036600"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6922,7 +6922,7 @@
 				"-831826827"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6934,7 +6934,7 @@
 				"-759108386"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6946,7 +6946,7 @@
 				"-1022206565"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6958,7 +6958,7 @@
 				"-1225484776"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6970,7 +6970,7 @@
 				"-631002664"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6982,7 +6982,7 @@
 				"2072198544"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -6994,7 +6994,7 @@
 				"-466504476"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7006,7 +7006,7 @@
 				"1251810433"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7018,7 +7018,7 @@
 				"1273982002"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7030,7 +7030,7 @@
 				"-978656757"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7042,7 +7042,7 @@
 				"916642917"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7054,7 +7054,7 @@
 				"575613323"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7066,7 +7066,7 @@
 				"1726027799"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7078,7 +7078,7 @@
 				"-587741716"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7090,7 +7090,7 @@
 				"-360566773"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7102,7 +7102,7 @@
 				"-884776764"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7114,7 +7114,7 @@
 				"929825723"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7126,7 +7126,7 @@
 				"240136437"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7138,7 +7138,7 @@
 				"1911253822"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7150,7 +7150,7 @@
 				"-393788031"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7162,7 +7162,7 @@
 				"366524387"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7174,7 +7174,7 @@
 				"443944613"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7186,7 +7186,7 @@
 				"1953726032"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7198,7 +7198,7 @@
 				"-2031183903"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7210,7 +7210,7 @@
 				"545827989"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7222,7 +7222,7 @@
 				"967636089"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7234,7 +7234,7 @@
 				"362091310"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7246,7 +7246,7 @@
 				"2086228042"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7258,7 +7258,7 @@
 				"-1588746893"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7270,7 +7270,7 @@
 				"1427976651"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7282,7 +7282,7 @@
 				"1648531157"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7294,7 +7294,7 @@
 				"938616453"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7306,7 +7306,7 @@
 				"1632780968"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7318,7 +7318,7 @@
 				"2068154487"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7330,7 +7330,7 @@
 				"-1788112745"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7342,7 +7342,7 @@
 				"-644617577"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7354,7 +7354,7 @@
 				"-1822098181"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7366,7 +7366,7 @@
 				"-1131689409"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7378,7 +7378,7 @@
 				"2127152956"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7390,7 +7390,7 @@
 				"1064742722"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7402,7 +7402,7 @@
 				"-1015107330"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7414,7 +7414,7 @@
 				"-693082538"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7426,7 +7426,7 @@
 				"1941381095"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7438,7 +7438,7 @@
 				"903086190"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7450,7 +7450,7 @@
 				"829321644"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7462,7 +7462,7 @@
 				"-1442789563"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7474,7 +7474,7 @@
 				"-2140379067"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7486,7 +7486,7 @@
 				"-1897829998"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7498,7 +7498,7 @@
 				"1047213685"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7510,7 +7510,7 @@
 				"1485257654"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7522,7 +7522,7 @@
 				"-299324825"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7534,7 +7534,7 @@
 				"-1162730477"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7546,7 +7546,7 @@
 				"-1268095485"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7558,7 +7558,7 @@
 				"1118684072"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7570,7 +7570,7 @@
 				"-1616115760"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7582,7 +7582,7 @@
 				"-2054889066"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7594,7 +7594,7 @@
 				"1333537166"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7606,7 +7606,7 @@
 				"-373674173"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7618,7 +7618,7 @@
 				"-106646451"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7630,7 +7630,7 @@
 				"1235070469"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7642,7 +7642,7 @@
 				"2063428236"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7654,7 +7654,7 @@
 				"15831193"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7666,7 +7666,7 @@
 				"-956471263"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7678,7 +7678,7 @@
 				"-1452159623"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7690,7 +7690,7 @@
 				"99432374"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7702,7 +7702,7 @@
 				"727253975"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7714,7 +7714,7 @@
 				"-630493013"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7726,7 +7726,7 @@
 				"552597979"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7738,7 +7738,7 @@
 				"774252049"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7750,7 +7750,7 @@
 				"-329747115"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7762,7 +7762,7 @@
 				"1262005940"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7774,7 +7774,7 @@
 				"979634648"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7786,7 +7786,7 @@
 				"475379699"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7798,7 +7798,7 @@
 				"-878891718"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7810,7 +7810,7 @@
 				"-2125083197"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7822,7 +7822,7 @@
 				"-1151675028"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7834,7 +7834,7 @@
 				"1248917303"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7846,7 +7846,7 @@
 				"-1908556829"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7858,7 +7858,7 @@
 				"1059329877"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7870,7 +7870,7 @@
 				"-1148190371"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7882,7 +7882,7 @@
 				"1467395679"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7894,7 +7894,7 @@
 				"-1528414776"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7906,7 +7906,7 @@
 				"-2117390767"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7918,7 +7918,7 @@
 				"-1944119648"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7930,7 +7930,7 @@
 				"-1748763891"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7942,7 +7942,7 @@
 				"251106693"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7954,7 +7954,7 @@
 				"-1779611449"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7966,7 +7966,7 @@
 				"-1745552996"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7978,7 +7978,7 @@
 				"-1275148624"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -7990,7 +7990,7 @@
 				"-178685903"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8002,7 +8002,7 @@
 				"-43161126"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8014,7 +8014,7 @@
 				"671221099"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8026,7 +8026,7 @@
 				"-10974981"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8038,7 +8038,7 @@
 				"1274078387"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8050,7 +8050,7 @@
 				"-336242473"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8062,7 +8062,7 @@
 				"882208493"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8074,7 +8074,7 @@
 				"-687783882"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8086,7 +8086,7 @@
 				"-590892202"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8098,7 +8098,7 @@
 				"-50306417"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8110,7 +8110,7 @@
 				"784872924"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8122,7 +8122,7 @@
 				"1135165421"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8134,7 +8134,7 @@
 				"926501571"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8146,7 +8146,7 @@
 				"579239725"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8158,7 +8158,7 @@
 				"-689902428"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8170,7 +8170,7 @@
 				"-600508822"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8182,7 +8182,7 @@
 				"656868270"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8194,7 +8194,7 @@
 				"-2056503929"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8206,7 +8206,7 @@
 				"-1656695885"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8218,7 +8218,7 @@
 				"331870709"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8230,7 +8230,7 @@
 				"1241049726"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8242,7 +8242,7 @@
 				"998138196"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8254,7 +8254,7 @@
 				"322531336"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8266,7 +8266,7 @@
 				"-401934945"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8278,7 +8278,7 @@
 				"-613216179"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8290,7 +8290,7 @@
 				"-276759139"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8302,7 +8302,7 @@
 				"1862132268"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8314,7 +8314,7 @@
 				"-1738727418"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8326,7 +8326,7 @@
 				"-368490461"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8338,7 +8338,7 @@
 				"1836828108"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8350,7 +8350,7 @@
 				"-1775553655"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8362,7 +8362,7 @@
 				"381100274"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8374,7 +8374,7 @@
 				"2124459909"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8386,7 +8386,7 @@
 				"731374291"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8398,7 +8398,7 @@
 				"-335153896"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8410,7 +8410,7 @@
 				"896412703"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8422,7 +8422,7 @@
 				"191654058"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8434,7 +8434,7 @@
 				"-342262483"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8446,7 +8446,7 @@
 				"5542029"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8458,7 +8458,7 @@
 				"1552860581"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8470,7 +8470,7 @@
 				"1174841451"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8482,7 +8482,7 @@
 				"-1093172228"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8494,7 +8494,7 @@
 				"-1688698891"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8506,7 +8506,7 @@
 				"-1546574541"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8518,7 +8518,7 @@
 				"-256828986"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8530,7 +8530,7 @@
 				"1966198264"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8542,7 +8542,7 @@
 				"2099342476"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8554,7 +8554,7 @@
 				"541087742"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8566,7 +8566,7 @@
 				"-882760066"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8578,7 +8578,7 @@
 				"16202868"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8590,7 +8590,7 @@
 				"987967490"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8602,7 +8602,7 @@
 				"1969970750"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8614,7 +8614,7 @@
 				"-1734573358"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8626,7 +8626,7 @@
 				"-1589842876"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8638,7 +8638,7 @@
 				"1822002133"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8650,7 +8650,7 @@
 				"-2006308185"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8662,7 +8662,7 @@
 				"-1702769256"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8674,7 +8674,7 @@
 				"321591353"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8686,7 +8686,7 @@
 				"-923693877"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8698,7 +8698,7 @@
 				"-1547576879"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8710,7 +8710,7 @@
 				"1479202414"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8722,7 +8722,7 @@
 				"1081719753"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8734,7 +8734,7 @@
 				"-166151761"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8746,7 +8746,7 @@
 				"-1231681737"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8758,7 +8758,7 @@
 				"321909464"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8770,7 +8770,7 @@
 				"-1153873472"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8782,7 +8782,7 @@
 				"1095915848"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8794,7 +8794,7 @@
 				"788771792"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8806,7 +8806,7 @@
 				"-1863663974"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8818,7 +8818,7 @@
 				"-1267819858"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8830,7 +8830,7 @@
 				"726817668"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8842,7 +8842,7 @@
 				"-1474875778"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8854,7 +8854,7 @@
 				"5471989"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8866,7 +8866,7 @@
 				"-1457536113"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8878,7 +8878,7 @@
 				"-736276076"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8890,7 +8890,7 @@
 				"-1343070146"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8902,7 +8902,7 @@
 				"538585915"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8914,7 +8914,7 @@
 				"-625364318"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8926,7 +8926,7 @@
 				"1117165781"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8938,7 +8938,7 @@
 				"-1067420240"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8950,7 +8950,7 @@
 				"-1465479343"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8962,7 +8962,7 @@
 				"1232159009"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8974,7 +8974,7 @@
 				"1382324298"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8986,7 +8986,7 @@
 				"-1498185948"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -8998,7 +8998,7 @@
 				"483383992"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9010,7 +9010,7 @@
 				"-1249852061"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9022,7 +9022,7 @@
 				"999357577"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9034,7 +9034,7 @@
 				"492290497"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9046,7 +9046,7 @@
 				"-194791768"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9058,7 +9058,7 @@
 				"492941040"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9070,7 +9070,7 @@
 				"123821839"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9083,7 +9083,7 @@
 				"cgi-bin/tamper_admin.cgi"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9098,7 +9098,7 @@
 				"可视化接口管理平台"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9110,7 +9110,7 @@
 				"-1162630024"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9124,7 +9124,7 @@
 				"Public/static"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9138,7 +9138,7 @@
 				"Nagios"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9150,7 +9150,7 @@
 				"1969934080"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9164,7 +9164,7 @@
 				"NAS"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9176,7 +9176,7 @@
 				"-1850889691"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9190,7 +9190,7 @@
 				"GLOBAL_CONFIG.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9204,7 +9204,7 @@
 				"360防火墙"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9218,7 +9218,7 @@
 				"网神防火墙系统"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9232,7 +9232,7 @@
 				"css/lsec/login.css"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9246,7 +9246,7 @@
 				"default/js/act/login.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9260,7 +9260,7 @@
 				"lanproxy-config"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9274,7 +9274,7 @@
 				"ManageEngine"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9287,7 +9287,7 @@
 				"include/js/global.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9301,7 +9301,7 @@
 				"index.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9315,7 +9315,7 @@
 				"Debian Logo"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9329,7 +9329,7 @@
 				"grafana-app"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9342,7 +9342,7 @@
 				"js/app"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9356,7 +9356,7 @@
 				"loginsubmit"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9370,7 +9370,7 @@
 				"rememberme"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9384,7 +9384,7 @@
 				"useusbkey"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9396,7 +9396,7 @@
 				"1632964065"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9410,7 +9410,7 @@
 				"download"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9423,7 +9423,7 @@
 				"aliyuncs"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9436,7 +9436,7 @@
 				"favicon.png"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9450,7 +9450,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9463,7 +9463,7 @@
 				"Support"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9477,7 +9477,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9490,7 +9490,7 @@
 				"session_login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9504,7 +9504,7 @@
 				"modules"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9518,7 +9518,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9532,7 +9532,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9546,7 +9546,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9559,7 +9559,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9573,7 +9573,7 @@
 				"apps"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9586,7 +9586,7 @@
 				"ubuntu-logo.png"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9599,7 +9599,7 @@
 				"=fs"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9612,7 +9612,7 @@
 				"cas/login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9626,7 +9626,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9640,7 +9640,7 @@
 				"host"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9653,7 +9653,7 @@
 				"index.jsp"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9666,7 +9666,7 @@
 				"channelList"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9680,7 +9680,7 @@
 				"Identity Manager"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9694,7 +9694,7 @@
 				"h3c.com"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9707,7 +9707,7 @@
 				"安恒云堡垒机"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9719,7 +9719,7 @@
 				"明御安全网关"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9731,7 +9731,7 @@
 				"-1272756243"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9743,7 +9743,7 @@
 				"1210969935"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9755,7 +9755,7 @@
 				"-2052468252"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9767,7 +9767,7 @@
 				"1766699363"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9779,7 +9779,7 @@
 				"1929532064"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9791,7 +9791,7 @@
 				"-1050786453"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9803,7 +9803,7 @@
 				"-134375033"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9815,7 +9815,7 @@
 				"-1961736892"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9827,7 +9827,7 @@
 				"5471989"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9839,7 +9839,7 @@
 				"ThinkPHP"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9851,7 +9851,7 @@
 				"1740191553"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9863,7 +9863,7 @@
 				"-1466673461"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9875,7 +9875,7 @@
 				"-2069226242"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9887,7 +9887,7 @@
 				"1533124028"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9899,7 +9899,7 @@
 				"scripts/cnoa.extra.js"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9913,7 +9913,7 @@
 				"navbar-toggle"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9927,7 +9927,7 @@
 				"fastadmin"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9939,7 +9939,7 @@
 				"<a title=\"imo云办公室\""
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9952,7 +9952,7 @@
 				"imo_setup.exe"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9965,7 +9965,7 @@
 				"www.yozodcs.com"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9978,7 +9978,7 @@
 				"ReportServer?op"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -9991,7 +9991,7 @@
 				"iepngfix/iepngfix_tilebg.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10005,7 +10005,7 @@
 				"iepngfix/iepngfix_tilebg.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10018,7 +10018,7 @@
 				"yzm-common.css"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10032,7 +10032,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10045,7 +10045,7 @@
 				"template/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10058,7 +10058,7 @@
 				"wp-content/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10071,7 +10071,7 @@
 				"wp-content/themes/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10084,7 +10084,7 @@
 				"PassWord.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10098,7 +10098,7 @@
 				"login/createQRCode.do"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10113,7 +10113,7 @@
 				"本页可删除"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10127,7 +10127,7 @@
 				"centos.org"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10140,7 +10140,7 @@
 				"UE.getEditor"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10153,7 +10153,7 @@
 				"Virtual Directory Support"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10167,7 +10167,7 @@
 				"欢迎登陆系统"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10181,7 +10181,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10195,7 +10195,7 @@
 				"tpl/user"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10209,7 +10209,7 @@
 				"tpl/user"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10221,7 +10221,7 @@
 				"Welcome to XAMPP"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10235,7 +10235,7 @@
 				"防火墙"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10249,7 +10249,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10262,7 +10262,7 @@
 				"ClientDownload.xgi"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10276,7 +10276,7 @@
 				"language"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10289,7 +10289,7 @@
 				"self.location.href"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10302,7 +10302,7 @@
 				"shortcut icon"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10315,7 +10315,7 @@
 				"Cluster"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10329,7 +10329,7 @@
 				"tamronos.com"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10343,7 +10343,7 @@
 				"/js/app"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10357,7 +10357,7 @@
 				"china_logo.jpg"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10371,7 +10371,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10385,7 +10385,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10398,7 +10398,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10412,7 +10412,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10426,7 +10426,7 @@
 				"网络视频监控系统"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10440,7 +10440,7 @@
 				"深圳市领空技术"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10452,7 +10452,7 @@
 				"后台"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10464,7 +10464,7 @@
 				"MinIO Browser"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10476,7 +10476,7 @@
 				"492290497"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10488,7 +10488,7 @@
 				"1708240621"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10500,7 +10500,7 @@
 				"738520282"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10512,7 +10512,7 @@
 				"-2055778861"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10526,7 +10526,7 @@
 				"防病毒"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10539,7 +10539,7 @@
 				"panel_login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10552,7 +10552,7 @@
 				"gitbook"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10566,7 +10566,7 @@
 				"logonDiv"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10579,7 +10579,7 @@
 				"login_form"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10593,7 +10593,7 @@
 				"DNS_"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10607,7 +10607,7 @@
 				"showMsg"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10619,7 +10619,7 @@
 				"1591287747"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10633,7 +10633,7 @@
 				"JBoss"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10647,7 +10647,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10661,7 +10661,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10673,7 +10673,7 @@
 				"易瑞授权访问系统"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10686,7 +10686,7 @@
 				"reader/view_abstract.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10699,7 +10699,7 @@
 				"fangmail/cgi/index.cgi"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10711,7 +10711,7 @@
 				"ssl_edition=mail.qq.com"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10724,7 +10724,7 @@
 				"cgi-bin/bizmail_portal"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10737,7 +10737,7 @@
 				"com.atlassian.plugins"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10749,7 +10749,7 @@
 				"FESESSIONID="
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10763,7 +10763,7 @@
 				"func_login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10777,7 +10777,7 @@
 				"衡水金航"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10791,7 +10791,7 @@
 				"科脉"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10804,7 +10804,7 @@
 				"js/app."
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10818,7 +10818,7 @@
 				"login.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10831,7 +10831,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10845,7 +10845,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10859,7 +10859,7 @@
 				"main.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10873,7 +10873,7 @@
 				"chklogin.aspx"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10886,7 +10886,7 @@
 				"login_commit.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10900,7 +10900,7 @@
 				"login-account"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10913,7 +10913,7 @@
 				"yii."
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10925,7 +10925,7 @@
 				"WPS 部署可视化平台"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10937,7 +10937,7 @@
 				"phpstudy for windows"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10949,7 +10949,7 @@
 				"epoint-web-zwdt"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10961,7 +10961,7 @@
 				"-1356973161"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10973,7 +10973,7 @@
 				"-1169502834"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10985,7 +10985,7 @@
 				"1986460035"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -10997,7 +10997,7 @@
 				"Minio Browser"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11010,7 +11010,7 @@
 				"登录"
 			],
 			"location": "title",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11022,7 +11022,7 @@
 				"360天擎"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11034,7 +11034,7 @@
 				"博华网龙信息安全一体机"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11046,7 +11046,7 @@
 				"LNMP一键安装包"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11058,7 +11058,7 @@
 				"hd_sid="
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11070,7 +11070,7 @@
 				"登录您的MDVR"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11082,7 +11082,7 @@
 				"drupal"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11094,7 +11094,7 @@
 				"Huawei Auth-Http"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11106,7 +11106,7 @@
 				"Prometheus Time Series Collection and Processing Server"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11118,7 +11118,7 @@
 				"Kubernetes Dashboard"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11132,7 +11132,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11146,7 +11146,7 @@
 				"portal/favicon"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11158,7 +11158,7 @@
 				"VMware Horizon"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11172,7 +11172,7 @@
 				"loginAPI.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11184,7 +11184,7 @@
 				"OpenShift Web Console"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11198,7 +11198,7 @@
 				"app.result"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11212,7 +11212,7 @@
 				"login.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11224,7 +11224,7 @@
 				"content=\"phpwind"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11236,7 +11236,7 @@
 				"content=\"CmsEasy"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11248,7 +11248,7 @@
 				"Powered by EmpireCMS"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11260,7 +11260,7 @@
 				"content=\"emlog\""
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11272,7 +11272,7 @@
 				"content=\"ECSHOP"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11286,7 +11286,7 @@
 				"hanweb.com' style='display:none'"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11298,7 +11298,7 @@
 				"powered by espcms"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11311,7 +11311,7 @@
 				"KesionCMS"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11325,7 +11325,7 @@
 				"txtLoginName"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11337,7 +11337,7 @@
 				"皓峰防火墙系统登录"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11350,7 +11350,7 @@
 				"js/cmstop-common.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11364,7 +11364,7 @@
 				"action.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11378,7 +11378,7 @@
 				"images/full.gif"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11393,7 +11393,7 @@
 				"360.cn"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11406,7 +11406,7 @@
 				"fangpage"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11419,7 +11419,7 @@
 				"eureka"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11433,7 +11433,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11445,7 +11445,7 @@
 				"<title>Grafana</title>"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11459,7 +11459,7 @@
 				"login.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11471,7 +11471,7 @@
 				"dwr/interface/WebContextUtil.js"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11483,7 +11483,7 @@
 				"<title>KVM_创梦云计算管理系统</title>"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11497,7 +11497,7 @@
 				"DownloadDriver.asp"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11511,7 +11511,7 @@
 				"login.check.xhd"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11523,7 +11523,7 @@
 				"NETGEAR"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11535,7 +11535,7 @@
 				"Metabase"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11548,7 +11548,7 @@
 				"4homepages"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11560,7 +11560,7 @@
 				"content=\"FineCMS"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11572,7 +11572,7 @@
 				"Network Video Recorder Login"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11585,7 +11585,7 @@
 				"th:text=\"${domain}"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11597,7 +11597,7 @@
 				"-1871496583"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11609,7 +11609,7 @@
 				"-1068428644"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11621,7 +11621,7 @@
 				"872805507"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11633,7 +11633,7 @@
 				"-384583337"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11647,7 +11647,7 @@
 				"dvLogin"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11659,7 +11659,7 @@
 				"1776863739"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11671,7 +11671,7 @@
 				"1652488516"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11683,7 +11683,7 @@
 				"1023469568"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11695,7 +11695,7 @@
 				"-525659379"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11707,7 +11707,7 @@
 				"-556918553"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11720,7 +11720,7 @@
 				"/home/login.html"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11734,7 +11734,7 @@
 				"login.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11747,7 +11747,7 @@
 				"/images/splash.jpg"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11760,7 +11760,7 @@
 				"platformConfig"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11773,7 +11773,7 @@
 				"password"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11786,7 +11786,7 @@
 				"Ent.base.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11799,7 +11799,7 @@
 				"<title>CMS"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11814,7 +11814,7 @@
 				"img/12.png"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11828,7 +11828,7 @@
 				"simple/view/ossn.html"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11842,7 +11842,7 @@
 				"plugins"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11854,7 +11854,7 @@
 				"{\"success\":false,\"msg\":\"Verification failure\"}"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11867,7 +11867,7 @@
 				"v3/js/odm/odm.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11880,7 +11880,7 @@
 				"锐捷网络"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11894,7 +11894,7 @@
 				"images/zh-CN/login_03.gif"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11907,7 +11907,7 @@
 				"/webui/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11921,7 +11921,7 @@
 				"logo-icon-ico72.png"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11934,7 +11934,7 @@
 				"mailmain?type=login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11947,7 +11947,7 @@
 				"/static/imgs/logo.png"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11960,7 +11960,7 @@
 				"/lib/colResizable/"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11972,7 +11972,7 @@
 				"/Content/qrlib/ligerUI/skins/"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11985,7 +11985,7 @@
 				"mysqlStat"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -11997,7 +11997,7 @@
 				"HowFor Web"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12011,7 +12011,7 @@
 				"LoginLogo"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12024,7 +12024,7 @@
 				"controller=admin_index&action=login"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12036,7 +12036,7 @@
 				"/pisces/login/"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12048,7 +12048,7 @@
 				"{\"error_msg\":\"404 Route Not Found\"}"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12060,7 +12060,7 @@
 				"网康科技·互联网控制网关"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12072,7 +12072,7 @@
 				"1622043013"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12084,7 +12084,7 @@
 				"RichMail"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12096,7 +12096,7 @@
 				"0;url=/webmail/"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12109,7 +12109,7 @@
 				"login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12121,7 +12121,7 @@
 				"-1142582922"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12133,7 +12133,7 @@
 				"images/ZY.LOGO.64.png"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12148,7 +12148,7 @@
 				"wwLogin"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12160,7 +12160,7 @@
 				"GNRemote.dll?GNFunction="
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12172,7 +12172,7 @@
 				"JieLink<sup>+</sup>"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12185,7 +12185,7 @@
 				"login_logo"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12198,7 +12198,7 @@
 				"/login/userverify.cgi"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12210,7 +12210,7 @@
 				"aisino.kps.console"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12223,7 +12223,7 @@
 				"resources/css/login_yzm.css"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12236,7 +12236,7 @@
 				"天擎</title>"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12248,7 +12248,7 @@
 				"font_1957344_lqkodjqdbl.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12260,7 +12260,7 @@
 				"static_source/localcdn/webrtc/web/favicon.ico"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12273,7 +12273,7 @@
 				"WebResource.axd"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12285,7 +12285,7 @@
 				"iDste融合系统支撑平台"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12298,7 +12298,7 @@
 				"<meta http-equiv=\"refresh\" content=\"1;URL='/admin'\"/>"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12310,7 +12310,7 @@
 				"NSFOCUS"
 			],
 			"location": "header",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12322,7 +12322,7 @@
 				"-179985729"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12334,7 +12334,7 @@
 				"1323738809"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12346,7 +12346,7 @@
 				"1747722638"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12358,7 +12358,7 @@
 				"-1250474341"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12370,7 +12370,7 @@
 				"-968234332"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12383,7 +12383,7 @@
 				"gitblit"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12398,7 +12398,7 @@
 				"ER8300G2"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12411,7 +12411,7 @@
 				"#f47f3e"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12423,7 +12423,7 @@
 				"webui/js/jquerylib/jquery-1.7.2.min.js"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12436,7 +12436,7 @@
 				"sign/login"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12449,7 +12449,7 @@
 				"zhLanguagePng"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12462,7 +12462,7 @@
 				"login_dhc"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12475,7 +12475,7 @@
 				"passre.php"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12488,7 +12488,7 @@
 				"home/locationIndex.action"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12501,7 +12501,7 @@
 				"ServiceCenter.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12514,7 +12514,7 @@
 				"IPTV"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12527,7 +12527,7 @@
 				"NVSID"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12540,7 +12540,7 @@
 				"moment"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12553,7 +12553,7 @@
 				"e5workspace/security/captcha.do"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12566,7 +12566,7 @@
 				"portalClientHelper.jsp"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12579,7 +12579,7 @@
 				"xajax05/xajax_js/xajax_core.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12592,7 +12592,7 @@
 				"登录"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12604,7 +12604,7 @@
 				"static/download/JSET99Setup.exe"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12617,7 +12617,7 @@
 				"bower_components/PACE/pace.min.js"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12629,7 +12629,7 @@
 				"综合安防管理平台"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12641,7 +12641,7 @@
 				"/Comja/"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12653,7 +12653,7 @@
 				"/dojo/smartdot/css/dojo_smartdot.css"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12667,7 +12667,7 @@
 				"bind-oath"
 			],
 			"location": "body",
-			"matchType": "all_half_keywords",
+			"matchType": "all_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12679,7 +12679,7 @@
 				"window.location.href=\"/Conf/index.jsp\""
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12692,7 +12692,7 @@
 				"WEBTALK"
 			],
 			"location": "body",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12704,7 +12704,7 @@
 				"410106848"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12716,7 +12716,7 @@
 				"-834208471"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12728,7 +12728,7 @@
 				"-252149748"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12740,7 +12740,7 @@
 				"-364449966"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12752,7 +12752,7 @@
 				"-808437027"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12764,7 +12764,7 @@
 				"-637931821"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12776,7 +12776,7 @@
 				"-1525950034"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12788,7 +12788,7 @@
 				"-628229493"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12800,7 +12800,7 @@
 				"1676919780"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12812,7 +12812,7 @@
 				"-1971504131"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12824,7 +12824,7 @@
 				"-391577146"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12836,7 +12836,7 @@
 				"478149598"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12848,7 +12848,7 @@
 				"1182206475"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12860,7 +12860,7 @@
 				"1170487960"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12872,7 +12872,7 @@
 				"-1234665500"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12884,7 +12884,7 @@
 				"-1015496453"
 			],
 			"location": "icon_hash",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		},
 		{
@@ -12896,7 +12896,7 @@
 				"MobileIron User Portal: Sign In"
 			],
 			"location": "title",
-			"matchType": "any_full_keywords",
+			"matchType": "any_keywords",
 			"type": "Web应用"
 		}
 	]

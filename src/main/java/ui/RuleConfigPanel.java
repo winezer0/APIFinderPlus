@@ -371,7 +371,7 @@ public class RuleConfigPanel extends JPanel {
                 // 清空编辑面板的文本字段
                 editRulePanel.setTitle("新增指纹");
                 isImportantField.setSelectedItem(Boolean.TRUE); // 默认设置为重要
-                searchMethodField.setSelectedItem(MatchType.ANY_FULL_KEYWORDS.getValue()); // 默认方法设置为 ALL_KEYWORD
+                searchMethodField.setSelectedItem(MatchType.ANY_KEYWORDS.getValue()); // 默认方法设置为 ALL_KEYWORD
                 updateLocationField(); // 根据默认的方法更新 locationField
                 matchKeysField.setText("");
 
@@ -787,7 +787,7 @@ public class RuleConfigPanel extends JPanel {
         locationField = new JComboBox<>();
         matchKeysField = new JTextArea(5, 20); // 5行，20列
         describeField = new JTextField("-");
-        searchMethodField.setSelectedItem(MatchType.ANY_FULL_KEYWORDS.getValue());
+        searchMethodField.setSelectedItem(MatchType.ANY_KEYWORDS.getValue());
         updateLocationField();
 
         // 创建 GridBagConstraints 对象来控制每个组件的布局

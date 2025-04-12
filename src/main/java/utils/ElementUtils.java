@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static utils.CastUtils.isEmptyObj;
 
@@ -160,25 +161,25 @@ public class ElementUtils {
      * @param defaultBool 当 elementsString 为空时应该返回的响应码
      * @return 如果 elementStrings 的任意子元素 在 string 内 则返回true，否则返回false。
      */
-    public static boolean isContainAllKey(String string, String elementsString, boolean defaultBool) {
+    public static boolean isContainAllKey(String string, String elementsString, boolean defaultBool, String split) {
         //当元素为空时,返回默认值
         if (isEmptyObj(string) || isEmptyObj(elementsString)) return defaultBool;
 
         String stringFormat = format(string);
-        String[] elementsFormat = format(elementsString).split("\\|");
+        String[] elementsFormat = format(elementsString).split(Pattern.quote(split));
 
         return isContainAllKey(stringFormat, Arrays.asList(elementsFormat));
     }
 
 
-    public static Set<String> findContainKeys(String string, String elementsString) {
+    public static Set<String> findContainKeys(String string, String elementsString, String split) {
         HashSet findElements = new HashSet();
         //当元素为空时,返回默认值
         if (isEmptyObj(string) || isEmptyObj(elementsString)) return findElements;
 
         //预先格式化处理
         String stringFormat = format(string);
-        String[] elementsFormat = format(elementsString).split("\\|");
+        String[] elementsFormat = format(elementsString).split(Pattern.quote(split));
 
         for (String element : elementsFormat) {
             if(stringFormat.contains(element)){
@@ -186,5 +187,19 @@ public class ElementUtils {
             }
         }
         return findElements;
+    }
+
+    public static boolean isContainOneKeys(String string, String elementsString, String split) {
+        HashSet findElements = new HashSet();
+        //当元素为空时,返回默认值
+        if (isEmptyObj(string) || isEmptyObj(elementsString)) return false;
+        //预先格式化处理
+        String[] elementsFormat = format(elementsString).split(Pattern.quote(split));
+        for (String element : elementsFormat) {
+            if(format(string).contains(element)){
+                return true;
+            }
+        }
+        return false;
     }
 }

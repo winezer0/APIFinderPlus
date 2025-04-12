@@ -264,27 +264,50 @@ public class AnalyseInfo {
                 String currMatchType = rule.getMatchType();
                 List<String> currMatchKeys = rule.getMatchKeys();
 
-                //全匹配任意关键字规则
-                if (currMatchType.equals(MatchType.ANY_FULL_KEYWORDS.getValue())){
+                //匹配任意关键字规则
+                if (currMatchType.equals(MatchType.ANY_KEYWORDS.getValue())){
                     for (String matchKey : currMatchKeys){
-                        if(isContainAllKey(locationText, matchKey, false)){
-                            JSONObject findInfo = formatMatchInfoToJson(rule, matchKey);
-                            findInfoJsonList.add(findInfo);
+                        //判断matchKey是否包含语法
+                        if(matchKey.contains("||")){
+                            //查找每个关键字,这个方案循环次数比较多,
+                            Set<String> findContainKeys = findContainKeys(locationText, matchKey, "||");
+                            if(!findContainKeys.isEmpty()){
+                                JSONObject findInfo = formatMatchInfoToJson(rule, CastUtils.setToString(findContainKeys));
+                                findInfoJsonList.add(findInfo);
+                            }
+                        } else {
+                            //默认情况都用&&切割一次
+                            if(isContainAllKey(locationText,  matchKey, false, "&&")){
+                                JSONObject findInfo = formatMatchInfoToJson(rule, matchKey);
+                                findInfoJsonList.add(findInfo);
+                            }
                         }
                     }
                 }
 
-                //半匹配全部关键字规则
-                else if (currMatchType.equals(MatchType.ALL_HALF_KEYWORDS.getValue())) {
+                //匹配全部关键字规则
+                else if (currMatchType.equals(MatchType.ALL_KEYWORDS.getValue())) {
                     boolean allMatched = true; // 标志位，用于判断是否所有正则都匹配成功
                     Set<String> allGroups = new HashSet<>(); //存储所有匹配结果
-                    for (String matchKey : currMatchKeys){
-                        Set<String> findContainKeys = findContainKeys(locationText, matchKey);
-                        if(findContainKeys.isEmpty()){
-                            allMatched = false;
-                            break;
+                    for (String matchKey : currMatchKeys) {
+                        //判断matchKey是否包含语法
+                        if (matchKey.contains("||")) {
+                            //查找每个关键字,这个方案循环次数比较多,后续如果卡的话  isContainOneKeys(locationText, matchKey, "||")
+                            Set<String> findContainKeys = findContainKeys(locationText, matchKey, "||");
+                            if (findContainKeys.isEmpty()) {
+                                allMatched = false;
+                                break;
+                            } else {
+                                allGroups.addAll(findContainKeys);
+                            }
                         } else {
-                            allGroups.addAll(findContainKeys);
+                            //默认情况都用&&切割一次
+                            if (!isContainAllKey(locationText, matchKey, false, "&&")) {
+                                allMatched = false;
+                                break;
+                            } else {
+                                allGroups.add(matchKey);
+                            }
                         }
                     }
                     // 如果所有关键字都匹配成功 就保存所有匹配的关键字
