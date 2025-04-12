@@ -182,7 +182,8 @@ public class ElementUtils {
         String[] elementsFormat = format(elementsString).split(Pattern.quote(split));
 
         for (String element : elementsFormat) {
-            if(stringFormat.contains(element)){
+            element = element.trim();
+            if(!element.isEmpty() && stringFormat.contains(element)){
                 findElements.add(element);
             }
         }
@@ -196,7 +197,8 @@ public class ElementUtils {
         //预先格式化处理
         String[] elementsFormat = format(elementsString).split(Pattern.quote(split));
         for (String element : elementsFormat) {
-            if(format(string).contains(element)){
+            element = element.trim();
+            if(!element.isEmpty() && format(string).contains(element)){
                 return true;
             }
         }
