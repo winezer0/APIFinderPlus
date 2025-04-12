@@ -534,4 +534,12 @@ public class CastUtils {
         }
         return Arrays.toString(list.toArray());
     }
+
+    public static <T> String setToString(Set<T> set) {
+        if (set == null || set.isEmpty()) {
+            return "[]"; // 如果列表为空或为 null，返回空数组的表示形式
+        }
+        return Arrays.toString(set.toArray());
+    }
+
 }

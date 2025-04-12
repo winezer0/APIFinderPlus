@@ -1,6 +1,7 @@
 package burp;
 
 import EnumType.LocationType;
+import EnumType.MatchType;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import database.Constants;
@@ -27,7 +28,7 @@ public class AnalyseInfo {
     public static final String accuracy = "accuracy";
     public static final String important = "important";
     public static final String value = "value";
-    public static final String matchType = "match";
+    public static final String matchType = "matchType";
 
     public static final String URL_KEY = "URL_KEY";
     public static final String PATH_KEY = "PATH_KEY";
@@ -262,39 +263,61 @@ public class AnalyseInfo {
 
             //当存在字符串不为空时进行匹配
             if (locationText != null && locationText.length() > 0) {
-                /*
-                多个关键字任意匹配 这肯定是不行的
-                if (rule.getMatch().equals("keyword"))
-                    for (String keywords : rule.getKeyword()){
-                        if(isContainAllKey(locationText, keywords, false)){
-                            //匹配关键字模式成功,应该标记敏感信息 关键字匹配的有效信息就是关键字
-                            JSONObject findInfo = formatMatchInfoToJson(rule, keywords);
-                            //stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
+                String currMatchType = rule.getMatchType();
+                List<String> currMatchKeys = rule.getMatchKeys();
+
+                //多个关键字任意匹配 当把多个关键字用|分割时可以使用
+                if (currMatchType.equals(MatchType.ANY_KEYWORD.getValue()))
+                    for (String matchKey : currMatchKeys){
+                        if(isContainAllKey(locationText, matchKey, false)){
+                            JSONObject findInfo = formatMatchInfoToJson(rule, matchKey);
                             findInfoJsonList.add(findInfo);
                         }
                     }
-                */
 
                 //多个关键字全部需要匹配
-                if (rule.getMatchType().equals("keywords")) {
-                    List<String> keywords = rule.getKeyword();
-                    if(isContainAllKey(locationText,keywords , false)){
-                        //匹配关键字模式成功,应该标记敏感信息 关键字匹配的有效信息就是关键字
-                        JSONObject findInfo = formatMatchInfoToJson(rule,  CastUtils.listToString(keywords));
-                        //stdout_println(LOG_DEBUG, String.format("[+] 关键字匹配敏感信息:%s", findInfo.toJSONString()));
+                else if (currMatchType.equals(MatchType.ALL_KEYWORD.getValue())) {
+                    boolean allMatched = true; // 标志位，用于判断是否所有正则都匹配成功
+                    for (String matchKey : currMatchKeys){
+                        if(!isContainAllKey(locationText, matchKey, false)){
+                            allMatched = false;
+                            break;
+                        }
+                    }
+                    if (allMatched) {
+                        JSONObject findInfo = formatMatchInfoToJson(rule, CastUtils.listToString(currMatchKeys));
                         findInfoJsonList.add(findInfo);
                     }
                 }
 
-                //多个正则匹配
-                if (rule.getMatchType().equals("regular")){
-                    for (String patter : rule.getKeyword()){
-                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, patter, IProxyScanner.maxPatterChunkSize);
+                //多个正则匹配任意一个
+                else if (currMatchType.equals(MatchType.ANY_REGULAR.getValue())){
+                    for (String matchPatter : currMatchKeys){
+                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, matchPatter, IProxyScanner.maxPatterChunkSize);
                         if (isNotEmptyObj(groups)){
                             JSONObject findInfo = formatMatchInfoToJson(rule, String.valueOf(new ArrayList<>(groups)));
-                            //stdout_println(LOG_DEBUG, String.format("[+] 正则匹配敏感信息:%s", findInfo.toJSONString()));
                             findInfoJsonList.add(findInfo);
                         }
+                    }
+                }
+
+                // 如果匹配类型是 "ALL"，需要所有正则都匹配成功
+                else if (currMatchType.equals(MatchType.ALL_REGULAR.getValue())) {
+                    boolean allMatched = true;
+                    Set<String> allGroups = new HashSet<>(); //存储所有匹配结果
+                    for (String pattern : currMatchKeys) {
+                        Set<String> groups = AnalyseInfoUtils.extractInfoWithChunk(locationText, pattern, IProxyScanner.maxPatterChunkSize);
+                        if (isNotEmptyObj(groups)) {
+                            allGroups.addAll(groups);
+                        } else {
+                            allMatched = false; // 如果有一个正则没有匹配成功，则标志位置为 false
+                            break; // 提前退出循环
+                        }
+                    }
+                    // 如果所有正则都匹配成功 就保存所有匹配的信息
+                    if (allMatched) {
+                        JSONObject findInfo = formatMatchInfoToJson(rule, CastUtils.setToString(allGroups));
+                        findInfoJsonList.add(findInfo);
                     }
                 }
             }

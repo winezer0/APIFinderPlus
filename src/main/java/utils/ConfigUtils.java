@@ -17,56 +17,56 @@ public class ConfigUtils {
     public static void loadConfigArrayListByRule(FingerPrintRule rule) {
         switch (rule.getType()) {
             case "CONF_DEFAULT_PERFORMANCE":
-                BurpExtender.CONF_DEFAULT_PERFORMANCE.addAll(rule.getKeyword());
+                BurpExtender.CONF_DEFAULT_PERFORMANCE.addAll(rule.getMatchKeys());
                 break;
             case "CONF_WHITE_ROOT_URL":
-                BurpExtender.CONF_WHITE_ROOT_URL.addAll(rule.getKeyword());
+                BurpExtender.CONF_WHITE_ROOT_URL.addAll(rule.getMatchKeys());
                 break;
             case "CONF_WHITE_RECORD_PATH_STATUS":
-                BurpExtender.CONF_WHITE_RECORD_PATH_STATUS.addAll(rule.getKeyword());
+                BurpExtender.CONF_WHITE_RECORD_PATH_STATUS.addAll(rule.getMatchKeys());
                 break;
             case "CONF_BLACK_RECORD_PATH_TITLE":
-                BurpExtender.CONF_BLACK_RECORD_PATH_TITLE.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_RECORD_PATH_TITLE.addAll(rule.getMatchKeys());
                 break;
             case "CONF_BLACK_AUTO_RECORD_PATH":
-                BurpExtender.CONF_BLACK_AUTO_RECORD_PATH.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_AUTO_RECORD_PATH.addAll(rule.getMatchKeys());
                 break;
             case "CONF_BLACK_AUTO_RECURSE_SCAN":
-                BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_AUTO_RECURSE_SCAN.addAll(rule.getMatchKeys());
                 break;
             case "CONF_BLACK_ROOT_URL":
-                BurpExtender.CONF_BLACK_ROOT_URL.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_ROOT_URL.addAll(rule.getMatchKeys());
                 break;
             case "CONF_BLACK_URI_PATH":
-                BurpExtender.CONF_BLACK_URI_PATH_KEYS.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_URI_PATH_KEYS.addAll(rule.getMatchKeys());
                 break;
             case "CONF_BLACK_URI_EXT_EQUAL":
-                BurpExtender.CONF_BLACK_URI_EXT_EQUAL.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_URI_EXT_EQUAL.addAll(rule.getMatchKeys());
                 break;
 
             case "CONF_BLACK_EXTRACT_PATH_EQUAL":
-                BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_EXTRACT_PATH_EQUAL.addAll(rule.getMatchKeys());
                 break;
 
             case "CONF_BLACK_EXTRACT_INFO_KEYS":
-                BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_EXTRACT_INFO_KEYS.addAll(rule.getMatchKeys());
                 break;
 
             case "CONF_REGULAR_EXTRACT_URIS":
-                BurpExtender.CONF_REGULAR_EXTRACT_URIS.addAll(rule.getKeyword());
+                BurpExtender.CONF_REGULAR_EXTRACT_URIS.addAll(rule.getMatchKeys());
                 break;
 
             //添加HTTP请求相关参数配置
             case "CONF_BLACK_RECURSE_REQ_PATH_KEYS":
-                BurpExtender.CONF_BLACK_RECURSE_REQ_PATH_KEYS.addAll(rule.getKeyword());
+                BurpExtender.CONF_BLACK_RECURSE_REQ_PATH_KEYS.addAll(rule.getMatchKeys());
                 break;
 
             case "CONF_RECURSE_REQ_HTTP_METHODS":
-                BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS.addAll(rule.getKeyword());
+                BurpExtender.CONF_RECURSE_REQ_HTTP_METHODS.addAll(rule.getMatchKeys());
                 break;
 
             case "CONF_RECURSE_REQ_HTTP_PARAMS":
-                BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.addAll(rule.getKeyword());
+                BurpExtender.CONF_RECURSE_REQ_HTTP_PARAMS.addAll(rule.getMatchKeys());
                 break;
 
             default:

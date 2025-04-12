@@ -61,7 +61,7 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
             }
         });
 
-        // 在编辑按钮的 ActionListener 中添加以下代码来设置 keywordField 的值
+        // 在编辑按钮的 ActionListener 中添加以下代码来设置 matchKeyField 的值
         editButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int viewRow = sourceTable.getSelectedRow(); // 获取视图中选中的行

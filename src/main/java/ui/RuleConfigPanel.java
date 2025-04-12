@@ -36,8 +36,7 @@ public class RuleConfigPanel extends JPanel {
     private static JTable ruleTableUI;
     private static JDialog editRulePanel;  // 新增：编辑面板
     public static Integer editingRow = null;
-    //private JTextField keywordField;  // 新增：编辑面板的文本字段
-    private static JTextArea keywordField;
+    private static JTextArea matchKeysField;
     private static JTextField describeField;
     private static JComboBox<Boolean> isImportantField;
     private static JComboBox<String> searchMethodField;
@@ -171,7 +170,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getAccuracy(),  //危险级别
                             rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
-                            String.join(",", rule.getKeyword()),
+                            CastUtils.listToString(rule.getMatchKeys()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 3个操作按钮
                     });
                     counter ++;
@@ -194,8 +193,8 @@ public class RuleConfigPanel extends JPanel {
                 int counter=1;
                 for (int i = 0; i < BurpExtender.fingerprintRules.size(); i++) {
                     FingerPrintRule rule = BurpExtender.fingerprintRules.get(i);
-                    String keywords = String.join(",", rule.getKeyword()).toLowerCase();
-                    if (keywords.contains(searchText.toLowerCase())){
+                    String matchKeysStr = CastUtils.listToString(rule.getMatchKeys());
+                    if (matchKeysStr.contains(searchText.toLowerCase())){
                         // 保存当前规则在模型列表中的索引
                         tableToModelIndexMap.add(i);
                         ruleTableModel.addRow(new Object[]{
@@ -206,7 +205,7 @@ public class RuleConfigPanel extends JPanel {
                                 rule.getAccuracy(),
                                 rule.getMatchType(), // 获取method信息
                                 rule.getLocation(), // 获取location信息
-                                String.join(",", rule.getKeyword()),
+                                CastUtils.listToString(rule.getMatchKeys()),
                                 new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                         });
                         counter ++;
@@ -228,8 +227,8 @@ public class RuleConfigPanel extends JPanel {
                 int counter=1;
                 for (int i = 0; i < BurpExtender.fingerprintRules.size(); i++) {
                     FingerPrintRule rule = BurpExtender.fingerprintRules.get(i);
-                    String keywords = String.join(",", rule.getKeyword()).toLowerCase();
-                    if (keywords.contains(searchText.toLowerCase())){
+                    String matchKeysStr = CastUtils.listToString(rule.getMatchKeys());
+                    if (matchKeysStr.contains(searchText.toLowerCase())){
                         // 保存当前规则在模型列表中的索引
                         tableToModelIndexMap.add(i);
                         ruleTableModel.addRow(new Object[]{
@@ -240,7 +239,7 @@ public class RuleConfigPanel extends JPanel {
                                 rule.getAccuracy(),
                                 rule.getMatchType(), // 获取method信息
                                 rule.getLocation(), // 获取location信息
-                                String.join(",", rule.getKeyword()),
+                                CastUtils.listToString(rule.getMatchKeys()),
                                 new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                         });
                         counter ++;
@@ -283,7 +282,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getAccuracy(),
                             rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
-                            String.join(",", rule.getKeyword()),
+                            CastUtils.listToString(rule.getMatchKeys()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                     });
                     counter ++;
@@ -317,7 +316,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getAccuracy(),
                             rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
-                            String.join(",", rule.getKeyword()),
+                            CastUtils.listToString(rule.getMatchKeys()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                     });
                     counter ++;
@@ -353,7 +352,7 @@ public class RuleConfigPanel extends JPanel {
                             rule.getAccuracy(),
                             rule.getMatchType(), // 获取method信息
                             rule.getLocation(), // 获取location信息
-                            String.join(",", rule.getKeyword()),
+                            CastUtils.listToString(rule.getMatchKeys()),
                             new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                     });
                     counter ++;
@@ -373,9 +372,9 @@ public class RuleConfigPanel extends JPanel {
                 // 清空编辑面板的文本字段
                 editRulePanel.setTitle("新增指纹");
                 isImportantField.setSelectedItem(Boolean.TRUE); // 默认设置为重要
-                searchMethodField.setSelectedItem(MatchType.ALL_KEYWORD.getValue()); // 默认方法设置为 keyword
+                searchMethodField.setSelectedItem(MatchType.ALL_KEYWORD.getValue()); // 默认方法设置为 ALL_KEYWORD
                 updateLocationField(); // 根据默认的方法更新 locationField
-                keywordField.setText("");
+                matchKeysField.setText("");
 
                 // 更新 typeField 下拉选项
                 updateTypeField(); // 确保调用此方法以更新 JComboBox 的选项
@@ -466,7 +465,7 @@ public class RuleConfigPanel extends JPanel {
                                     rule.getAccuracy(),
                                     rule.getMatchType(), // 获取 method 信息
                                     rule.getLocation(), // 获取 location 信息
-                                    String.join(",", rule.getKeyword()),
+                                    CastUtils.listToString(rule.getMatchKeys()),
                                     new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                             });
                             counter ++;
@@ -513,7 +512,7 @@ public class RuleConfigPanel extends JPanel {
                                 rule.getAccuracy(),
                                 rule.getMatchType(), // 获取 method 信息
                                 rule.getLocation(), // 获取 location 信息
-                                String.join(",", rule.getKeyword()),
+                                CastUtils.listToString(rule.getMatchKeys()),
                                 new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
                         });
                         counter ++;
@@ -708,7 +707,7 @@ public class RuleConfigPanel extends JPanel {
         searchMethodField.setSelectedItem(rule.getMatchType());
         locationField.setSelectedItem(rule.getLocation());
         describeField.setText(rule.getDescribe()); // 根据 rule 的 method 更新 locationField
-        keywordField.setText(String.join("\n", rule.getKeyword())); // 设置 keywordField 的值
+        matchKeysField.setText(String.join("\n", rule.getMatchKeys())); // 设置 matchKeyField 的值
 
         // 放在在屏幕最中间
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -731,7 +730,7 @@ public class RuleConfigPanel extends JPanel {
                 "accuracy",
                 "matchType",
                 "location",
-                "keyword",
+                "matchKeys",
                 "Action"
         }, 0) {
             @Override
@@ -745,7 +744,7 @@ public class RuleConfigPanel extends JPanel {
             }
         };
         //创建了一个新的DefaultTableModel实例，它将用于存储表格的数据和定义列的属性
-        //指定列名分别是 "#", "type", "describe", "isImportant", "accuracy", "Match", "location", "keyword", "Action"，而0表示初始时不创建任何行。
+        //指定列名分别是 "#", "type", "describe", "isImportant", "accuracy", "MatchType", "location", "MatchKey", "Action"，而0表示初始时不创建任何行。
         //匿名内部类的方式去扩展DefaultTableModel，目的是为了重写getColumnClass方法，实现自定义列的行为
         //表示第9列 Action 的数据类型被指定为JButton.class。这意味着这一列的每个单元格都可以显示一个按钮。 对于其他列，使用默认的行为，即根据数据的实际类型来决定。
 
@@ -763,7 +762,7 @@ public class RuleConfigPanel extends JPanel {
                     rule.getAccuracy(),
                     rule.getMatchType(), // 获取method信息
                     rule.getLocation(), // 获取location信息
-                    String.join(",", rule.getKeyword()),
+                    CastUtils.listToString(rule.getMatchKeys()),
                     new String[] {"IsOpen", "Edit", "Delete"} // 操作按钮
             });
             counter ++;
@@ -787,7 +786,7 @@ public class RuleConfigPanel extends JPanel {
         searchMethodField = new JComboBox<>(MatchType.getValues());
         accuracyFiled = new JComboBox<>(RiskLevel.getValues());
         locationField = new JComboBox<>();
-        keywordField = new JTextArea(5, 20); // 5行，20列
+        matchKeysField = new JTextArea(5, 20); // 5行，20列
         describeField = new JTextField("-");
         searchMethodField.setSelectedItem(MatchType.ALL_KEYWORD.getValue());
         updateLocationField();
@@ -846,7 +845,7 @@ public class RuleConfigPanel extends JPanel {
         constraints.gridx = 0;  // 在网格的第一列添加组件
         constraints.gridy = 5;  // 在网格的第二行添加组件
         constraints.weightx = 0;  // 不允许横向扩展
-        editRulePanel.add(new JLabel("Match:"), constraints);
+        editRulePanel.add(new JLabel("MatchType:"), constraints);
 
         // 添加 "Method" 输入框
         constraints.gridx = 1;  // 在网格的第二列添加组件
@@ -868,7 +867,7 @@ public class RuleConfigPanel extends JPanel {
         constraints.gridx = 0;  // 在网格的第一列添加组件
         constraints.gridy = 7;  // 在网格的第四行添加组件
         constraints.weightx = 0;  // 不允许横向扩展
-        editRulePanel.add(new JLabel("Keyword:"), constraints);
+        editRulePanel.add(new JLabel("MatchKey:"), constraints);
 
         // 添加 "Keyword" 输入框
         constraints.gridx = 1;  // 在网格的第二列添加组件
@@ -877,7 +876,7 @@ public class RuleConfigPanel extends JPanel {
         constraints.gridy = 7;  // 在网格的第四行开始添加组件
         constraints.gridwidth = 1; // 占据一列
         //constraints.weighty = 0;  // 允许在垂直方向上伸展
-        JScrollPane keywordFieldScrollPane = new JScrollPane(keywordField); // 包装 JTextArea 到 JScrollPane 中
+        JScrollPane keywordFieldScrollPane = new JScrollPane(matchKeysField); // 包装 JTextArea 到 JScrollPane 中
         editRulePanel.add(keywordFieldScrollPane, constraints);
 
         // 根据需要，为 Location 和 Keyword 输入框设置首选大小
@@ -914,10 +913,9 @@ public class RuleConfigPanel extends JPanel {
                 String method = (String) searchMethodField.getSelectedItem();
                 String location = (String) locationField.getSelectedItem();
                 String describe = describeField.getText();
-                List<String> keyword;
-                keyword = Arrays.asList(keywordField.getText().split("\n"));
+                List<String> matchKeys = Arrays.asList(matchKeysField.getText().split("\n"));
                 //添加Keyword去重功能
-                keyword = CastUtils.deduplicateStringList(keyword);
+                matchKeys = CastUtils.deduplicateStringList(matchKeys);
                 if (type.trim().isEmpty() || method.trim().isEmpty() || location.trim().isEmpty()) {
                     JOptionPane.showMessageDialog(editRulePanel, "主要输入框都必须填写。", "输入错误", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -932,7 +930,7 @@ public class RuleConfigPanel extends JPanel {
                     rule.setAccuracy(accuracy);
                     rule.setMatchType(method);
                     rule.setLocation(location);
-                    rule.setKeyword(keyword);
+                    rule.setMatchKeys(matchKeys);
 
                     // 更新表格模型
                     ruleTableModel.setValueAt(type, ruleTableUI.getSelectedRow(), 1);
@@ -941,7 +939,7 @@ public class RuleConfigPanel extends JPanel {
                     ruleTableModel.setValueAt(accuracy, ruleTableUI.getSelectedRow(), 4);
                     ruleTableModel.setValueAt(method, ruleTableUI.getSelectedRow(), 5); // 假设Method列是第3列
                     ruleTableModel.setValueAt(location, ruleTableUI.getSelectedRow(), 6); // 假设Location列是第4列
-                    ruleTableModel.setValueAt(String.join(",", keyword), ruleTableUI.getSelectedRow(), 7); // 假设Keyword列是第5列
+                    ruleTableModel.setValueAt(CastUtils.listToString(matchKeys), ruleTableUI.getSelectedRow(), 7); // 假设Keyword列是第5列
 
                     // 通知模型数据已更新，触发表格重绘
                     ruleTableModel.fireTableRowsUpdated(ruleTableUI.getSelectedRow(), ruleTableUI.getSelectedRow());
@@ -952,7 +950,7 @@ public class RuleConfigPanel extends JPanel {
                     editingRow = null;
                 } else {
                     // 创建新的 FingerPrintRule 对象
-                    FingerPrintRule newRule = new FingerPrintRule(type, describe, isImportant, method, location, keyword, true, accuracy);
+                    FingerPrintRule newRule = new FingerPrintRule(type, describe, isImportant, method, location, matchKeys, true, accuracy);
                     synchronized (BurpExtender.fingerprintRules) {
                         // 将新规则添加到数据源的开始位置
                         BurpExtender.fingerprintRules.add(0, newRule);
@@ -965,7 +963,7 @@ public class RuleConfigPanel extends JPanel {
                                 newRule.getAccuracy(),
                                 newRule.getMatchType(),
                                 newRule.getLocation(),
-                                String.join(",", newRule.getKeyword()),
+                                CastUtils.listToString(newRule.getMatchKeys()),
                                 new String[]{"Edit", "Delete"} // 操作按钮
                         });
                         // 更新映射列表，因为添加了新的数据项
@@ -1066,7 +1064,7 @@ public class RuleConfigPanel extends JPanel {
                         rule.getAccuracy(),
                         rule.getMatchType(),
                         rule.getLocation(),
-                        String.join(",", rule.getKeyword()),
+                        CastUtils.listToString(rule.getMatchKeys()),
                         new String[]{"Edit", "Delete"}
                 });
                 tableToModelIndexMap.add(i); // 将原始列表的索引添加到映射中

@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum MatchType {
-    ANY_KEYWORD("any_keyword"), //要求匹配任意关键字
+    ANY_KEYWORD("any_keyword"), //要求匹配任意关键字 少见
     ALL_KEYWORD("all_keyword"), //要求匹配所有关键字 常见
-
     ANY_REGULAR("any_regular"), //要求匹配任意正则 常见
-    ALL_REGULAR("all_regular"); //要求匹配所有正则
+    ALL_REGULAR("all_regular"); //要求匹配所有正则 少见
 
     private final String value;
 
