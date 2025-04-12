@@ -1090,6 +1090,11 @@ public class RuleConfigPanel extends JPanel {
 
         // 为每个独特的类型创建菜单项
         for (String type : uniqueTypes) {
+            //跳过配置文件
+            if (type.startsWith(Constants.RULE_CONF_PREFIX)) {
+                continue;
+            }
+
             JMenuItem menuItem = new JMenuItem(type);
             menuItem.addActionListener(new ActionListener() {
                 @Override
