@@ -49,7 +49,7 @@ public class BasicHostTableLineDataModel {
 
     private String parseHostFromUrl(String rootUrl) {
         //解析从URL中解析出host
-        return new HttpUrlInfo(rootUrl).getHostPort();
+        return new HttpUrlInfo(rootUrl).getRootDomain();
     }
 
 
