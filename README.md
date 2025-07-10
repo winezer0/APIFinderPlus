@@ -168,3 +168,10 @@
     "type": 规则分类
     
 ```
+
+
+
+## 联系方式
+如需获取更多信息、技术支持或定制服务，请通过以下方式联系我们：
+NOVASEC微信公众号或通过社交信息联系开发者【酒零】
+![NOVASEC0](https://raw.githubusercontent.com/winezer0/mypics/refs/heads/main/NOVASEC0.jpg)
