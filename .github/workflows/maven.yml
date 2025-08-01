@@ -1,41 +1,51 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Java CI with Maven
 
 on:
-#  # 在创建新标签时触发
-#  push:
-#    tags:
-#      - '*' # 匹配任何标签
-  # 在发布新版本时触发
-  release:
-    types: [created]
-
+  # 仅保留手动触发工作流
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号 (例如: 1.0.0)'
+        required: true
+        type: string
+      releaseNotes:
+        description: '发布说明'
+        required: false
+        default: '手动触发构建发布'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
+    
     - name: Set up JDK 8
       uses: actions/setup-java@v3
       with:
         java-version: '8'
         distribution: 'temurin'
         cache: maven
+    
     - name: Build with Maven
       run: mvn -B package --file pom.xml
-
+    
     - name: Archive Jar file
       uses: actions/upload-artifact@v4
       with:
         name: jar-with-dependencies
         path: ./target/*-jar-with-dependencies.jar  # 指定二进制文件的路径
+
+    - name: Get Jar filename
+      id: get_jar_filename
+      run: echo "JAR_FILENAME=$(ls ./target/*-jar-with-dependencies.jar | xargs -n 1 basename)" >> $GITHUB_ENV
+    
+    - name: Create and Upload to Release (手动触发)
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.event.inputs.version }}
+        name: Release v${{ github.event.inputs.version }}
+        files: ./target/${{ env.JAR_FILENAME }}
+        body: ${{ github.event.inputs.releaseNotes }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
