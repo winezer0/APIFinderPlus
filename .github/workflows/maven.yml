@@ -1,7 +1,6 @@
 name: Java CI with Maven
 
 on:
-  # 仅保留手动触发工作流
   workflow_dispatch:
     inputs:
       version:
@@ -12,6 +11,10 @@ on:
         description: '发布说明'
         required: false
         default: '手动触发构建发布'
+
+# 添加权限配置
+permissions:
+  contents: write  # 允许创建和修改发布、标签等内容
 
 jobs:
   build:
@@ -34,13 +37,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: jar-with-dependencies
-        path: ./target/*-jar-with-dependencies.jar  # 指定二进制文件的路径
-
+        path: ./target/*-jar-with-dependencies.jar
+    
     - name: Get Jar filename
       id: get_jar_filename
       run: echo "JAR_FILENAME=$(ls ./target/*-jar-with-dependencies.jar | xargs -n 1 basename)" >> $GITHUB_ENV
     
-    - name: Create and Upload to Release (手动触发)
+    - name: Create and Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.event.inputs.version }}
