@@ -2,6 +2,8 @@ package database;
 
 import model.HttpMsgInfo;
 import model.ReqUrlRespStatusModel;
+import sqlUtils.Constants;
+import sqlUtils.buildSQL;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -108,7 +110,7 @@ public class ReqDataTable {
         List<ReqUrlRespStatusModel> requestStatusModels = new ArrayList<>();
 
         String selectSQL = ("SELECT * FROM " + tableName + " WHERE req_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", SqlUtils.buildInParamList(urls.size()));
+                .replace("$buildInParamList$", buildSQL.buildInParamList(urls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < urls.size(); i++) {

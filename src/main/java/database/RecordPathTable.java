@@ -4,6 +4,7 @@ import model.HttpMsgInfo;
 import model.HttpUrlInfo;
 import model.RecordPathDirsModel;
 import model.RecordPathModel;
+import sqlUtils.Constants;
 
 import java.sql.*;
 import java.util.ArrayList;

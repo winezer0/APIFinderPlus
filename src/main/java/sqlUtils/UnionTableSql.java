@@ -1,5 +1,8 @@
-package database;
+package sqlUtils;
 
+import database.AnalyseHostResultTable;
+import database.DBService;
+import database.PathTreeTable;
 import model.FindPathModel;
 
 import java.sql.Connection;

@@ -3,6 +3,8 @@ package database;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import model.*;
+import sqlUtils.Constants;
+import sqlUtils.buildSQL;
 import utils.CastUtils;
 
 import java.sql.Connection;
@@ -272,7 +274,7 @@ public class AnalyseHostResultTable {
         if (rootUrls.isEmpty()) return findPathModelList;
 
         String selectSQL = ("SELECT * FROM " + tableName + " WHERE root_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", SqlUtils.buildInParamList(rootUrls.size()));
+                .replace("$buildInParamList$", buildSQL.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < rootUrls.size(); i++) {
@@ -329,7 +331,7 @@ public class AnalyseHostResultTable {
     public static synchronized List<BasicHostTableTabDataModel> fetchHostResultByRootUrls(List<String> rootUrls){
         List<BasicHostTableTabDataModel> tabDataModels = new ArrayList<>();
         String selectSQL = ("SELECT * FROM " + tableName +" WHERE root_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", SqlUtils.buildInParamList(rootUrls.size()));
+                .replace("$buildInParamList$", buildSQL.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
 

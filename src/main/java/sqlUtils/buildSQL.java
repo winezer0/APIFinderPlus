@@ -1,6 +1,6 @@
-package database;
+package sqlUtils;
 
-public class SqlUtils {
+public class buildSQL {
     /**
      * 构建一个函数,实现根据参数列表数量自动拼接 IN (?,?,?)语句
      * @param size

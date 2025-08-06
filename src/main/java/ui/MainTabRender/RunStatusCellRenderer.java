@@ -1,6 +1,6 @@
 package ui.MainTabRender;
 
-import database.Constants;
+import sqlUtils.Constants;
 import utils.UiUtils;
 
 import javax.swing.*;

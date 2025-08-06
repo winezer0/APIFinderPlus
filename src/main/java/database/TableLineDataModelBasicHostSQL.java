@@ -1,6 +1,7 @@
 package database;
 
 import model.BasicHostTableLineDataModel;
+import sqlUtils.Constants;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

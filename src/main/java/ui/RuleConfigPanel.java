@@ -6,7 +6,7 @@ import EnumType.RiskLevel;
 import burp.BurpExtender;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
-import database.Constants;
+import sqlUtils.Constants;
 import model.FingerPrintRule;
 import model.FingerPrintRulesWrapper;
 import ui.FingerTabRender.*;

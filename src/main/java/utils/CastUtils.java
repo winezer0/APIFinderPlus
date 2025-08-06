@@ -3,7 +3,7 @@ package utils;
 import burp.AnalyseInfo;
 import burp.BurpExtender;
 import com.alibaba.fastjson2.*;
-import database.Constants;
+import sqlUtils.Constants;
 import model.HttpUrlInfo;
 import utilbox.HelperPlus;
 

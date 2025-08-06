@@ -1,4 +1,4 @@
-package database;
+package sqlUtils;
 
 public class Constants {
     public static final String ANALYSE_WAIT = "Waiting";     //等待自动处理

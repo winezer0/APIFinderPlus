@@ -1,4 +1,7 @@
-package database;
+package sqlUtils;
+
+import database.DBService;
+import database.ReqDataTable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -102,7 +105,7 @@ public class CommonFetchData {
             return stringList;
 
         String selectSQL = ("SELECT " + columnName + " FROM "+ tableName +" WHERE msg_hash IN $buildInParameterList$;")
-                .replace("$buildInParameterList$", SqlUtils.buildInParamList(msgHashList.size()));
+                .replace("$buildInParameterList$", buildSQL.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < msgHashList.size(); i++) {
@@ -149,7 +152,7 @@ public class CommonFetchData {
         String concatSQL = ("SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +
                 " WHERE root_url IN $buildInParameterList$;")
                 .replace("$columnName$",columnName)
-                .replace("$buildInParameterList$", SqlUtils.buildInParamList(rootUrls.size()));
+                .replace("$buildInParameterList$", buildSQL.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
             for (int i = 0; i < rootUrls.size(); i++) {
@@ -176,7 +179,7 @@ public class CommonFetchData {
         String concatSQL = ("SELECT GROUP_CONCAT($columnName$,',') AS concatenated_urls FROM "+ tableName +
                 " WHERE root_url NOT IN $buildInParameterList$;")
                 .replace("$columnName$",columnName)
-                .replace("$buildInParameterList$", SqlUtils.buildInParamList(rootUrls.size()));
+                .replace("$buildInParameterList$", buildSQL.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(concatSQL)) {
             for (int i = 0; i < rootUrls.size(); i++) {

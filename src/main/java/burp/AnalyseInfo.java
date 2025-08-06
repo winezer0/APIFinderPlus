@@ -4,7 +4,7 @@ import EnumType.LocationType;
 import EnumType.MatchType;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import database.Constants;
+import sqlUtils.Constants;
 import model.AnalyseUrlResultModel;
 import model.FingerPrintRule;
 import model.HttpMsgInfo;

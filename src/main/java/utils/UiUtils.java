@@ -5,6 +5,7 @@ import burp.IProxyScanner;
 import database.*;
 import model.FindPathModel;
 import model.RecordHashMap;
+import sqlUtils.CommonDeleteLine;
 import ui.*;
 
 import javax.swing.*;
