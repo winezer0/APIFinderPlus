@@ -150,7 +150,7 @@ public class AnalyseUrlResultTable {
         if (msgHashList.isEmpty()) return AnalyseUrlResultModels;
 
         String selectSQL = ("SELECT * FROM " + tableName + " WHERE msg_hash IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < msgHashList.size(); i++) {
@@ -211,7 +211,7 @@ public class AnalyseUrlResultTable {
         if (msgHashList.isEmpty()) return findPathModelList;
 
         String selectSQL = "SELECT * FROM " + tableName + " WHERE msg_hash IN $buildInParamList$;"
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < msgHashList.size(); i++) {

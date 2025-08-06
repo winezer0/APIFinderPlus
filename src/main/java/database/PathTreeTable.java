@@ -103,7 +103,7 @@ public class PathTreeTable {
         //查询
         String selectSql = ("SELECT root_url, path_tree, basic_path_num FROM "+ tableName +
                 " WHERE root_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSql)) {
 

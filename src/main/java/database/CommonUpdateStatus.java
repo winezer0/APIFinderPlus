@@ -14,7 +14,7 @@ public class CommonUpdateStatus {
         int updatedCount = -1;
 
         String updateSQL = ("UPDATE " + tableName + " SET run_status = ? WHERE id IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(ids.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
             stmtUpdate.setString(1, updateStatus);
@@ -41,7 +41,7 @@ public class CommonUpdateStatus {
         int updatedCount = -1;
 
         String updateSQL = ("UPDATE " + tableName + " SET run_status = ? WHERE msg_hash IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
             stmtUpdate.setString(1, updateStatus);
@@ -68,7 +68,7 @@ public class CommonUpdateStatus {
         int updatedCount = -1;
 
         String updateSQL = ("UPDATE " + tableName + " SET run_status = ? WHERE msg_data_index IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(msgDataIndexList.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(msgDataIndexList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmtUpdate = conn.prepareStatement(updateSQL)) {
             stmtUpdate.setString(1, updateStatus);

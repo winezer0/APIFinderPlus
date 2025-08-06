@@ -117,7 +117,7 @@ public class DBService {
      * 清空表数据
      * @param tableName
      */
-    private static void clearTable(String tableName) {
+    public static void clearTable(String tableName) {
         // 用 DELETE 语句来清空表
         String deleteSql = "DELETE FROM "+ tableName +" ;";
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
@@ -155,31 +155,6 @@ public class DBService {
     public static void clearAllTables(){
         clearModelTables();
         clearRecordTables();
-    }
-
-
-    /**
-     * 清空已访问URL表
-     */
-    public static void clearRecordUrlTable(){
-        clearTable(RecordUrlTable.tableName);
-    }
-
-    /**
-     * 构建一个函数,实现根据参数列表数量自动拼接 IN (?,?,?)语句
-     * @param size
-     * @return
-     */
-    public static String buildInParamList(int size) {
-        StringBuilder inParameterList = new StringBuilder(" (");
-        for (int i = 0; i < size; i++) {
-            inParameterList.append("?");
-            if (i < size - 1) {
-                inParameterList.append(", ");
-            }
-        }
-        inParameterList.append(") ");
-        return inParameterList.toString();
     }
 
 

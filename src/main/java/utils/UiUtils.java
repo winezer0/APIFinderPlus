@@ -600,7 +600,7 @@ public class UiUtils {
         clearRecordUrlTableData.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                DBService.clearRecordUrlTable();
+                DBService.clearTable(RecordUrlTable.tableName);
 //   TODO             BasicUrlConfigPanel.setAutoRefreshOpenOnUrl();
 //                BasicHostConfigPanel.setAutoRefreshOpenOnHost();
             }

@@ -33,7 +33,7 @@ public class CommonDeleteLine {
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = ("DELETE FROM "+ tableName +"  WHERE root_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(rootUrls.size()));
 
         return runDeleteByStringsSQL(tableName, rootUrls, deleteSQL);
     }
@@ -44,7 +44,7 @@ public class CommonDeleteLine {
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = ("DELETE FROM "+ tableName + "  WHERE msg_hash IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(msgHashList.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(msgHashList.size()));
 
         return runDeleteByStringsSQL(tableName, msgHashList, deleteSQL);
     }
@@ -59,7 +59,7 @@ public class CommonDeleteLine {
 
         // 构建SQL语句，使用占位符 ? 来代表每个ID
         String deleteSQL = ("DELETE FROM "+ tableName + " WHERE id IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(ids.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(ids.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
             // 设置SQL语句中的参数值 i+1表示从第一个?号开始设置

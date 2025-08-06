@@ -25,7 +25,7 @@ public class AnalyseHostUnVisitedUrls {
         // 构建SQL语句
         String updateSQL = ("UPDATE "+ AnalyseHostResultTable.tableName + " SET unvisited_url = ?, unvisited_url_num = 0" +
                 " WHERE root_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
             // 设置第一个参数为JSON数组的toJSONString()
@@ -80,7 +80,7 @@ public class AnalyseHostUnVisitedUrls {
 
         String selectSQL = ("SELECT id,root_url,unvisited_url FROM " + AnalyseHostResultTable.tableName +
                 " WHERE root_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(rootUrls.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(rootUrls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < rootUrls.size(); i++) {

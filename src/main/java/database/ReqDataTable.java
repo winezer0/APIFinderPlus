@@ -108,7 +108,7 @@ public class ReqDataTable {
         List<ReqUrlRespStatusModel> requestStatusModels = new ArrayList<>();
 
         String selectSQL = ("SELECT * FROM " + tableName + " WHERE req_url IN $buildInParamList$;")
-                .replace("$buildInParamList$", DBService.buildInParamList(urls.size()));
+                .replace("$buildInParamList$", SqlUtils.buildInParamList(urls.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < urls.size(); i++) {

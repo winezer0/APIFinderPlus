@@ -349,7 +349,7 @@ public class IProxyScanner implements IProxyListener {
                     //定时清理URL记录表 防止无用数据占用空间过大
                     if (CommonFetchData.fetchTableCounts(RecordUrlTable.tableName) > 500){
                         stdout_println(LOG_INFO, "[*] cleaning the RecordUrlTable");
-                        DBService.clearRecordUrlTable();
+                        DBService.clearTable(RecordUrlTable.tableName);
                     }
 
                     //存储一下当前的动态过滤器 如果当前实际的过滤map内容和历史存储的内容不一样时,就写入到文件中

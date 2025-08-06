@@ -155,7 +155,7 @@ public class ReqMsgDataTable {
         if (msgHashList.isEmpty()) return reqMsgDataModelList;
 
         String selectSQL = ("SELECT * FROM "+ tableName + " WHERE msg_hash IN $buildInParameterList$;")
-                .replace("$buildInParameterList$", DBService.buildInParamList(msgHashList.size()));
+                .replace("$buildInParameterList$", SqlUtils.buildInParamList(msgHashList.size()));
 
         try (Connection conn = DBService.getInstance().getNewConn(); PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
             for (int i = 0; i < msgHashList.size(); i++) {
