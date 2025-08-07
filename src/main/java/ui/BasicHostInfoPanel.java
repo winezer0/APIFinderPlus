@@ -571,10 +571,10 @@ public class BasicHostInfoPanel extends JPanel {
                 List<UnVisitedUrlsModel> unVisitedUrlsModels;
                 if (rootUrls == null || rootUrls.isEmpty()) {
                     //更新所有的结果
-                    unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchAllUnVisitedUrlsWithLimit(99);
+                    unVisitedUrlsModels = AnalyseHostResultTable.fetchAllUnVisitedUrlsWithLimit(99);
                 } else {
                     //仅更新指定 rootUrls 对应的未访问URL
-                    unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchUnVisitedUrlsByRootUrls(rootUrls);
+                    unVisitedUrlsModels = AnalyseHostResultTable.fetchUnVisitedUrlsByRootUrls(rootUrls);
                 }
 
                 //忽略没有内容的情况
@@ -652,7 +652,7 @@ public class BasicHostInfoPanel extends JPanel {
                         //更新记录并保存
                         urlsModel.setUnvisitedUrls(newUnVisitedUrls);
                         try {
-                            AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
+                            AnalyseHostResultTable.updateUnVisitedUrlsByModel(urlsModel);
                         } catch (Exception ex) {
                             stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                         }
@@ -702,7 +702,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 //更新记录并保存
                                 urlsModel.setUnvisitedUrls(newUnVisitedUrls);
                                 try {
-                                    AnalyseHostUnVisitedUrls.updateUnVisitedUrlsByModel(urlsModel);
+                                    AnalyseHostResultTable.updateUnVisitedUrlsByModel(urlsModel);
                                 } catch (Exception ex) {
                                     stderr_println(String.format("[!] Updating unvisited URL Error:%s", ex.getMessage()));
                                 }
@@ -784,7 +784,7 @@ public class BasicHostInfoPanel extends JPanel {
                         new SwingWorker<Void, Void>() {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                AnalyseHostUnVisitedUrls.clearUnVisitedUrlsByRootUrls(rootUrls);
+                                AnalyseHostResultTable.clearUnVisitedUrlsByRootUrls(rootUrls);
                                 refreshBasicHostTableModel();
                                 return null;
                             }
@@ -810,7 +810,7 @@ public class BasicHostInfoPanel extends JPanel {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchUnVisitedUrlsByRootUrls(rootUrls);
+                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseHostResultTable.fetchUnVisitedUrlsByRootUrls(rootUrls);
 
                                 //整合所有结果URL到一个Set
                                 Set<String> unvisitedUrlsSet = new HashSet<>();
@@ -822,7 +822,7 @@ public class BasicHostInfoPanel extends JPanel {
                                 //批量插入所有URL
                                 RecordUrlTable.insertOrUpdateAccessedUrlsBatch(new ArrayList<>(unvisitedUrlsSet), 299);
                                 //批量删除所有msgHashList
-                                AnalyseHostUnVisitedUrls.clearUnVisitedUrlsByRootUrls(rootUrls);
+                                AnalyseHostResultTable.clearUnVisitedUrlsByRootUrls(rootUrls);
                                 refreshBasicHostTableModel();
                                 return null;
                             }
@@ -876,7 +876,7 @@ public class BasicHostInfoPanel extends JPanel {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 //获取所有msgHash相关的结果
-                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseHostUnVisitedUrls.fetchUnVisitedUrlsByRootUrls(rootUrls);
+                                List<UnVisitedUrlsModel> unVisitedUrlsModels = AnalyseHostResultTable.fetchUnVisitedUrlsByRootUrls(rootUrls);
                                 //批量访问所有URL模型
                                 for (UnVisitedUrlsModel unVisitedUrlsModel: unVisitedUrlsModels){
                                     IProxyScanner.accessUnVisitedUrlsModel(unVisitedUrlsModel, false);

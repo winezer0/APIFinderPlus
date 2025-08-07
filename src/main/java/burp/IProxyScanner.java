@@ -487,7 +487,7 @@ public class IProxyScanner implements IProxyListener {
                         //获取一个未访问URL列表
                         executorService.submit(() -> {
                             //将URL访问过程作为一个基本任务外放, 可能会频率过快, 目前没有问题
-                            List<UnVisitedUrlsModel> unVisitedUrlsModels =  AnalyseHostUnVisitedUrls.fetchAllUnVisitedUrlsWithLimit(1);
+                            List<UnVisitedUrlsModel> unVisitedUrlsModels =  AnalyseHostResultTable.fetchAllUnVisitedUrlsWithLimit(1);
                             for (UnVisitedUrlsModel unVisitedUrlsModel: unVisitedUrlsModels){
                                 accessUnVisitedUrlsModel(unVisitedUrlsModel, true);
                             }
@@ -602,7 +602,7 @@ public class IProxyScanner implements IProxyListener {
 
             //如果没有配置忽略黑名单主机，表明是右键调用，此时需要强制清空未访问数据
             if (!ignoreBlackRecurseHost){
-                AnalyseHostUnVisitedUrls.clearUnVisitedUrlsByRootUrls(Collections.singletonList(rootUrl));
+                AnalyseHostResultTable.clearUnVisitedUrlsByRootUrls(Collections.singletonList(rootUrl));
             }
         }
     }
