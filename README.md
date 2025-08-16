@@ -2,23 +2,25 @@
 
 本插件参考 APIFinder UI 进行重构开发 [https://github.com/shuanx/BurpAPIFinder] 
 
+但整体功能目标还是类似 APIFinder，主要是发现未授权/敏感信息/越权/登陆接口等，但实现思路上略有不同.
+
+本插件更关注动态分析路径树，尽可能少的Fuzz无用路径, 避免被Ban.
 
 ## 免责声明
 继续阅读文章或使用工具视为您已同意NOVASEC免责声明
 
 [NOVASEC免责声明](https://mp.weixin.qq.com/s/iRWRVxkYu7Fx5unxA34I7g)
 
+# 程序功能
 
-### TODO规划
+ 提取网站的URL链接和解析响应内容URL/URI/PATH
+ 
+ 主动接口路径树分析动态拼接探测API接口路径
 
-```
-优先修复BUG
-优先增强功能
-延后文档编写
-```
-
-欢迎提交增强功能思路.
-
+响应内容中的敏感信息匹配、指纹信息匹配
+ 
+ 集成敏感信息识别指纹库、CMS识别指纹
+ 
 
 ### 使用提示：
 
